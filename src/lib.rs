@@ -83,11 +83,35 @@ pub struct User {
     name_id: String,
     username: String,
     date_online: u32,
-    // avatar: Avatar,
+    avatar: Avatar,
     timezone: String,
     language: String,
     #[serde(with = "url_serde")]
     profile_url: Url,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Avatar {
+    filename: Option<String>,
+    #[serde(with = "url_serde", default="Default::default")]
+    original: Option<Url>,
+    #[serde(with = "url_serde", default="Default::default")]
+    thumb_50x50: Option<Url>,
+    #[serde(with = "url_serde", default="Default::default")]
+    thumb_100x100: Option<Url>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Logo {
+    filename: String,
+    #[serde(with = "url_serde")]
+    original: Url,
+    #[serde(with = "url_serde")]
+    thumb_320x180: Url,
+    #[serde(with = "url_serde")]
+    thumb_640x360: Url,
+    #[serde(with = "url_serde")]
+    thumb_1280x720: Url,
 }
 
 #[derive(Clone, Debug)]

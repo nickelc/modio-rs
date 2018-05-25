@@ -5,6 +5,7 @@ use url::{form_urlencoded, Url};
 use url_serde;
 
 use Future;
+use Logo;
 use Modio;
 use ModioListResponse;
 use Mods;
@@ -138,7 +139,7 @@ pub struct Game {
     api_access_options: u8,
     ugc_name: String,
     // icon: Icon,
-    // logo: Logo,
+    logo: Logo,
     // header: Header,
     name: String,
     name_id: String,

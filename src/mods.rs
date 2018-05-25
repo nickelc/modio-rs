@@ -8,6 +8,7 @@ use Comments;
 use File;
 use Files;
 use Future;
+use Logo;
 use Modio;
 use ModioListResponse;
 use User;
@@ -160,7 +161,7 @@ pub struct Mod {
     date_added: u64,
     date_updated: u64,
     date_live: u64,
-    // logo: Logo,
+    logo: Logo,
     #[serde(with = "url_serde")]
     homepage_url: Option<Url>,
     name: String,
@@ -190,7 +191,17 @@ pub struct Media {
     youtube: Vec<String>,
     #[serde(default = "Vec::new")]
     sketchfab: Vec<String>,
-    //images: Vec<Image>,
+    #[serde(default = "Vec::new")]
+    images: Vec<Image>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Image {
+    filename: String,
+    #[serde(with = "url_serde")]
+    original: Url,
+    #[serde(with = "url_serde")]
+    thumb_320x180: Url,
 }
 
 #[derive(Debug, Deserialize)]
