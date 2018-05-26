@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::io::Error as IoError;
 use std::time::Duration;
 
@@ -6,6 +5,8 @@ use hyper::Error as HttpError;
 use hyper::StatusCode;
 use hyper::error::UriError;
 use serde_json::Error as SerdeError;
+
+use types::ClientError;
 
 #[derive(Debug)]
 pub enum Error {
@@ -20,13 +21,6 @@ pub enum Error {
     Http(HttpError),
     Io(IoError),
     Uri(UriError),
-}
-
-#[derive(Debug, Deserialize)]
-pub struct ClientError {
-    code: u16,
-    message: String,
-    errors: Option<HashMap<String, String>>,
 }
 
 impl From<SerdeError> for Error {

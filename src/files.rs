@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
 use hyper::client::Connect;
-use url::{form_urlencoded, Url};
-use url_serde;
+use url::form_urlencoded;
 
 use Future;
 use Modio;
-use ModioListResponse;
+use types::ModioListResponse;
+use types::mods::File;
 
 pub struct MyFiles<C>
 where
@@ -80,34 +80,4 @@ impl FileListOptions {
             Some(encoded)
         }
     }
-}
-
-#[derive(Debug, Deserialize)]
-pub struct File {
-    id: u32,
-    mod_id: u32,
-    date_added: u64,
-    date_scanned: u64,
-    virus_status: u32,
-    virus_positive: u32,
-    virustotal_hash: Option<String>,
-    filesize: u64,
-    filehash: FileHash,
-    filename: String,
-    version: String,
-    changelog: Option<String>,
-    metadata_blob: Option<String>,
-    download: Download,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct FileHash {
-    md5: String,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Download {
-    #[serde(with = "url_serde")]
-    binary_url: Url,
-    date_expires: u64,
 }

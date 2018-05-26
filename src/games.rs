@@ -1,15 +1,13 @@
 use std::collections::HashMap;
 
 use hyper::client::Connect;
-use url::{form_urlencoded, Url};
-use url_serde;
+use url::form_urlencoded;
 
 use Future;
-use Logo;
 use Modio;
-use ModioListResponse;
 use Mods;
-use User;
+use types::ModioListResponse;
+use types::game::*;
 
 pub struct MyGames<C>
 where
@@ -121,42 +119,4 @@ impl GamesListOptions {
             Some(encoded)
         }
     }
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Game {
-    id: u32,
-    status: u8,
-    submitted_by: User,
-    date_added: u64,
-    date_updated: u64,
-    date_live: u64,
-    presentation_option: u8,
-    submission_option: u8,
-    curation_option: u8,
-    community_options: u8,
-    revenue_options: u16,
-    api_access_options: u8,
-    ugc_name: String,
-    // icon: Icon,
-    logo: Logo,
-    // header: Header,
-    name: String,
-    name_id: String,
-    summary: String,
-    instructions: Option<String>,
-    #[serde(with = "url_serde")]
-    instructions_url: Option<Url>,
-    #[serde(with = "url_serde")]
-    profile_url: Url,
-    tag_options: Vec<TagOption>,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct TagOption {
-    name: String,
-    #[serde(rename = "type")]
-    kind: String,
-    hidden: bool,
-    tags: Vec<String>,
 }

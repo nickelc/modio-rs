@@ -29,12 +29,14 @@ pub mod errors;
 pub mod files;
 pub mod games;
 pub mod mods;
+pub mod types;
 
 use comments::Comments;
-use errors::{ClientError, Error};
-use files::{File, Files, MyFiles};
+use errors::Error;
+use files::{Files, MyFiles};
 use games::{Games, MyGames};
 use mods::{Mods, MyMods};
+use types::ModioErrorResponse;
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 
@@ -57,61 +59,6 @@ header! {
 pub enum Credentials {
     ApiKey(String),
     Token(String),
-}
-
-#[derive(Debug, Deserialize)]
-pub struct ModioListResponse<T> {
-    data: Vec<T>,
-
-    #[serde(rename = "result_count")]
-    count: u32,
-    #[serde(rename = "result_limit")]
-    limit: u32,
-    #[serde(rename = "result_offset")]
-    offset: u32,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct ModioErrorResponse {
-    #[serde(rename = "error")]
-    error: ClientError,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct User {
-    id: u32,
-    name_id: String,
-    username: String,
-    date_online: u32,
-    avatar: Avatar,
-    timezone: String,
-    language: String,
-    #[serde(with = "url_serde")]
-    profile_url: Url,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Avatar {
-    filename: Option<String>,
-    #[serde(with = "url_serde", default="Default::default")]
-    original: Option<Url>,
-    #[serde(with = "url_serde", default="Default::default")]
-    thumb_50x50: Option<Url>,
-    #[serde(with = "url_serde", default="Default::default")]
-    thumb_100x100: Option<Url>,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Logo {
-    filename: String,
-    #[serde(with = "url_serde")]
-    original: Url,
-    #[serde(with = "url_serde")]
-    thumb_320x180: Url,
-    #[serde(with = "url_serde")]
-    thumb_640x360: Url,
-    #[serde(with = "url_serde")]
-    thumb_1280x720: Url,
 }
 
 #[derive(Clone, Debug)]

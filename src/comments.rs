@@ -5,8 +5,8 @@ use url::form_urlencoded;
 
 use Future;
 use Modio;
-use ModioListResponse;
-use User;
+use types::ModioListResponse;
+use types::mods::Comment;
 
 pub struct Comments<C>
 where
@@ -53,18 +53,4 @@ impl CommentsListOptions {
             Some(encoded)
         }
     }
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Comment {
-    id: u32,
-    mod_id: u32,
-    #[serde(rename = "user")]
-    submitted_by: User,
-    date_added: u64,
-    reply_id: u32,
-    thread_position: String,
-    karma: u32,
-    karma_guest: u32,
-    content: String,
 }
