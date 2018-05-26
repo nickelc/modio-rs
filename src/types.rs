@@ -81,6 +81,7 @@ pub mod game {
         community_options: u8,
         revenue_options: u16,
         api_access_options: u8,
+        maturity_options: u8,
         ugc_name: String,
         icon: Icon,
         logo: Logo,
@@ -139,6 +140,7 @@ pub mod mods {
         date_added: u64,
         date_updated: u64,
         date_live: u64,
+        maturity_option: u8,
         logo: Logo,
         #[serde(with = "url_serde")]
         homepage_url: Option<Url>,
