@@ -129,6 +129,7 @@ pub mod game {
 
 pub mod mods {
     use super::*;
+    use serde::de::{Deserialize, Deserializer};
 
     #[derive(Debug, Deserialize)]
     pub struct Mod {
@@ -151,7 +152,8 @@ pub mod mods {
         metadata_blob: Option<String>,
         #[serde(with = "url_serde")]
         profile_url: Url,
-        modfile: File,
+        #[serde(deserialize_with = "deserialize_modfile")]
+        modfile: Option<File>,
         media: Media,
         #[serde(rename = "rating_summary")]
         ratings: Ratings,
@@ -245,5 +247,24 @@ pub mod mods {
         #[serde(with = "url_serde")]
         binary_url: Url,
         date_expires: u64,
+    }
+
+    fn deserialize_modfile<'de, D>(deserializer: D) -> Result<Option<File>, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        match File::deserialize(deserializer) {
+            Ok(file) => Ok(Some(file)),
+            Err(err) => {
+                let err_s = format!("{}", err);
+                if err_s.starts_with("missing field `id`") {
+                    Ok(None)
+                } else if err_s.starts_with("invalid type: null") {
+                    Ok(None)
+                } else {
+                    Err(err)
+                }
+            }
+        }
     }
 }
