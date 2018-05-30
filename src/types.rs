@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use serde::de::{Deserialize, Deserializer};
 use url::Url;
 use url_serde;
 
@@ -33,7 +34,8 @@ pub struct User {
     name_id: String,
     username: String,
     date_online: u32,
-    avatar: Avatar,
+    #[serde(deserialize_with = "deserialize_avatar")]
+    avatar: Option<Avatar>,
     timezone: String,
     language: String,
     #[serde(with = "url_serde")]
@@ -42,13 +44,13 @@ pub struct User {
 
 #[derive(Debug, Deserialize)]
 pub struct Avatar {
-    filename: Option<String>,
-    #[serde(with = "url_serde", default = "Default::default")]
-    original: Option<Url>,
-    #[serde(with = "url_serde", default = "Default::default")]
-    thumb_50x50: Option<Url>,
-    #[serde(with = "url_serde", default = "Default::default")]
-    thumb_100x100: Option<Url>,
+    filename: String,
+    #[serde(with = "url_serde")]
+    original: Url,
+    #[serde(with = "url_serde")]
+    thumb_50x50: Url,
+    #[serde(with = "url_serde")]
+    thumb_100x100: Url,
 }
 
 #[derive(Debug, Deserialize)]
@@ -62,6 +64,25 @@ pub struct Logo {
     thumb_640x360: Url,
     #[serde(with = "url_serde")]
     thumb_1280x720: Url,
+}
+
+fn deserialize_avatar<'de, D>(deserializer: D) -> Result<Option<Avatar>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    match Avatar::deserialize(deserializer) {
+        Ok(avatar) => Ok(Some(avatar)),
+        Err(err) => {
+            let err_s = format!("{}", err);
+            if err_s.starts_with("missing field `filename`") {
+                Ok(None)
+            } else if err_s.starts_with("invalid type: null") {
+                Ok(None)
+            } else {
+                Err(err)
+            }
+        }
+    }
 }
 
 pub mod game {
