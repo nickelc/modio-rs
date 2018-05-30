@@ -1,9 +1,9 @@
 extern crate futures;
 #[macro_use]
 extern crate hyper;
+extern crate hyper_multipart_rfc7578 as hyper_multipart;
 #[cfg(feature = "tls")]
 extern crate hyper_tls;
-
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -18,6 +18,7 @@ use futures::{Future as StdFuture, IntoFuture, Stream as StdStream};
 use hyper::client::{Connect, HttpConnector, Request};
 use hyper::header::{Authorization, Location, UserAgent};
 use hyper::{Client, Method, StatusCode};
+use hyper_multipart::client::multipart;
 #[cfg(feature = "tls")]
 use hyper_tls::HttpsConnector;
 use serde::de::DeserializeOwned;
@@ -42,6 +43,7 @@ const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 
 pub type Future<T> = Box<StdFuture<Item = T, Error = Error>>;
 pub type Stream<T> = Box<StdStream<Item = T, Error = Error>>;
+type MClient<T> = Client<T, multipart::Body>;
 
 header! {
     (XRateLimitLimit, "X-RateLimit-Limit") => [u16]
@@ -69,6 +71,7 @@ where
     host: String,
     agent: String,
     client: Client<C>,
+    mclient: MClient<C>,
     credentials: Option<Credentials>,
 }
 
@@ -89,11 +92,18 @@ impl Modio<HttpsConnector<HttpConnector>> {
         C: Into<Option<Credentials>>,
     {
         let connector = HttpsConnector::new(4, handle).unwrap();
-        let http = Client::configure()
-            .connector(connector)
+        let client = Client::configure()
+            .connector(connector.clone())
             .keep_alive(true)
             .build(handle);
-        Self::custom(host, agent, credentials, http)
+
+        let mclient = Client::configure()
+            .connector(connector)
+            .body::<multipart::Body>()
+            .keep_alive(true)
+            .build(handle);
+
+        Self::custom(host, agent, credentials, client, mclient)
     }
 }
 
@@ -101,7 +111,13 @@ impl<C> Modio<C>
 where
     C: Clone + Connect,
 {
-    pub fn custom<H, A, CR>(host: H, agent: A, credentials: CR, http: Client<C>) -> Self
+    pub fn custom<H, A, CR>(
+        host: H,
+        agent: A,
+        credentials: CR,
+        client: Client<C>,
+        mclient: MClient<C>,
+    ) -> Self
     where
         H: Into<String>,
         A: Into<String>,
@@ -110,7 +126,8 @@ where
         Self {
             host: host.into(),
             agent: agent.into(),
-            client: http,
+            client,
+            mclient,
             credentials: credentials.into(),
         }
     }
