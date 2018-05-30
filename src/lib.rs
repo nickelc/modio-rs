@@ -16,7 +16,7 @@ use std::time::Duration;
 
 use futures::{Future as StdFuture, IntoFuture, Stream as StdStream};
 use hyper::client::{Connect, HttpConnector, Request};
-use hyper::header::{Authorization, Location, UserAgent};
+use hyper::header::{Authorization, ContentType, Location, UserAgent};
 use hyper::{Client, Method, StatusCode};
 use hyper_multipart::client::multipart;
 #[cfg(feature = "tls")]
@@ -148,7 +148,13 @@ where
         MyFiles::new(self.clone())
     }
 
-    fn request<Out>(&self, method: Method, uri: String, body: Option<Vec<u8>>) -> Future<Out>
+    fn request<Out>(
+        &self,
+        method: Method,
+        uri: String,
+        body: Option<Vec<u8>>,
+        content_type: Option<ContentType>,
+    ) -> Future<Out>
     where
         Out: DeserializeOwned + 'static,
     {
@@ -162,6 +168,7 @@ where
 
         let instance = self.clone();
         let body2 = body.clone();
+        let content_type2 = content_type.clone();
         let method2 = method.clone();
 
         let response = url.map_err(Error::from).and_then(move |url| {
@@ -171,6 +178,9 @@ where
                 headers.set(UserAgent::new(instance.agent.clone()));
                 if let Some(Credentials::Token(token)) = instance.credentials {
                     headers.set(Authorization(format!("Bearer {}", token)));
+                }
+                if let Some(content_type) = content_type2 {
+                    headers.set(content_type);
                 }
             }
             if let Some(body) = body2 {
@@ -190,7 +200,7 @@ where
             let status = response.status();
             if StatusCode::MovedPermanently == status || StatusCode::TemporaryRedirect == status {
                 if let Some(location) = response.headers().get::<Location>() {
-                    return instance2.request(method, location.to_string(), body);
+                    return instance2.request(method, location.to_string(), body, content_type);
                 }
             }
             Box::new(response.body().concat2().map_err(Error::from).and_then(
@@ -223,6 +233,6 @@ where
     where
         D: DeserializeOwned + 'static,
     {
-        self.request(Method::Get, self.host.clone() + uri, None)
+        self.request(Method::Get, self.host.clone() + uri, None, None)
     }
 }
