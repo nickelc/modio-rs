@@ -36,8 +36,8 @@ pub mod types;
 use comments::Comments;
 use errors::Error;
 use files::{Files, MyFiles};
-use games::{Games, MyGames};
-use mods::{Mods, MyMods};
+use games::{GameRef, Games, MyGames};
+use mods::{ModRef, Mods, MyMods};
 use types::ModioErrorResponse;
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
@@ -135,6 +135,14 @@ where
 
     pub fn games(&self) -> Games<C> {
         Games::new(self.clone())
+    }
+
+    pub fn game(&self, game_id: u32) -> GameRef<C> {
+        GameRef::new(self.clone(), game_id)
+    }
+
+    pub fn mod_(&self, game_id: u32, mod_id: u32) -> ModRef<C> {
+        ModRef::new(self.clone(), game_id, mod_id)
     }
 
     pub fn my_games(&self) -> MyGames<C> {

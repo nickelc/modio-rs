@@ -5,6 +5,7 @@ use url::form_urlencoded;
 
 use Future;
 use Modio;
+use ModRef;
 use Mods;
 use types::ModioListResponse;
 use types::game::*;
@@ -74,6 +75,10 @@ impl<C: Clone + Connect> GameRef<C> {
 
     pub fn get(&self) -> Future<Game> {
         self.modio.get::<Game>(&format!("/games/{}", self.id))
+    }
+
+    pub fn mod_(&self, mod_id: u32) -> ModRef<C> {
+        ModRef::new(self.modio.clone(), self.id, mod_id)
     }
 
     pub fn mods(&self) -> Mods<C> {
