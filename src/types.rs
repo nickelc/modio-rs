@@ -5,6 +5,12 @@ use url::Url;
 use url_serde;
 
 #[derive(Debug, Deserialize)]
+pub struct ModioMessage {
+    code: u16,
+    message: String,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct ModioListResponse<T> {
     data: Vec<T>,
     #[serde(rename = "result_count")]
