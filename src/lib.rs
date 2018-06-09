@@ -320,7 +320,7 @@ where
         self.request(Method::Get, self.host.clone() + uri, None, None)
     }
 
-    fn post<F, D>(&self, uri: &str, data: F) -> Future<D>
+    fn post_form<F, D>(&self, uri: &str, data: F) -> Future<D>
     where
         D: DeserializeOwned + 'static,
         F: ToForm + Clone + 'static,

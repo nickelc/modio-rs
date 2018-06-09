@@ -71,7 +71,7 @@ where
     }
 
     pub fn add(&self, options: &'static AddModOptions) -> Future<Mod> {
-        self.modio.post(&self.path(""), options)
+        self.modio.post_form(&self.path(""), options)
     }
 }
 
