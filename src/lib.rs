@@ -13,6 +13,7 @@ extern crate tokio_core;
 extern crate url;
 extern crate url_serde;
 
+use std::marker::PhantomData;
 use std::time::Duration;
 
 use futures::{future, Future as StdFuture, IntoFuture, Stream as StdStream};
@@ -38,7 +39,7 @@ use errors::Error;
 use files::{Files, MyFiles};
 use games::{GameRef, Games, MyGames};
 use mods::{ModRef, Mods, MyMods};
-use types::ModioErrorResponse;
+use types::{ModioErrorResponse, ModioListResponse, ModioMessage};
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 
@@ -320,6 +321,18 @@ where
         self.request(Method::Get, self.host.clone() + uri, None, None)
     }
 
+    fn post<D>(&self, uri: &str, message: Vec<u8>) -> Future<D>
+    where
+        D: DeserializeOwned + 'static,
+    {
+        self.request(
+            Method::Post,
+            self.host.clone() + uri,
+            Some(message),
+            Some(ContentType::form_url_encoded()),
+        )
+    }
+
     fn post_form<F, D>(&self, uri: &str, data: F) -> Future<D>
     where
         D: DeserializeOwned + 'static,
@@ -339,8 +352,62 @@ where
             Some(ContentType::form_url_encoded()),
         )
     }
+
+    fn delete(&self, uri: &str, message: Vec<u8>) -> Future<()> {
+        Box::new(self.request(
+            Method::Delete,
+            self.host.clone() + uri,
+            Some(message),
+            Some(ContentType::form_url_encoded()),
+        ).or_else(|err| match err {
+            errors::Error::Codec(_) => Ok(()),
+            otherwise => Err(otherwise.into()),
+        }))
+    }
+}
+
+pub struct Endpoint<C, Out>
+where
+    C: Clone + Connect,
+    Out: DeserializeOwned + 'static,
+{
+    modio: Modio<C>,
+    path: String,
+    phantom: PhantomData<Out>,
+}
+
+impl<C, Out> Endpoint<C, Out>
+where
+    C: Clone + Connect,
+    Out: DeserializeOwned + 'static,
+{
+    pub fn new(modio: Modio<C>, path: String) -> Endpoint<C, Out> {
+        Self {
+            modio,
+            path,
+            phantom: PhantomData,
+        }
+    }
+
+    pub fn list(&self) -> Future<ModioListResponse<Out>> {
+        self.modio.get(&self.path)
+    }
+
+    pub fn add<T: QueryParams>(&self, options: T) -> Future<ModioMessage> {
+        let params = options.to_query_params();
+        self.modio.post(&self.path, params.as_bytes().to_vec())
+    }
+
+    pub fn delete<T: QueryParams>(&self, options: T) -> Future<()> {
+        let params = options.to_query_params();
+        self.modio.delete(&self.path, params.as_bytes().to_vec())
+    }
 }
 
 trait MultipartForm {
     fn to_form(&self) -> Result<multipart::Form, errors::Error>;
+}
+
+pub trait QueryParams {
+    fn to_query_params(&self) -> String;
 }
