@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use hyper::client::Connect;
 use url::form_urlencoded;
 
+use Endpoint;
 use Future;
 use Modio;
 use ModRef;
@@ -73,6 +74,10 @@ impl<C: Clone + Connect> GameRef<C> {
         Self { modio, id }
     }
 
+    fn path(&self, more: &str) -> String {
+        format!("/games/{}{}", self.id, more)
+    }
+
     pub fn get(&self) -> Future<Game> {
         self.modio.get::<Game>(&format!("/games/{}", self.id))
     }
@@ -85,26 +90,8 @@ impl<C: Clone + Connect> GameRef<C> {
         Mods::new(self.modio.clone(), self.id)
     }
 
-    pub fn tags(&self) -> Tags<C> {
-        Tags::new(self.modio.clone(), self.id)
-    }
-}
-
-pub struct Tags<C>
-where
-    C: Clone + Connect,
-{
-    modio: Modio<C>,
-    game: u32,
-}
-
-impl<C: Clone + Connect> Tags<C> {
-    pub fn new(modio: Modio<C>, game: u32) -> Self {
-        Self { modio, game }
-    }
-
-    pub fn list(&self) -> Future<ModioListResponse<TagOption>> {
-        self.modio.get(&format!("/games/{}/tags", self.game))
+    pub fn tags(&self) -> Endpoint<C, TagOption> {
+        Endpoint::new(self.modio.clone(), self.path("/tags"))
     }
 }
 

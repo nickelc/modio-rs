@@ -8,6 +8,7 @@ use serde_urlencoded;
 use url::{form_urlencoded, Url};
 use url_serde;
 
+use Endpoint;
 use Comments;
 use Files;
 use Future;
@@ -101,16 +102,16 @@ impl<C: Clone + Connect> ModRef<C> {
         Files::new(self.modio.clone(), self.game, self.id)
     }
 
-    pub fn tags(&self) -> Tags<C> {
-        Tags::new(self.modio.clone(), self.game, self.id)
+    pub fn tags(&self) -> Endpoint<C, Tag> {
+        Endpoint::new(self.modio.clone(), self.path("/tags"))
     }
 
     pub fn comments(&self) -> Comments<C> {
         Comments::new(self.modio.clone(), self.game, self.id)
     }
 
-    pub fn dependencies(&self) -> Future<ModioListResponse<Dependency>> {
-        self.modio.get(&self.path("/dependencies"))
+    pub fn dependencies(&self) -> Endpoint<C, Dependency> {
+        Endpoint::new(self.modio.clone(), self.path("/dependencies"))
     }
 
     pub fn edit(&self, options: &EditModOptions) -> Future<Mod> {
@@ -120,33 +121,6 @@ impl<C: Clone + Connect> ModRef<C> {
         };
 
         self.modio.put(&self.path(""), msg.as_bytes().to_vec())
-    }
-}
-
-pub struct Tags<C>
-where
-    C: Clone + Connect,
-{
-    modio: Modio<C>,
-    game: u32,
-    mod_id: u32,
-}
-
-impl<C: Clone + Connect> Tags<C> {
-    pub fn new(modio: Modio<C>, game: u32, mod_id: u32) -> Self {
-        Self {
-            modio,
-            game,
-            mod_id,
-        }
-    }
-
-    fn path(&self, more: &str) -> String {
-        format!("/games/{}/mods/{}/tags{}", self.game, self.mod_id, more)
-    }
-
-    pub fn list(&self) -> Future<ModioListResponse<Tag>> {
-        self.modio.get(&self.path(""))
     }
 }
 
