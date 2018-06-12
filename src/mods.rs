@@ -12,7 +12,7 @@ use Comments;
 use Files;
 use Future;
 use Modio;
-use ToForm;
+use MultipartForm;
 use errors::Error;
 use types::ModioListResponse;
 use types::mods::*;
@@ -194,7 +194,7 @@ impl AddModOptions {
     }
 }
 
-impl<'a> ToForm for &'a AddModOptions {
+impl<'a> MultipartForm for &'a AddModOptions {
     fn to_form(&self) -> Result<multipart::Form, Error> {
         let mut form = multipart::Form::default();
 

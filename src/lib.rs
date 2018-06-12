@@ -243,7 +243,7 @@ where
     fn formdata<F, Out>(&self, method: Method, uri: String, data: F) -> Future<Out>
     where
         Out: DeserializeOwned + 'static,
-        F: ToForm + Clone + 'static,
+        F: MultipartForm + Clone + 'static,
     {
         let url = if let Some(Credentials::ApiKey(ref api_key)) = self.credentials {
             let mut parsed = Url::parse(&uri).unwrap();
@@ -323,7 +323,7 @@ where
     fn post_form<F, D>(&self, uri: &str, data: F) -> Future<D>
     where
         D: DeserializeOwned + 'static,
-        F: ToForm + Clone + 'static,
+        F: MultipartForm + Clone + 'static,
     {
         self.formdata(Method::Post, self.host.clone() + uri, data)
     }
@@ -341,6 +341,6 @@ where
     }
 }
 
-trait ToForm {
+trait MultipartForm {
     fn to_form(&self) -> Result<multipart::Form, errors::Error>;
 }
