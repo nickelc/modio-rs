@@ -8,6 +8,7 @@ use Future;
 use Modio;
 use ModRef;
 use Mods;
+use {AddOptions, DeleteOptions, QueryParams};
 use types::ModioListResponse;
 use types::game::*;
 
@@ -110,5 +111,80 @@ impl GamesListOptions {
                 .finish();
             Some(encoded)
         }
+    }
+}
+
+pub struct AddTagsOptions {
+    name: String,
+    kind: TagType,
+    hidden: bool,
+    tags: Vec<String>,
+}
+
+impl AddTagsOptions {
+    pub fn public<S: Into<String>>(name: S, kind: TagType, tags: Vec<String>) -> Self {
+        Self {
+            name: name.into(),
+            kind,
+            hidden: false,
+            tags,
+        }
+    }
+
+    pub fn hidden<S: Into<String>>(name: S, kind: TagType, tags: Vec<String>) -> Self {
+        Self {
+            name: name.into(),
+            kind,
+            hidden: true,
+            tags,
+        }
+    }
+}
+
+impl AddOptions for AddTagsOptions {}
+
+impl QueryParams for AddTagsOptions {
+    fn to_query_params(&self) -> String {
+        form_urlencoded::Serializer::new(String::new())
+            .append_pair("name", &self.name)
+            .append_pair("type", &self.kind.to_string())
+            .append_pair("hidden", &self.hidden.to_string())
+            .extend_pairs(self.tags.iter().map(|t| ("tags[]", t)))
+            .finish()
+    }
+}
+
+pub struct DeleteTagsOptions {
+    name: String,
+    tags: Option<Vec<String>>,
+}
+
+impl DeleteTagsOptions {
+    pub fn all<S: Into<String>>(name: S) -> Self {
+        Self {
+            name: name.into(),
+            tags: None,
+        }
+    }
+
+    pub fn some<S: Into<String>>(name: S, tags: Vec<String>) -> Self {
+        Self {
+            name: name.into(),
+            tags: if tags.is_empty() { None } else { Some(tags) },
+        }
+    }
+}
+
+impl DeleteOptions for DeleteTagsOptions {}
+
+impl QueryParams for DeleteTagsOptions {
+    fn to_query_params(&self) -> String {
+        let mut ser = form_urlencoded::Serializer::new(String::new());
+        ser.append_pair("name", &self.name);
+        match &self.tags {
+            Some(tags) => ser.extend_pairs(tags.iter().map(|t| ("tags[]", t))),
+            None => ser.append_pair("tags[]", ""),
+        };
+        ser.finish()
     }
 }

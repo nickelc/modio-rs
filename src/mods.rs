@@ -14,6 +14,7 @@ use Files;
 use Future;
 use Modio;
 use MultipartForm;
+use {AddOptions, DeleteOptions, QueryParams};
 use errors::Error;
 use types::ModioListResponse;
 use types::mods::*;
@@ -372,5 +373,57 @@ impl EditModOptionsBuilder {
             maturity_option: self.0.maturity_option,
             metadata_blob: self.0.metadata_blob.clone(),
         }
+    }
+}
+
+pub struct EditDepencenciesOptions {
+    dependencies: Vec<u32>,
+}
+
+impl EditDepencenciesOptions {
+    pub fn new(dependencies: Vec<u32>) -> Self {
+        Self { dependencies }
+    }
+
+    pub fn one(dependency: u32) -> Self {
+        Self {
+            dependencies: vec![dependency],
+        }
+    }
+}
+
+impl AddOptions for EditDepencenciesOptions {}
+impl DeleteOptions for EditDepencenciesOptions {}
+
+impl QueryParams for EditDepencenciesOptions {
+    fn to_query_params(&self) -> String {
+        form_urlencoded::Serializer::new(String::new())
+            .extend_pairs(
+                self.dependencies
+                    .iter()
+                    .map(|d| ("dependencies[]", d.to_string())),
+            )
+            .finish()
+    }
+}
+
+pub struct EditTagsOptions {
+    tags: Vec<String>,
+}
+
+impl EditTagsOptions {
+    pub fn new(tags: Vec<String>) -> Self {
+        Self { tags }
+    }
+}
+
+impl AddOptions for EditTagsOptions {}
+impl DeleteOptions for EditTagsOptions {}
+
+impl QueryParams for EditTagsOptions {
+    fn to_query_params(&self) -> String {
+        form_urlencoded::Serializer::new(String::new())
+            .extend_pairs(self.tags.iter().map(|t| ("tags[]", t)))
+            .finish()
     }
 }
