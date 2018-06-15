@@ -92,6 +92,7 @@ where
 }
 
 pub mod game {
+    use std::fmt;
     use super::*;
 
     #[derive(Debug, Deserialize)]
@@ -148,9 +149,25 @@ pub mod game {
     pub struct TagOption {
         name: String,
         #[serde(rename = "type")]
-        kind: String,
+        kind: TagType,
         hidden: bool,
         tags: Vec<String>,
+    }
+
+    #[derive(Debug, Deserialize)]
+    #[serde(rename_all = "lowercase")]
+    pub enum TagType {
+        Checkboxes,
+        Dropdown,
+    }
+
+    impl fmt::Display for TagType {
+        fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+            match *self {
+                TagType::Checkboxes => write!(fmt, "checkboxes"),
+                TagType::Dropdown => write!(fmt, "dropdown"),
+            }
+        }
     }
 }
 
