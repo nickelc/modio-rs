@@ -18,7 +18,7 @@ use std::time::Duration;
 
 use futures::{future, Future as StdFuture, IntoFuture, Stream as StdStream};
 use hyper::client::{Connect, HttpConnector, Request};
-use hyper::header::{Authorization, ContentType, Location, UserAgent};
+use hyper::header::{Authorization, Bearer, ContentType, Location, UserAgent};
 use hyper::{Client, Method, StatusCode};
 use hyper_multipart::client::multipart;
 #[cfg(feature = "tls")]
@@ -187,7 +187,7 @@ where
                 let headers = req.headers_mut();
                 headers.set(UserAgent::new(instance.agent.clone()));
                 if let Some(Credentials::Token(token)) = instance.credentials {
-                    headers.set(Authorization(format!("Bearer {}", token)));
+                    headers.set(Authorization(Bearer { token }));
                 }
                 if let Some(content_type) = content_type2 {
                     headers.set(content_type);
@@ -267,7 +267,7 @@ where
                 let headers = req.headers_mut();
                 headers.set(UserAgent::new(instance.agent.clone()));
                 if let Some(Credentials::Token(token)) = instance.credentials {
-                    headers.set(Authorization(format!("Bearer {}", token)));
+                    headers.set(Authorization(Bearer { token }));
                 }
             }
             form.set_body(&mut req);
