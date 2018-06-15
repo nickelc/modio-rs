@@ -393,12 +393,12 @@ where
         self.modio.get(&self.path)
     }
 
-    pub fn add<T: QueryParams>(&self, options: T) -> Future<ModioMessage> {
+    pub fn add<T: AddOptions + QueryParams>(&self, options: T) -> Future<ModioMessage> {
         let params = options.to_query_params();
         self.modio.post(&self.path, params.as_bytes().to_vec())
     }
 
-    pub fn delete<T: QueryParams>(&self, options: T) -> Future<()> {
+    pub fn delete<T: DeleteOptions + QueryParams>(&self, options: T) -> Future<()> {
         let params = options.to_query_params();
         self.modio.delete(&self.path, params.as_bytes().to_vec())
     }
@@ -407,6 +407,9 @@ where
 trait MultipartForm {
     fn to_form(&self) -> Result<multipart::Form, errors::Error>;
 }
+
+pub trait AddOptions {}
+pub trait DeleteOptions {}
 
 pub trait QueryParams {
     fn to_query_params(&self) -> String;
