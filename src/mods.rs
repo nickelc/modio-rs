@@ -8,16 +8,16 @@ use serde_urlencoded;
 use url::{form_urlencoded, Url};
 use url_serde;
 
-use Endpoint;
+use errors::Error;
+use types::mods::*;
+use types::ModioListResponse;
 use Comments;
+use Endpoint;
 use Files;
 use Future;
 use Modio;
 use MultipartForm;
 use {AddOptions, DeleteOptions, QueryParams};
-use errors::Error;
-use types::ModioListResponse;
-use types::mods::*;
 
 pub struct MyMods<C>
 where

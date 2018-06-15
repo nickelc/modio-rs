@@ -3,14 +3,14 @@ use std::collections::HashMap;
 use hyper::client::Connect;
 use url::form_urlencoded;
 
+use types::game::*;
+use types::ModioListResponse;
 use Endpoint;
 use Future;
-use Modio;
 use ModRef;
+use Modio;
 use Mods;
 use {AddOptions, DeleteOptions, QueryParams};
-use types::ModioListResponse;
-use types::game::*;
 
 pub struct MyGames<C>
 where

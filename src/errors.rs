@@ -1,9 +1,9 @@
 use std::io::Error as IoError;
 use std::time::Duration;
 
+use hyper::error::UriError;
 use hyper::Error as HttpError;
 use hyper::StatusCode;
-use hyper::error::UriError;
 use serde_json::Error as SerdeError;
 use serde_urlencoded::ser::Error as UrlEncodedError;
 

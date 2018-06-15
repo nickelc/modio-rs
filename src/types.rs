@@ -92,8 +92,8 @@ where
 }
 
 pub mod game {
-    use std::fmt;
     use super::*;
+    use std::fmt;
 
     #[derive(Debug, Deserialize)]
     pub struct Game {

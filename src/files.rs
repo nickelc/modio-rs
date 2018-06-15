@@ -3,10 +3,10 @@ use std::collections::HashMap;
 use hyper::client::Connect;
 use url::form_urlencoded;
 
+use types::mods::File;
+use types::ModioListResponse;
 use Future;
 use Modio;
-use types::ModioListResponse;
-use types::mods::File;
 
 pub struct MyFiles<C>
 where
