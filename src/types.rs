@@ -72,6 +72,30 @@ pub struct Logo {
     thumb_1280x720: Url,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct Event {
+    id: u32,
+    mod_id: u32,
+    user_id: u32,
+    date_added: u64,
+    event_type: EventType,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum EventType {
+    ModfileChanged,
+    ModAvailable,
+    ModUnavailable,
+    ModEdited,
+    ModDeleted,
+    ModTeamChanged,
+    UserTeamJoin,
+    UserTeamLeave,
+    UserSubscribe,
+    UserUnsubscribe,
+}
+
 fn deserialize_avatar<'de, D>(deserializer: D) -> Result<Option<Avatar>, D::Error>
 where
     D: Deserializer<'de>,

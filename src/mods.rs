@@ -10,6 +10,7 @@ use url_serde;
 
 use errors::Error;
 use types::mods::*;
+use types::Event;
 use types::ModioListResponse;
 use Comments;
 use Endpoint;
@@ -75,6 +76,10 @@ where
     pub fn add(&self, options: &'static AddModOptions) -> Future<Mod> {
         self.modio.post_form(&self.path(""), options)
     }
+
+    pub fn events(&self) -> Future<ModioListResponse<Event>> {
+        self.modio.get(&self.path("/events"))
+    }
 }
 
 pub struct ModRef<C>
@@ -113,6 +118,10 @@ impl<C: Clone + Connect> ModRef<C> {
 
     pub fn dependencies(&self) -> Endpoint<C, Dependency> {
         Endpoint::new(self.modio.clone(), self.path("/dependencies"))
+    }
+
+    pub fn events(&self) -> Future<ModioListResponse<Event>> {
+        self.modio.get(&self.path("/events"))
     }
 
     pub fn edit(&self, options: &EditModOptions) -> Future<Mod> {

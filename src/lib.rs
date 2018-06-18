@@ -39,7 +39,7 @@ use errors::Error;
 use files::{Files, MyFiles};
 use games::{GameRef, Games, MyGames};
 use mods::{ModRef, Mods, MyMods};
-use types::{ModioErrorResponse, ModioListResponse, ModioMessage};
+use types::{Event, ModioErrorResponse, ModioListResponse, ModioMessage};
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 
@@ -156,6 +156,10 @@ where
 
     pub fn my_files(&self) -> MyFiles<C> {
         MyFiles::new(self.clone())
+    }
+
+    pub fn my_events(&self) -> Future<ModioListResponse<Event>> {
+        self.get("/me/events")
     }
 
     fn request<Out>(
