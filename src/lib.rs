@@ -31,15 +31,17 @@ pub mod comments;
 pub mod errors;
 pub mod files;
 pub mod games;
+pub mod me;
 pub mod mods;
 pub mod types;
 
 use comments::Comments;
 use errors::Error;
-use files::{Files, MyFiles};
-use games::{GameRef, Games, MyGames};
-use mods::{ModRef, Mods, MyMods};
-use types::{Event, ModioErrorResponse, ModioListResponse, ModioMessage};
+use files::Files;
+use games::{GameRef, Games};
+use me::Me;
+use mods::{ModRef, Mods};
+use types::{ModioErrorResponse, ModioListResponse, ModioMessage};
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 
@@ -146,20 +148,8 @@ where
         ModRef::new(self.clone(), game_id, mod_id)
     }
 
-    pub fn my_games(&self) -> MyGames<C> {
-        MyGames::new(self.clone())
-    }
-
-    pub fn my_mods(&self) -> MyMods<C> {
-        MyMods::new(self.clone())
-    }
-
-    pub fn my_files(&self) -> MyFiles<C> {
-        MyFiles::new(self.clone())
-    }
-
-    pub fn my_events(&self) -> Future<ModioListResponse<Event>> {
-        self.get("/me/events")
+    pub fn me(&self) -> Me<C> {
+        Me::new(self.clone())
     }
 
     fn request<Out>(
