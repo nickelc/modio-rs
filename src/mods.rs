@@ -2,7 +2,9 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use futures::future;
+use futures::Future as StdFuture;
 use hyper::client::Connect;
+use hyper::StatusCode;
 use hyper_multipart::client::multipart;
 use serde_urlencoded;
 use url::{form_urlencoded, Url};
@@ -11,7 +13,7 @@ use url_serde;
 use errors::Error;
 use types::mods::*;
 use types::Event;
-use types::ModioListResponse;
+use types::{ModioListResponse, ModioMessage};
 use Comments;
 use Endpoint;
 use Files;
@@ -131,6 +133,39 @@ impl<C: Clone + Connect> ModRef<C> {
         };
 
         self.modio.put(&self.path(""), msg.as_bytes().to_vec())
+    }
+
+    pub fn rate(&self, rating: Rating) -> Future<()> {
+        let params = rating.to_query_params();
+        Box::new(
+            self.modio
+                .post::<ModioMessage>(&self.path("/ratings"), params.as_bytes().to_vec())
+                .map(|_| ())
+                .or_else(|err| match err {
+                    Error::Fault {
+                        code: StatusCode::BadRequest,
+                        ..
+                    } => Ok(()),
+                    otherwise => Err(otherwise.into()),
+                }),
+        )
+    }
+}
+
+pub enum Rating {
+    Positive,
+    Negative,
+}
+
+impl QueryParams for Rating {
+    fn to_query_params(&self) -> String {
+        format!(
+            "rating={}",
+            match *self {
+                Rating::Negative => -1,
+                Rating::Positive => 1,
+            }
+        )
     }
 }
 
