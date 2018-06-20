@@ -150,6 +150,35 @@ impl<C: Clone + Connect> ModRef<C> {
                 }),
         )
     }
+
+    pub fn subscribe(&self) -> Future<()> {
+        Box::new(
+            self.modio
+                .post::<Mod>(&self.path("/subscribe"), Vec::new())
+                .map(|_| ())
+                .or_else(|err| match err {
+                    Error::Fault {
+                        code: StatusCode::BadRequest,
+                        ..
+                    } => Ok(()),
+                    otherwise => Err(otherwise.into()),
+                }),
+        )
+    }
+
+    pub fn unsubscribe(&self) -> Future<()> {
+        Box::new(
+            self.modio
+                .delete(&self.path("/subscribe"), Vec::new())
+                .or_else(|err| match err {
+                    Error::Fault {
+                        code: StatusCode::BadRequest,
+                        ..
+                    } => Ok(()),
+                    otherwise => Err(otherwise.into()),
+                }),
+        )
+    }
 }
 
 pub enum Rating {
