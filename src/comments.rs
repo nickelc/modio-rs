@@ -26,15 +26,21 @@ impl<C: Clone + Connect> Comments<C> {
         }
     }
 
+    fn path(&self, more: &str) -> String {
+        format!("/games/{}/mods/{}/comments{}", self.game, self.mod_id, more)
+    }
+
     pub fn list(&self, options: &CommentsListOptions) -> Future<ModioListResponse<Comment>> {
-        let mut uri = vec![format!(
-            "/games/{}/mods/{}/comments",
-            self.game, self.mod_id
-        )];
+        let mut uri = vec![self.path("")];
         if let Some(query) = options.serialize() {
             uri.push(query);
         }
         self.modio.get(&uri.join("?"))
+    }
+
+    pub fn delete(&self, id: u32) -> Future<()> {
+        self.modio
+            .delete(&self.path(&format!("/{}", id)), Vec::new())
     }
 }
 
