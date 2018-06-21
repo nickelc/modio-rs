@@ -34,6 +34,7 @@ pub mod games;
 pub mod me;
 pub mod mods;
 pub mod types;
+pub mod users;
 
 use comments::Comments;
 use errors::Error;
@@ -42,6 +43,7 @@ use games::{GameRef, Games};
 use me::Me;
 use mods::{ModRef, Mods};
 use types::{ModioErrorResponse, ModioListResponse, ModioMessage};
+use users::Users;
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 
@@ -150,6 +152,10 @@ where
 
     pub fn me(&self) -> Me<C> {
         Me::new(self.clone())
+    }
+
+    pub fn users(&self) -> Users<C> {
+        Users::new(self.clone())
     }
 
     fn request<Out>(
