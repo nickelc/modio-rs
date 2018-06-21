@@ -315,14 +315,15 @@ where
         self.request(Method::Get, self.host.clone() + uri, None, None)
     }
 
-    fn post<D>(&self, uri: &str, message: Vec<u8>) -> Future<D>
+    fn post<D, M>(&self, uri: &str, message: M) -> Future<D>
     where
         D: DeserializeOwned + 'static,
+        M: Into<Vec<u8>>,
     {
         self.request(
             Method::Post,
             self.host.clone() + uri,
-            Some(message),
+            Some(message.into()),
             Some(ContentType::form_url_encoded()),
         )
     }
@@ -335,23 +336,27 @@ where
         self.formdata(Method::Post, self.host.clone() + uri, data)
     }
 
-    fn put<D>(&self, uri: &str, message: Vec<u8>) -> Future<D>
+    fn put<D, M>(&self, uri: &str, message: M) -> Future<D>
     where
         D: DeserializeOwned + 'static,
+        M: Into<Vec<u8>>,
     {
         self.request(
             Method::Put,
             self.host.clone() + uri,
-            Some(message),
+            Some(message.into()),
             Some(ContentType::form_url_encoded()),
         )
     }
 
-    fn delete(&self, uri: &str, message: Vec<u8>) -> Future<()> {
+    fn delete<M>(&self, uri: &str, message: M) -> Future<()>
+    where
+        M: Into<Vec<u8>>,
+    {
         Box::new(self.request(
             Method::Delete,
             self.host.clone() + uri,
-            Some(message),
+            Some(message.into()),
             Some(ContentType::form_url_encoded()),
         ).or_else(|err| match err {
             errors::Error::Codec(_) => Ok(()),
@@ -389,12 +394,12 @@ where
 
     pub fn add<T: AddOptions + QueryParams>(&self, options: T) -> Future<ModioMessage> {
         let params = options.to_query_params();
-        self.modio.post(&self.path, params.as_bytes().to_vec())
+        self.modio.post(&self.path, params)
     }
 
     pub fn delete<T: DeleteOptions + QueryParams>(&self, options: T) -> Future<()> {
         let params = options.to_query_params();
-        self.modio.delete(&self.path, params.as_bytes().to_vec())
+        self.modio.delete(&self.path, params)
     }
 }
 

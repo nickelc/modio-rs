@@ -132,14 +132,14 @@ impl<C: Clone + Connect> ModRef<C> {
             Err(err) => return Box::new(future::err(err.into())),
         };
 
-        self.modio.put(&self.path(""), msg.as_bytes().to_vec())
+        self.modio.put(&self.path(""), msg)
     }
 
     pub fn rate(&self, rating: Rating) -> Future<()> {
         let params = rating.to_query_params();
         Box::new(
             self.modio
-                .post::<ModioMessage>(&self.path("/ratings"), params.as_bytes().to_vec())
+                .post::<ModioMessage, _>(&self.path("/ratings"), params)
                 .map(|_| ())
                 .or_else(|err| match err {
                     Error::Fault {
@@ -154,7 +154,7 @@ impl<C: Clone + Connect> ModRef<C> {
     pub fn subscribe(&self) -> Future<()> {
         Box::new(
             self.modio
-                .post::<Mod>(&self.path("/subscribe"), Vec::new())
+                .post::<Mod, _>(&self.path("/subscribe"), Vec::new())
                 .map(|_| ())
                 .or_else(|err| match err {
                     Error::Fault {
