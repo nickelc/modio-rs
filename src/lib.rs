@@ -33,6 +33,7 @@ pub mod files;
 pub mod games;
 pub mod me;
 pub mod mods;
+pub mod teams;
 pub mod types;
 pub mod users;
 

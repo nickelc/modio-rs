@@ -317,6 +317,74 @@ pub mod mods {
         date_expires: u64,
     }
 
+    #[derive(Debug, Deserialize)]
+    pub struct TeamMember {
+        id: u32,
+        user: User,
+        level: TeamLevel,
+        date_added: u64,
+        position: String,
+    }
+
+    #[derive(Clone, Copy, Debug)]
+    pub enum TeamLevel {
+        Moderator = 1,
+        Creator = 4,
+        Admin = 8,
+    }
+
+    impl TeamLevel {
+        pub fn value(&self) -> u64 {
+            (*self as u64)
+        }
+    }
+
+    // impl Serialize, Deserialize for TeamLevel {{{
+    impl ::serde::Serialize for TeamLevel {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: ::serde::Serializer,
+        {
+            serializer.serialize_u64(*self as u64)
+        }
+    }
+
+    impl<'de> ::serde::Deserialize<'de> for TeamLevel {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: ::serde::Deserializer<'de>,
+        {
+            struct Visitor;
+
+            impl<'de> ::serde::de::Visitor<'de> for Visitor {
+                type Value = TeamLevel;
+
+                fn expecting(&self, fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                    fmt.write_str("positive integer")
+                }
+
+                fn visit_u64<E>(self, value: u64) -> Result<TeamLevel, E>
+                where
+                    E: ::serde::de::Error,
+                {
+                    match value {
+                        1 => Ok(TeamLevel::Moderator),
+                        4 => Ok(TeamLevel::Creator),
+                        8 => Ok(TeamLevel::Admin),
+                        _ => Err(E::custom(format!(
+                            "unknown {} value {}",
+                            stringify!(TeamLevel),
+                            value
+                        ))),
+                    }
+                }
+            }
+
+            deserializer.deserialize_u64(Visitor)
+        }
+    }
+    // }}}
+
     fn deserialize_modfile<'de, D>(deserializer: D) -> Result<Option<File>, D::Error>
     where
         D: Deserializer<'de>,
@@ -336,3 +404,5 @@ pub mod mods {
         }
     }
 }
+
+// vim: fdm=marker

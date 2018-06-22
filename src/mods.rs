@@ -11,6 +11,7 @@ use url::{form_urlencoded, Url};
 use url_serde;
 
 use errors::Error;
+use teams::Members;
 use types::mods::*;
 use types::Event;
 use types::{ModioListResponse, ModioMessage};
@@ -124,6 +125,10 @@ impl<C: Clone + Connect> ModRef<C> {
 
     pub fn events(&self) -> Future<ModioListResponse<Event>> {
         self.modio.get(&self.path("/events"))
+    }
+
+    pub fn members(&self) -> Members<C> {
+        Members::new(self.modio.clone(), self.game, self.id)
     }
 
     pub fn edit(&self, options: &EditModOptions) -> Future<Mod> {
