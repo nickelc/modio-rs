@@ -277,8 +277,7 @@ pub mod mods {
     pub struct Comment {
         id: u32,
         mod_id: u32,
-        #[serde(rename = "user")]
-        submitted_by: User,
+        user: User,
         date_added: u64,
         reply_id: u32,
         thread_position: String,
