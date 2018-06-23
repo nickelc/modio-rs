@@ -298,7 +298,7 @@ pub mod mods {
         filesize: u64,
         filehash: FileHash,
         filename: String,
-        version: String,
+        version: Option<String>,
         changelog: Option<String>,
         metadata_blob: Option<String>,
         download: Download,
