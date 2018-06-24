@@ -217,8 +217,6 @@ where
             Box::new(response.body().concat2().map_err(Error::from).and_then(
                 move |response_body| {
                     if status.is_success() {
-                        let s = ::std::str::from_utf8(&response_body).unwrap();
-                        println!("{}", s);
                         serde_json::from_slice::<Out>(&response_body)
                             .map_err(|err| Error::Codec(err).into())
                     } else {
