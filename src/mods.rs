@@ -76,7 +76,7 @@ where
         self.modio.get::<ModioListResponse<Mod>>(&uri.join("&"))
     }
 
-    pub fn add(&self, options: &'static AddModOptions) -> Future<Mod> {
+    pub fn add(&self, options: AddModOptions) -> Future<Mod> {
         self.modio.post_form(&self.path(""), options)
     }
 
@@ -247,7 +247,7 @@ impl AddModOptions {
     }
 }
 
-impl<'a> MultipartForm for &'a AddModOptions {
+impl MultipartForm for AddModOptions {
     fn to_form(&self) -> Result<multipart::Form, Error> {
         let mut form = multipart::Form::default();
 
