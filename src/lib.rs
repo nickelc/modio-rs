@@ -39,7 +39,6 @@ pub mod users;
 
 use comments::Comments;
 use errors::Error;
-use files::Files;
 use games::{GameRef, Games};
 use me::Me;
 use mods::{ModRef, Mods};

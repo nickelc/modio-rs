@@ -11,13 +11,13 @@ use url::{form_urlencoded, Url};
 use url_serde;
 
 use errors::Error;
+use files::{FileRef, Files};
 use teams::Members;
 use types::mods::*;
 use types::Event;
 use types::{ModioListResponse, ModioMessage};
 use Comments;
 use Endpoint;
-use Files;
 use Future;
 use Modio;
 use MultipartForm;
@@ -109,6 +109,10 @@ impl<C: Clone + Connect> ModRef<C> {
 
     pub fn files(&self) -> Files<C> {
         Files::new(self.modio.clone(), self.game, self.id)
+    }
+
+    pub fn file(&self, id: u32) -> FileRef<C> {
+        FileRef::new(self.modio.clone(), self.game, self.id, id)
     }
 
     pub fn tags(&self) -> Endpoint<C, Tag> {
