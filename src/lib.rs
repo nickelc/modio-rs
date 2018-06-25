@@ -33,6 +33,7 @@ pub mod files;
 pub mod games;
 pub mod me;
 pub mod mods;
+pub mod reports;
 pub mod teams;
 pub mod types;
 pub mod users;
@@ -42,6 +43,7 @@ use errors::Error;
 use games::{GameRef, Games};
 use me::Me;
 use mods::{ModRef, Mods};
+use reports::Reports;
 use types::{ModioErrorResponse, ModioListResponse, ModioMessage};
 use users::Users;
 
@@ -156,6 +158,10 @@ where
 
     pub fn users(&self) -> Users<C> {
         Users::new(self.clone())
+    }
+
+    pub fn reports(&self) -> Reports<C> {
+        Reports::new(self.clone())
     }
 
     fn request<Out>(
