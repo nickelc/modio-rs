@@ -21,6 +21,24 @@ pub struct ModioListResponse<T> {
     offset: u32,
 }
 
+impl<T> IntoIterator for ModioListResponse<T> {
+    type Item = T;
+    type IntoIter = ::std::vec::IntoIter<T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data.into_iter()
+    }
+}
+
+impl<'a, T> IntoIterator for &'a ModioListResponse<T> {
+    type Item = &'a T;
+    type IntoIter = ::std::slice::Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.data.iter()
+    }
+}
+
 #[derive(Debug, Deserialize)]
 pub struct ModioErrorResponse {
     #[serde(rename = "error")]
