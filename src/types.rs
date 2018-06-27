@@ -243,7 +243,8 @@ pub mod mods {
         media: Media,
         #[serde(rename = "rating_summary")]
         ratings: Ratings,
-        // metadata_kvp: MetadataKVP,
+        #[serde(rename = "metadata_kvp", deserialize_with = "deserialize_kvp")]
+        metadata: MetadataMap,
         tags: Vec<Tag>,
     }
 
@@ -289,6 +290,43 @@ pub mod mods {
     pub struct Tag {
         name: String,
         date_added: u64,
+    }
+
+    pub type MetadataMap = HashMap<String, Vec<String>>;
+
+    fn deserialize_kvp<'de, D>(deserializer: D) -> Result<MetadataMap, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        use serde::de::{SeqAccess, Visitor};
+        use std::fmt;
+
+        struct MetadataVisitor;
+
+        impl<'de> Visitor<'de> for MetadataVisitor {
+            type Value = MetadataMap;
+
+            fn expecting(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+                fmt.write_str("metadata kvp")
+            }
+
+            fn visit_seq<A: SeqAccess<'de>>(self, mut seq: A) -> Result<Self::Value, A::Error> {
+                #[derive(Deserialize)]
+                struct KV {
+                    metakey: String,
+                    metavalue: String,
+                }
+
+                let mut map = MetadataMap::new();
+                while let Ok(Some(elem)) = seq.next_element::<KV>() {
+                    map.entry(elem.metakey)
+                        .or_insert_with(Vec::new)
+                        .push(elem.metavalue);
+                }
+                Ok(map)
+            }
+        }
+        deserializer.deserialize_seq(MetadataVisitor)
     }
 
     #[derive(Debug, Deserialize)]

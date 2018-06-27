@@ -12,6 +12,7 @@ use url_serde;
 
 use errors::Error;
 use files::{FileRef, Files};
+use metadata::Metadata;
 use teams::Members;
 use types::mods::*;
 use types::Event;
@@ -113,6 +114,10 @@ impl<C: Clone + Connect> ModRef<C> {
 
     pub fn file(&self, id: u32) -> FileRef<C> {
         FileRef::new(self.modio.clone(), self.game, self.id, id)
+    }
+
+    pub fn metadata(&self) -> Metadata<C> {
+        Metadata::new(self.modio.clone(), self.game, self.id)
     }
 
     pub fn tags(&self) -> Endpoint<C, Tag> {

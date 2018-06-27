@@ -32,6 +32,7 @@ pub mod errors;
 pub mod files;
 pub mod games;
 pub mod me;
+pub mod metadata;
 pub mod mods;
 pub mod reports;
 pub mod teams;
