@@ -149,6 +149,14 @@ impl<C: Clone + Connect> ModRef<C> {
         self.modio.put(&self.path(""), msg)
     }
 
+    pub fn add_media(&self, options: AddMediaOptions) -> Future<ModioMessage> {
+        self.modio.post_form(&self.path("/media"), options)
+    }
+
+    pub fn delete_media(&self, options: &DeleteMediaOptions) -> Future<()> {
+        self.modio.delete(&self.path("/media"), options.to_query_params())
+    }
+
     pub fn rate(&self, rating: Rating) -> Future<()> {
         let params = rating.to_query_params();
         Box::new(
@@ -512,5 +520,162 @@ impl QueryParams for EditTagsOptions {
         form_urlencoded::Serializer::new(String::new())
             .extend_pairs(self.tags.iter().map(|t| ("tags[]", t)))
             .finish()
+    }
+}
+
+#[derive(Clone, Default)]
+pub struct AddMediaOptions {
+    logo: Option<PathBuf>,
+    images_zip: Option<PathBuf>,
+    images: Option<Vec<PathBuf>>,
+    youtube: Option<Vec<String>>,
+    sketchfab: Option<Vec<String>>,
+}
+
+impl AddMediaOptions {
+    pub fn builder() -> AddMediaOptionsBuilder {
+        AddMediaOptionsBuilder::new()
+    }
+}
+
+impl MultipartForm for AddMediaOptions {
+    fn to_form(&self) -> Result<multipart::Form, Error> {
+        let mut form = multipart::Form::default();
+        if let Some(ref logo) = self.logo {
+            if let Err(e) = form.add_file("logo", logo) {
+                return Err(e.into());
+            }
+        }
+        if let Some(ref images) = self.images_zip {
+            if let Err(e) = form.add_file("images", images) {
+                return Err(e.into());
+            }
+        }
+        if let Some(ref images) = self.images {
+            for (i, image) in images.iter().enumerate() {
+                if let Err(e) = form.add_file(format!("image{}", i), image) {
+                    return Err(e.into());
+                }
+            }
+        }
+        if let Some(ref youtube) = self.youtube {
+            for url in youtube {
+                form.add_text("youtube[]", url.clone());
+            }
+        }
+        if let Some(ref sketchfab) = self.sketchfab {
+            for url in sketchfab {
+                form.add_text("sketchfab[]", url.clone());
+            }
+        }
+        Ok(form)
+    }
+}
+
+pub struct AddMediaOptionsBuilder(AddMediaOptions);
+
+impl AddMediaOptionsBuilder {
+    pub fn new() -> Self {
+        AddMediaOptionsBuilder(Default::default())
+    }
+
+    pub fn logo<P: AsRef<Path>>(&mut self, logo: P) -> &mut Self {
+        self.0.logo = Some(logo.as_ref().to_path_buf());
+        self
+    }
+
+    pub fn images_zip<P: AsRef<Path>>(&mut self, images: P) -> &mut Self {
+        self.0.images_zip = Some(images.as_ref().to_path_buf());
+        self
+    }
+
+    pub fn images<P: AsRef<Path>>(&mut self, images: Vec<P>) -> &mut Self {
+        self.0.images = Some(
+            images
+                .iter()
+                .map(|p| p.as_ref().to_path_buf())
+                .collect::<Vec<_>>(),
+        );
+        self
+    }
+
+    pub fn youtube(&mut self, urls: Vec<String>) -> &mut Self {
+        self.0.youtube = Some(urls);
+        self
+    }
+
+    pub fn sketchfab(&mut self, urls: Vec<String>) -> &mut Self {
+        self.0.sketchfab = Some(urls);
+        self
+    }
+
+    pub fn build(&self) -> AddMediaOptions {
+        AddMediaOptions {
+            logo: self.0.logo.clone(),
+            images_zip: self.0.images_zip.clone(),
+            images: self.0.images.clone(),
+            youtube: self.0.youtube.clone(),
+            sketchfab: self.0.sketchfab.clone(),
+        }
+    }
+}
+
+#[derive(Default)]
+pub struct DeleteMediaOptions {
+    images: Option<Vec<String>>,
+    youtube: Option<Vec<String>>,
+    sketchfab: Option<Vec<String>>,
+}
+
+impl DeleteMediaOptions {
+    pub fn builder() -> DeleteMediaOptionsBuilder {
+        DeleteMediaOptionsBuilder::new()
+    }
+}
+
+impl QueryParams for DeleteMediaOptions {
+    fn to_query_params(&self) -> String {
+        let mut ser = form_urlencoded::Serializer::new(String::new());
+        if let Some(ref images) = self.images {
+            ser.extend_pairs(images.iter().map(|i| ("images[]", i)));
+        }
+        if let Some(ref urls) = self.youtube {
+            ser.extend_pairs(urls.iter().map(|u| ("youtube[]", u)));
+        }
+        if let Some(ref urls) = self.sketchfab {
+            ser.extend_pairs(urls.iter().map(|u| ("sketchfab[]", u)));
+        }
+        ser.finish()
+    }
+}
+
+pub struct DeleteMediaOptionsBuilder(DeleteMediaOptions);
+
+impl DeleteMediaOptionsBuilder {
+    pub fn new() -> Self {
+        DeleteMediaOptionsBuilder(Default::default())
+    }
+
+    pub fn images(&mut self, images: Vec<String>) -> &mut Self {
+        self.0.images = Some(images);
+        self
+    }
+
+    pub fn youtube(&mut self, urls: Vec<String>) -> &mut Self {
+        self.0.youtube = Some(urls);
+        self
+    }
+
+    pub fn sketchfab(&mut self, urls: Vec<String>) -> &mut Self {
+        self.0.sketchfab = Some(urls);
+        self
+    }
+
+    pub fn build(&self) -> DeleteMediaOptions {
+        DeleteMediaOptions {
+            images: self.0.images.clone(),
+            youtube: self.0.youtube.clone(),
+            sketchfab: self.0.sketchfab.clone(),
+        }
     }
 }
