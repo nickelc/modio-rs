@@ -1,16 +1,20 @@
 use std::collections::HashMap;
+use std::path::{Path, PathBuf};
 
 use hyper::client::Connect;
+use hyper_multipart::client::multipart;
 use url::form_urlencoded;
 
+use errors::Error;
 use types::game::*;
 use types::ModioListResponse;
 use Endpoint;
 use Future;
 use ModRef;
 use Modio;
+use ModioMessage;
 use Mods;
-use {AddOptions, DeleteOptions, QueryParams};
+use {AddOptions, DeleteOptions, MultipartForm, QueryParams};
 
 pub struct MyGames<C>
 where
@@ -93,6 +97,10 @@ impl<C: Clone + Connect> GameRef<C> {
 
     pub fn tags(&self) -> Endpoint<C, TagOption> {
         Endpoint::new(self.modio.clone(), self.path("/tags"))
+    }
+
+    pub fn add_media(&self, media: GameMediaOptions) -> Future<ModioMessage> {
+        self.modio.post_form(&self.path("/media"), media)
     }
 }
 
@@ -186,5 +194,71 @@ impl QueryParams for DeleteTagsOptions {
             None => ser.append_pair("tags[]", ""),
         };
         ser.finish()
+    }
+}
+
+#[derive(Clone, Default)]
+pub struct GameMediaOptions {
+    logo: Option<PathBuf>,
+    icon: Option<PathBuf>,
+    header: Option<PathBuf>,
+}
+
+impl GameMediaOptions {
+    pub fn builder() -> GameMediaOptionsBuilder {
+        GameMediaOptionsBuilder::new()
+    }
+}
+
+impl MultipartForm for GameMediaOptions {
+    fn to_form(&self) -> Result<multipart::Form, Error> {
+        let mut form = multipart::Form::default();
+        if let Some(ref logo) = self.logo {
+            if let Err(e) = form.add_file("logo", logo) {
+                return Err(e.into());
+            }
+        }
+        if let Some(ref icon) = self.icon {
+            if let Err(e) = form.add_file("icon", icon) {
+                return Err(e.into());
+            };
+        }
+        if let Some(ref header) = self.header {
+            if let Err(e) = form.add_file("header", header) {
+                return Err(e.into());
+            }
+        }
+        Ok(form)
+    }
+}
+
+pub struct GameMediaOptionsBuilder(GameMediaOptions);
+
+impl GameMediaOptionsBuilder {
+    pub fn new() -> Self {
+        GameMediaOptionsBuilder(Default::default())
+    }
+
+    pub fn logo<P: AsRef<Path>>(&mut self, logo: P) -> &mut Self {
+        self.0.logo = Some(logo.as_ref().to_path_buf());
+        self
+    }
+
+    pub fn icon<P: AsRef<Path>>(&mut self, icon: P) -> &mut Self {
+        self.0.icon = Some(icon.as_ref().to_path_buf());
+        self
+    }
+
+    pub fn header<P: AsRef<Path>>(&mut self, header: P) -> &mut Self {
+        self.0.header = Some(header.as_ref().to_path_buf());
+        self
+    }
+
+    pub fn build(&self) -> GameMediaOptions {
+        GameMediaOptions {
+            logo: self.0.logo.clone(),
+            icon: self.0.icon.clone(),
+            header: self.0.header.clone(),
+        }
     }
 }
