@@ -112,6 +112,10 @@ impl<C: Clone + Connect> FileRef<C> {
         };
         self.modio.put(&self.path(), msg)
     }
+
+    pub fn delete(&self) -> Future<()> {
+        self.modio.delete(&self.path(), Vec::new())
+    }
 }
 
 #[derive(Default)]
