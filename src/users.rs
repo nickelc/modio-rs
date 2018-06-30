@@ -11,12 +11,12 @@ use QueryParams;
 
 pub struct Users<C>
 where
-    C: Clone + Connect,
+    C: Clone + Connect + 'static,
 {
     modio: Modio<C>,
 }
 
-impl<C: Clone + Connect> Users<C> {
+impl<C: Clone + Connect + 'static> Users<C> {
     pub fn new(modio: Modio<C>) -> Self {
         Self { modio }
     }

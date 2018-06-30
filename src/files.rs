@@ -16,12 +16,12 @@ use MultipartForm;
 
 pub struct MyFiles<C>
 where
-    C: Clone + Connect,
+    C: Clone + Connect + 'static,
 {
     modio: Modio<C>,
 }
 
-impl<C: Clone + Connect> MyFiles<C> {
+impl<C: Clone + Connect + 'static> MyFiles<C> {
     pub fn new(modio: Modio<C>) -> Self {
         Self { modio }
     }
@@ -37,14 +37,14 @@ impl<C: Clone + Connect> MyFiles<C> {
 
 pub struct Files<C>
 where
-    C: Clone + Connect,
+    C: Clone + Connect + 'static,
 {
     modio: Modio<C>,
     game: u32,
     mod_id: u32,
 }
 
-impl<C: Clone + Connect> Files<C> {
+impl<C: Clone + Connect + 'static> Files<C> {
     pub fn new(modio: Modio<C>, game: u32, mod_id: u32) -> Self {
         Self {
             modio,
@@ -76,7 +76,7 @@ impl<C: Clone + Connect> Files<C> {
 
 pub struct FileRef<C>
 where
-    C: Clone + Connect,
+    C: Clone + Connect + 'static,
 {
     modio: Modio<C>,
     game: u32,
@@ -84,7 +84,7 @@ where
     id: u32,
 }
 
-impl<C: Clone + Connect> FileRef<C> {
+impl<C: Clone + Connect + 'static> FileRef<C> {
     pub fn new(modio: Modio<C>, game: u32, mod_id: u32, id: u32) -> Self {
         Self {
             modio,

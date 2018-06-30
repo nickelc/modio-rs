@@ -12,12 +12,12 @@ use ModioListResponse;
 
 pub struct Me<C>
 where
-    C: Clone + Connect,
+    C: Clone + Connect + 'static,
 {
     modio: Modio<C>,
 }
 
-impl<C: Clone + Connect> Me<C> {
+impl<C: Clone + Connect + 'static> Me<C> {
     pub fn new(modio: Modio<C>) -> Self {
         Self { modio }
     }

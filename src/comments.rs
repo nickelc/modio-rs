@@ -10,14 +10,14 @@ use Modio;
 
 pub struct Comments<C>
 where
-    C: Clone + Connect,
+    C: Clone + Connect + 'static,
 {
     modio: Modio<C>,
     game: u32,
     mod_id: u32,
 }
 
-impl<C: Clone + Connect> Comments<C> {
+impl<C: Clone + Connect + 'static> Comments<C> {
     pub fn new(modio: Modio<C>, game: u32, mod_id: u32) -> Self {
         Self {
             modio,

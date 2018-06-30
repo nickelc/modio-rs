@@ -11,14 +11,14 @@ use QueryParams;
 
 pub struct Metadata<C>
 where
-    C: Clone + Connect,
+    C: Clone + Connect + 'static,
 {
     modio: Modio<C>,
     game: u32,
     mod_id: u32,
 }
 
-impl<C: Clone + Connect> Metadata<C> {
+impl<C: Clone + Connect + 'static> Metadata<C> {
     pub fn new(modio: Modio<C>, game: u32, mod_id: u32) -> Self {
         Self {
             modio,

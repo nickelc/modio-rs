@@ -75,7 +75,7 @@ pub enum Credentials {
 #[derive(Clone, Debug)]
 pub struct Modio<C>
 where
-    C: Clone + Connect,
+    C: Clone + Connect + 'static,
 {
     host: String,
     agent: String,
@@ -118,7 +118,7 @@ impl Modio<HttpsConnector<HttpConnector>> {
 
 impl<C> Modio<C>
 where
-    C: Clone + Connect,
+    C: Clone + Connect + 'static,
 {
     pub fn custom<H, A, CR>(
         host: H,
@@ -378,7 +378,7 @@ where
 
 pub struct Endpoint<C, Out>
 where
-    C: Clone + Connect,
+    C: Clone + Connect + 'static,
     Out: DeserializeOwned + 'static,
 {
     modio: Modio<C>,

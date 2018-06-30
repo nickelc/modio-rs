@@ -26,12 +26,12 @@ use {AddOptions, DeleteOptions, QueryParams};
 
 pub struct MyMods<C>
 where
-    C: Clone + Connect,
+    C: Clone + Connect + 'static,
 {
     modio: Modio<C>,
 }
 
-impl<C: Clone + Connect> MyMods<C> {
+impl<C: Clone + Connect + 'static> MyMods<C> {
     pub fn new(modio: Modio<C>) -> Self {
         Self { modio }
     }
@@ -47,7 +47,7 @@ impl<C: Clone + Connect> MyMods<C> {
 
 pub struct Mods<C>
 where
-    C: Clone + Connect,
+    C: Clone + Connect + 'static,
 {
     modio: Modio<C>,
     game: u32,
@@ -55,7 +55,7 @@ where
 
 impl<C> Mods<C>
 where
-    C: Clone + Connect,
+    C: Clone + Connect + 'static,
 {
     pub fn new(modio: Modio<C>, game: u32) -> Self {
         Self { modio, game }
@@ -88,14 +88,14 @@ where
 
 pub struct ModRef<C>
 where
-    C: Clone + Connect,
+    C: Clone + Connect + 'static,
 {
     modio: Modio<C>,
     game: u32,
     id: u32,
 }
 
-impl<C: Clone + Connect> ModRef<C> {
+impl<C: Clone + Connect + 'static> ModRef<C> {
     pub fn new(modio: Modio<C>, game: u32, id: u32) -> Self {
         Self { modio, game, id }
     }

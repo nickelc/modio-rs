@@ -8,12 +8,12 @@ use QueryParams;
 
 pub struct Reports<C>
 where
-    C: Clone + Connect,
+    C: Clone + Connect + 'static,
 {
     modio: Modio<C>,
 }
 
-impl<C: Clone + Connect> Reports<C> {
+impl<C: Clone + Connect + 'static> Reports<C> {
     pub fn new(modio: Modio<C>) -> Self {
         Self { modio }
     }

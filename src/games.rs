@@ -18,12 +18,12 @@ use {AddOptions, DeleteOptions, MultipartForm, QueryParams};
 
 pub struct MyGames<C>
 where
-    C: Clone + Connect,
+    C: Clone + Connect + 'static,
 {
     modio: Modio<C>,
 }
 
-impl<C: Clone + Connect> MyGames<C> {
+impl<C: Clone + Connect + 'static> MyGames<C> {
     pub fn new(modio: Modio<C>) -> Self {
         Self { modio }
     }
@@ -39,12 +39,12 @@ impl<C: Clone + Connect> MyGames<C> {
 
 pub struct Games<C>
 where
-    C: Clone + Connect,
+    C: Clone + Connect + 'static,
 {
     modio: Modio<C>,
 }
 
-impl<C: Clone + Connect> Games<C> {
+impl<C: Clone + Connect + 'static> Games<C> {
     pub fn new(modio: Modio<C>) -> Self {
         Self { modio }
     }
@@ -68,13 +68,13 @@ impl<C: Clone + Connect> Games<C> {
 
 pub struct GameRef<C>
 where
-    C: Clone + Connect,
+    C: Clone + Connect + 'static,
 {
     modio: Modio<C>,
     id: u32,
 }
 
-impl<C: Clone + Connect> GameRef<C> {
+impl<C: Clone + Connect + 'static> GameRef<C> {
     pub fn new(modio: Modio<C>, id: u32) -> Self {
         Self { modio, id }
     }
