@@ -1,4 +1,4 @@
-use hyper::client::Connect;
+use hyper::client::connect::Connect;
 
 use files::MyFiles;
 use games::MyGames;

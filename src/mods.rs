@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 
 use futures::future;
 use futures::Future as StdFuture;
-use hyper::client::Connect;
+use hyper::client::connect::Connect;
 use hyper::StatusCode;
 use hyper_multipart::client::multipart;
 use serde_urlencoded;
@@ -165,7 +165,7 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
                 .map(|_| ())
                 .or_else(|err| match err {
                     Error::Fault {
-                        code: StatusCode::BadRequest,
+                        code: StatusCode::BAD_REQUEST,
                         ..
                     } => Ok(()),
                     otherwise => Err(otherwise.into()),
@@ -180,7 +180,7 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
                 .map(|_| ())
                 .or_else(|err| match err {
                     Error::Fault {
-                        code: StatusCode::BadRequest,
+                        code: StatusCode::BAD_REQUEST,
                         ..
                     } => Ok(()),
                     otherwise => Err(otherwise.into()),
@@ -194,7 +194,7 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
                 .delete(&self.path("/subscribe"), Vec::new())
                 .or_else(|err| match err {
                     Error::Fault {
-                        code: StatusCode::BadRequest,
+                        code: StatusCode::BAD_REQUEST,
                         ..
                     } => Ok(()),
                     otherwise => Err(otherwise.into()),

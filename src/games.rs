@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
-use hyper::client::Connect;
+use hyper::client::connect::Connect;
 use hyper_multipart::client::multipart;
 use url::form_urlencoded;
 

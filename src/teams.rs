@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use futures::future;
-use hyper::client::Connect;
+use hyper::client::connect::Connect;
 use serde_urlencoded;
 use url::form_urlencoded;
 

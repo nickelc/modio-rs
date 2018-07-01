@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use futures::future;
-use hyper::client::Connect;
+use hyper::client::connect::Connect;
 use hyper_multipart::client::multipart;
 use serde_urlencoded;
 use url::form_urlencoded;

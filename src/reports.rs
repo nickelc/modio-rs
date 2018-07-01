@@ -1,4 +1,4 @@
-use hyper::client::Connect;
+use hyper::client::connect::Connect;
 use url::form_urlencoded;
 
 use Future;

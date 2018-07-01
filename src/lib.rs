@@ -1,9 +1,10 @@
 extern crate futures;
-#[macro_use]
+extern crate http;
 extern crate hyper;
 extern crate hyper_multipart_rfc7578 as hyper_multipart;
 #[cfg(feature = "tls")]
 extern crate hyper_tls;
+extern crate mime;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
@@ -17,14 +18,15 @@ use std::marker::PhantomData;
 use std::time::Duration;
 
 use futures::{future, Future as StdFuture, IntoFuture, Stream as StdStream};
-use hyper::client::{Connect, HttpConnector, Request};
-use hyper::header::{Authorization, Bearer, ContentType, Location, UserAgent};
-use hyper::{Client, Method, StatusCode};
+use hyper::client::connect::Connect;
+use hyper::client::HttpConnector;
+use hyper::header::{AUTHORIZATION, CONTENT_TYPE, LOCATION, USER_AGENT};
+use hyper::{Body, Client, Method, Request, StatusCode, Uri};
 use hyper_multipart::client::multipart;
 #[cfg(feature = "tls")]
 use hyper_tls::HttpsConnector;
+use mime::Mime;
 use serde::de::DeserializeOwned;
-use tokio_core::reactor::Handle;
 use url::Url;
 
 pub mod comments;
@@ -52,19 +54,12 @@ const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 
 pub type Future<T> = Box<StdFuture<Item = T, Error = Error>>;
 pub type Stream<T> = Box<StdStream<Item = T, Error = Error>>;
-type MClient<T> = Client<T, multipart::Body>;
+type MClient<T> = Client<T>;
 
-header! {
-    (XRateLimitLimit, "X-RateLimit-Limit") => [u16]
-}
-
-header! {
-    (XRateLimitRemaining, "X-RateLimit-Remaining") => [u16]
-}
-
-header! {
-    (XRateLimitRetryAfter, "X-RateLimit-RetryAfter") => [u16]
-}
+#[allow(dead_code)]
+const X_RATELIMIT_LIMIT: &str = "x-ratelimit-limit";
+const X_RATELIMIT_REMAINING: &str = "x-ratelimit-remaining";
+const X_RATELIMIT_RETRY_AFTER: &str = "x-ratelimit-retryafter";
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Credentials {
@@ -86,31 +81,23 @@ where
 
 #[cfg(feature = "tls")]
 impl Modio<HttpsConnector<HttpConnector>> {
-    pub fn new<A, C>(agent: A, credentials: C, handle: &Handle) -> Self
+    pub fn new<A, C>(agent: A, credentials: C) -> Self
     where
         A: Into<String>,
         C: Into<Option<Credentials>>,
     {
-        Self::host(DEFAULT_HOST, agent, credentials, handle)
+        Self::host(DEFAULT_HOST, agent, credentials)
     }
 
-    pub fn host<H, A, C>(host: H, agent: A, credentials: C, handle: &Handle) -> Self
+    pub fn host<H, A, C>(host: H, agent: A, credentials: C) -> Self
     where
         H: Into<String>,
         A: Into<String>,
         C: Into<Option<Credentials>>,
     {
-        let connector = HttpsConnector::new(4, handle).unwrap();
-        let client = Client::configure()
-            .connector(connector.clone())
-            .keep_alive(true)
-            .build(handle);
-
-        let mclient = Client::configure()
-            .connector(connector)
-            .body::<multipart::Body>()
-            .keep_alive(true)
-            .build(handle);
+        let connector = HttpsConnector::new(4).unwrap();
+        let client = Client::builder().keep_alive(true).build(connector.clone());
+        let mclient = Client::builder().keep_alive(true).build(connector);
 
         Self::custom(host, agent, credentials, client, mclient)
     }
@@ -170,7 +157,7 @@ where
         method: Method,
         uri: String,
         body: Option<Vec<u8>>,
-        content_type: Option<ContentType>,
+        content_type: Option<Mime>,
     ) -> Future<Out>
     where
         Out: DeserializeOwned + 'static,
@@ -178,7 +165,7 @@ where
         let url = if let Some(Credentials::ApiKey(ref api_key)) = self.credentials {
             let mut parsed = Url::parse(&uri).unwrap();
             parsed.query_pairs_mut().append_pair("api_key", api_key);
-            parsed.to_string().parse().into_future()
+            parsed.to_string().parse::<Uri>().into_future()
         } else {
             uri.parse().into_future()
         };
@@ -189,60 +176,72 @@ where
         let method2 = method.clone();
 
         let response = url.map_err(Error::from).and_then(move |url| {
-            let mut req = Request::new(method2, url);
-            {
-                let headers = req.headers_mut();
-                headers.set(UserAgent::new(instance.agent.clone()));
-                if let Some(Credentials::Token(token)) = instance.credentials {
-                    headers.set(Authorization(Bearer { token }));
-                }
-                if let Some(content_type) = content_type2 {
-                    headers.set(content_type);
-                }
+            let mut req = Request::builder();
+            req.method(method2)
+                .uri(url)
+                .header(USER_AGENT, &*instance.agent);
+
+            if let Some(Credentials::Token(token)) = instance.credentials {
+                req.header(AUTHORIZATION, &*format!("Bearer {}", token));
             }
-            if let Some(body) = body2 {
-                req.set_body(body);
+            if let Some(content_type) = content_type2 {
+                req.header(CONTENT_TYPE, &*content_type.to_string());
             }
+            let req = match body2 {
+                Some(body) => req.body(Body::from(body)),
+                None => req.body(Body::empty()),
+            }.unwrap();
             instance.client.request(req).map_err(Error::from)
         });
 
         let instance2 = self.clone();
         Box::new(response.and_then(move |response| {
-            let remaining = response.headers().get::<XRateLimitRemaining>().map(|v| v.0);
+            let remaining = response
+                .headers()
+                .get(X_RATELIMIT_REMAINING)
+                .and_then(|v| v.to_str().ok())
+                .and_then(|v| v.parse::<u64>().ok());
             let reset = response
                 .headers()
-                .get::<XRateLimitRetryAfter>()
-                .map(|v| v.0);
+                .get(X_RATELIMIT_RETRY_AFTER)
+                .and_then(|v| v.to_str().ok())
+                .and_then(|v| v.parse::<u64>().ok());
 
             let status = response.status();
-            if StatusCode::MovedPermanently == status || StatusCode::TemporaryRedirect == status {
-                if let Some(location) = response.headers().get::<Location>() {
-                    return instance2.request(method, location.to_string(), body, content_type);
+            if StatusCode::MOVED_PERMANENTLY == status || StatusCode::TEMPORARY_REDIRECT == status {
+                if let Some(location) = response.headers().get(LOCATION) {
+                    let location = location.to_str().unwrap().to_owned();
+                    return instance2.request(method, location, body, content_type);
                 }
             }
-            Box::new(response.body().concat2().map_err(Error::from).and_then(
-                move |response_body| {
-                    if status.is_success() {
-                        serde_json::from_slice::<Out>(&response_body)
-                            .map_err(|err| Error::Codec(err).into())
-                    } else {
-                        let error = match (remaining, reset) {
-                            (Some(remaining), Some(reset)) if remaining == 0 => Error::RateLimit {
-                                reset: Duration::from_secs(reset as u64 * 60),
-                            },
-                            _ => {
-                                let mer: ModioErrorResponse =
-                                    serde_json::from_slice(&response_body)?;
-                                Error::Fault {
-                                    code: status,
-                                    error: mer.error,
+            Box::new(
+                response
+                    .into_body()
+                    .concat2()
+                    .map_err(Error::from)
+                    .and_then(move |response_body| {
+                        if status.is_success() {
+                            serde_json::from_slice::<Out>(&response_body).map_err(Error::from)
+                        } else {
+                            let error = match (remaining, reset) {
+                                (Some(remaining), Some(reset)) if remaining == 0 => {
+                                    Error::RateLimit {
+                                        reset: Duration::from_secs(reset as u64 * 60),
+                                    }
                                 }
-                            }
-                        };
-                        Err(error)
-                    }
-                },
-            ))
+                                _ => {
+                                    let mer: ModioErrorResponse =
+                                        serde_json::from_slice(&response_body)?;
+                                    Error::Fault {
+                                        code: status,
+                                        error: mer.error,
+                                    }
+                                }
+                            };
+                            Err(error)
+                        }
+                    }),
+            )
         }))
     }
 
@@ -254,7 +253,7 @@ where
         let url = if let Some(Credentials::ApiKey(ref api_key)) = self.credentials {
             let mut parsed = Url::parse(&uri).unwrap();
             parsed.query_pairs_mut().append_pair("api_key", api_key);
-            parsed.to_string().parse().into_future()
+            parsed.to_string().parse::<Uri>().into_future()
         } else {
             uri.parse().into_future()
         };
@@ -267,55 +266,66 @@ where
         };
 
         let response = url.map_err(Error::from).and_then(move |url| {
-            let mut req = Request::new(method2, url);
-            {
-                let headers = req.headers_mut();
-                headers.set(UserAgent::new(instance.agent.clone()));
-                if let Some(Credentials::Token(token)) = instance.credentials {
-                    headers.set(Authorization(Bearer { token }));
-                }
+            let mut req = Request::builder();
+            req.method(method2)
+                .uri(url)
+                .header(USER_AGENT, &*instance.agent);
+
+            if let Some(Credentials::Token(token)) = instance.credentials {
+                req.header(AUTHORIZATION, &*format!("Bearer {}", token));
             }
-            form.set_body(&mut req);
+            let req = form.set_body(&mut req).unwrap();
             instance.mclient.request(req).map_err(Error::from)
         });
 
         let instance2 = self.clone();
         Box::new(response.and_then(move |response| {
-            let remaining = response.headers().get::<XRateLimitRemaining>().map(|v| v.0);
+            let remaining = response
+                .headers()
+                .get(X_RATELIMIT_REMAINING)
+                .and_then(|v| v.to_str().ok())
+                .and_then(|v| v.parse::<u64>().ok());
             let reset = response
                 .headers()
-                .get::<XRateLimitRetryAfter>()
-                .map(|v| v.0);
+                .get(X_RATELIMIT_RETRY_AFTER)
+                .and_then(|v| v.to_str().ok())
+                .and_then(|v| v.parse::<u64>().ok());
 
             let status = response.status();
-            if StatusCode::MovedPermanently == status || StatusCode::TemporaryRedirect == status {
-                if let Some(location) = response.headers().get::<Location>() {
-                    return instance2.formdata(method, location.to_string(), data);
+            if StatusCode::MOVED_PERMANENTLY == status || StatusCode::TEMPORARY_REDIRECT == status {
+                if let Some(location) = response.headers().get(LOCATION) {
+                    let location = location.to_str().unwrap().to_owned();
+                    return instance2.formdata(method, location, data);
                 }
             }
-            Box::new(response.body().concat2().map_err(Error::from).and_then(
-                move |response_body| {
-                    if status.is_success() {
-                        serde_json::from_slice::<Out>(&response_body)
-                            .map_err(|err| Error::Codec(err).into())
-                    } else {
-                        let error = match (remaining, reset) {
-                            (Some(remaining), Some(reset)) if remaining == 0 => Error::RateLimit {
-                                reset: Duration::from_secs(reset as u64 * 60),
-                            },
-                            _ => {
-                                let mer: ModioErrorResponse =
-                                    serde_json::from_slice(&response_body)?;
-                                Error::Fault {
-                                    code: status,
-                                    error: mer.error,
+            Box::new(
+                response
+                    .into_body()
+                    .concat2()
+                    .map_err(Error::from)
+                    .and_then(move |response_body| {
+                        if status.is_success() {
+                            serde_json::from_slice::<Out>(&response_body).map_err(Error::from)
+                        } else {
+                            let error = match (remaining, reset) {
+                                (Some(remaining), Some(reset)) if remaining == 0 => {
+                                    Error::RateLimit {
+                                        reset: Duration::from_secs(reset as u64 * 60),
+                                    }
                                 }
-                            }
-                        };
-                        Err(error)
-                    }
-                },
-            ))
+                                _ => {
+                                    let mer: ModioErrorResponse =
+                                        serde_json::from_slice(&response_body)?;
+                                    Error::Fault {
+                                        code: status,
+                                        error: mer.error,
+                                    }
+                                }
+                            };
+                            Err(error)
+                        }
+                    }),
+            )
         }))
     }
 
@@ -323,7 +333,7 @@ where
     where
         D: DeserializeOwned + 'static,
     {
-        self.request(Method::Get, self.host.clone() + uri, None, None)
+        self.request(Method::GET, self.host.clone() + uri, None, None)
     }
 
     fn post<D, M>(&self, uri: &str, message: M) -> Future<D>
@@ -332,10 +342,10 @@ where
         M: Into<Vec<u8>>,
     {
         self.request(
-            Method::Post,
+            Method::POST,
             self.host.clone() + uri,
             Some(message.into()),
-            Some(ContentType::form_url_encoded()),
+            Some(mime::APPLICATION_WWW_FORM_URLENCODED),
         )
     }
 
@@ -344,7 +354,7 @@ where
         D: DeserializeOwned + 'static,
         F: MultipartForm + Clone + 'static,
     {
-        self.formdata(Method::Post, self.host.clone() + uri, data)
+        self.formdata(Method::POST, self.host.clone() + uri, data)
     }
 
     fn put<D, M>(&self, uri: &str, message: M) -> Future<D>
@@ -353,10 +363,10 @@ where
         M: Into<Vec<u8>>,
     {
         self.request(
-            Method::Put,
+            Method::PUT,
             self.host.clone() + uri,
             Some(message.into()),
-            Some(ContentType::form_url_encoded()),
+            Some(mime::APPLICATION_WWW_FORM_URLENCODED),
         )
     }
 
@@ -365,10 +375,10 @@ where
         M: Into<Vec<u8>>,
     {
         Box::new(self.request(
-            Method::Delete,
+            Method::DELETE,
             self.host.clone() + uri,
             Some(message.into()),
-            Some(ContentType::form_url_encoded()),
+            Some(mime::APPLICATION_WWW_FORM_URLENCODED),
         ).or_else(|err| match err {
             errors::Error::Codec(_) => Ok(()),
             otherwise => Err(otherwise.into()),
