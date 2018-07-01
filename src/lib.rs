@@ -54,7 +54,6 @@ const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 
 pub type Future<T> = Box<StdFuture<Item = T, Error = Error>>;
 pub type Stream<T> = Box<StdStream<Item = T, Error = Error>>;
-type MClient<T> = Client<T>;
 
 #[allow(dead_code)]
 const X_RATELIMIT_LIMIT: &str = "x-ratelimit-limit";
@@ -75,7 +74,6 @@ where
     host: String,
     agent: String,
     client: Client<C>,
-    mclient: MClient<C>,
     credentials: Option<Credentials>,
 }
 
@@ -96,10 +94,9 @@ impl Modio<HttpsConnector<HttpConnector>> {
         C: Into<Option<Credentials>>,
     {
         let connector = HttpsConnector::new(4).unwrap();
-        let client = Client::builder().keep_alive(true).build(connector.clone());
-        let mclient = Client::builder().keep_alive(true).build(connector);
+        let client = Client::builder().keep_alive(true).build(connector);
 
-        Self::custom(host, agent, credentials, client, mclient)
+        Self::custom(host, agent, credentials, client)
     }
 }
 
@@ -112,7 +109,6 @@ where
         agent: A,
         credentials: CR,
         client: Client<C>,
-        mclient: MClient<C>,
     ) -> Self
     where
         H: Into<String>,
@@ -123,7 +119,6 @@ where
             host: host.into(),
             agent: agent.into(),
             client,
-            mclient,
             credentials: credentials.into(),
         }
     }
@@ -275,7 +270,7 @@ where
                 req.header(AUTHORIZATION, &*format!("Bearer {}", token));
             }
             let req = form.set_body(&mut req).unwrap();
-            instance.mclient.request(req).map_err(Error::from)
+            instance.client.request(req).map_err(Error::from)
         });
 
         let instance2 = self.clone();
