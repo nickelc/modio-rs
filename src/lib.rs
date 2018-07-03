@@ -147,13 +147,7 @@ where
         Reports::new(self.clone())
     }
 
-    fn request<Out>(
-        &self,
-        method: Method,
-        uri: String,
-        body: Option<Vec<u8>>,
-        content_type: Option<Mime>,
-    ) -> Future<Out>
+    fn request<Out>(&self, method: Method, uri: String, body: RequestBody) -> Future<Out>
     where
         Out: DeserializeOwned + 'static,
     {
@@ -167,7 +161,6 @@ where
 
         let instance = self.clone();
         let body2 = body.clone();
-        let content_type2 = content_type.clone();
         let method2 = method.clone();
 
         let response = url.map_err(Error::from).and_then(move |url| {
@@ -176,17 +169,21 @@ where
                 .uri(url)
                 .header(USER_AGENT, &*instance.agent);
 
-            if let Some(Credentials::Token(token)) = instance.credentials {
+            if let Some(Credentials::Token(ref token)) = instance.credentials {
                 req.header(AUTHORIZATION, &*format!("Bearer {}", token));
             }
-            if let Some(content_type) = content_type2 {
-                req.header(CONTENT_TYPE, &*content_type.to_string());
-            }
+
             let req = match body2 {
-                Some(body) => req.body(Body::from(body)),
-                None => req.body(Body::empty()),
-            }.unwrap();
-            instance.client.request(req).map_err(Error::from)
+                RequestBody::Vec(body, mime) => {
+                    req.header(CONTENT_TYPE, &*mime.to_string());
+                    req.body(Body::from(body)).map_err(Error::from)
+                }
+                RequestBody::Empty => req.body(Body::empty()).map_err(Error::from),
+            };
+
+            req.into_future().and_then(move |req| {
+                instance.client.request(req).map_err(Error::from)
+            })
         });
 
         let instance2 = self.clone();
@@ -206,7 +203,7 @@ where
             if StatusCode::MOVED_PERMANENTLY == status || StatusCode::TEMPORARY_REDIRECT == status {
                 if let Some(location) = response.headers().get(LOCATION) {
                     let location = location.to_str().unwrap().to_owned();
-                    return instance2.request(method, location, body, content_type);
+                    return instance2.request(method, location, body);
                 }
             }
             Box::new(
@@ -328,7 +325,7 @@ where
     where
         D: DeserializeOwned + 'static,
     {
-        self.request(Method::GET, self.host.clone() + uri, None, None)
+        self.request(Method::GET, self.host.clone() + uri, RequestBody::Empty)
     }
 
     fn post<D, M>(&self, uri: &str, message: M) -> Future<D>
@@ -339,8 +336,7 @@ where
         self.request(
             Method::POST,
             self.host.clone() + uri,
-            Some(message.into()),
-            Some(mime::APPLICATION_WWW_FORM_URLENCODED),
+            RequestBody::Vec(message.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
         )
     }
 
@@ -360,8 +356,7 @@ where
         self.request(
             Method::PUT,
             self.host.clone() + uri,
-            Some(message.into()),
-            Some(mime::APPLICATION_WWW_FORM_URLENCODED),
+            RequestBody::Vec(message.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
         )
     }
 
@@ -372,13 +367,18 @@ where
         Box::new(self.request(
             Method::DELETE,
             self.host.clone() + uri,
-            Some(message.into()),
-            Some(mime::APPLICATION_WWW_FORM_URLENCODED),
+            RequestBody::Vec(message.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
         ).or_else(|err| match err {
             errors::Error::Codec(_) => Ok(()),
             otherwise => Err(otherwise.into()),
         }))
     }
+}
+
+#[derive(Clone)]
+enum RequestBody {
+    Empty,
+    Vec(Vec<u8>, Mime),
 }
 
 pub struct Endpoint<C, Out>
