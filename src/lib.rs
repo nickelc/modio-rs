@@ -17,7 +17,7 @@ extern crate url_serde;
 use std::marker::PhantomData;
 use std::time::Duration;
 
-use futures::{future, Future as StdFuture, IntoFuture, Stream as StdStream};
+use futures::{Future as StdFuture, IntoFuture, Stream as StdStream};
 use hyper::client::connect::Connect;
 use hyper::client::HttpConnector;
 use hyper::header::{AUTHORIZATION, CONTENT_TYPE, LOCATION, USER_AGENT};
@@ -178,6 +178,11 @@ where
                     req.header(CONTENT_TYPE, &*mime.to_string());
                     req.body(Body::from(body)).map_err(Error::from)
                 }
+                RequestBody::Form(data) => {
+                    data.to_form().and_then(move |form| {
+                        form.set_body(&mut req).map_err(Error::from)
+                    })
+                }
                 RequestBody::Empty => req.body(Body::empty()).map_err(Error::from),
             };
 
@@ -199,95 +204,12 @@ where
                 .and_then(|v| v.to_str().ok())
                 .and_then(|v| v.parse::<u64>().ok());
 
+
             let status = response.status();
             if StatusCode::MOVED_PERMANENTLY == status || StatusCode::TEMPORARY_REDIRECT == status {
                 if let Some(location) = response.headers().get(LOCATION) {
                     let location = location.to_str().unwrap().to_owned();
                     return instance2.request(method, location, body);
-                }
-            }
-            Box::new(
-                response
-                    .into_body()
-                    .concat2()
-                    .map_err(Error::from)
-                    .and_then(move |response_body| {
-                        if status.is_success() {
-                            serde_json::from_slice::<Out>(&response_body).map_err(Error::from)
-                        } else {
-                            let error = match (remaining, reset) {
-                                (Some(remaining), Some(reset)) if remaining == 0 => {
-                                    Error::RateLimit {
-                                        reset: Duration::from_secs(reset as u64 * 60),
-                                    }
-                                }
-                                _ => {
-                                    let mer: ModioErrorResponse =
-                                        serde_json::from_slice(&response_body)?;
-                                    Error::Fault {
-                                        code: status,
-                                        error: mer.error,
-                                    }
-                                }
-                            };
-                            Err(error)
-                        }
-                    }),
-            )
-        }))
-    }
-
-    fn formdata<F, Out>(&self, method: Method, uri: String, data: F) -> Future<Out>
-    where
-        Out: DeserializeOwned + 'static,
-        F: MultipartForm + Clone + 'static,
-    {
-        let url = if let Some(Credentials::ApiKey(ref api_key)) = self.credentials {
-            let mut parsed = Url::parse(&uri).unwrap();
-            parsed.query_pairs_mut().append_pair("api_key", api_key);
-            parsed.to_string().parse::<Uri>().into_future()
-        } else {
-            uri.parse().into_future()
-        };
-
-        let instance = self.clone();
-        let method2 = method.clone();
-        let form = match data.to_form() {
-            Ok(form) => form,
-            Err(err) => return Box::new(future::err(err)),
-        };
-
-        let response = url.map_err(Error::from).and_then(move |url| {
-            let mut req = Request::builder();
-            req.method(method2)
-                .uri(url)
-                .header(USER_AGENT, &*instance.agent);
-
-            if let Some(Credentials::Token(token)) = instance.credentials {
-                req.header(AUTHORIZATION, &*format!("Bearer {}", token));
-            }
-            let req = form.set_body(&mut req).unwrap();
-            instance.client.request(req).map_err(Error::from)
-        });
-
-        let instance2 = self.clone();
-        Box::new(response.and_then(move |response| {
-            let remaining = response
-                .headers()
-                .get(X_RATELIMIT_REMAINING)
-                .and_then(|v| v.to_str().ok())
-                .and_then(|v| v.parse::<u64>().ok());
-            let reset = response
-                .headers()
-                .get(X_RATELIMIT_RETRY_AFTER)
-                .and_then(|v| v.to_str().ok())
-                .and_then(|v| v.parse::<u64>().ok());
-
-            let status = response.status();
-            if StatusCode::MOVED_PERMANENTLY == status || StatusCode::TEMPORARY_REDIRECT == status {
-                if let Some(location) = response.headers().get(LOCATION) {
-                    let location = location.to_str().unwrap().to_owned();
-                    return instance2.formdata(method, location, data);
                 }
             }
             Box::new(
@@ -345,7 +267,7 @@ where
         D: DeserializeOwned + 'static,
         F: MultipartForm + Clone + 'static,
     {
-        self.formdata(Method::POST, self.host.clone() + uri, data)
+        self.request(Method::POST, self.host.clone() + uri, RequestBody::Form(Box::new(data)))
     }
 
     fn put<D, M>(&self, uri: &str, message: M) -> Future<D>
@@ -379,6 +301,7 @@ where
 enum RequestBody {
     Empty,
     Vec(Vec<u8>, Mime),
+    Form(Box<MultipartForm>),
 }
 
 pub struct Endpoint<C, Out>
@@ -419,8 +342,27 @@ where
     }
 }
 
-trait MultipartForm {
+trait MultipartForm: MultipartFormClone {
     fn to_form(&self) -> Result<multipart::Form, errors::Error>;
+}
+
+trait MultipartFormClone {
+    fn clone_box(&self) -> Box<MultipartForm>;
+}
+
+impl<T> MultipartFormClone for T
+where
+    T: 'static + MultipartForm + Clone,
+{
+    fn clone_box(&self) -> Box<MultipartForm> {
+        Box::new(self.clone())
+    }
+}
+
+impl Clone for Box<MultipartForm> {
+    fn clone(&self) -> Self {
+        self.clone_box()
+    }
 }
 
 pub trait AddOptions {}
