@@ -1,8 +1,9 @@
 use std::io::Error as IoError;
 use std::time::Duration;
 
+use http::Error as HttpError;
 use http::uri::InvalidUri;
-use hyper::Error as HttpError;
+use hyper::Error as HyperError;
 use hyper::StatusCode;
 use serde_json::Error as SerdeError;
 use serde_urlencoded::ser::Error as UrlEncodedError;
@@ -21,6 +22,7 @@ pub enum Error {
     Codec(SerdeError),
     Codec2(UrlEncodedError),
     Http(HttpError),
+    Hyper(HyperError),
     Io(IoError),
     Uri(InvalidUri),
 }
@@ -40,6 +42,12 @@ impl From<UrlEncodedError> for Error {
 impl From<HttpError> for Error {
     fn from(err: HttpError) -> Error {
         Error::Http(err)
+    }
+}
+
+impl From<HyperError> for Error {
+    fn from(err: HyperError) -> Error {
+        Error::Hyper(err)
     }
 }
 
