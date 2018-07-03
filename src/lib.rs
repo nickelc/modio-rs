@@ -101,12 +101,7 @@ impl<C> Modio<C>
 where
     C: Clone + Connect + 'static,
 {
-    pub fn custom<H, A, CR>(
-        host: H,
-        agent: A,
-        credentials: CR,
-        client: Client<C>,
-    ) -> Self
+    pub fn custom<H, A, CR>(host: H, agent: A, credentials: CR, client: Client<C>) -> Self
     where
         H: Into<String>,
         A: Into<String>,
@@ -201,7 +196,6 @@ where
                 .and_then(|v| v.to_str().ok())
                 .and_then(|v| v.parse::<u64>().ok());
 
-
             let status = response.status();
             if StatusCode::MOVED_PERMANENTLY == status || StatusCode::TEMPORARY_REDIRECT == status {
                 if let Some(location) = response.headers().get(LOCATION) {
@@ -264,7 +258,11 @@ where
         D: DeserializeOwned + 'static,
         F: MultipartForm + Clone + 'static,
     {
-        self.request(Method::POST, self.host.clone() + uri, RequestBody::Form(Box::new(data)))
+        self.request(
+            Method::POST,
+            self.host.clone() + uri,
+            RequestBody::Form(Box::new(data)),
+        )
     }
 
     fn put<D, M>(&self, uri: &str, message: M) -> Future<D>

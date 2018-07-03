@@ -154,7 +154,8 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
     }
 
     pub fn delete_media(&self, options: &DeleteMediaOptions) -> Future<()> {
-        self.modio.delete(&self.path("/media"), options.to_query_params())
+        self.modio
+            .delete(&self.path("/media"), options.to_query_params())
     }
 
     pub fn rate(&self, rating: Rating) -> Future<()> {
