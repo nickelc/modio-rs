@@ -2,7 +2,6 @@ extern crate futures;
 extern crate http;
 extern crate hyper;
 extern crate hyper_multipart_rfc7578 as hyper_multipart;
-#[cfg(feature = "tls")]
 extern crate hyper_tls;
 extern crate mime;
 extern crate serde;
@@ -23,7 +22,6 @@ use hyper::client::HttpConnector;
 use hyper::header::{AUTHORIZATION, CONTENT_TYPE, LOCATION, USER_AGENT};
 use hyper::{Body, Client, Method, Request, StatusCode, Uri};
 use hyper_multipart::client::multipart;
-#[cfg(feature = "tls")]
 use hyper_tls::HttpsConnector;
 use mime::Mime;
 use serde::de::DeserializeOwned;
@@ -77,7 +75,6 @@ where
     credentials: Option<Credentials>,
 }
 
-#[cfg(feature = "tls")]
 impl Modio<HttpsConnector<HttpConnector>> {
     pub fn new<A, C>(agent: A, credentials: C) -> Self
     where
