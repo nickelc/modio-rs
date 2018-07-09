@@ -50,8 +50,8 @@ use users::Users;
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 
-pub type Future<T> = Box<StdFuture<Item = T, Error = Error>>;
-pub type Stream<T> = Box<StdStream<Item = T, Error = Error>>;
+pub type Future<T> = Box<StdFuture<Item = T, Error = Error> + Send>;
+pub type Stream<T> = Box<StdStream<Item = T, Error = Error> + Send>;
 
 #[allow(dead_code)]
 const X_RATELIMIT_LIMIT: &str = "x-ratelimit-limit";
@@ -141,7 +141,7 @@ where
 
     fn request<Out>(&self, method: Method, uri: String, body: RequestBody) -> Future<Out>
     where
-        Out: DeserializeOwned + 'static,
+        Out: DeserializeOwned + 'static + Send,
     {
         let url = if let Some(Credentials::ApiKey(ref api_key)) = self.credentials {
             let mut parsed = Url::parse(&uri).unwrap();
@@ -236,14 +236,14 @@ where
 
     fn get<D>(&self, uri: &str) -> Future<D>
     where
-        D: DeserializeOwned + 'static,
+        D: DeserializeOwned + 'static + Send,
     {
         self.request(Method::GET, self.host.clone() + uri, RequestBody::Empty)
     }
 
     fn post<D, M>(&self, uri: &str, message: M) -> Future<D>
     where
-        D: DeserializeOwned + 'static,
+        D: DeserializeOwned + 'static + Send,
         M: Into<Vec<u8>>,
     {
         self.request(
@@ -255,7 +255,7 @@ where
 
     fn post_form<F, D>(&self, uri: &str, data: F) -> Future<D>
     where
-        D: DeserializeOwned + 'static,
+        D: DeserializeOwned + 'static + Send,
         F: MultipartForm + Clone + 'static,
     {
         self.request(
@@ -267,7 +267,7 @@ where
 
     fn put<D, M>(&self, uri: &str, message: M) -> Future<D>
     where
-        D: DeserializeOwned + 'static,
+        D: DeserializeOwned + 'static + Send,
         M: Into<Vec<u8>>,
     {
         self.request(
@@ -312,7 +312,7 @@ where
 impl<C, Out> Endpoint<C, Out>
 where
     C: Clone + Connect,
-    Out: DeserializeOwned + 'static,
+    Out: DeserializeOwned + 'static + Send,
 {
     pub fn new(modio: Modio<C>, path: String) -> Endpoint<C, Out> {
         Self {
@@ -337,7 +337,7 @@ where
     }
 }
 
-trait MultipartForm: MultipartFormClone {
+trait MultipartForm: MultipartFormClone + Send {
     fn to_form(&self) -> Result<multipart::Form, errors::Error>;
 }
 
