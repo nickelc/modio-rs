@@ -30,6 +30,8 @@ use url::Url;
 pub mod comments;
 pub mod errors;
 pub mod files;
+#[macro_use]
+pub mod filter;
 pub mod games;
 pub mod me;
 pub mod metadata;
