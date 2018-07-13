@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use hyper::client::connect::Connect;
@@ -6,6 +5,7 @@ use hyper_multipart::client::multipart;
 use url::form_urlencoded;
 
 use errors::Error;
+use filter::{Filter, OneOrMany, Operator, Order, SortField};
 use types::game::*;
 use types::ModioListResponse;
 use Endpoint;
@@ -30,7 +30,8 @@ impl<C: Clone + Connect + 'static> MyGames<C> {
 
     pub fn list(&self, options: &GamesListOptions) -> Future<ModioListResponse<Game>> {
         let mut uri = vec!["/me/games".to_owned()];
-        if let Some(query) = options.serialize() {
+        let query = options.to_query_params();
+        if !query.is_empty() {
             uri.push(query);
         }
         self.modio.get::<ModioListResponse<Game>>(&uri.join("?"))
@@ -55,7 +56,8 @@ impl<C: Clone + Connect + 'static> Games<C> {
 
     pub fn list(&self, options: &GamesListOptions) -> Future<ModioListResponse<Game>> {
         let mut uri = vec![self.path("")];
-        if let Some(query) = options.serialize() {
+        let query = options.to_query_params();
+        if !query.is_empty() {
             uri.push(query);
         }
         self.modio.get::<ModioListResponse<Game>>(&uri.join("?"))
@@ -104,21 +106,78 @@ impl<C: Clone + Connect + 'static> GameRef<C> {
     }
 }
 
-#[derive(Default)]
-pub struct GamesListOptions {
-    params: HashMap<&'static str, String>,
-}
+filter_options!{
+    /// Options used to filter game listings
+    ///
+    /// # Filter parameters
+    /// - _q
+    /// - id
+    /// - status
+    /// - submitted_by
+    /// - date_added
+    /// - date_updated
+    /// - date_live
+    /// - name
+    /// - name_id
+    /// - summary
+    /// - instructions_url
+    /// - ugc_name
+    /// - presentation_option
+    /// - submission_option
+    /// - curation_option
+    /// - community_options
+    /// - revenue_options
+    /// - api_access_options
+    /// - maturity_options
+    ///
+    /// # Sorting
+    /// - id
+    /// - status
+    /// - name
+    /// - name_id
+    /// - date_updated
+    ///
+    /// See [modio docs](https://docs.mod.io/#get-all-games) for more informations.
+    ///
+    /// By default this returns up to `100` items. You can limit the result using `limit` and
+    /// `offset`.
+    /// # Example
+    /// ```
+    /// use modio::filter::{Order, Operator};
+    /// use modio::games::GamesListOptions;
+    ///
+    /// let mut opts = GamesListOptions::new();
+    /// opts.id(Operator::In, vec![1, 2]);
+    /// opts.sort_by(GamesListOptions::ID, Order::Desc);
+    /// ```
+    #[derive(Debug)]
+    pub struct GamesListOptions {
+        Filters
+        - id = "id";
+        - status = "status";
+        - submitted_by = "submitted_by";
+        - date_added = "date_added";
+        - date_updated = "date_updated";
+        - date_live = "date_live";
+        - name = "name";
+        - name_id = "name_id";
+        - summary = "summary";
+        - instructions_url = "instructions_url";
+        - ugc_name = "ugc_name";
+        - presentation_option = "presentation_option";
+        - submission_option = "submission_option";
+        - curation_option = "curation_option";
+        - community_options = "community_options";
+        - revenue_options = "revenue_options";
+        - api_access_options = "api_access_options";
+        - maturity_options = "maturity_options";
 
-impl GamesListOptions {
-    pub fn serialize(&self) -> Option<String> {
-        if self.params.is_empty() {
-            None
-        } else {
-            let encoded = form_urlencoded::Serializer::new(String::new())
-                .extend_pairs(&self.params)
-                .finish();
-            Some(encoded)
-        }
+        Sort
+        - ID = "id";
+        - STATUS = "status";
+        - NAME = "name";
+        - NAME_ID = "name_id";
+        - DATE_UPDATED = "date_updated";
     }
 }
 

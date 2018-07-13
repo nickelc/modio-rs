@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use futures::future;
@@ -12,6 +11,7 @@ use url_serde;
 
 use errors::Error;
 use files::{FileRef, Files};
+use filter::{Filter, OneOrMany, Operator, Order, SortField};
 use metadata::Metadata;
 use teams::Members;
 use types::mods::*;
@@ -38,7 +38,8 @@ impl<C: Clone + Connect + 'static> MyMods<C> {
 
     pub fn list(&self, options: &ModsListOptions) -> Future<ModioListResponse<Mod>> {
         let mut uri = vec!["/me/mods".to_owned()];
-        if let Some(query) = options.serialize() {
+        let query = options.to_query_params();
+        if !query.is_empty() {
             uri.push(query);
         }
         self.modio.get::<ModioListResponse<Mod>>(&uri.join("?"))
@@ -71,7 +72,8 @@ where
 
     pub fn list(&self, options: &ModsListOptions) -> Future<ModioListResponse<Mod>> {
         let mut uri = vec![self.path("")];
-        if let Some(query) = options.serialize() {
+        let query = options.to_query_params();
+        if !query.is_empty() {
             uri.push(query);
         }
         self.modio.get::<ModioListResponse<Mod>>(&uri.join("&"))
@@ -221,21 +223,80 @@ impl QueryParams for Rating {
     }
 }
 
-#[derive(Default)]
-pub struct ModsListOptions {
-    params: HashMap<&'static str, String>,
-}
+filter_options!{
+    /// Options used to filter mod listings
+    ///
+    /// # Filter parameters
+    /// - _q
+    /// - id
+    /// - game_id
+    /// - status
+    /// - visible
+    /// - submitted_by
+    /// - date_added
+    /// - date_updated
+    /// - date_live
+    /// - maturity_option
+    /// - name
+    /// - name_id
+    /// - summary
+    /// - description
+    /// - homepage_url
+    /// - modfile
+    /// - metadata_blob
+    /// - metadata_kvp
+    /// - tags
+    ///
+    /// # Sorting
+    /// - id
+    /// - name
+    /// - downloads
+    /// - popular
+    /// - ratings
+    /// - subscribers
+    ///
+    /// See the [modio docs](https://docs.mod.io/#get-all-mods) for more informations.
+    ///
+    /// By default this returns up to `100` items. You can limit the result using `limit` and
+    /// `offset`.
+    /// # Example
+    /// ```
+    /// use modio::filter::{Order, Operator};
+    /// use modio::mods::ModsListOptions;
+    ///
+    /// let mut opts = ModsListOptions::new();
+    /// opts.id(Operator::In, vec![1, 2]);
+    /// opts.sort_by(ModsListOptions::ID, Order::Desc);
+    /// ```
+    #[derive(Debug)]
+    pub struct ModsListOptions {
+        Filters
+        - id = "id";
+        - game_id = "game_id";
+        - status = "status";
+        - visible = "visible";
+        - submitted_by = "submitted_by";
+        - date_added = "date_added";
+        - date_updated = "date_updated";
+        - date_live = "date_live";
+        - maturity_option = "maturity_option";
+        - name = "name";
+        - name_id = "name_id";
+        - summary = "summary";
+        - description = "description";
+        - homepage_url = "homepage_url";
+        - modfile = "modfile";
+        - metadata_blob = "metadata_blob";
+        - metadata_kvp = "metadata_kvp";
+        - tags = "tags";
 
-impl ModsListOptions {
-    pub fn serialize(&self) -> Option<String> {
-        if self.params.is_empty() {
-            None
-        } else {
-            let encoded = form_urlencoded::Serializer::new(String::new())
-                .extend_pairs(&self.params)
-                .finish();
-            Some(encoded)
-        }
+        Sort
+        - ID = "id";
+        - NAME = "name";
+        - DOWNLOADS = "downloads";
+        - POPULAR = "popular";
+        - RATINGS = "ratings";
+        - SUBSCRIBERS = "subscribers";
     }
 }
 

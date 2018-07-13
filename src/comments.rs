@@ -1,12 +1,11 @@
-use std::collections::HashMap;
-
 use hyper::client::connect::Connect;
-use url::form_urlencoded;
 
+use filter::{Filter, OneOrMany, Operator, Order, SortField};
 use types::mods::Comment;
 use types::ModioListResponse;
 use Future;
 use Modio;
+use QueryParams;
 
 pub struct Comments<C>
 where
@@ -32,7 +31,8 @@ impl<C: Clone + Connect + 'static> Comments<C> {
 
     pub fn list(&self, options: &CommentsListOptions) -> Future<ModioListResponse<Comment>> {
         let mut uri = vec![self.path("")];
-        if let Some(query) = options.serialize() {
+        let query = options.to_query_params();
+        if !query.is_empty() {
             uri.push(query);
         }
         self.modio.get(&uri.join("?"))
@@ -44,20 +44,55 @@ impl<C: Clone + Connect + 'static> Comments<C> {
     }
 }
 
-#[derive(Default)]
-pub struct CommentsListOptions {
-    params: HashMap<&'static str, String>,
-}
+filter_options!{
+    /// Options used to filter comment listings
+    ///
+    /// # Filter parameters
+    /// - _q
+    /// - id
+    /// - mod_id
+    /// - submitted_by
+    /// - date_added
+    /// - reply_id
+    /// - thread_position
+    /// - karma
+    /// - content
+    ///
+    /// # Sorting
+    /// - id
+    /// - mod_id
+    /// - submitted_by
+    /// - date_added
+    ///
+    /// See [modio docs](https://docs.mod.io/#get-all-mod-comments) for more informations.
+    ///
+    /// By default this returns up to `100` items. You can limit the result using `limit` and
+    /// `offset`.
+    /// # Example
+    /// ```
+    /// use modio::filter::{Order, Operator};
+    /// use modio::comments::CommentsListOptions;
+    ///
+    /// let mut opts = CommentsListOptions::new();
+    /// opts.id(Operator::In, vec![1, 2]);
+    /// opts.sort_by(CommentsListOptions::ID, Order::Desc);
+    /// ```
+    #[derive(Debug)]
+    pub struct CommentsListOptions {
+        Filters
+        - id = "id";
+        - mod_id = "mod_id";
+        - submitted_by = "submitted_by";
+        - date_added = "date_added";
+        - reply_id = "reply_id";
+        - thread_position = "thread_position";
+        - karma = "karma";
+        - content = "content";
 
-impl CommentsListOptions {
-    pub fn serialize(&self) -> Option<String> {
-        if self.params.is_empty() {
-            None
-        } else {
-            let encoded = form_urlencoded::Serializer::new(String::new())
-                .extend_pairs(&self.params)
-                .finish();
-            Some(encoded)
-        }
+        Sort
+        - ID = "id";
+        - MOD_ID = "mod_id";
+        - SUBMITTED_BY = "submitted_by";
+        - DATE_ADDED = "date_added";
     }
 }

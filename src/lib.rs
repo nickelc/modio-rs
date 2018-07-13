@@ -27,11 +27,11 @@ use mime::Mime;
 use serde::de::DeserializeOwned;
 use url::Url;
 
+#[macro_use]
+pub mod filter;
 pub mod comments;
 pub mod errors;
 pub mod files;
-#[macro_use]
-pub mod filter;
 pub mod games;
 pub mod me;
 pub mod metadata;

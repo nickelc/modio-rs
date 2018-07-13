@@ -1,14 +1,13 @@
-use std::collections::HashMap;
-
 use futures::future;
 use hyper::client::connect::Connect;
 use serde_urlencoded;
-use url::form_urlencoded;
 
+use filter::{Filter, OneOrMany, Operator, Order, SortField};
 use types::mods::{TeamLevel, TeamMember};
 use types::{ModioListResponse, ModioMessage};
 use Future;
 use Modio;
+use QueryParams;
 
 pub struct Members<C>
 where
@@ -34,7 +33,8 @@ impl<C: Clone + Connect + 'static> Members<C> {
 
     pub fn list(&self, options: &TeamMemberListOptions) -> Future<ModioListResponse<TeamMember>> {
         let mut uri = vec![self.path("")];
-        if let Some(query) = options.serialize() {
+        let query = options.to_query_params();
+        if !query.is_empty() {
             uri.push(query);
         }
         self.modio.get(&uri.join("&"))
@@ -62,21 +62,50 @@ impl<C: Clone + Connect + 'static> Members<C> {
     }
 }
 
-#[derive(Default)]
-pub struct TeamMemberListOptions {
-    params: HashMap<&'static str, String>,
-}
+filter_options!{
+    /// Options used to filter team member listings
+    ///
+    /// # Filter parameters
+    /// - _q
+    /// - id
+    /// - user_id
+    /// - username
+    /// - level
+    /// - date_added
+    /// - position
+    ///
+    /// # Sorting
+    /// - id
+    /// - user_id
+    /// - username
+    ///
+    /// See [modio docs](https://docs.mod.io/#get-all-mod-team-members) for more informations.
+    ///
+    /// By default this returns up to `100` items. You can limit the result using `limit` and
+    /// `offset`.
+    /// # Example
+    /// ```
+    /// use modio::filter::{Order, Operator};
+    /// use modio::teams::TeamMemberListOptions;
+    ///
+    /// let mut opts = TeamMemberListOptions::new();
+    /// opts.id(Operator::In, vec![1, 2]);
+    /// opts.sort_by(TeamMemberListOptions::ID, Order::Desc);
+    /// ```
+    #[derive(Debug)]
+    pub struct TeamMemberListOptions {
+        Filters
+        - id = "id";
+        - user_id = "user_id";
+        - username = "username";
+        - level = "level";
+        - date_added = "date_added";
+        - position = "position";
 
-impl TeamMemberListOptions {
-    pub fn serialize(&self) -> Option<String> {
-        if self.params.is_empty() {
-            None
-        } else {
-            let encoded = form_urlencoded::Serializer::new(String::new())
-                .extend_pairs(&self.params)
-                .finish();
-            Some(encoded)
-        }
+        Sort
+        - ID = "id";
+        - USER_ID = "user_id";
+        - USERNAME = "username";
     }
 }
 

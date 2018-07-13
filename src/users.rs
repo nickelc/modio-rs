@@ -1,8 +1,7 @@
-use std::collections::HashMap;
-
 use hyper::client::connect::Connect;
 use url::form_urlencoded;
 
+use filter::{Filter, OneOrMany, Operator, Order, SortField};
 use types::ModioListResponse;
 use types::User;
 use Future;
@@ -23,7 +22,8 @@ impl<C: Clone + Connect + 'static> Users<C> {
 
     pub fn list(&self, options: &UsersListOptions) -> Future<ModioListResponse<User>> {
         let mut uri = vec!["/users".into()];
-        if let Some(query) = options.serialize() {
+        let query = options.to_query_params();
+        if !query.is_empty() {
             uri.push(query);
         }
         self.modio.get(&uri.join("?"))
@@ -59,20 +59,48 @@ impl QueryParams for Resource {
     }
 }
 
-#[derive(Default)]
-pub struct UsersListOptions {
-    params: HashMap<&'static str, String>,
-}
+filter_options!{
+    /// Options used to filter user listings
+    ///
+    /// # Filter parameters
+    /// - _q
+    /// - id
+    /// - name_id
+    /// - level
+    /// - date_online
+    /// - username
+    /// - timezone
+    /// - language
+    ///
+    /// # Sorting
+    /// - id
+    /// - username
+    ///
+    /// See [modio docs](https://docs.mod.io/#get-all-users) for more informations.
+    ///
+    /// By default this returns up to `100` items. You can limit the result using `limit` and
+    /// `offset`.
+    /// # Example
+    /// ```
+    /// use modio::filter::{Order, Operator};
+    /// use modio::users::UsersListOptions;
+    ///
+    /// let mut opts = UsersListOptions::new();
+    /// opts.id(Operator::In, vec![1, 2]);
+    /// opts.sort_by(UsersListOptions::ID, Order::Desc);
+    /// ```
+    #[derive(Debug)]
+    pub struct UsersListOptions {
+        Filters
+        - id = "id";
+        - name_id = "name_id";
+        - date_online = "date_online";
+        - username = "username";
+        - timezone = "timezone";
+        - language = "language";
 
-impl UsersListOptions {
-    pub fn serialize(&self) -> Option<String> {
-        if self.params.is_empty() {
-            None
-        } else {
-            let encoded = form_urlencoded::Serializer::new(String::new())
-                .extend_pairs(&self.params)
-                .finish();
-            Some(encoded)
-        }
+        Sort
+        - ID = "id";
+        - USERNAME = "username";
     }
 }
