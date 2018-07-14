@@ -17,3 +17,6 @@ serde_urlencoded = "0.5"
 tokio-core = "0.1"
 url = "1.7"
 url_serde = "0.2"
+
+[dev-dependencies]
+tokio = "0.1"
