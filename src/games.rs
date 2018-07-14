@@ -24,7 +24,7 @@ where
 }
 
 impl<C: Clone + Connect + 'static> MyGames<C> {
-    pub fn new(modio: Modio<C>) -> Self {
+    pub(crate) fn new(modio: Modio<C>) -> Self {
         Self { modio }
     }
 
@@ -46,7 +46,7 @@ where
 }
 
 impl<C: Clone + Connect + 'static> Games<C> {
-    pub fn new(modio: Modio<C>) -> Self {
+    pub(crate) fn new(modio: Modio<C>) -> Self {
         Self { modio }
     }
 
@@ -77,7 +77,7 @@ where
 }
 
 impl<C: Clone + Connect + 'static> GameRef<C> {
-    pub fn new(modio: Modio<C>, id: u32) -> Self {
+    pub(crate) fn new(modio: Modio<C>, id: u32) -> Self {
         Self { modio, id }
     }
 

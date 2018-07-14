@@ -16,7 +16,7 @@ where
 }
 
 impl<C: Clone + Connect + 'static> Users<C> {
-    pub fn new(modio: Modio<C>) -> Self {
+    pub(crate) fn new(modio: Modio<C>) -> Self {
         Self { modio }
     }
 

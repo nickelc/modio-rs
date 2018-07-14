@@ -315,7 +315,7 @@ where
     C: Clone + Connect,
     Out: DeserializeOwned + 'static + Send,
 {
-    pub fn new(modio: Modio<C>, path: String) -> Endpoint<C, Out> {
+    pub(crate) fn new(modio: Modio<C>, path: String) -> Endpoint<C, Out> {
         Self {
             modio,
             path,

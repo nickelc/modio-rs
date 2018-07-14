@@ -32,7 +32,7 @@ where
 }
 
 impl<C: Clone + Connect + 'static> MyMods<C> {
-    pub fn new(modio: Modio<C>) -> Self {
+    pub(crate) fn new(modio: Modio<C>) -> Self {
         Self { modio }
     }
 
@@ -58,7 +58,7 @@ impl<C> Mods<C>
 where
     C: Clone + Connect + 'static,
 {
-    pub fn new(modio: Modio<C>, game: u32) -> Self {
+    pub(crate) fn new(modio: Modio<C>, game: u32) -> Self {
         Self { modio, game }
     }
 
@@ -98,7 +98,7 @@ where
 }
 
 impl<C: Clone + Connect + 'static> ModRef<C> {
-    pub fn new(modio: Modio<C>, game: u32, id: u32) -> Self {
+    pub(crate) fn new(modio: Modio<C>, game: u32, id: u32) -> Self {
         Self { modio, game, id }
     }
 

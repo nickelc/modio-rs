@@ -22,7 +22,7 @@ where
 }
 
 impl<C: Clone + Connect + 'static> MyFiles<C> {
-    pub fn new(modio: Modio<C>) -> Self {
+    pub(crate) fn new(modio: Modio<C>) -> Self {
         Self { modio }
     }
 
@@ -46,7 +46,7 @@ where
 }
 
 impl<C: Clone + Connect + 'static> Files<C> {
-    pub fn new(modio: Modio<C>, game: u32, mod_id: u32) -> Self {
+    pub(crate) fn new(modio: Modio<C>, game: u32, mod_id: u32) -> Self {
         Self {
             modio,
             game,
@@ -87,7 +87,7 @@ where
 }
 
 impl<C: Clone + Connect + 'static> FileRef<C> {
-    pub fn new(modio: Modio<C>, game: u32, mod_id: u32, id: u32) -> Self {
+    pub(crate) fn new(modio: Modio<C>, game: u32, mod_id: u32, id: u32) -> Self {
         Self {
             modio,
             game,

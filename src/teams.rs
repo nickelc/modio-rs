@@ -19,7 +19,7 @@ where
 }
 
 impl<C: Clone + Connect + 'static> Members<C> {
-    pub fn new(modio: Modio<C>, game: u32, mod_id: u32) -> Self {
+    pub(crate) fn new(modio: Modio<C>, game: u32, mod_id: u32) -> Self {
         Self {
             modio,
             game,
