@@ -12,6 +12,7 @@ use types::ClientError;
 
 #[derive(Debug)]
 pub enum Error {
+    Msg(String),
     Fault {
         code: StatusCode,
         error: ClientError,
@@ -25,6 +26,18 @@ pub enum Error {
     Hyper(HyperError),
     Io(IoError),
     Uri(InvalidUri),
+}
+
+impl From<String> for Error {
+    fn from(s: String) -> Error {
+        Error::Msg(s)
+    }
+}
+
+impl<'a> From<&'a str> for Error {
+    fn from(s: &'a str) -> Error {
+        Error::Msg(s.into())
+    }
 }
 
 impl From<SerdeError> for Error {
