@@ -4,7 +4,7 @@ extern crate tokio;
 use std::env;
 use tokio::runtime::Runtime;
 
-use modio::errors::Error;
+use modio::error::Error;
 use modio::{auth::Credentials, Modio};
 use modio::mods::{ModsListOptions};
 use modio::filter::{Operator, Order};

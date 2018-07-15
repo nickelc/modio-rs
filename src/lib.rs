@@ -30,7 +30,7 @@ pub mod auth;
 #[macro_use]
 pub mod filter;
 pub mod comments;
-pub mod errors;
+pub mod error;
 pub mod files;
 pub mod games;
 pub mod me;
@@ -43,7 +43,7 @@ pub mod users;
 
 use auth::{Auth, Credentials};
 use comments::Comments;
-use errors::Error;
+use error::Error;
 use games::{GameRef, Games};
 use me::Me;
 use mods::{ModRef, Mods};
@@ -287,7 +287,7 @@ where
             self.host.clone() + uri,
             RequestBody::Vec(message.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
         ).or_else(|err| match err {
-            errors::Error::Codec(_) => Ok(()),
+            error::Error::Codec(_) => Ok(()),
             otherwise => Err(otherwise.into()),
         }))
     }
@@ -339,7 +339,7 @@ where
 }
 
 trait MultipartForm: MultipartFormClone + Send {
-    fn to_form(&self) -> Result<multipart::Form, errors::Error>;
+    fn to_form(&self) -> Result<multipart::Form, error::Error>;
 }
 
 trait MultipartFormClone {

@@ -4,7 +4,7 @@ extern crate tokio;
 use std::io::{self, Write};
 use tokio::runtime::Runtime;
 
-use modio::errors::Error;
+use modio::error::Error;
 use modio::{auth::Credentials, Modio};
 
 fn prompt(prompt: &str) -> io::Result<String> {

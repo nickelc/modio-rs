@@ -4,7 +4,7 @@ use hyper::client::connect::Connect;
 use hyper_multipart::client::multipart;
 use url::form_urlencoded;
 
-use errors::Error;
+use error::Error;
 use filter::{Filter, OneOrMany, Operator, Order, SortField};
 use types::game::*;
 use types::ModioListResponse;

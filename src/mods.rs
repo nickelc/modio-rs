@@ -9,7 +9,7 @@ use serde_urlencoded;
 use url::{form_urlencoded, Url};
 use url_serde;
 
-use errors::Error;
+use error::Error;
 use files::{FileRef, Files};
 use filter::{Filter, OneOrMany, Operator, Order, SortField};
 use metadata::Metadata;
