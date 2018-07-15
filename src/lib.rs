@@ -26,6 +26,7 @@ use mime::Mime;
 use serde::de::DeserializeOwned;
 use url::Url;
 
+pub mod auth;
 #[macro_use]
 pub mod filter;
 pub mod comments;
@@ -40,6 +41,7 @@ pub mod teams;
 pub mod types;
 pub mod users;
 
+use auth::Auth;
 use comments::Comments;
 use errors::Error;
 use games::{GameRef, Games};
@@ -114,6 +116,10 @@ where
             client,
             credentials: credentials.into(),
         }
+    }
+
+    pub fn auth(&self) -> Auth<C> {
+        Auth::new(self.clone())
     }
 
     pub fn games(&self) -> Games<C> {
