@@ -5,7 +5,7 @@ use std::env;
 use tokio::runtime::Runtime;
 
 use modio::errors::Error;
-use modio::{Credentials, Modio};
+use modio::{auth::Credentials, Modio};
 use modio::mods::{ModsListOptions};
 use modio::filter::{Operator, Order};
 

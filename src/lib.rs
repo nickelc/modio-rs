@@ -41,7 +41,7 @@ pub mod teams;
 pub mod types;
 pub mod users;
 
-use auth::Auth;
+use auth::{Auth, Credentials};
 use comments::Comments;
 use errors::Error;
 use games::{GameRef, Games};
@@ -60,12 +60,6 @@ pub type Stream<T> = Box<StdStream<Item = T, Error = Error> + Send>;
 const X_RATELIMIT_LIMIT: &str = "x-ratelimit-limit";
 const X_RATELIMIT_REMAINING: &str = "x-ratelimit-remaining";
 const X_RATELIMIT_RETRY_AFTER: &str = "x-ratelimit-retryafter";
-
-#[derive(Debug, PartialEq, Clone)]
-pub enum Credentials {
-    ApiKey(String),
-    Token(String),
-}
 
 #[derive(Clone, Debug)]
 pub struct Modio<C>

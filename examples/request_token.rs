@@ -5,7 +5,7 @@ use std::io::{self, Write};
 use tokio::runtime::Runtime;
 
 use modio::errors::Error;
-use modio::{Credentials, Modio};
+use modio::{auth::Credentials, Modio};
 
 fn prompt(prompt: &str) -> io::Result<String> {
     print!("{}", prompt);

@@ -6,6 +6,12 @@ use Future;
 use Modio;
 use ModioMessage;
 
+#[derive(Clone, Debug, PartialEq)]
+pub enum Credentials {
+    ApiKey(String),
+    Token(String),
+}
+
 pub struct Auth<C>
 where
     C: Clone + Connect + 'static,
