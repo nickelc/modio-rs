@@ -7,21 +7,21 @@ use url_serde;
 /// See the [Message Object](https://docs.mod.io/#message-object) docs for more informations.
 #[derive(Debug, Deserialize)]
 pub struct ModioMessage {
-    code: u16,
-    message: String,
+    pub code: u16,
+    pub message: String,
 }
 
 /// See the [Multiple Item Response](https://docs.mod.io/#response-formats) docs for more
 /// informations.
 #[derive(Debug, Deserialize)]
 pub struct ModioListResponse<T> {
-    data: Vec<T>,
+    pub data: Vec<T>,
     #[serde(rename = "result_count")]
-    count: u32,
+    pub count: u32,
     #[serde(rename = "result_limit")]
-    limit: u32,
+    pub limit: u32,
     #[serde(rename = "result_offset")]
-    offset: u32,
+    pub offset: u32,
 }
 
 impl<T> IntoIterator for ModioListResponse<T> {
@@ -52,60 +52,60 @@ pub struct ModioErrorResponse {
 /// See the [Error Object](https://docs.mod.io/#error-object) docs for more informations.
 #[derive(Debug, Deserialize)]
 pub struct ClientError {
-    code: u16,
-    message: String,
-    errors: Option<HashMap<String, String>>,
+    pub code: u16,
+    pub message: String,
+    pub errors: Option<HashMap<String, String>>,
 }
 
 /// See the [User Object](https://docs.mod.io/#user-object) docs for more informations.
 #[derive(Debug, Deserialize)]
 pub struct User {
-    id: u32,
-    name_id: String,
-    username: String,
-    date_online: u32,
+    pub id: u32,
+    pub name_id: String,
+    pub username: String,
+    pub date_online: u32,
     #[serde(deserialize_with = "deserialize_avatar")]
-    avatar: Option<Avatar>,
-    timezone: String,
-    language: String,
+    pub avatar: Option<Avatar>,
+    pub timezone: String,
+    pub language: String,
     #[serde(with = "url_serde")]
-    profile_url: Url,
+    pub profile_url: Url,
 }
 
 /// See the [Avatar Object](https://docs.mod.io/#avatar-object) docs for more informations.
 #[derive(Debug, Deserialize)]
 pub struct Avatar {
-    filename: String,
+    pub filename: String,
     #[serde(with = "url_serde")]
-    original: Url,
+    pub original: Url,
     #[serde(with = "url_serde")]
-    thumb_50x50: Url,
+    pub thumb_50x50: Url,
     #[serde(with = "url_serde")]
-    thumb_100x100: Url,
+    pub thumb_100x100: Url,
 }
 
 /// See the [Logo Object](https://docs.mod.io/#logo-object) docs for more informations.
 #[derive(Debug, Deserialize)]
 pub struct Logo {
-    filename: String,
+    pub filename: String,
     #[serde(with = "url_serde")]
-    original: Url,
+    pub original: Url,
     #[serde(with = "url_serde")]
-    thumb_320x180: Url,
+    pub thumb_320x180: Url,
     #[serde(with = "url_serde")]
-    thumb_640x360: Url,
+    pub thumb_640x360: Url,
     #[serde(with = "url_serde")]
-    thumb_1280x720: Url,
+    pub thumb_1280x720: Url,
 }
 
 /// See the [Event Object](https://docs.mod.io/#event-object) docs for more informations.
 #[derive(Debug, Deserialize)]
 pub struct Event {
-    id: u32,
-    mod_id: u32,
-    user_id: u32,
-    date_added: u64,
-    event_type: EventType,
+    pub id: u32,
+    pub mod_id: u32,
+    pub user_id: u32,
+    pub date_added: u64,
+    pub event_type: EventType,
 }
 
 #[derive(Debug, Deserialize)]
@@ -149,66 +149,66 @@ pub mod game {
     /// See the [Game Object](https://docs.mod.io/#game-object) docs for more informations.
     #[derive(Debug, Deserialize)]
     pub struct Game {
-        id: u32,
-        status: u8,
-        submitted_by: User,
-        date_added: u64,
-        date_updated: u64,
-        date_live: u64,
-        presentation_option: u8,
-        submission_option: u8,
-        curation_option: u8,
-        community_options: u8,
-        revenue_options: u16,
-        api_access_options: u8,
-        maturity_options: u8,
-        ugc_name: String,
-        icon: Icon,
-        logo: Logo,
-        header: HeaderImage,
-        name: String,
-        name_id: String,
-        summary: String,
-        instructions: Option<String>,
+        pub id: u32,
+        pub status: u8,
+        pub submitted_by: User,
+        pub date_added: u64,
+        pub date_updated: u64,
+        pub date_live: u64,
+        pub presentation_option: u8,
+        pub submission_option: u8,
+        pub curation_option: u8,
+        pub community_options: u8,
+        pub revenue_options: u16,
+        pub api_access_options: u8,
+        pub maturity_options: u8,
+        pub ugc_name: String,
+        pub icon: Icon,
+        pub logo: Logo,
+        pub header: HeaderImage,
+        pub name: String,
+        pub name_id: String,
+        pub summary: String,
+        pub instructions: Option<String>,
         #[serde(with = "url_serde")]
-        instructions_url: Option<Url>,
+        pub instructions_url: Option<Url>,
         #[serde(with = "url_serde")]
-        profile_url: Url,
-        tag_options: Vec<TagOption>,
+        pub profile_url: Url,
+        pub tag_options: Vec<TagOption>,
     }
 
     /// See the [Icon Object](https://docs.mod.io/#icon-object) docs for more informations.
     #[derive(Debug, Deserialize)]
     pub struct Icon {
-        filename: String,
+        pub filename: String,
         #[serde(with = "url_serde")]
-        original: Url,
+        pub original: Url,
         #[serde(with = "url_serde")]
-        thumb_64x64: Url,
+        pub thumb_64x64: Url,
         #[serde(with = "url_serde")]
-        thumb_128x128: Url,
+        pub thumb_128x128: Url,
         #[serde(with = "url_serde")]
-        thumb_256x256: Url,
+        pub thumb_256x256: Url,
     }
 
     /// See the [Header Image Object](https://docs.mod.io/#header-image-object) docs for more
     /// informations.
     #[derive(Debug, Deserialize)]
     pub struct HeaderImage {
-        filename: String,
+        pub filename: String,
         #[serde(with = "url_serde")]
-        original: Url,
+        pub original: Url,
     }
 
     /// See the [Game Tag Option Object](https://docs.mod.io/#game-tag-option-object) docs for more
     /// informations.
     #[derive(Debug, Deserialize)]
     pub struct TagOption {
-        name: String,
+        pub name: String,
         #[serde(rename = "type")]
-        kind: TagType,
-        hidden: bool,
-        tags: Vec<String>,
+        pub kind: TagType,
+        pub hidden: bool,
+        pub tags: Vec<String>,
     }
 
     #[derive(Debug, Deserialize)]
@@ -235,41 +235,41 @@ pub mod mods {
     /// See the [Mod Object](https://docs.mod.io/#mod-object) docs for more informations.
     #[derive(Debug, Deserialize)]
     pub struct Mod {
-        id: u32,
-        game_id: u32,
-        status: u32,
-        visible: u32,
-        submitted_by: User,
-        date_added: u64,
-        date_updated: u64,
-        date_live: u64,
-        maturity_option: u8,
-        logo: Logo,
+        pub id: u32,
+        pub game_id: u32,
+        pub status: u32,
+        pub visible: u32,
+        pub submitted_by: User,
+        pub date_added: u64,
+        pub date_updated: u64,
+        pub date_live: u64,
+        pub maturity_option: u8,
+        pub logo: Logo,
         #[serde(with = "url_serde")]
-        homepage_url: Option<Url>,
-        name: String,
-        name_id: String,
-        summary: String,
-        description: Option<String>,
-        metadata_blob: Option<String>,
+        pub homepage_url: Option<Url>,
+        pub name: String,
+        pub name_id: String,
+        pub summary: String,
+        pub description: Option<String>,
+        pub metadata_blob: Option<String>,
         #[serde(with = "url_serde")]
-        profile_url: Url,
+        pub profile_url: Url,
         #[serde(deserialize_with = "deserialize_modfile")]
-        modfile: Option<File>,
-        media: Media,
+        pub modfile: Option<File>,
+        pub media: Media,
         #[serde(rename = "rating_summary")]
-        ratings: Ratings,
+        pub ratings: Ratings,
         #[serde(rename = "metadata_kvp", deserialize_with = "deserialize_kvp")]
-        metadata: MetadataMap,
-        tags: Vec<Tag>,
+        pub metadata: MetadataMap,
+        pub tags: Vec<Tag>,
     }
 
     /// See the [Mod Dependency Object](https://docs.mod.io/#mod-dependencies-object) docs for more
     /// informations.
     #[derive(Debug, Deserialize)]
     pub struct Dependency {
-        mod_id: u32,
-        date_added: u64,
+        pub mod_id: u32,
+        pub date_added: u64,
     }
 
     /// See the [Mod Media Object](https://docs.mod.io/#mod-media-object) docs for more
@@ -277,21 +277,21 @@ pub mod mods {
     #[derive(Debug, Deserialize)]
     pub struct Media {
         #[serde(default = "Vec::new")]
-        youtube: Vec<String>,
+        pub youtube: Vec<String>,
         #[serde(default = "Vec::new")]
-        sketchfab: Vec<String>,
+        pub sketchfab: Vec<String>,
         #[serde(default = "Vec::new")]
-        images: Vec<Image>,
+        pub images: Vec<Image>,
     }
 
     /// See the [Image Object](https://docs.mod.io/#image-object) docs for more informations.
     #[derive(Debug, Deserialize)]
     pub struct Image {
-        filename: String,
+        pub filename: String,
         #[serde(with = "url_serde")]
-        original: Url,
+        pub original: Url,
         #[serde(with = "url_serde")]
-        thumb_320x180: Url,
+        pub thumb_320x180: Url,
     }
 
     /// See the [Rating Summary Object](https://docs.mod.io/#rating-summary-object) docs for more
@@ -299,21 +299,21 @@ pub mod mods {
     #[derive(Debug, Deserialize)]
     pub struct Ratings {
         #[serde(rename = "total_ratings")]
-        total: u32,
+        pub total: u32,
         #[serde(rename = "positive_ratings")]
-        positive: u32,
+        pub positive: u32,
         #[serde(rename = "negative_ratings")]
-        negative: u32,
-        percentage_positive: u32,
-        weighted_aggregate: f32,
-        display_text: String,
+        pub negative: u32,
+        pub percentage_positive: u32,
+        pub weighted_aggregate: f32,
+        pub display_text: String,
     }
 
     /// See the [Mod Tag Object](https://docs.mod.io/#mod-tag-object) docs for more informations.
     #[derive(Debug, Deserialize)]
     pub struct Tag {
-        name: String,
-        date_added: u64,
+        pub name: String,
+        pub date_added: u64,
     }
 
     /// See the [Metadata KVP Object](https://docs.mod.io/#metadata-kvp-object) docs for more
@@ -358,59 +358,59 @@ pub mod mods {
     /// See the [Comment Object](https://docs.mod.io/#comment-object) docs for more informations.
     #[derive(Debug, Deserialize)]
     pub struct Comment {
-        id: u32,
-        mod_id: u32,
-        user: User,
-        date_added: u64,
-        reply_id: u32,
-        thread_position: String,
-        karma: u32,
-        karma_guest: u32,
-        content: String,
+        pub id: u32,
+        pub mod_id: u32,
+        pub user: User,
+        pub date_added: u64,
+        pub reply_id: u32,
+        pub thread_position: String,
+        pub karma: u32,
+        pub karma_guest: u32,
+        pub content: String,
     }
 
     /// See the [Modfile Object](https://docs.mod.io/#modfile-object) docs for more informations.
     #[derive(Debug, Deserialize)]
     pub struct File {
-        id: u32,
-        mod_id: u32,
-        date_added: u64,
-        date_scanned: u64,
-        virus_status: u32,
-        virus_positive: u32,
-        virustotal_hash: Option<String>,
-        filesize: u64,
-        filehash: FileHash,
-        filename: String,
-        version: Option<String>,
-        changelog: Option<String>,
-        metadata_blob: Option<String>,
-        download: Download,
+        pub id: u32,
+        pub mod_id: u32,
+        pub date_added: u64,
+        pub date_scanned: u64,
+        pub virus_status: u32,
+        pub virus_positive: u32,
+        pub virustotal_hash: Option<String>,
+        pub filesize: u64,
+        pub filehash: FileHash,
+        pub filename: String,
+        pub version: Option<String>,
+        pub changelog: Option<String>,
+        pub metadata_blob: Option<String>,
+        pub download: Download,
     }
 
     /// See the [Filehash Object](https://docs.mod.io/#filehash-object) docs for more informations.
     #[derive(Debug, Deserialize)]
     pub struct FileHash {
-        md5: String,
+        pub md5: String,
     }
 
     /// See the [Download Object](https://docs.mod.io/#download-object) docs for more informations.
     #[derive(Debug, Deserialize)]
     pub struct Download {
         #[serde(with = "url_serde")]
-        binary_url: Url,
-        date_expires: u64,
+        pub binary_url: Url,
+        pub date_expires: u64,
     }
 
     /// See the [Team Member Object](https://docs.mod.io/#team-member-object) docs for more
     /// informations.
     #[derive(Debug, Deserialize)]
     pub struct TeamMember {
-        id: u32,
-        user: User,
-        level: TeamLevel,
-        date_added: u64,
-        position: String,
+        pub id: u32,
+        pub user: User,
+        pub level: TeamLevel,
+        pub date_added: u64,
+        pub position: String,
     }
 
     #[derive(Clone, Copy, Debug)]
