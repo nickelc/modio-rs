@@ -4,11 +4,12 @@ use hyper::client::connect::Connect;
 use url::form_urlencoded;
 
 use filter::{Filter, OneOrMany, Operator, Order, SortField};
-use types::ModioListResponse;
-use types::User;
 use Future;
 use Modio;
+use ModioListResponse;
 use QueryParams;
+
+pub use types::{Avatar, User};
 
 /// Interface for users.
 pub struct Users<C>

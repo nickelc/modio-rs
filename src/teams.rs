@@ -5,11 +5,13 @@ use hyper::client::connect::Connect;
 use serde_urlencoded;
 
 use filter::{Filter, OneOrMany, Operator, Order, SortField};
-use types::mods::{TeamLevel, TeamMember};
-use types::{ModioListResponse, ModioMessage};
 use Future;
 use Modio;
+use ModioListResponse;
+use ModioMessage;
 use QueryParams;
+
+pub use types::mods::{TeamLevel, TeamMember};
 
 /// Interface for the team members of a mod.
 pub struct Members<C>

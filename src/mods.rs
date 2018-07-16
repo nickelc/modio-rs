@@ -16,15 +16,18 @@ use files::{FileRef, Files};
 use filter::{Filter, OneOrMany, Operator, Order, SortField};
 use metadata::Metadata;
 use teams::Members;
-use types::mods::*;
 use types::Event;
-use types::{ModioListResponse, ModioMessage};
 use Comments;
 use Endpoint;
 use Future;
 use Modio;
+use ModioListResponse;
+use ModioMessage;
 use MultipartForm;
 use {AddOptions, DeleteOptions, QueryParams};
+
+pub use types::mods::{Dependency, Image, Media, MetadataMap, Mod, Ratings, Tag};
+pub use types::Logo;
 
 /// Interface for mods the authenticated user added or is team member of.
 pub struct MyMods<C>

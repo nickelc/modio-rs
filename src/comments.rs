@@ -3,10 +3,10 @@
 use hyper::client::connect::Connect;
 
 use filter::{Filter, OneOrMany, Operator, Order, SortField};
-use types::mods::Comment;
-use types::ModioListResponse;
+pub use types::mods::Comment;
 use Future;
 use Modio;
+use ModioListResponse;
 use QueryParams;
 
 pub struct Comments<C>

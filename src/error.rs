@@ -10,7 +10,7 @@ use hyper::StatusCode;
 use serde_json::Error as SerdeError;
 use serde_urlencoded::ser::Error as UrlEncodedError;
 
-use types::ClientError;
+pub use types::ClientError;
 
 #[derive(Debug)]
 pub enum Error {

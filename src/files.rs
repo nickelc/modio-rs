@@ -9,12 +9,13 @@ use serde_urlencoded;
 
 use error::Error;
 use filter::{Filter, OneOrMany, Operator, Order, SortField};
-use types::mods::File;
-use types::ModioListResponse;
 use Future;
 use Modio;
+use ModioListResponse;
 use MultipartForm;
 use QueryParams;
+
+pub use types::mods::{Download, File, FileHash};
 
 /// Interface for the modfiles the authenticated user uploaded.
 pub struct MyFiles<C>

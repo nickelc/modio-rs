@@ -38,7 +38,7 @@ pub mod metadata;
 pub mod mods;
 pub mod reports;
 pub mod teams;
-pub mod types;
+mod types;
 pub mod users;
 
 use auth::{Auth, Credentials};
@@ -48,8 +48,9 @@ use games::{GameRef, Games};
 use me::Me;
 use mods::{ModRef, Mods};
 use reports::Reports;
-use types::{ModioErrorResponse, ModioListResponse, ModioMessage};
 use users::Users;
+
+pub use types::{Event, EventType, ModioErrorResponse, ModioListResponse, ModioMessage};
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 

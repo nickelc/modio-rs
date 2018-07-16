@@ -8,15 +8,17 @@ use url::form_urlencoded;
 
 use error::Error;
 use filter::{Filter, OneOrMany, Operator, Order, SortField};
-use types::game::*;
-use types::ModioListResponse;
 use Endpoint;
 use Future;
 use ModRef;
 use Modio;
+use ModioListResponse;
 use ModioMessage;
 use Mods;
 use {AddOptions, DeleteOptions, MultipartForm, QueryParams};
+
+pub use types::game::{Game, HeaderImage, Icon, TagOption, TagType};
+pub use types::Logo;
 
 /// Interface for games the authenticated user added or is team member of.
 pub struct MyGames<C>
