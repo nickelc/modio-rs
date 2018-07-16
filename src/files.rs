@@ -1,3 +1,5 @@
+//! Modfile interface
+
 use std::path::{Path, PathBuf};
 
 use futures::future;
@@ -14,6 +16,7 @@ use Modio;
 use MultipartForm;
 use QueryParams;
 
+/// Interface for the modfiles the authenticated user uploaded.
 pub struct MyFiles<C>
 where
     C: Clone + Connect + 'static,
@@ -26,6 +29,7 @@ impl<C: Clone + Connect + 'static> MyFiles<C> {
         Self { modio }
     }
 
+    /// Return all modfiles the authenticated user uploaded.
     pub fn list(&self, options: &FileListOptions) -> Future<ModioListResponse<File>> {
         let mut uri = vec!["/me/files".to_owned()];
         let query = options.to_query_params();
@@ -36,6 +40,7 @@ impl<C: Clone + Connect + 'static> MyFiles<C> {
     }
 }
 
+/// Interface for the modfiles of a mod.
 pub struct Files<C>
 where
     C: Clone + Connect + 'static,
@@ -58,6 +63,7 @@ impl<C: Clone + Connect + 'static> Files<C> {
         format!("/games/{}/mods/{}/files{}", self.game, self.mod_id, more)
     }
 
+    /// Return all files that are published for a mod this `Files` refers to.
     pub fn list(&self, options: &FileListOptions) -> Future<ModioListResponse<File>> {
         let mut uri = vec![self.path("")];
         let query = options.to_query_params();
@@ -67,15 +73,18 @@ impl<C: Clone + Connect + 'static> Files<C> {
         self.modio.get(&uri.join("?"))
     }
 
+    /// Return a reference to a file.
     pub fn get(&self, id: u32) -> FileRef<C> {
         FileRef::new(self.modio.clone(), self.game, self.mod_id, id)
     }
 
+    /// Add a file for a mod that this `Files` refers to.
     pub fn add(&self, options: AddFileOptions) -> Future<File> {
         self.modio.post_form(&self.path(""), options)
     }
 }
 
+/// Reference interface of a modfile.
 pub struct FileRef<C>
 where
     C: Clone + Connect + 'static,
@@ -103,10 +112,12 @@ impl<C: Clone + Connect + 'static> FileRef<C> {
         )
     }
 
+    /// Get a reference to the Modio modfile object that this `FileRef` refers to.
     pub fn get(&self) -> Future<File> {
         self.modio.get(&self.path())
     }
 
+    /// Edit details of a modfile.
     pub fn edit(&self, options: &EditFileOptions) -> Future<File> {
         let msg = match serde_urlencoded::to_string(&options) {
             Ok(data) => data,
@@ -115,6 +126,7 @@ impl<C: Clone + Connect + 'static> FileRef<C> {
         self.modio.put(&self.path(), msg)
     }
 
+    /// Delete a modfile.
     pub fn delete(&self) -> Future<()> {
         self.modio.delete(&self.path(), Vec::new())
     }

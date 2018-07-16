@@ -1,3 +1,5 @@
+//! Mod metadata KVP interface
+
 use futures::Future as StdFuture;
 use hyper::client::connect::Connect;
 use url::form_urlencoded;
@@ -31,6 +33,7 @@ impl<C: Clone + Connect + 'static> Metadata<C> {
         format!("/games/{}/mods/{}/metadatakvp", self.game, self.mod_id)
     }
 
+    /// Return the metadata key value pairs for a mod that this `Metadata` refers to.
     pub fn get(&self) -> Future<MetadataMap> {
         #[derive(Deserialize)]
         struct KV {
@@ -53,10 +56,12 @@ impl<C: Clone + Connect + 'static> Metadata<C> {
         )
     }
 
+    /// Add metadata for a mod that this `Metadata` refers to.
     pub fn add(&self, metadata: &MetadataMap) -> Future<ModioMessage> {
         self.modio.post(&self.path(), metadata.to_query_params())
     }
 
+    /// Delete metadata for a mod that this `Metadata` refers to.
     pub fn delete(&self, metadata: &MetadataMap) -> Future<()> {
         self.modio.delete(&self.path(), metadata.to_query_params())
     }

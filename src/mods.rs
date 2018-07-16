@@ -1,3 +1,5 @@
+//! Mods Interface
+
 use std::path::{Path, PathBuf};
 
 use futures::future;
@@ -24,6 +26,7 @@ use Modio;
 use MultipartForm;
 use {AddOptions, DeleteOptions, QueryParams};
 
+/// Interface for mods the authenticated user added or is team member of.
 pub struct MyMods<C>
 where
     C: Clone + Connect + 'static,
@@ -36,6 +39,7 @@ impl<C: Clone + Connect + 'static> MyMods<C> {
         Self { modio }
     }
 
+    /// List all mods the authenticated user added or is team member of.
     pub fn list(&self, options: &ModsListOptions) -> Future<ModioListResponse<Mod>> {
         let mut uri = vec!["/me/mods".to_owned()];
         let query = options.to_query_params();
@@ -46,6 +50,7 @@ impl<C: Clone + Connect + 'static> MyMods<C> {
     }
 }
 
+/// Interface for mods of a game.
 pub struct Mods<C>
 where
     C: Clone + Connect + 'static,
@@ -66,10 +71,12 @@ where
         format!("/games/{}/mods{}", self.game, more)
     }
 
+    /// Return a reference to a mod.
     pub fn get(&self, id: u32) -> ModRef<C> {
         ModRef::new(self.modio.clone(), self.game, id)
     }
 
+    /// List all games.
     pub fn list(&self, options: &ModsListOptions) -> Future<ModioListResponse<Mod>> {
         let mut uri = vec![self.path("")];
         let query = options.to_query_params();
@@ -79,15 +86,18 @@ where
         self.modio.get::<ModioListResponse<Mod>>(&uri.join("&"))
     }
 
+    /// Add a mod and return the newly created Modio mod object.
     pub fn add(&self, options: AddModOptions) -> Future<Mod> {
         self.modio.post_form(&self.path(""), options)
     }
 
+    /// Return the event log for all mods of a game sorted by latest event first.
     pub fn events(&self) -> Future<ModioListResponse<Event>> {
         self.modio.get(&self.path("/events"))
     }
 }
 
+/// Reference interface of a mod.
 pub struct ModRef<C>
 where
     C: Clone + Connect + 'static,
@@ -106,42 +116,52 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
         format!("/games/{}/mods/{}{}", self.game, self.id, more)
     }
 
+    /// Get a reference to the Modio mod object that this `ModRef` refers to.
     pub fn get(&self) -> Future<Mod> {
         self.modio.get(&self.path(""))
     }
 
+    /// Return a reference to an interface that provides access to the files of a mod.
     pub fn files(&self) -> Files<C> {
         Files::new(self.modio.clone(), self.game, self.id)
     }
 
+    /// Return a reference to a file of a mod.
     pub fn file(&self, id: u32) -> FileRef<C> {
         FileRef::new(self.modio.clone(), self.game, self.id, id)
     }
 
+    /// Return a reference to an interface to manage metadata key value pairs of a mod.
     pub fn metadata(&self) -> Metadata<C> {
         Metadata::new(self.modio.clone(), self.game, self.id)
     }
 
+    /// Return a reference to an interface to manage the tags of a mod.
     pub fn tags(&self) -> Endpoint<C, Tag> {
         Endpoint::new(self.modio.clone(), self.path("/tags"))
     }
 
+    /// Return a reference to an interface that provides access to the comments of a mod.
     pub fn comments(&self) -> Comments<C> {
         Comments::new(self.modio.clone(), self.game, self.id)
     }
 
+    /// Return a reference to an interface to manage the dependencies of a mod.
     pub fn dependencies(&self) -> Endpoint<C, Dependency> {
         Endpoint::new(self.modio.clone(), self.path("/dependencies"))
     }
 
+    /// Return the event log for a mod sorted by latest event first.
     pub fn events(&self) -> Future<ModioListResponse<Event>> {
         self.modio.get(&self.path("/events"))
     }
 
+    /// Return a reference to an interface to manage team members of a mod.
     pub fn members(&self) -> Members<C> {
         Members::new(self.modio.clone(), self.game, self.id)
     }
 
+    /// Edit details for a mod.
     pub fn edit(&self, options: &EditModOptions) -> Future<Mod> {
         let msg = match serde_urlencoded::to_string(&options) {
             Ok(data) => data,
@@ -151,15 +171,18 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
         self.modio.put(&self.path(""), msg)
     }
 
+    /// Add new media to a mod.
     pub fn add_media(&self, options: AddMediaOptions) -> Future<ModioMessage> {
         self.modio.post_form(&self.path("/media"), options)
     }
 
+    /// Delete media from a mod.
     pub fn delete_media(&self, options: &DeleteMediaOptions) -> Future<()> {
         self.modio
             .delete(&self.path("/media"), options.to_query_params())
     }
 
+    /// Submit a positive or negative rating for a mod.
     pub fn rate(&self, rating: Rating) -> Future<()> {
         let params = rating.to_query_params();
         Box::new(
@@ -176,6 +199,7 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
         )
     }
 
+    /// Subscribe the authenticated user to a mod.
     pub fn subscribe(&self) -> Future<()> {
         Box::new(
             self.modio
@@ -191,6 +215,7 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
         )
     }
 
+    /// Unsubscribe the authenticated user from a mod.
     pub fn unsubscribe(&self) -> Future<()> {
         Box::new(
             self.modio
@@ -224,7 +249,7 @@ impl QueryParams for Rating {
 }
 
 filter_options!{
-    /// Options used to filter mod listings
+    /// Options used to filter mod listings.
     ///
     /// # Filter parameters
     /// - _q

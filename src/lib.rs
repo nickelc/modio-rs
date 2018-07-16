@@ -61,6 +61,7 @@ const X_RATELIMIT_LIMIT: &str = "x-ratelimit-limit";
 const X_RATELIMIT_REMAINING: &str = "x-ratelimit-remaining";
 const X_RATELIMIT_RETRY_AFTER: &str = "x-ratelimit-retryafter";
 
+/// Endpoint interface to interacting with the [mod.io](https://mod.io) API.
 #[derive(Clone, Debug)]
 pub struct Modio<C>
 where
@@ -73,6 +74,7 @@ where
 }
 
 impl Modio<HttpsConnector<HttpConnector>> {
+    /// Create an endpoint to [http://api.mod.io/v1](https://docs.mod.io/#mod-io-api-v1).
     pub fn new<A, C>(agent: A, credentials: C) -> Self
     where
         A: Into<String>,
@@ -112,30 +114,38 @@ where
         }
     }
 
+    /// Return a reference to an interface for requesting access tokens.
     pub fn auth(&self) -> Auth<C> {
         Auth::new(self.clone())
     }
 
+    /// Return a reference to an interface that provides access to game informations.
     pub fn games(&self) -> Games<C> {
         Games::new(self.clone())
     }
 
+    /// Return a reference to a game.
     pub fn game(&self, game_id: u32) -> GameRef<C> {
         GameRef::new(self.clone(), game_id)
     }
 
+    /// Return a reference to a mod.
     pub fn mod_(&self, game_id: u32, mod_id: u32) -> ModRef<C> {
         ModRef::new(self.clone(), game_id, mod_id)
     }
 
+    /// Return a reference to an interface that provides access to resources owned by the user
+    /// associated with the current authentication credentials.
     pub fn me(&self) -> Me<C> {
         Me::new(self.clone())
     }
 
+    /// Return a reference to an interface that provides access to user informations.
     pub fn users(&self) -> Users<C> {
         Users::new(self.clone())
     }
 
+    /// Return a reference to an interface to report games, mods and users.
     pub fn reports(&self) -> Reports<C> {
         Reports::new(self.clone())
     }
@@ -300,6 +310,7 @@ enum RequestBody {
     Form(Box<MultipartForm>),
 }
 
+/// Generic endpoint for sub-resources
 pub struct Endpoint<C, Out>
 where
     C: Clone + Connect + 'static,

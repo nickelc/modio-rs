@@ -4,12 +4,15 @@ use serde::de::{Deserialize, Deserializer};
 use url::Url;
 use url_serde;
 
+/// See the [Message Object](https://docs.mod.io/#message-object) docs for more informations.
 #[derive(Debug, Deserialize)]
 pub struct ModioMessage {
     code: u16,
     message: String,
 }
 
+/// See the [Multiple Item Response](https://docs.mod.io/#response-formats) docs for more
+/// informations.
 #[derive(Debug, Deserialize)]
 pub struct ModioListResponse<T> {
     data: Vec<T>,
@@ -39,12 +42,14 @@ impl<'a, T> IntoIterator for &'a ModioListResponse<T> {
     }
 }
 
+/// See the [Error Object](https://docs.mod.io/#error-object) docs for more informations.
 #[derive(Debug, Deserialize)]
 pub struct ModioErrorResponse {
     #[serde(rename = "error")]
     pub error: ClientError,
 }
 
+/// See the [Error Object](https://docs.mod.io/#error-object) docs for more informations.
 #[derive(Debug, Deserialize)]
 pub struct ClientError {
     code: u16,
@@ -52,6 +57,7 @@ pub struct ClientError {
     errors: Option<HashMap<String, String>>,
 }
 
+/// See the [User Object](https://docs.mod.io/#user-object) docs for more informations.
 #[derive(Debug, Deserialize)]
 pub struct User {
     id: u32,
@@ -66,6 +72,7 @@ pub struct User {
     profile_url: Url,
 }
 
+/// See the [Avatar Object](https://docs.mod.io/#avatar-object) docs for more informations.
 #[derive(Debug, Deserialize)]
 pub struct Avatar {
     filename: String,
@@ -77,6 +84,7 @@ pub struct Avatar {
     thumb_100x100: Url,
 }
 
+/// See the [Logo Object](https://docs.mod.io/#logo-object) docs for more informations.
 #[derive(Debug, Deserialize)]
 pub struct Logo {
     filename: String,
@@ -90,6 +98,7 @@ pub struct Logo {
     thumb_1280x720: Url,
 }
 
+/// See the [Event Object](https://docs.mod.io/#event-object) docs for more informations.
 #[derive(Debug, Deserialize)]
 pub struct Event {
     id: u32,
@@ -137,6 +146,7 @@ pub mod game {
     use super::*;
     use std::fmt;
 
+    /// See the [Game Object](https://docs.mod.io/#game-object) docs for more informations.
     #[derive(Debug, Deserialize)]
     pub struct Game {
         id: u32,
@@ -167,6 +177,7 @@ pub mod game {
         tag_options: Vec<TagOption>,
     }
 
+    /// See the [Icon Object](https://docs.mod.io/#icon-object) docs for more informations.
     #[derive(Debug, Deserialize)]
     pub struct Icon {
         filename: String,
@@ -180,6 +191,8 @@ pub mod game {
         thumb_256x256: Url,
     }
 
+    /// See the [Header Image Object](https://docs.mod.io/#header-image-object) docs for more
+    /// informations.
     #[derive(Debug, Deserialize)]
     pub struct HeaderImage {
         filename: String,
@@ -187,6 +200,8 @@ pub mod game {
         original: Url,
     }
 
+    /// See the [Game Tag Option Object](https://docs.mod.io/#game-tag-option-object) docs for more
+    /// informations.
     #[derive(Debug, Deserialize)]
     pub struct TagOption {
         name: String,
@@ -217,6 +232,7 @@ pub mod mods {
     use super::*;
     use serde::de::{Deserialize, Deserializer};
 
+    /// See the [Mod Object](https://docs.mod.io/#mod-object) docs for more informations.
     #[derive(Debug, Deserialize)]
     pub struct Mod {
         id: u32,
@@ -248,12 +264,16 @@ pub mod mods {
         tags: Vec<Tag>,
     }
 
+    /// See the [Mod Dependency Object](https://docs.mod.io/#mod-dependencies-object) docs for more
+    /// informations.
     #[derive(Debug, Deserialize)]
     pub struct Dependency {
         mod_id: u32,
         date_added: u64,
     }
 
+    /// See the [Mod Media Object](https://docs.mod.io/#mod-media-object) docs for more
+    /// informations.
     #[derive(Debug, Deserialize)]
     pub struct Media {
         #[serde(default = "Vec::new")]
@@ -264,6 +284,7 @@ pub mod mods {
         images: Vec<Image>,
     }
 
+    /// See the [Image Object](https://docs.mod.io/#image-object) docs for more informations.
     #[derive(Debug, Deserialize)]
     pub struct Image {
         filename: String,
@@ -273,6 +294,8 @@ pub mod mods {
         thumb_320x180: Url,
     }
 
+    /// See the [Rating Summary Object](https://docs.mod.io/#rating-summary-object) docs for more
+    /// informations.
     #[derive(Debug, Deserialize)]
     pub struct Ratings {
         #[serde(rename = "total_ratings")]
@@ -286,12 +309,15 @@ pub mod mods {
         display_text: String,
     }
 
+    /// See the [Mod Tag Object](https://docs.mod.io/#mod-tag-object) docs for more informations.
     #[derive(Debug, Deserialize)]
     pub struct Tag {
         name: String,
         date_added: u64,
     }
 
+    /// See the [Metadata KVP Object](https://docs.mod.io/#metadata-kvp-object) docs for more
+    /// informations.
     pub type MetadataMap = HashMap<String, Vec<String>>;
 
     fn deserialize_kvp<'de, D>(deserializer: D) -> Result<MetadataMap, D::Error>
@@ -329,6 +355,7 @@ pub mod mods {
         deserializer.deserialize_seq(MetadataVisitor)
     }
 
+    /// See the [Comment Object](https://docs.mod.io/#comment-object) docs for more informations.
     #[derive(Debug, Deserialize)]
     pub struct Comment {
         id: u32,
@@ -342,6 +369,7 @@ pub mod mods {
         content: String,
     }
 
+    /// See the [Modfile Object](https://docs.mod.io/#modfile-object) docs for more informations.
     #[derive(Debug, Deserialize)]
     pub struct File {
         id: u32,
@@ -360,11 +388,13 @@ pub mod mods {
         download: Download,
     }
 
+    /// See the [Filehash Object](https://docs.mod.io/#filehash-object) docs for more informations.
     #[derive(Debug, Deserialize)]
     pub struct FileHash {
         md5: String,
     }
 
+    /// See the [Download Object](https://docs.mod.io/#download-object) docs for more informations.
     #[derive(Debug, Deserialize)]
     pub struct Download {
         #[serde(with = "url_serde")]
@@ -372,6 +402,8 @@ pub mod mods {
         date_expires: u64,
     }
 
+    /// See the [Team Member Object](https://docs.mod.io/#team-member-object) docs for more
+    /// informations.
     #[derive(Debug, Deserialize)]
     pub struct TeamMember {
         id: u32,

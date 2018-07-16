@@ -1,3 +1,5 @@
+//! Client errors
+
 use std::io::Error as IoError;
 use std::time::Duration;
 

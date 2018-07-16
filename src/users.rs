@@ -1,3 +1,5 @@
+//! Users interface
+
 use hyper::client::connect::Connect;
 use url::form_urlencoded;
 
@@ -8,6 +10,7 @@ use Future;
 use Modio;
 use QueryParams;
 
+/// Interface for users.
 pub struct Users<C>
 where
     C: Clone + Connect + 'static,
@@ -20,6 +23,7 @@ impl<C: Clone + Connect + 'static> Users<C> {
         Self { modio }
     }
 
+    /// List all users registered on [mod.io](https:://mod.io).
     pub fn list(&self, options: &UsersListOptions) -> Future<ModioListResponse<User>> {
         let mut uri = vec!["/users".into()];
         let query = options.to_query_params();
@@ -29,10 +33,12 @@ impl<C: Clone + Connect + 'static> Users<C> {
         self.modio.get(&uri.join("?"))
     }
 
+    /// Return a user by id
     pub fn get(&self, id: u32) -> Future<User> {
         self.modio.get(&format!("/users/{}", id))
     }
 
+    /// Return the user that is the original submitter of a resource.
     pub fn get_owner(&self, resource: Resource) -> Future<User> {
         let params = resource.to_query_params();
         self.modio.post("/general/ownership", params)

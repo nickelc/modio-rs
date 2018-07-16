@@ -1,3 +1,5 @@
+//! Team members interface
+
 use futures::future;
 use hyper::client::connect::Connect;
 use serde_urlencoded;
@@ -9,6 +11,7 @@ use Future;
 use Modio;
 use QueryParams;
 
+/// Interface for the team members of a mod.
 pub struct Members<C>
 where
     C: Clone + Connect + 'static,
@@ -31,6 +34,7 @@ impl<C: Clone + Connect + 'static> Members<C> {
         format!("/games/{}/mods/{}/team{}", self.game, self.mod_id, more)
     }
 
+    /// List all team members.
     pub fn list(&self, options: &TeamMemberListOptions) -> Future<ModioListResponse<TeamMember>> {
         let mut uri = vec![self.path("")];
         let query = options.to_query_params();
@@ -40,6 +44,7 @@ impl<C: Clone + Connect + 'static> Members<C> {
         self.modio.get(&uri.join("&"))
     }
 
+    /// Add a team member by email.
     pub fn add(&self, options: &InviteTeamMemberOptions) -> Future<ModioMessage> {
         let msg = match serde_urlencoded::to_string(&options) {
             Ok(data) => data,
@@ -48,6 +53,7 @@ impl<C: Clone + Connect + 'static> Members<C> {
         self.modio.post(&self.path(""), msg)
     }
 
+    /// Edit a team member by id.
     pub fn edit(&self, id: u32, options: &EditTeamMemberOptions) -> Future<ModioMessage> {
         let msg = match serde_urlencoded::to_string(&options) {
             Ok(data) => data,
@@ -56,6 +62,7 @@ impl<C: Clone + Connect + 'static> Members<C> {
         self.modio.put(&self.path(&format!("/{}", id)), msg)
     }
 
+    /// Delete a team member by id.
     pub fn delete(&self, id: u32) -> Future<()> {
         self.modio
             .delete(&self.path(&format!("/{}", id)), Vec::new())

@@ -1,3 +1,5 @@
+//! Reports interface
+
 use hyper::client::connect::Connect;
 use url::form_urlencoded;
 

@@ -1,3 +1,5 @@
+//! Games interface
+
 use std::path::{Path, PathBuf};
 
 use hyper::client::connect::Connect;
@@ -16,6 +18,7 @@ use ModioMessage;
 use Mods;
 use {AddOptions, DeleteOptions, MultipartForm, QueryParams};
 
+/// Interface for games the authenticated user added or is team member of.
 pub struct MyGames<C>
 where
     C: Clone + Connect + 'static,
@@ -28,6 +31,7 @@ impl<C: Clone + Connect + 'static> MyGames<C> {
         Self { modio }
     }
 
+    /// List all games the authenticated user added or is team member of.
     pub fn list(&self, options: &GamesListOptions) -> Future<ModioListResponse<Game>> {
         let mut uri = vec!["/me/games".to_owned()];
         let query = options.to_query_params();
@@ -38,6 +42,7 @@ impl<C: Clone + Connect + 'static> MyGames<C> {
     }
 }
 
+/// Interface for games.
 pub struct Games<C>
 where
     C: Clone + Connect + 'static,
@@ -54,6 +59,7 @@ impl<C: Clone + Connect + 'static> Games<C> {
         format!("/games{}", more)
     }
 
+    /// List all games.
     pub fn list(&self, options: &GamesListOptions) -> Future<ModioListResponse<Game>> {
         let mut uri = vec![self.path("")];
         let query = options.to_query_params();
@@ -63,11 +69,13 @@ impl<C: Clone + Connect + 'static> Games<C> {
         self.modio.get::<ModioListResponse<Game>>(&uri.join("?"))
     }
 
+    /// Return a reference to a game.
     pub fn get(&self, id: u32) -> GameRef<C> {
         GameRef::new(self.modio.clone(), id)
     }
 }
 
+/// Reference interface of a game.
 pub struct GameRef<C>
 where
     C: Clone + Connect + 'static,
@@ -85,29 +93,34 @@ impl<C: Clone + Connect + 'static> GameRef<C> {
         format!("/games/{}{}", self.id, more)
     }
 
+    /// Get a reference to the Modio game object that this `GameRef` refers to.
     pub fn get(&self) -> Future<Game> {
         self.modio.get::<Game>(&format!("/games/{}", self.id))
     }
 
+    /// Return a reference to a mod of a game.
     pub fn mod_(&self, mod_id: u32) -> ModRef<C> {
         ModRef::new(self.modio.clone(), self.id, mod_id)
     }
 
+    /// Return a reference to an interface that provides access to the mods of a game.
     pub fn mods(&self) -> Mods<C> {
         Mods::new(self.modio.clone(), self.id)
     }
 
+    /// Return a reference to an interface that provides access to the tags of a game.
     pub fn tags(&self) -> Endpoint<C, TagOption> {
         Endpoint::new(self.modio.clone(), self.path("/tags"))
     }
 
+    /// Add or edit new media to a game.
     pub fn add_media(&self, media: GameMediaOptions) -> Future<ModioMessage> {
         self.modio.post_form(&self.path("/media"), media)
     }
 }
 
 filter_options!{
-    /// Options used to filter game listings
+    /// Options used to filter game listings.
     ///
     /// # Filter parameters
     /// - _q

@@ -1,3 +1,5 @@
+//! Mod comments interface
+
 use hyper::client::connect::Connect;
 
 use filter::{Filter, OneOrMany, Operator, Order, SortField};
@@ -29,6 +31,7 @@ impl<C: Clone + Connect + 'static> Comments<C> {
         format!("/games/{}/mods/{}/comments{}", self.game, self.mod_id, more)
     }
 
+    /// List all comments.
     pub fn list(&self, options: &CommentsListOptions) -> Future<ModioListResponse<Comment>> {
         let mut uri = vec![self.path("")];
         let query = options.to_query_params();
@@ -38,6 +41,7 @@ impl<C: Clone + Connect + 'static> Comments<C> {
         self.modio.get(&uri.join("?"))
     }
 
+    /// Delete a comment by id.
     pub fn delete(&self, id: u32) -> Future<()> {
         self.modio
             .delete(&self.path(&format!("/{}", id)), Vec::new())
