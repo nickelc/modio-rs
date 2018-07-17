@@ -1,7 +1,12 @@
 [package]
 name = "modio"
 version = "0.1.0"
+description = "Rust interface for mod.io"
+readme = "README.md"
 authors = ["Constantin Nickel <constantin.nickel@gmail.com>"]
+license = "MIT/Apache-2.0"
+keywords = ["mod.io", "hyper"]
+categories = ["api-bindings", "web-programming::http-client"]
 
 [dependencies]
 futures = "0.1"
