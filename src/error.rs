@@ -8,7 +8,6 @@ use http::Error as HttpError;
 use hyper::Error as HyperError;
 use hyper::StatusCode;
 use serde_json::Error as SerdeError;
-use serde_urlencoded::ser::Error as UrlEncodedError;
 
 pub use types::ClientError;
 
@@ -23,7 +22,6 @@ pub enum Error {
         reset: Duration,
     },
     Codec(SerdeError),
-    Codec2(UrlEncodedError),
     Http(HttpError),
     Hyper(HyperError),
     Io(IoError),
@@ -45,12 +43,6 @@ impl<'a> From<&'a str> for Error {
 impl From<SerdeError> for Error {
     fn from(err: SerdeError) -> Error {
         Error::Codec(err)
-    }
-}
-
-impl From<UrlEncodedError> for Error {
-    fn from(err: UrlEncodedError) -> Error {
-        Error::Codec2(err)
     }
 }
 

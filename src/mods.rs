@@ -2,14 +2,11 @@
 
 use std::path::{Path, PathBuf};
 
-use futures::future;
 use futures::Future as StdFuture;
 use hyper::client::connect::Connect;
 use hyper::StatusCode;
 use hyper_multipart::client::multipart;
-use serde_urlencoded;
 use url::{form_urlencoded, Url};
-use url_serde;
 
 use error::Error;
 use files::{FileRef, Files};
@@ -166,12 +163,8 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
 
     /// Edit details for a mod.
     pub fn edit(&self, options: &EditModOptions) -> Future<Mod> {
-        let msg = match serde_urlencoded::to_string(&options) {
-            Ok(data) => data,
-            Err(err) => return Box::new(future::err(err.into())),
-        };
-
-        self.modio.put(&self.path(""), msg)
+        let params = options.to_query_params();
+        self.modio.put(&self.path(""), params)
     }
 
     /// Add new media to a mod.
@@ -328,7 +321,7 @@ filter_options!{
     }
 }
 
-#[derive(Clone, Debug, Default, Serialize)]
+#[derive(Clone, Debug, Default)]
 pub struct AddModOptions {
     visible: Option<u32>,
     logo: PathBuf,
@@ -336,7 +329,6 @@ pub struct AddModOptions {
     name_id: Option<String>,
     summary: String,
     description: Option<String>,
-    #[serde(with = "url_serde")]
     homepage_url: Option<Url>,
     stock: Option<u32>,
     maturity_option: Option<u8>,
@@ -467,7 +459,7 @@ impl AddModOptionsBuilder {
     }
 }
 
-#[derive(Debug, Default, Serialize)]
+#[derive(Debug, Default)]
 pub struct EditModOptions {
     status: Option<u32>,
     visible: Option<u32>,
@@ -475,7 +467,6 @@ pub struct EditModOptions {
     name_id: Option<String>,
     summary: Option<String>,
     description: Option<String>,
-    #[serde(with = "url_serde")]
     homepage_url: Option<Url>,
     stock: Option<u32>,
     maturity_option: Option<u8>,
@@ -485,6 +476,27 @@ pub struct EditModOptions {
 impl EditModOptions {
     pub fn builder() -> EditModOptionsBuilder {
         EditModOptionsBuilder::new()
+    }
+}
+
+impl QueryParams for EditModOptions {
+    fn to_query_params(&self) -> String {
+        form_urlencoded::Serializer::new(String::new())
+            .extend_pairs(self.status.iter().map(|s| ("status", s.to_string())))
+            .extend_pairs(self.visible.iter().map(|v| ("visible", v.to_string())))
+            .extend_pairs(self.name.iter().map(|n| ("name", n)))
+            .extend_pairs(self.name_id.iter().map(|n| ("name_id", n)))
+            .extend_pairs(self.summary.iter().map(|s| ("summary", s)))
+            .extend_pairs(self.description.iter().map(|d| ("description", d)))
+            .extend_pairs(self.homepage_url.iter().map(|h| ("homepage_url", h)))
+            .extend_pairs(self.stock.iter().map(|s| ("stock", s.to_string())))
+            .extend_pairs(
+                self.maturity_option
+                    .iter()
+                    .map(|m| ("maturity_option", m.to_string())),
+            )
+            .extend_pairs(self.metadata_blob.iter().map(|m| ("metadata_blob", m)))
+            .finish()
     }
 }
 

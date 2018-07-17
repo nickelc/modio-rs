@@ -1,8 +1,7 @@
 //! Team members interface
 
-use futures::future;
 use hyper::client::connect::Connect;
-use serde_urlencoded;
+use url::form_urlencoded;
 
 use filter::{Filter, OneOrMany, Operator, Order, SortField};
 use Future;
@@ -48,20 +47,14 @@ impl<C: Clone + Connect + 'static> Members<C> {
 
     /// Add a team member by email.
     pub fn add(&self, options: &InviteTeamMemberOptions) -> Future<ModioMessage> {
-        let msg = match serde_urlencoded::to_string(&options) {
-            Ok(data) => data,
-            Err(err) => return Box::new(future::err(err.into())),
-        };
-        self.modio.post(&self.path(""), msg)
+        let params = options.to_query_params();
+        self.modio.post(&self.path(""), params)
     }
 
     /// Edit a team member by id.
     pub fn edit(&self, id: u32, options: &EditTeamMemberOptions) -> Future<ModioMessage> {
-        let msg = match serde_urlencoded::to_string(&options) {
-            Ok(data) => data,
-            Err(err) => return Box::new(future::err(err.into())),
-        };
-        self.modio.put(&self.path(&format!("/{}", id)), msg)
+        let params = options.to_query_params();
+        self.modio.put(&self.path(&format!("/{}", id)), params)
     }
 
     /// Delete a team member by id.
@@ -118,7 +111,7 @@ filter_options!{
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct InviteTeamMemberOptions {
     email: String,
     level: TeamLevel,
@@ -131,6 +124,16 @@ impl InviteTeamMemberOptions {
         T: Into<String>,
     {
         InviteTeamMemberOptionsBuilder::new(email, level)
+    }
+}
+
+impl QueryParams for InviteTeamMemberOptions {
+    fn to_query_params(&self) -> String {
+        form_urlencoded::Serializer::new(String::new())
+            .append_pair("email", &self.email)
+            .append_pair("level", &self.level.value().to_string())
+            .extend_pairs(self.position.iter().map(|p| ("position", p)))
+            .finish()
     }
 }
 
@@ -159,7 +162,7 @@ impl InviteTeamMemberOptionsBuilder {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug)]
 pub struct EditTeamMemberOptions {
     level: Option<TeamLevel>,
     position: Option<String>,
@@ -168,6 +171,15 @@ pub struct EditTeamMemberOptions {
 impl EditTeamMemberOptions {
     pub fn builder() -> EditTeamMemberOptionsBuilder {
         EditTeamMemberOptionsBuilder::new()
+    }
+}
+
+impl QueryParams for EditTeamMemberOptions {
+    fn to_query_params(&self) -> String {
+        form_urlencoded::Serializer::new(String::new())
+            .extend_pairs(self.level.iter().map(|l| ("level", l.value().to_string())))
+            .extend_pairs(self.position.iter().map(|p| ("position", p)))
+            .finish()
     }
 }
 

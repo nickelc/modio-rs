@@ -2,10 +2,9 @@
 
 use std::path::{Path, PathBuf};
 
-use futures::future;
 use hyper::client::connect::Connect;
 use hyper_multipart::client::multipart;
-use serde_urlencoded;
+use url::form_urlencoded;
 
 use error::Error;
 use filter::{Filter, OneOrMany, Operator, Order, SortField};
@@ -120,11 +119,8 @@ impl<C: Clone + Connect + 'static> FileRef<C> {
 
     /// Edit details of a modfile.
     pub fn edit(&self, options: &EditFileOptions) -> Future<File> {
-        let msg = match serde_urlencoded::to_string(&options) {
-            Ok(data) => data,
-            Err(err) => return Box::new(future::err(err.into())),
-        };
-        self.modio.put(&self.path(), msg)
+        let params = options.to_query_params();
+        self.modio.put(&self.path(), params)
     }
 
     /// Delete a modfile.
@@ -282,7 +278,7 @@ impl AddFileOptionsBuilder {
     }
 }
 
-#[derive(Default, Serialize)]
+#[derive(Default)]
 pub struct EditFileOptions {
     version: Option<String>,
     changelog: Option<String>,
@@ -293,6 +289,17 @@ pub struct EditFileOptions {
 impl EditFileOptions {
     pub fn builder() -> EditFileOptionsBuilder {
         EditFileOptionsBuilder::new()
+    }
+}
+
+impl QueryParams for EditFileOptions {
+    fn to_query_params(&self) -> String {
+        form_urlencoded::Serializer::new(String::new())
+            .extend_pairs(self.version.iter().map(|v| ("version", v)))
+            .extend_pairs(self.changelog.iter().map(|c| ("changelog", c)))
+            .extend_pairs(self.active.iter().map(|a| ("active", a.to_string())))
+            .extend_pairs(self.metadata_blob.iter().map(|m| ("metadata_blob", m)))
+            .finish()
     }
 }
 
