@@ -43,6 +43,7 @@ pub mod users;
 use auth::{Auth, Credentials};
 use comments::Comments;
 use error::Error;
+use filter::{Filter, OneOrMany, Operator, Order, SortField};
 use games::{GameRef, Games};
 use me::Me;
 use mods::{ModRef, Mods};
@@ -346,6 +347,47 @@ where
     pub fn delete<T: DeleteOptions + QueryParams>(&self, options: T) -> Future<()> {
         let params = options.to_query_params();
         self.modio.delete(&self.path, params)
+    }
+}
+
+filter_options!{
+    /// Options used to filter event listings.
+    ///
+    /// # Filter parameters
+    /// - id
+    /// - mod_id
+    /// - user_id
+    /// - date_added
+    /// - event_type
+    ///
+    /// # Sorting
+    /// - id
+    ///
+    /// See the [modio docs](https://docs.mod.io/#events) for more informations.
+    ///
+    /// By default this returns up to `100` items. You can limit the result using `limit` and
+    /// `offset`.
+    /// # Example
+    /// ```
+    /// use modio::filter::{Order, Operator};
+    /// use modio::EventListOptions;
+    /// use modio::EventType;
+    ///
+    /// let mut opts = EventListOptions::new();
+    /// opts.id(Operator::GreaterThan, 1024);
+    /// opts.event_type(Operator::Equals, EventType::ModfileChanged);
+    /// ```
+    #[derive(Debug)]
+    pub struct EventListOptions {
+        Filters
+        - id = "id";
+        - mod_id = "mod_id";
+        - user_id = "user_id";
+        - date_added = "date_added";
+        - event_type = "event_type";
+
+        Sort
+        - ID = "id";
     }
 }
 

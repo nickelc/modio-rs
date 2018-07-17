@@ -16,6 +16,7 @@ use teams::Members;
 use types::Event;
 use Comments;
 use Endpoint;
+use EventListOptions;
 use Future;
 use Modio;
 use ModioListResponse;
@@ -92,8 +93,13 @@ where
     }
 
     /// Return the event log for all mods of a game sorted by latest event first.
-    pub fn events(&self) -> Future<ModioListResponse<Event>> {
-        self.modio.get(&self.path("/events"))
+    pub fn events(&self, options: &EventListOptions) -> Future<ModioListResponse<Event>> {
+        let mut uri = vec![self.path("/events")];
+        let query = options.to_query_params();
+        if !query.is_empty() {
+            uri.push(query);
+        }
+        self.modio.get(&uri.join("?"))
     }
 }
 
@@ -152,8 +158,13 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
     }
 
     /// Return the event log for a mod sorted by latest event first.
-    pub fn events(&self) -> Future<ModioListResponse<Event>> {
-        self.modio.get(&self.path("/events"))
+    pub fn events(&self, options: &EventListOptions) -> Future<ModioListResponse<Event>> {
+        let mut uri = vec![self.path("/events")];
+        let query = options.to_query_params();
+        if !query.is_empty() {
+            uri.push(query);
+        }
+        self.modio.get(&uri.join("?"))
     }
 
     /// Return a reference to an interface to manage team members of a mod.

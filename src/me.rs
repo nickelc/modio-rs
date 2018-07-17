@@ -9,6 +9,7 @@ use mods::MyMods;
 use types::mods::Mod;
 use types::Event;
 use types::User;
+use EventListOptions;
 use Future;
 use Modio;
 use ModioListResponse;
@@ -51,8 +52,13 @@ impl<C: Clone + Connect + 'static> Me<C> {
     }
 
     /// Return the events that have been fired specific to the authenticated user.
-    pub fn events(&self) -> Future<ModioListResponse<Event>> {
-        self.modio.get("/me/events")
+    pub fn events(&self, options: &EventListOptions) -> Future<ModioListResponse<Event>> {
+        let mut uri = vec!["/me/events".to_owned()];
+        let query = options.to_query_params();
+        if !query.is_empty() {
+            uri.push(query);
+        }
+        self.modio.get(&uri.join("?"))
     }
 
     /// Return all mod's the authenticated user is subscribed to.

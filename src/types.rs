@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt;
 
 use serde::de::{Deserialize, Deserializer};
 use url::Url;
@@ -121,6 +122,23 @@ pub enum EventType {
     UserTeamLeave,
     UserSubscribe,
     UserUnsubscribe,
+}
+
+impl fmt::Display for EventType {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            EventType::ModfileChanged => "MODFILE_CHANGED",
+            EventType::ModAvailable => "MOD_AVAILABLE",
+            EventType::ModUnavailable => "MOD_UNAVAILABLE",
+            EventType::ModEdited => "MOD_EDITED",
+            EventType::ModDeleted => "MOD_DELETED",
+            EventType::ModTeamChanged => "MOD_TEAM_CHANGED",
+            EventType::UserTeamJoin => "USER_TEAM_JOIN",
+            EventType::UserTeamLeave => "USER_TEAM_LEAVE",
+            EventType::UserSubscribe => "USER_SUBSCRIBE",
+            EventType::UserUnsubscribe => "USER_UNSUBSCRIBE",
+        }.fmt(fmt)
+    }
 }
 
 fn deserialize_avatar<'de, D>(deserializer: D) -> Result<Option<Avatar>, D::Error>
