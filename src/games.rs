@@ -7,7 +7,6 @@ use hyper_multipart::client::multipart;
 use url::form_urlencoded;
 
 use error::Error;
-use filter::{Filter, OneOrMany, Operator, Order, SortField};
 use Endpoint;
 use Future;
 use ModRef;

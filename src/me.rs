@@ -3,7 +3,6 @@
 use hyper::client::connect::Connect;
 
 use files::MyFiles;
-use filter::{Filter, OneOrMany, Operator, Order, SortField};
 use games::MyGames;
 use mods::MyMods;
 use types::mods::Mod;

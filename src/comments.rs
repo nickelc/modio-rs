@@ -2,7 +2,6 @@
 
 use hyper::client::connect::Connect;
 
-use filter::{Filter, OneOrMany, Operator, Order, SortField};
 pub use types::mods::Comment;
 use Future;
 use Modio;

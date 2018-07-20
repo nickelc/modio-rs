@@ -43,7 +43,6 @@ pub mod users;
 use auth::{Auth, Credentials};
 use comments::Comments;
 use error::Error;
-use filter::{Filter, OneOrMany, Operator, Order, SortField};
 use games::{GameRef, Games};
 use me::Me;
 use mods::{ModRef, Mods};

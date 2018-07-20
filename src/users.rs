@@ -3,7 +3,6 @@
 use hyper::client::connect::Connect;
 use url::form_urlencoded;
 
-use filter::{Filter, OneOrMany, Operator, Order, SortField};
 use Future;
 use Modio;
 use ModioListResponse;

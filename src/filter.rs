@@ -18,7 +18,7 @@ macro_rules! filter_options {
     ) => {
         $(#[$outer])*
         pub struct $FilterOptions {
-            filters: ::std::collections::BTreeMap<String, Filter>,
+            filters: ::std::collections::BTreeMap<String, ::filter::Filter>,
             sorting: Option<String>,
             limit: Option<usize>,
             offset: Option<usize>,
@@ -27,7 +27,7 @@ macro_rules! filter_options {
         impl $FilterOptions {
             $(
                 $(#[$sort_inner $($sort_args)*])*
-                pub const $sort_ident: SortField = SortField($sort_name);
+                pub const $sort_ident: ::filter::SortField = ::filter::SortField($sort_name);
             )+
 
             pub fn new() -> Self {
@@ -37,30 +37,30 @@ macro_rules! filter_options {
             pub fn fulltext<T, V>(&mut self, value: V) -> &mut Self
             where
                 T: ::std::fmt::Display,
-                V: Into<OneOrMany<T>>,
+                V: Into<::filter::OneOrMany<T>>,
             {
-                let f = Filter::new("_q", None, value);
+                let f = ::filter::Filter::new("_q", None, value);
                 self.filters.insert(f.name(), f);
                 self
             }
 
             $(
                 $(#[$filter_inner $($filter_args)*])*
-                pub fn $filter_fn<T, V>(&mut self, op: Operator, value: V) -> &mut Self
+                pub fn $filter_fn<T, V>(&mut self, op: ::filter::Operator, value: V) -> &mut Self
                 where
                     T: ::std::fmt::Display,
-                    V: Into<OneOrMany<T>>,
+                    V: Into<::filter::OneOrMany<T>>,
                 {
-                    let f = Filter::new($filter_name, Some(op), value);
+                    let f = ::filter::Filter::new($filter_name, Some(op), value);
                     self.filters.insert(f.name(), f);
                     self
                 }
             )+
 
-            pub fn sort_by(&mut self, field: SortField, order: Order) -> &mut Self {
+            pub fn sort_by(&mut self, field: ::filter::SortField, order: ::filter::Order) -> &mut Self {
                 self.sorting = match order {
-                    Order::Asc => Some(field.to_string()),
-                    Order::Desc => Some(format!("-{}", field)),
+                    ::filter::Order::Asc => Some(field.to_string()),
+                    ::filter::Order::Desc => Some(format!("-{}", field)),
                 };
                 self
             }

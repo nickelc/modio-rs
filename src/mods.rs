@@ -10,7 +10,6 @@ use url::{form_urlencoded, Url};
 
 use error::Error;
 use files::{FileRef, Files};
-use filter::{Filter, OneOrMany, Operator, Order, SortField};
 use metadata::Metadata;
 use teams::Members;
 use types::Event;
