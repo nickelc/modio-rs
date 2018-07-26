@@ -334,7 +334,7 @@ impl EditFileOptionsBuilder {
         EditFileOptions {
             version: self.0.version.clone(),
             changelog: self.0.changelog.clone(),
-            active: self.0.active.clone(),
+            active: self.0.active,
             metadata_blob: self.0.metadata_blob.clone(),
         }
     }
