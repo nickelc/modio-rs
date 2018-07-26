@@ -510,11 +510,12 @@ impl QueryParams for EditModOptions {
     }
 }
 
+#[derive(Default)]
 pub struct EditModOptionsBuilder(EditModOptions);
 
 impl EditModOptionsBuilder {
     pub fn new() -> Self {
-        EditModOptionsBuilder(Default::default())
+        Default::default()
     }
 
     pub fn status(&mut self, status: u32) -> &mut Self {
@@ -684,11 +685,12 @@ impl MultipartForm for AddMediaOptions {
     }
 }
 
+#[derive(Default)]
 pub struct AddMediaOptionsBuilder(AddMediaOptions);
 
 impl AddMediaOptionsBuilder {
     pub fn new() -> Self {
-        AddMediaOptionsBuilder(Default::default())
+        Default::default()
     }
 
     pub fn logo<P: AsRef<Path>>(&mut self, logo: P) -> &mut Self {
@@ -761,11 +763,12 @@ impl QueryParams for DeleteMediaOptions {
     }
 }
 
+#[derive(Default)]
 pub struct DeleteMediaOptionsBuilder(DeleteMediaOptions);
 
 impl DeleteMediaOptionsBuilder {
     pub fn new() -> Self {
-        DeleteMediaOptionsBuilder(Default::default())
+        Default::default()
     }
 
     pub fn images(&mut self, images: Vec<String>) -> &mut Self {

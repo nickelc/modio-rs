@@ -305,6 +305,7 @@ impl MultipartForm for GameMediaOptions {
     }
 }
 
+#[derive(Default)]
 pub struct GameMediaOptionsBuilder(GameMediaOptions);
 
 impl GameMediaOptionsBuilder {

@@ -302,13 +302,12 @@ impl QueryParams for EditFileOptions {
     }
 }
 
+#[derive(Default)]
 pub struct EditFileOptionsBuilder(EditFileOptions);
 
 impl EditFileOptionsBuilder {
     pub fn new() -> Self {
-        EditFileOptionsBuilder(EditFileOptions {
-            ..Default::default()
-        })
+        Default::default()
     }
 
     pub fn version<S: Into<String>>(&mut self, value: S) -> &mut Self {

@@ -161,7 +161,7 @@ impl InviteTeamMemberOptionsBuilder {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct EditTeamMemberOptions {
     level: Option<TeamLevel>,
     position: Option<String>,
@@ -182,14 +182,12 @@ impl QueryParams for EditTeamMemberOptions {
     }
 }
 
+#[derive(Default)]
 pub struct EditTeamMemberOptionsBuilder(EditTeamMemberOptions);
 
 impl EditTeamMemberOptionsBuilder {
     pub fn new() -> Self {
-        EditTeamMemberOptionsBuilder(EditTeamMemberOptions {
-            level: None,
-            position: None,
-        })
+        Default::default()
     }
 
     pub fn level(&mut self, level: TeamLevel) -> &mut Self {
