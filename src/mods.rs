@@ -200,7 +200,7 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
                         code: StatusCode::BAD_REQUEST,
                         ..
                     } => Ok(()),
-                    otherwise => Err(otherwise.into()),
+                    otherwise => Err(otherwise),
                 }),
         )
     }
@@ -216,7 +216,7 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
                         code: StatusCode::BAD_REQUEST,
                         ..
                     } => Ok(()),
-                    otherwise => Err(otherwise.into()),
+                    otherwise => Err(otherwise),
                 }),
         )
     }
@@ -231,7 +231,7 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
                         code: StatusCode::BAD_REQUEST,
                         ..
                     } => Ok(()),
-                    otherwise => Err(otherwise.into()),
+                    otherwise => Err(otherwise),
                 }),
         )
     }

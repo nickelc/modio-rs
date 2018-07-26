@@ -298,7 +298,7 @@ where
             RequestBody::Vec(message.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
         ).or_else(|err| match err {
             error::Error::Codec(_) => Ok(()),
-            otherwise => Err(otherwise.into()),
+            otherwise => Err(otherwise),
         }))
     }
 }
