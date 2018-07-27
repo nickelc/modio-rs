@@ -439,8 +439,8 @@ pub mod mods {
     }
 
     impl TeamLevel {
-        pub fn value(&self) -> u64 {
-            (*self as u64)
+        pub fn value(self) -> u64 {
+            self as u64
         }
     }
 
