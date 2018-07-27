@@ -149,9 +149,9 @@ where
         Ok(avatar) => Ok(Some(avatar)),
         Err(err) => {
             let err_s = format!("{}", err);
-            if err_s.starts_with("missing field `filename`") {
-                Ok(None)
-            } else if err_s.starts_with("invalid type: null") {
+            if err_s.starts_with("missing field `filename`")
+                || err_s.starts_with("invalid type: null")
+            {
                 Ok(None)
             } else {
                 Err(err)
@@ -498,9 +498,9 @@ pub mod mods {
             Ok(file) => Ok(Some(file)),
             Err(err) => {
                 let err_s = format!("{}", err);
-                if err_s.starts_with("missing field `id`") {
-                    Ok(None)
-                } else if err_s.starts_with("invalid type: null") {
+                if err_s.starts_with("missing field `id`")
+                    || err_s.starts_with("invalid type: null")
+                {
                     Ok(None)
                 } else {
                     Err(err)
