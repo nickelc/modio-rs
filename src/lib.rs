@@ -181,17 +181,13 @@ where
                     req.header(CONTENT_TYPE, &*mime.to_string());
                     req.body(Body::from(body)).map_err(Error::from)
                 }
-                RequestBody::Form(data) => {
-                    data.to_form().and_then(move |form| {
-                        form.set_body(&mut req).map_err(Error::from)
-                    })
-                }
+                RequestBody::Form(data) => data.to_form()
+                    .and_then(move |form| form.set_body(&mut req).map_err(Error::from)),
                 RequestBody::Empty => req.body(Body::empty()).map_err(Error::from),
             };
 
-            req.into_future().and_then(move |req| {
-                instance.client.request(req).map_err(Error::from)
-            })
+            req.into_future()
+                .and_then(move |req| instance.client.request(req).map_err(Error::from))
         });
 
         let instance2 = self.clone();
