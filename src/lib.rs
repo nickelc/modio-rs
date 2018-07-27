@@ -150,7 +150,7 @@ where
         Reports::new(self.clone())
     }
 
-    fn request<Out>(&self, method: Method, uri: String, body: RequestBody) -> Future<Out>
+    fn request<Out>(&self, method: Method, uri: &str, body: RequestBody) -> Future<Out>
     where
         Out: DeserializeOwned + 'static + Send,
     {
@@ -211,7 +211,7 @@ where
             if StatusCode::MOVED_PERMANENTLY == status || StatusCode::TEMPORARY_REDIRECT == status {
                 if let Some(location) = response.headers().get(LOCATION) {
                     let location = location.to_str().unwrap().to_owned();
-                    return instance2.request(method, location, body);
+                    return instance2.request(method, &location, body);
                 }
             }
             Box::new(
@@ -249,7 +249,7 @@ where
     where
         D: DeserializeOwned + 'static + Send,
     {
-        self.request(Method::GET, self.host.clone() + uri, RequestBody::Empty)
+        self.request(Method::GET, &(self.host.clone() + uri), RequestBody::Empty)
     }
 
     fn post<D, M>(&self, uri: &str, message: M) -> Future<D>
@@ -259,7 +259,7 @@ where
     {
         self.request(
             Method::POST,
-            self.host.clone() + uri,
+            &(self.host.clone() + uri),
             RequestBody::Vec(message.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
         )
     }
@@ -271,7 +271,7 @@ where
     {
         self.request(
             Method::POST,
-            self.host.clone() + uri,
+            &(self.host.clone() + uri),
             RequestBody::Form(Box::new(data)),
         )
     }
@@ -283,7 +283,7 @@ where
     {
         self.request(
             Method::PUT,
-            self.host.clone() + uri,
+            &(self.host.clone() + uri),
             RequestBody::Vec(message.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
         )
     }
@@ -294,7 +294,7 @@ where
     {
         Box::new(self.request(
             Method::DELETE,
-            self.host.clone() + uri,
+            &(self.host.clone() + uri),
             RequestBody::Vec(message.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
         ).or_else(|err| match err {
             error::Error::Codec(_) => Ok(()),
@@ -338,12 +338,12 @@ where
         self.modio.get(&self.path)
     }
 
-    pub fn add<T: AddOptions + QueryParams>(&self, options: T) -> Future<ModioMessage> {
+    pub fn add<T: AddOptions + QueryParams>(&self, options: &T) -> Future<ModioMessage> {
         let params = options.to_query_params();
         self.modio.post(&self.path, params)
     }
 
-    pub fn delete<T: DeleteOptions + QueryParams>(&self, options: T) -> Future<()> {
+    pub fn delete<T: DeleteOptions + QueryParams>(&self, options: &T) -> Future<()> {
         let params = options.to_query_params();
         self.modio.delete(&self.path, params)
     }

@@ -45,6 +45,7 @@ impl<C: Clone + Connect + 'static> Users<C> {
     }
 }
 
+#[derive(Clone, Copy)]
 pub enum Resource {
     Game(u32),
     Mod(u32),

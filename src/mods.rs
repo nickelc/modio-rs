@@ -237,6 +237,7 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
     }
 }
 
+#[derive(Clone, Copy)]
 pub enum Rating {
     Positive,
     Negative,
@@ -703,7 +704,7 @@ impl AddMediaOptionsBuilder {
         self
     }
 
-    pub fn images<P: AsRef<Path>>(&mut self, images: Vec<P>) -> &mut Self {
+    pub fn images<P: AsRef<Path>>(&mut self, images: &[P]) -> &mut Self {
         self.0.images = Some(
             images
                 .iter()
