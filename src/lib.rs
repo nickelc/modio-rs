@@ -70,7 +70,7 @@ where
     host: String,
     agent: String,
     client: Client<C>,
-    credentials: Option<Credentials>,
+    credentials: Credentials,
 }
 
 impl Modio<HttpsConnector<HttpConnector>> {
@@ -78,7 +78,7 @@ impl Modio<HttpsConnector<HttpConnector>> {
     pub fn new<A, C>(agent: A, credentials: C) -> Self
     where
         A: Into<String>,
-        C: Into<Option<Credentials>>,
+        C: Into<Credentials>,
     {
         Self::host(DEFAULT_HOST, agent, credentials)
     }
@@ -87,7 +87,7 @@ impl Modio<HttpsConnector<HttpConnector>> {
     where
         H: Into<String>,
         A: Into<String>,
-        C: Into<Option<Credentials>>,
+        C: Into<Credentials>,
     {
         let connector = HttpsConnector::new(4).unwrap();
         let client = Client::builder().keep_alive(true).build(connector);
@@ -104,7 +104,7 @@ where
     where
         H: Into<String>,
         A: Into<String>,
-        CR: Into<Option<Credentials>>,
+        CR: Into<Credentials>,
     {
         Self {
             host: host.into(),
@@ -154,7 +154,7 @@ where
     where
         Out: DeserializeOwned + 'static + Send,
     {
-        let url = if let Some(Credentials::ApiKey(ref api_key)) = self.credentials {
+        let url = if let Credentials::ApiKey(ref api_key) = self.credentials {
             let mut parsed = Url::parse(&uri).unwrap();
             parsed.query_pairs_mut().append_pair("api_key", api_key);
             parsed.to_string().parse::<Uri>().into_future()
@@ -172,7 +172,7 @@ where
                 .uri(url)
                 .header(USER_AGENT, &*instance.agent);
 
-            if let Some(Credentials::Token(ref token)) = instance.credentials {
+            if let Credentials::Token(ref token) = instance.credentials {
                 req.header(AUTHORIZATION, &*format!("Bearer {}", token));
             }
 
