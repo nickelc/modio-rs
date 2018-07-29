@@ -28,7 +28,7 @@ impl<C: Clone + Connect + 'static> Me<C> {
     }
 
     /// Return the authenticated user.
-    pub fn user(&self) -> Future<User> {
+    pub fn authenticated_user(&self) -> Future<User> {
         self.modio.get("/me")
     }
 
