@@ -114,6 +114,19 @@ where
         }
     }
 
+    /// Consume the endpoint and create an endpoint with new credentials.
+    pub fn with_credentials<CR>(self, credentials: CR) -> Self
+    where
+        CR: Into<Credentials>,
+    {
+        Self {
+            host: self.host,
+            agent: self.agent,
+            client: self.client,
+            credentials: credentials.into(),
+        }
+    }
+
     /// Return a reference to an interface for requesting access tokens.
     pub fn auth(&self) -> Auth<C> {
         Auth::new(self.clone())
