@@ -40,6 +40,11 @@ impl<C: Clone + Connect + 'static> Comments<C> {
         self.modio.get(&uri.join("?"))
     }
 
+    /// Return comment by id.
+    pub fn get(&self, id: u32) -> Future<Comment> {
+        self.modio.get(&self.path(&format!("/{}", id)))
+    }
+
     /// Delete a comment by id.
     pub fn delete(&self, id: u32) -> Future<()> {
         self.modio
