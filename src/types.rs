@@ -112,15 +112,25 @@ pub struct Event {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum EventType {
+    /// Primary file changed, the mod should be updated.
     ModfileChanged,
+    /// Mod is marked as accepted and public.
     ModAvailable,
+    /// Mod is marked as not accepted, deleted or hidden.
     ModUnavailable,
+    /// Mod has been updated.
     ModEdited,
+    /// Mod has been permanently deleted.
     ModDeleted,
+    /// User has joined or left the mod team.
     ModTeamChanged,
+    /// User has joined a team.
     UserTeamJoin,
+    /// User has left a team.
     UserTeamLeave,
+    /// User has subscribed to a mod.
     UserSubscribe,
+    /// User has unsubscribed to a mod.
     UserUnsubscribe,
 }
 

@@ -15,8 +15,47 @@ pub enum Credentials {
     Token(String),
 }
 
-/// Authentication Flow interface to retrieve access tokens. See the [Modio Authentication
-/// docs](https://docs.mod.io/#authentication) for more informations.
+/// Authentication Flow interface to retrieve access tokens. See the [mod.io Authentication
+/// docs](https://docs.mod.io/#email-authentication-flow) for more informations.
+///
+/// # Example
+/// ```no_run
+/// extern crate modio;
+/// extern crate tokio;
+///
+/// use std::io::{self, Write};
+/// use tokio::runtime::Runtime;
+///
+/// use modio::error::Error;
+/// use modio::{Credentials, Modio};
+///
+/// fn prompt(prompt: &str) -> io::Result<String> {
+///     print!("{}", prompt);
+///     io::stdout().flush()?;
+///     let mut buffer = String::new();
+///     io::stdin().read_line(&mut buffer)?;
+///     Ok(buffer.trim().to_string())
+/// }
+///
+/// fn main() -> Result<(), Error> {
+///     let mut rt = Runtime::new()?;
+///     let modio = Modio::new(
+///         "user-agent-name/1.0",
+///         Credentials::ApiKey(String::from("api-key")),
+///     );
+///
+///     let email = prompt("Enter email: ")?;
+///     rt.block_on(modio.auth().request_code(&email))?;
+///
+///     let code = prompt("Enter security code: ")?;
+///     let token = rt.block_on(modio.auth().security_code(&code))?;
+///
+///     // Consume the endpoint and create an endpoint with new credentials.
+///     let _modio = modio.with_credentials(Credentials::Token(token));
+///
+///     Ok(())
+/// }
+/// ```
 pub struct Auth<C>
 where
     C: Clone + Connect + 'static,

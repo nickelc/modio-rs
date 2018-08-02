@@ -1,3 +1,51 @@
+//! Modio provides a set of building blocks for interacting with the [mod.io](https://mod.io) API.
+//!
+//! The client uses asynchronous I/O, backed by the `futures` and `tokio` crates, and requires both
+//! to be used alongside.
+//!
+//! # Authentication
+//!
+//! To access the API authentication is required and can be done via 3 ways:
+//!
+//! - Request an [API key (Read-only)](https://mod.io/apikey)
+//! - Manually create an [OAuth 2 Access Token (Read + Write)](https://mod.io/oauth)
+//! - [Email Authentication Flow](auth/struct.Auth.html#example) to create an OAuth 2 Access Token
+//! (Read + Write)
+//!
+//! # Rate Limiting
+//!
+//! For API requests using API key authentication are **unlimited** and for OAuth 2 authentication
+//! requests are limited to **120 requests per hour**.
+//!
+//! A special error [Error::RateLimit](error/enum.Error.html#variant.RateLimit) will
+//! be return from api operations when the rate limit associated with credentials has been
+//! exhausted.
+//!
+//! # Examples
+//!
+//! ```no_run
+//! extern crate modio;
+//! extern crate tokio;
+//!
+//! use modio::{Credentials, Error, Modio};
+//! use tokio::runtime::Runtime;
+//!
+//! fn main() -> Result<(), Error> {
+//!     let mut rt = Runtime::new()?;
+//!     let modio = Modio::new(
+//!         "user-agent-name/1.0",
+//!         Credentials::ApiKey(String::from("user-or-game-api-key")),
+//!     );
+//!
+//!     // create some tasks and execute them
+//!     // let result = rt.block_on(task)?;
+//!     Ok(())
+//! }
+//! ```
+//!
+//! For testing purposes use [`Modio::host`](struct.Modio.html#method.host) to create a client for the
+//! mod.io [test environment](https://docs.mod.io/#testing).
+//!
 extern crate futures;
 extern crate http;
 extern crate hyper;
@@ -75,7 +123,7 @@ where
 }
 
 impl Modio<HttpsConnector<HttpConnector>> {
-    /// Create an endpoint to [http://api.mod.io/v1](https://docs.mod.io/#mod-io-api-v1).
+    /// Create an endpoint to [https://api.mod.io/v1](https://docs.mod.io/#mod-io-api-v1).
     pub fn new<A, C>(agent: A, credentials: C) -> Self
     where
         A: Into<String>,
@@ -84,6 +132,7 @@ impl Modio<HttpsConnector<HttpConnector>> {
         Self::host(DEFAULT_HOST, agent, credentials)
     }
 
+    /// Create an endpoint to a different host.
     pub fn host<H, A, C>(host: H, agent: A, credentials: C) -> Self
     where
         H: Into<String>,
@@ -101,6 +150,7 @@ impl<C> Modio<C>
 where
     C: Clone + Connect + 'static,
 {
+    /// Create an endpoint with a custom hyper client.
     pub fn custom<H, A, CR>(host: H, agent: A, credentials: CR, client: Client<C>) -> Self
     where
         H: Into<String>,

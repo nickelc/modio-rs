@@ -32,7 +32,9 @@ fn main() -> Result<(), Error> {
     let token = rt.block_on(modio.auth().security_code(&code))?;
     println!("Access token:\n{}", token);
 
+    // Consume the endpoint and create an endpoint with new credentials.
     let modio = modio.with_credentials(Credentials::Token(token));
+
     let user = rt.block_on(modio.me().authenticated_user())?;
     println!("Authenticated user:\n{:#?}", user);
 
