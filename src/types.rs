@@ -141,6 +141,10 @@ impl fmt::Display for EventType {
     }
 }
 
+/// Deserialize empty objects for the `avatar` property of the User object as `None`.
+///
+/// The mod.io api returns `{"avatar": {}}` for users without avatars instead of returning
+/// `{"avatar": null}`.
 fn deserialize_avatar<'de, D>(deserializer: D) -> Result<Option<Avatar>, D::Error>
 where
     D: Deserializer<'de>,
@@ -338,6 +342,23 @@ pub mod mods {
     /// informations.
     pub type MetadataMap = HashMap<String, Vec<String>>;
 
+    /// Deserialize a sequence of key-value objects to a `MetadataMap`.
+    ///
+    /// Input
+    /// ```json
+    /// [
+    ///     {"metakey": "pistol-dmg", "metavalue": "800"},
+    ///     {"metakey": "smg-dmg", "metavalue": "1200"},
+    ///     {"metakey": "pistol-dmg", "metavalue": "850"}
+    /// ]
+    /// ```
+    /// Result
+    /// ```json
+    /// {
+    ///     "pistol-dmg": ["800", "850"],
+    ///     "smg-dmg": ["1000"]
+    /// }
+    /// ```
     fn deserialize_kvp<'de, D>(deserializer: D) -> Result<MetadataMap, D::Error>
     where
         D: Deserializer<'de>,
@@ -490,6 +511,10 @@ pub mod mods {
     }
     // }}}
 
+    /// Deserialize empty objects for the `modfile` property of the Mod object as `None`.
+    ///
+    /// The mod.io api returns `{"modfile": {}}` for mods without files instead of returning
+    /// `{"modfile": null}`.
     fn deserialize_modfile<'de, D>(deserializer: D) -> Result<Option<File>, D::Error>
     where
         D: Deserializer<'de>,
