@@ -40,15 +40,16 @@ pub mod teams;
 mod types;
 pub mod users;
 
-use auth::{Auth, Credentials};
+use auth::Auth;
 use comments::Comments;
-use error::Error;
 use games::{GameRef, Games};
 use me::Me;
 use mods::{ModRef, Mods};
 use reports::Reports;
 use users::Users;
 
+pub use auth::Credentials;
+pub use error::Error;
 pub use types::{Event, EventType, ModioErrorResponse, ModioListResponse, ModioMessage};
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
