@@ -9,7 +9,7 @@
 The client uses asynchronous I/O, backed by the `futures` and `tokio` crates, and requires both to be used alongside.
 
 ## mod.io
-[mod.io](https://mod.io) is a drop-in modding solution from the founders of [ModDB.com](https://moddb.com),
+[mod.io](https://mod.io) is a drop-in modding solution from the founders of [ModDB.com](https://www.moddb.com),
 that facilitates the upload, upload, search, browsing, downloading and trading of mods in-game.
 
 ## Usage
