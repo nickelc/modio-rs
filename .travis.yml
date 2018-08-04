@@ -1,0 +1,40 @@
+language: rust
+sudo: false
+cache:
+  - apt
+  - cargo
+
+matrix:
+  include:
+  - rust: stable
+  - rust: beta
+  - rust: nightly
+
+script:
+  - cargo build --all
+  - cargo test --all
+
+before_deploy:
+  - cargo doc --all --no-deps
+
+deploy:
+  - provider: script
+    skip_cleanup: true
+    script: bash .travis/docs.sh
+    on:
+      branch: master
+      rust: stable
+  - provider: script
+    skip_cleanup: true
+    script: bash .travis/docs.sh
+    on:
+      tags: true
+      rust: stable
+
+env:
+  global:
+    secure: "SUTlxpEUgkbWan1vK46IzF99cwK2C2VKzzjsyX8LwxTXfgrABSUu8A7IIhbSZHE5ERtk0iz2aulQd+D4eMLGHjeCyMFT7P2DvioQHNyGeHOfHN0FgAlMIlz4XsSTtHe6AS9b6WPrZObt1ENM1qwPqI91Xpi6XHZW7t9BB36meIoYiBO3Aiv+mjq5OcBlghViNX3pEeHiUYxSpp/jYe1aTqz4+L3u+ep7imXL1dHGem16KPRy0AMdbKqGSQUO7ZmiBLjQalpkEcB0RKb7RHTgFv1Amy4+vND3mu7kBnr7tgSu2zqi4xOR5hK+FWP25hoigYNJT72Ybh8CcMRej8pvvUa3nbsm5Wru3iVHSgebfJ/y+6Rj8A4rjxBj6NBqHeF264umLd9aI++/2CGFe58J1W0zIU+6DJ0ss6JQwDuSY8iOe2YvUMZXB6CylnW+Bue+cvzxXBTzjlnODP81U6FiBLIHAcgUUUWkRzb0L5VKPNzOw/Nx/PDAQ8aqQi7R2vgBMqZJmqx2PepH/5d226BPSrPp0qm5D9Jb64VsLCPCgIrHnJcnihT2E90gnIKZjAbjkWEl5RGyhRVvdydv8xfQoQElhcEmSwvRW1HyZgqIYuEAQblr6UbTicFm0iw2HbImNA+aOfoLyZQ475zCxYmj4nMNME34Vzk/2Q4oA++nr24="
+
+notifications:
+  email:
+    on_success: never
