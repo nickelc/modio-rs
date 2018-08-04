@@ -46,6 +46,9 @@
 //! For testing purposes use [`Modio::host`](struct.Modio.html#method.host) to create a client for the
 //! mod.io [test environment](https://docs.mod.io/#testing).
 //!
+
+#![doc(html_root_url = "https://docs.rs/modio/0.1.0")]
+
 extern crate futures;
 extern crate http;
 extern crate hyper;
