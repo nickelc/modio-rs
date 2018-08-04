@@ -1,8 +1,21 @@
 <a href="https://mod.io"><img src="https://static.mod.io/v1/images/branding/modio-color-dark.svg" alt="mod.io" width="400"/></a>
 
 # modio-rs
-![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-brightgreen.svg)
-[![Master API docs](https://img.shields.io/badge/docs-master-green.svg)](https://nickelc.github.io/modio-rs/)
+[![Crates.io][crates-badge]][crates-url]
+![License][license-badge]
+[![Released API docs][docs-badge]][docs-url]
+[![Master API docs][master-docs-badge]][master-docs-url]
+[![Travis Build Status][travis-badge]][travis-url]
+
+[crates-badge]: https://img.shields.io/crates/v/modio.svg
+[crates-url]: https://crates.io/crates/modio
+[docs-badge]: https://docs.rs/modio/badge.svg
+[docs-url]: https://docs.rs/modio
+[license-badge]: https://img.shields.io/crates/l/modio.svg
+[master-docs-badge]: https://img.shields.io/badge/docs-master-green.svg
+[master-docs-url]: https://nickelc.github.io/modio-rs/master/
+[travis-badge]: https://travis-ci.org/nickelc/modio-rs.svg?branch=master
+[travis-url]: https://travis-ci.org/nickelc/modio-rs
 
 `modio` provides a set of building blocks for interacting with the [mod.io](https://mod.io) API.
 
