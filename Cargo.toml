@@ -3,16 +3,18 @@ name = "modio"
 version = "0.1.0"
 description = "Rust interface for mod.io"
 readme = "README.md"
-authors = ["Constantin Nickel <constantin.nickel@gmail.com>"]
+documentation = "https://docs.rs/modio"
+repository = "https://github.com/nickelc/modio-rs"
 license = "MIT/Apache-2.0"
-keywords = ["mod.io", "hyper"]
+authors = ["Constantin Nickel <constantin.nickel@gmail.com>"]
+keywords = ["modio", "hyper"]
 categories = ["api-bindings", "web-programming::http-client"]
 
 [dependencies]
 futures = "0.1"
 http = "0.1"
 hyper = "0.12"
-hyper-multipart-rfc7578 = "0.2.0-alpha1"
+hyper-multipart-rfc7578 = "0.2.0-alpha2"
 hyper-tls = "0.3"
 mime = "0.3"
 serde = "1.0"
