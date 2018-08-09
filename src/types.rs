@@ -289,8 +289,6 @@ pub mod mods {
         #[serde(deserialize_with = "deserialize_modfile")]
         pub modfile: Option<File>,
         pub media: Media,
-        #[serde(rename = "rating_summary")]
-        pub ratings: Ratings,
         #[serde(rename = "metadata_kvp", deserialize_with = "deserialize_kvp")]
         pub metadata: MetadataMap,
         pub tags: Vec<Tag>,
@@ -326,18 +324,41 @@ pub mod mods {
         pub thumb_320x180: Url,
     }
 
-    /// See the [Rating Summary Object](https://docs.mod.io/#rating-summary-object) docs for more
+    /// See the [Statistics Object](https://docs.mod.io/#stats-object) docs for more
     /// informations.
     #[derive(Debug, Deserialize)]
+    pub struct Statistics {
+        pub mod_id: u32,
+        pub downloads_total: u32,
+        pub subscribers_total: u32,
+        #[serde(flatten)]
+        pub popularity: Popularity,
+        #[serde(flatten)]
+        pub ratings: Ratings,
+        pub date_expires: u64,
+    }
+
+    #[derive(Debug, Deserialize)]
+    pub struct Popularity {
+        #[serde(rename = "popularity_rank_position")]
+        pub rank_position: u32,
+        #[serde(rename = "popularity_rank_total_mods")]
+        pub rank_total: u32,
+    }
+
+    #[derive(Debug, Deserialize)]
     pub struct Ratings {
-        #[serde(rename = "total_ratings")]
+        #[serde(rename = "ratings_total")]
         pub total: u32,
-        #[serde(rename = "positive_ratings")]
+        #[serde(rename = "ratings_positive")]
         pub positive: u32,
-        #[serde(rename = "negative_ratings")]
+        #[serde(rename = "ratings_negative")]
         pub negative: u32,
+        #[serde(rename = "ratings_percentage_positive")]
         pub percentage_positive: u32,
+        #[serde(rename = "ratings_weighted_aggregate")]
         pub weighted_aggregate: f32,
+        #[serde(rename = "ratings_display_text")]
         pub display_text: String,
     }
 

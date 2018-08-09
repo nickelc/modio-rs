@@ -23,7 +23,9 @@ use ModioMessage;
 use MultipartForm;
 use {AddOptions, DeleteOptions, QueryParams};
 
-pub use types::mods::{Dependency, Image, Media, MetadataMap, Mod, Ratings, Tag};
+pub use types::mods::{
+    Dependency, Image, Media, MetadataMap, Mod, Popularity, Ratings, Statistics, Tag,
+};
 pub use types::Logo;
 
 /// Interface for mods the authenticated user added or is team member of.
@@ -91,6 +93,16 @@ where
         self.modio.post_form(&self.path(""), options)
     }
 
+    /// Return the statistics for all mods of a game.
+    pub fn statistics(&self, options: &StatsListOptions) -> Future<ModioListResponse<Statistics>> {
+        let mut uri = vec![self.path("/stats")];
+        let query = options.to_query_params();
+        if !query.is_empty() {
+            uri.push(query);
+        }
+        self.modio.get(&uri.join("?"))
+    }
+
     /// Return the event log for all mods of a game sorted by latest event first.
     pub fn events(&self, options: &EventListOptions) -> Future<ModioListResponse<Event>> {
         let mut uri = vec![self.path("/events")];
@@ -154,6 +166,11 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
     /// Return a reference to an interface to manage the dependencies of a mod.
     pub fn dependencies(&self) -> Endpoint<C, Dependency> {
         Endpoint::new(self.modio.clone(), self.path("/dependencies"))
+    }
+
+    /// Return the statistics for a mod.
+    pub fn statistics(&self) -> Future<Statistics> {
+        self.modio.get(&self.path("/stats"))
     }
 
     /// Return the event log for a mod sorted by latest event first.
@@ -793,5 +810,57 @@ impl DeleteMediaOptionsBuilder {
             youtube: self.0.youtube.clone(),
             sketchfab: self.0.sketchfab.clone(),
         }
+    }
+}
+
+filter_options!{
+    /// Options used to filter mod statistics.
+    ///
+    /// # Filter parameters
+    /// - mod_id
+    /// - popularity_rank_position
+    /// - downloads_total
+    /// - subscribers_total
+    /// - ratings_positive
+    /// - ratings_negative
+    ///
+    /// # Sorting
+    /// - mod_id
+    /// - popularity_rank_position
+    /// - downloads_total
+    /// - subscribers_total
+    /// - ratings_positive
+    /// - ratings_negative
+    ///
+    /// See the [mod.io docs](https://docs.mod.io/#get-all-mod-stats) for more informations.
+    ///
+    /// By default this returns up to `100` items. You can limit the result using `limit` and
+    /// `offset`.
+    /// # Example
+    /// ```
+    /// use modio::filter::{Order, Operator};
+    /// use modio::mods::StatsListOptions;
+    ///
+    /// let mut opts = StatsListOptions::new();
+    /// opts.mod_id(Operator::In, vec![1, 2]);
+    /// opts.sort_by(StatsListOptions::MOD_ID, Order::Desc);
+    /// ```
+    #[derive(Debug)]
+    pub struct StatsListOptions {
+        Filters
+        - mod_id = "mod_id";
+        - downloads = "downloads_total";
+        - subscribers = "subscribers_total";
+        - rank_position = "popularity_rank_position";
+        - ratings_positive = "ratings_positive";
+        - ratings_negative = "ratings_negative";
+
+        Sort
+        - MOD_ID = "mod_id";
+        - DOWNLOADS = "downloads_total";
+        - SUBSCRIBERS = "subscribers_total";
+        - RANK_POSITION = "popularity_rank_position";
+        - RATINGS_POSITIVE = "ratings_positive";
+        - RATINGS_NEGATIVE = "ratings_negative";
     }
 }
