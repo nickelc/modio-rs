@@ -47,7 +47,7 @@
 //! mod.io [test environment](https://docs.mod.io/#testing).
 //!
 
-#![doc(html_root_url = "https://docs.rs/modio/0.1.0")]
+#![doc(html_root_url = "https://docs.rs/modio/0.2.0")]
 
 extern crate futures;
 extern crate http;
