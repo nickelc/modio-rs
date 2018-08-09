@@ -122,7 +122,8 @@ impl Filter {
     }
 
     pub fn name(&self) -> String {
-        let suffix = self.suffix
+        let suffix = self
+            .suffix
             .map(|s| s.to_string())
             .unwrap_or_else(String::new);
         format!("{}{}", self.name, suffix)
@@ -135,7 +136,8 @@ impl Filter {
     pub fn value(&self) -> String {
         match self.value {
             OneOrMany::One(ref v) => v.to_string(),
-            OneOrMany::Many(ref v) => v.iter()
+            OneOrMany::Many(ref v) => v
+                .iter()
                 .map(ToString::to_string)
                 .collect::<Vec<_>>()
                 .join(",")

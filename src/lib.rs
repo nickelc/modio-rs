@@ -248,7 +248,8 @@ where
                     req.header(CONTENT_TYPE, &*mime.to_string());
                     req.body(Body::from(body)).map_err(Error::from)
                 }
-                RequestBody::Form(data) => data.to_form()
+                RequestBody::Form(data) => data
+                    .to_form()
                     .and_then(move |form| form.set_body(&mut req).map_err(Error::from)),
                 RequestBody::Empty => req.body(Body::empty()).map_err(Error::from),
             };
@@ -355,14 +356,16 @@ where
     where
         M: Into<Vec<u8>>,
     {
-        Box::new(self.request(
-            Method::DELETE,
-            &(self.host.clone() + uri),
-            RequestBody::Vec(message.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
-        ).or_else(|err| match err {
-            error::Error::Codec(_) => Ok(()),
-            otherwise => Err(otherwise),
-        }))
+        Box::new(
+            self.request(
+                Method::DELETE,
+                &(self.host.clone() + uri),
+                RequestBody::Vec(message.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
+            ).or_else(|err| match err {
+                error::Error::Codec(_) => Ok(()),
+                otherwise => Err(otherwise),
+            }),
+        )
     }
 }
 
