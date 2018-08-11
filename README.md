@@ -23,14 +23,14 @@ The client uses asynchronous I/O, backed by the `futures` and `tokio` crates, an
 
 ## mod.io
 [mod.io](https://mod.io) is a drop-in modding solution from the founders of [ModDB.com](https://www.moddb.com),
-that facilitates the upload, upload, search, browsing, downloading and trading of mods in-game.
+that facilitates the upload, search, browsing, downloading and trading of mods in-game.
 
 ## Usage
 
 To use `modio`, add this to your `Cargo.toml`
 ```toml
 [dependencies]
-modio = "0.1"
+modio = "0.2"
 ```
 
 ### Basic Setup
