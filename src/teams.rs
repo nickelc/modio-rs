@@ -41,7 +41,7 @@ impl<C: Clone + Connect + 'static> Members<C> {
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get(&uri.join("&"))
+        self.modio.get(&uri.join("?"))
     }
 
     /// Add a team member by email.

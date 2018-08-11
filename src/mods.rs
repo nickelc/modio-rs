@@ -85,7 +85,7 @@ where
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get::<ModioListResponse<Mod>>(&uri.join("&"))
+        self.modio.get::<ModioListResponse<Mod>>(&uri.join("?"))
     }
 
     /// Add a mod and return the newly created Modio mod object.
