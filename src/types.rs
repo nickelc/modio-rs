@@ -283,6 +283,7 @@ pub mod mods {
         pub name_id: String,
         pub summary: String,
         pub description: Option<String>,
+        pub description_plaintext: Option<String>,
         pub metadata_blob: Option<String>,
         #[serde(with = "url_serde")]
         pub profile_url: Url,
