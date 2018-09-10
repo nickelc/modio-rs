@@ -19,6 +19,8 @@ pub struct ModioListResponse<T> {
     pub data: Vec<T>,
     #[serde(rename = "result_count")]
     pub count: u32,
+    #[serde(rename = "result_total")]
+    pub total: u32,
     #[serde(rename = "result_limit")]
     pub limit: u32,
     #[serde(rename = "result_offset")]
