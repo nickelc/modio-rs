@@ -14,6 +14,8 @@ use Modio;
 use ModioListResponse;
 use QueryParams;
 
+pub use types::mods::Rating;
+
 /// Interface for resources owned by the authenticated user or is team member of.
 pub struct Me<C>
 where
@@ -66,6 +68,16 @@ impl<C: Clone + Connect + 'static> Me<C> {
         options: &SubscriptionsListOptions,
     ) -> Future<ModioListResponse<Mod>> {
         let mut uri = vec!["/me/subscribed".to_owned()];
+        let query = options.to_query_params();
+        if !query.is_empty() {
+            uri.push(query);
+        }
+        self.modio.get(&uri.join("?"))
+    }
+
+    /// Return all mod rating's submitted by the authenticated user.
+    pub fn ratings(&self, options: &RatingsListOptions) -> Future<ModioListResponse<Rating>> {
+        let mut uri = vec!["/me/ratings".to_owned()];
         let query = options.to_query_params();
         if !query.is_empty() {
             uri.push(query);
@@ -140,5 +152,41 @@ filter_options!{
         - POPULAR = "popular";
         - RATINGS = "ratings";
         - SUBSCRIBERS = "subscribers";
+    }
+}
+
+filter_options!{
+    /// Options used to filter rating listings.
+    ///
+    /// # Filter parameters
+    /// - _q
+    /// - game_id
+    /// - mod_id
+    /// - date_added
+    ///
+    /// See the [mod.io docs](https://docs.mod.io/#get-user-ratings) for more informations.
+    ///
+    /// By default this returns up to `100` items. You can limit the result using `limit` and
+    /// `offset`.
+    /// # Example
+    /// ```
+    /// use modio::filter::{Order, Operator};
+    /// use modio::me::RatingsListOptions;
+    ///
+    /// let mut opts = RatingsListOptions::new();
+    /// opts.game_id(Operator::In, vec![1, 2]);
+    /// opts.sort_by(RatingsListOptions::DATE_ADDED, Order::Desc);
+    /// ```
+    #[derive(Debug)]
+    pub struct RatingsListOptions {
+        Filters
+        - game_id = "game_id";
+        - mod_id = "mod_id";
+        - date_added = "date_added";
+
+        Sort
+        - GAME_ID = "game_id";
+        - MOD_ID = "mod_id";
+        - DATE_ADDED = "date_added";
     }
 }

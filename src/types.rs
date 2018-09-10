@@ -365,6 +365,66 @@ pub mod mods {
         pub display_text: String,
     }
 
+    /// See the [Rating Object](https://docs.mod.io/#rating-object) docs for more informations.
+    #[derive(Debug)]
+    pub enum Rating {
+        Positive {
+            game_id: u32,
+            mod_id: u32,
+            date_added: u64,
+        },
+        Negative {
+            game_id: u32,
+            mod_id: u32,
+            date_added: u64,
+        },
+    }
+
+    impl<'de> Deserialize<'de> for Rating {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: Deserializer<'de>,
+        {
+            use serde::de::Error;
+
+            #[derive(Deserialize)]
+            struct R {
+                game_id: u32,
+                mod_id: u32,
+                rating: i8,
+                date_added: u64,
+            }
+
+            match R::deserialize(deserializer) {
+                Ok(R {
+                    game_id,
+                    mod_id,
+                    rating: 1,
+                    date_added,
+                }) => Ok(Rating::Positive {
+                    game_id,
+                    mod_id,
+                    date_added,
+                }),
+                Ok(R {
+                    game_id,
+                    mod_id,
+                    rating: -1,
+                    date_added,
+                }) => Ok(Rating::Negative {
+                    game_id,
+                    mod_id,
+                    date_added,
+                }),
+                Ok(R { rating, .. }) => Err(D::Error::custom(format!(
+                    "invalid rating value: {}",
+                    rating,
+                ))),
+                Err(e) => Err(e),
+            }
+        }
+    }
+
     /// See the [Mod Tag Object](https://docs.mod.io/#mod-tag-object) docs for more informations.
     #[derive(Debug, Deserialize)]
     pub struct Tag {
