@@ -34,12 +34,23 @@ macro_rules! filter_options {
                 Default::default()
             }
 
+            pub fn add_filter<S, T, V>(&mut self, name: S, op: ::filter::Operator, value: V) -> &mut Self
+            where
+                S: Into<String>,
+                T: ::std::fmt::Display,
+                V: Into<::filter::OneOrMany<T>>,
+            {
+                let f = ::filter::Filter::new(name, op, value);
+                self.filters.insert(f.name(), f);
+                self
+            }
+
             pub fn fulltext<T, V>(&mut self, value: V) -> &mut Self
             where
                 T: ::std::fmt::Display,
                 V: Into<::filter::OneOrMany<T>>,
             {
-                let f = ::filter::Filter::new("_q", None, value);
+                let f = ::filter::Filter::new("_q", ::filter::Operator::Equals, value);
                 self.filters.insert(f.name(), f);
                 self
             }
@@ -51,7 +62,7 @@ macro_rules! filter_options {
                     T: ::std::fmt::Display,
                     V: Into<::filter::OneOrMany<T>>,
                 {
-                    let f = ::filter::Filter::new($filter_name, Some(op), value);
+                    let f = ::filter::Filter::new($filter_name, op, value);
                     self.filters.insert(f.name(), f);
                     self
                 }
@@ -103,12 +114,12 @@ macro_rules! filter_options {
 #[derive(Debug)]
 pub struct Filter {
     name: String,
-    suffix: Option<Operator>,
+    suffix: Operator,
     value: OneOrMany<String>,
 }
 
 impl Filter {
-    pub(crate) fn new<S, T, V>(name: S, suffix: Option<Operator>, value: V) -> Self
+    pub(crate) fn new<S, T, V>(name: S, suffix: Operator, value: V) -> Self
     where
         S: Into<String>,
         T: fmt::Display,
@@ -122,15 +133,11 @@ impl Filter {
     }
 
     pub fn name(&self) -> String {
-        let suffix = self
-            .suffix
-            .map(|s| s.to_string())
-            .unwrap_or_else(String::new);
-        format!("{}{}", self.name, suffix)
+        format!("{}{}", self.name, self.suffix)
     }
 
-    pub fn operator(&self) -> Option<&Operator> {
-        self.suffix.as_ref()
+    pub fn operator(&self) -> &Operator {
+        &self.suffix
     }
 
     pub fn value(&self) -> String {
@@ -232,7 +239,7 @@ mod test {
         ($fn:ident, $name:expr, $value:expr,expected: $name2:expr, $value2:expr) => {
             #[test]
             fn $fn() {
-                let f = Filter::new($name, None, $value);
+                let f = Filter::new($name, Operator::Equals, $value);
                 assert_eq!(f.name(), $name2);
                 assert_eq!(f.value(), $value2);
             }
@@ -240,7 +247,7 @@ mod test {
         ($fn:ident, $op:ident, $name:expr, $value:expr,expected: $name2:expr, $value2:expr) => {
             #[test]
             fn $fn() {
-                let f = Filter::new($name, Some(Operator::$op), $value);
+                let f = Filter::new($name, Operator::$op, $value);
                 assert_eq!(f.name(), $name2);
                 assert_eq!(f.value(), $value2);
             }
