@@ -1,3 +1,13 @@
+### v0.2.2
+* add missing `Mod::stats` property
+  ([0af0580b](https://github.com/nickelc/modio-rs/commit/0af0580b9a588024fa38ca60ad419fc499321574))
+
+* update dev dependencies to fix build issues with openssl
+  ([41a143e5](https://github.com/nickelc/modio-rs/commit/41a143e54cca35c26517810a3ceecc9aa45a9968))
+
+* new method to add custom filters to list options
+  ([a81771c4](https://github.com/nickelc/modio-rs/commit/a81771c4902448d45379eedc4a98aa5f24394827))
+
 ### v0.2.1
 * use the new endpoint `/me/ratings` to list the submitted mod ratings
   ([09117df5](https://github.com/nickelc/modio-rs/commit/09117df59e6f9a9de2fc104fc458b7f99d5740a8))
