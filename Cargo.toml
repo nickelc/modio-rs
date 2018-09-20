@@ -25,5 +25,5 @@ url_serde = "0.2"
 
 [dev-dependencies]
 md5 = "0.3"
-reqwest = "0.8"
+reqwest = "0.9"
 tokio = "0.1"
