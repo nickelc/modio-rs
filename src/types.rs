@@ -295,6 +295,7 @@ pub mod mods {
         #[serde(rename = "metadata_kvp", deserialize_with = "deserialize_kvp")]
         pub metadata: MetadataMap,
         pub tags: Vec<Tag>,
+        pub stats: Statistics,
     }
 
     /// See the [Mod Dependency Object](https://docs.mod.io/#mod-dependencies-object) docs for more
