@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::fmt;
+use std::ops::Index;
 
 use serde::de::{Deserialize, Deserializer};
 use url::Url;
@@ -25,6 +26,14 @@ pub struct ModioListResponse<T> {
     pub limit: u32,
     #[serde(rename = "result_offset")]
     pub offset: u32,
+}
+
+impl<T> Index<usize> for ModioListResponse<T> {
+    type Output = T;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.data[index]
+    }
 }
 
 impl<T> IntoIterator for ModioListResponse<T> {
