@@ -21,7 +21,7 @@
 //! be return from api operations when the rate limit associated with credentials has been
 //! exhausted.
 //!
-//! # Examples
+//! # Example: Basic setup
 //!
 //! ```no_run
 //! extern crate modio;
@@ -46,6 +46,54 @@
 //! For testing purposes use [`Modio::host`](struct.Modio.html#method.host) to create a client for the
 //! mod.io [test environment](https://docs.mod.io/#testing).
 //!
+//! # Example: Downloading mods
+//!
+//! ```no_run
+//! extern crate modio;
+//! extern crate tokio;
+//!
+//! use std::fs::File;
+//!
+//! use modio::download::ResolvePolicy;
+//! use modio::{Credentials, DownloadAction, Error, Modio};
+//! use tokio::runtime::Runtime;
+//!
+//! fn main() -> Result<(), Error> {
+//!     let mut rt = Runtime::new()?;
+//!     let modio = Modio::new(
+//!         "user-agent-name/1.0",
+//!         Credentials::ApiKey(String::from("user-or-game-api-key")),
+//!     );
+//!     let out = File::open("mod.zip")?;
+//!
+//!     // Download the primary file of a mod.
+//!     let action = DownloadAction::Primary {
+//!         game_id: 5,
+//!         mod_id: 19,
+//!     };
+//!     let (len, out) = rt.block_on(modio.download(action, out))?;
+//!
+//!     // Download the specific file of a mod.
+//!     let action = DownloadAction::File {
+//!         game_id: 5,
+//!         mod_id: 19,
+//!         file_id: 101,
+//!     };
+//!     let (len, out) = rt.block_on(modio.download(action, out))?;
+//!
+//!     // Download the specific version of a mod.
+//!     // if multiple files are found then the latest file is downloaded.
+//!     // Set policy to `ResolvePolicy::Fail` to return with `Error::Download`.
+//!     let action = DownloadAction::Version {
+//!         game_id: 5,
+//!         mod_id: 19,
+//!         version: "0.1".to_string(),
+//!         policy: ResolvePolicy::Latest,
+//!     };
+//!     let (len, out) = rt.block_on(modio.download(action, out))?;
+//!     Ok(())
+//! }
+//! ```
 
 #![doc(html_root_url = "https://docs.rs/modio/0.2.2")]
 
@@ -62,6 +110,8 @@ extern crate serde_json;
 extern crate url;
 extern crate url_serde;
 
+use std::io;
+use std::io::prelude::*;
 use std::marker::PhantomData;
 use std::time::Duration;
 
@@ -80,6 +130,8 @@ pub mod auth;
 #[macro_use]
 pub mod filter;
 pub mod comments;
+pub mod download;
+#[macro_use]
 pub mod error;
 pub mod files;
 pub mod games;
@@ -100,6 +152,7 @@ use reports::Reports;
 use users::Users;
 
 pub use auth::Credentials;
+pub use download::DownloadAction;
 pub use error::Error;
 pub use types::{Event, EventType, ModioErrorResponse, ModioListResponse, ModioMessage};
 
@@ -199,6 +252,132 @@ where
     /// Return a reference to a mod.
     pub fn mod_(&self, game_id: u32, mod_id: u32) -> ModRef<C> {
         ModRef::new(self.clone(), game_id, mod_id)
+    }
+
+    /// Performs a download into a writer.
+    ///
+    /// Fails with [`Error::Download`](error/enum.Error.html#variant.Download) if a primary file,
+    /// a specific file or a specific version is not found.
+    /// # Example
+    /// ```no_run
+    /// extern crate modio;
+    /// extern crate tokio;
+    ///
+    /// use std::fs::File;
+    ///
+    /// use modio::download::ResolvePolicy;
+    /// use modio::{Credentials, DownloadAction, Error, Modio};
+    /// use tokio::runtime::Runtime;
+    ///
+    /// fn main() -> Result<(), Error> {
+    ///     let mut rt = Runtime::new()?;
+    ///     let modio = Modio::new(
+    ///         "user-agent-name/1.0",
+    ///         Credentials::ApiKey(String::from("user-or-game-api-key")),
+    ///     );
+    ///     let out = File::open("mod.zip")?;
+    ///
+    ///     // Download the primary file of a mod.
+    ///     let action = DownloadAction::Primary {
+    ///         game_id: 5,
+    ///         mod_id: 19,
+    ///     };
+    ///     let (len, out) = rt.block_on(modio.download(action, out))?;
+    ///
+    ///     // Download the specific file of a mod.
+    ///     let action = DownloadAction::File {
+    ///         game_id: 5,
+    ///         mod_id: 19,
+    ///         file_id: 101,
+    ///     };
+    ///     let (len, out) = rt.block_on(modio.download(action, out))?;
+    ///
+    ///     // Download the specific version of a mod.
+    ///     // if multiple files are found then the latest file is downloaded.
+    ///     // Set policy to `ResolvePolicy::Fail` to return with
+    ///     // `Error::Download(DownloadError::MultipleFilesFound)`.
+    ///     let action = DownloadAction::Version {
+    ///         game_id: 5,
+    ///         mod_id: 19,
+    ///         version: "0.1".to_string(),
+    ///         policy: ResolvePolicy::Latest,
+    ///     };
+    ///     let (len, out) = rt.block_on(modio.download(action, out))?;
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn download<A, W>(&self, action: A, w: W) -> Future<(u64, W)>
+    where
+        A: Into<DownloadAction>,
+        W: Write + 'static + Send,
+    {
+        let instance = self.clone();
+        match action.into() {
+            DownloadAction::Primary { game_id, mod_id } => {
+                Box::new(self.mod_(game_id, mod_id).get().and_then(move |m| {
+                    if let Some(file) = m.modfile {
+                        instance.request_file(&file.download.binary_url.to_string(), w)
+                    } else {
+                        future_err!(dl "Mod has no primary file".into())
+                    }
+                }))
+            }
+            DownloadAction::File {
+                game_id,
+                mod_id,
+                file_id,
+            } => Box::new(
+                self.mod_(game_id, mod_id)
+                    .file(file_id)
+                    .get()
+                    .and_then(move |file| {
+                        instance.request_file(&file.download.binary_url.to_string(), w)
+                    }),
+            ),
+            DownloadAction::Version {
+                game_id,
+                mod_id,
+                version,
+                policy,
+            } => {
+                let mut opts = files::FileListOptions::new();
+                opts.version(filter::Operator::Equals, version.clone());
+                opts.sort_by(files::FileListOptions::DATE_ADDED, filter::Order::Desc);
+                opts.limit(2);
+
+                Box::new(
+                    self.mod_(game_id, mod_id)
+                        .files()
+                        .list(&opts)
+                        .and_then(move |list| {
+                            use download::ResolvePolicy::*;
+
+                            let (file, error) = match (list.count, policy) {
+                                (0, _) => (
+                                    None,
+                                    Some(format!("File with version '{}' not found", version)),
+                                ),
+                                (1, _) => (Some(&list[0]), None),
+                                (_, Latest) => (Some(&list[0]), None),
+                                (_, Fail) => (
+                                    None,
+                                    Some(format!(
+                                        "Multiple files with version '{}' found",
+                                        version,
+                                    )),
+                                ),
+                            };
+
+                            if let Some(file) = file {
+                                instance.request_file(&file.download.binary_url.to_string(), w)
+                            } else {
+                                future_err!(dl error.unwrap())
+                            }
+                        }),
+                )
+            }
+            DownloadAction::Url(url) => self.request_file(&url.to_string(), w),
+        }
     }
 
     /// Return a reference to an interface that provides access to resources owned by the user
@@ -304,6 +483,54 @@ where
                             };
                             Err(error)
                         }
+                    }),
+            )
+        }))
+    }
+
+    fn request_file<W>(&self, uri: &str, mut out: W) -> Future<(u64, W)>
+    where
+        W: Write + 'static + Send,
+    {
+        let uri = uri.parse::<Uri>().into_future();
+
+        let instance = self.clone();
+        let response = uri.map_err(Error::from).and_then(move |uri| {
+            let mut req = Request::builder();
+            req.method(Method::GET)
+                .uri(uri)
+                .header(USER_AGENT, &*instance.agent);
+            req.body(Body::empty())
+                .into_future()
+                .map_err(Error::from)
+                .and_then(move |req| instance.client.request(req).map_err(Error::from))
+        });
+
+        let instance2 = self.clone();
+        Box::new(response.and_then(move |response| {
+            let status = response.status();
+            if StatusCode::MOVED_PERMANENTLY == status
+                || StatusCode::TEMPORARY_REDIRECT == status
+                || StatusCode::FOUND == status
+            {
+                let location = response
+                    .headers()
+                    .get(LOCATION)
+                    .and_then(|l| l.to_str().ok());
+                if let Some(location) = location {
+                    return instance2.request_file(&location.to_string(), out);
+                }
+            }
+            Box::new(
+                response
+                    .into_body()
+                    .concat2()
+                    .map_err(Error::from)
+                    .and_then(move |body| {
+                        io::copy(&mut io::Cursor::new(&body), &mut out)
+                            .map(|s| (s, out))
+                            .map_err(Error::from)
+                            .into_future()
                     }),
             )
         }))

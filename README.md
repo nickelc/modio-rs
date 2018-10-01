@@ -90,6 +90,37 @@ let mods = rt.block_on(modio.game(5).mods().list(&Default::default))?;
 let balancing_mod = rt.block_on(modio.mod_(5, 110).get())?;
 ```
 
+### Download
+```rust
+use modio::download::{ResolvePolicy, DownloadAction};
+
+// Download the primary file of a mod.
+let action = DownloadAction::Primary {
+    game_id: 5,
+    mod_id: 19,
+};
+let (len, out) = rt.block_on(modio.download(action, out))?;
+
+// Download the specific file of a mod.
+let action = DownloadAction::File {
+    game_id: 5,
+    mod_id: 19,
+    file_id: 101,
+};
+let (len, out) = rt.block_on(modio.download(action, out))?;
+
+// Download the specific version of a mod.
+// if multiple files are found then the latest file is downloaded.
+// Set policy to `ResolvePolicy::Fail` to return with `Error::Download`.
+let action = DownloadAction::Version {
+    game_id: 5,
+    mod_id: 19,
+    version: "0.1".to_string(),
+    policy: ResolvePolicy::Latest,
+};
+let (len, out) = rt.block_on(modio.download(action, out))?;
+```
+
 ### Examples
 
 See [examples directory](examples/) for some getting started examples.

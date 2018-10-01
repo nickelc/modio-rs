@@ -21,11 +21,18 @@ pub enum Error {
     RateLimit {
         reset: Duration,
     },
+    Download(String),
     Codec(SerdeError),
     Http(HttpError),
     Hyper(HyperError),
     Io(IoError),
     Uri(InvalidUri),
+}
+
+macro_rules! future_err {
+    (dl $s:expr) => {
+        Box::new(::futures::future::err(::error::Error::Download($s)))
+    };
 }
 
 impl From<String> for Error {

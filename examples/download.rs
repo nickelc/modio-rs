@@ -1,7 +1,6 @@
 extern crate futures;
 extern crate md5;
 extern crate modio;
-extern crate reqwest;
 extern crate tokio;
 
 use std::env;
@@ -41,16 +40,19 @@ fn main() -> Result<(), Error> {
             let m = rt.block_on(modio.mod_(game_id, mod_id).get())?;
             if let Some(file) = m.modfile {
                 // Download the file and calculate its md5 digest.
-                let mut res = reqwest::get(file.download.binary_url.clone())
-                    .expect("Failed to download the modfile.");
-                let mut ctx = md5::Context::new();
-                io::copy(&mut res, &mut ctx)?;
+                let ctx = md5::Context::new();
 
                 println!("mod: {}", m.name);
-                println!("filename: {}", file.filename);
                 println!("url: {}", file.download.binary_url);
+                println!("filename: {}", file.filename);
+                println!("filesize: {}", file.filesize);
                 println!("reported md5: {}", file.filehash.md5);
+
+                let (size, ctx) = rt.block_on(modio.download(file, ctx))?;
                 println!("computed md5: {:x}", ctx.compute());
+                println!("downloaded size: {}", size);
+            } else {
+                println!("The mod has no files.");
             }
             Ok(())
         }
