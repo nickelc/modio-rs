@@ -111,7 +111,7 @@ let (len, out) = rt.block_on(modio.download(action, out))?;
 
 // Download the specific version of a mod.
 // if multiple files are found then the latest file is downloaded.
-// Set policy to `ResolvePolicy::Fail` to return with `Error::Download`.
+// Set policy to `ResolvePolicy::Fail` to return with `ErrorKind::Download(DownloadError::MultipleFilesFound)`.
 let action = DownloadAction::Version {
     game_id: 5,
     mod_id: 19,

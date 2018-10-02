@@ -17,7 +17,7 @@
 //! For API requests using API key authentication are **unlimited** and for OAuth 2 authentication
 //! requests are limited to **120 requests per hour**.
 //!
-//! A special error [Error::RateLimit](error/enum.Error.html#variant.RateLimit) will
+//! A special error [ErrorKind::RateLimit](error/enum.ErrorKind.html#variant.RateLimit) will
 //! be return from api operations when the rate limit associated with credentials has been
 //! exhausted.
 //!
@@ -83,7 +83,8 @@
 //!
 //!     // Download the specific version of a mod.
 //!     // if multiple files are found then the latest file is downloaded.
-//!     // Set policy to `ResolvePolicy::Fail` to return with `Error::Download`.
+//!     // Set policy to `ResolvePolicy::Fail` to return with
+//!     // `ErrorKind::Download(DownloadError::MultipleFilesFound)`.
 //!     let action = DownloadAction::Version {
 //!         game_id: 5,
 //!         mod_id: 19,
@@ -97,6 +98,8 @@
 
 #![doc(html_root_url = "https://docs.rs/modio/0.2.2")]
 
+#[macro_use]
+extern crate failure;
 extern crate futures;
 extern crate http;
 extern crate hyper;
@@ -153,7 +156,7 @@ use users::Users;
 
 pub use auth::Credentials;
 pub use download::DownloadAction;
-pub use error::Error;
+pub use error::{Error, Result};
 pub use types::{Event, EventType, ModioErrorResponse, ModioListResponse, ModioMessage};
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
@@ -256,7 +259,7 @@ where
 
     /// Performs a download into a writer.
     ///
-    /// Fails with [`Error::Download`](error/enum.Error.html#variant.Download) if a primary file,
+    /// Fails with [`ErrorKind::Download`](error/enum.ErrorKind.html#variant.Download) if a primary file,
     /// a specific file or a specific version is not found.
     /// # Example
     /// ```no_run
@@ -295,7 +298,7 @@ where
     ///     // Download the specific version of a mod.
     ///     // if multiple files are found then the latest file is downloaded.
     ///     // Set policy to `ResolvePolicy::Fail` to return with
-    ///     // `Error::Download(DownloadError::MultipleFilesFound)`.
+    ///     // `ErrorKind::Download(DownloadError::MultipleFilesFound)`.
     ///     let action = DownloadAction::Version {
     ///         game_id: 5,
     ///         mod_id: 19,
@@ -318,7 +321,7 @@ where
                     if let Some(file) = m.modfile {
                         instance.request_file(&file.download.binary_url.to_string(), w)
                     } else {
-                        future_err!(dl "Mod has no primary file".into())
+                        future_err!(error::download_no_primary(game_id, mod_id))
                     }
                 }))
             }
@@ -332,6 +335,13 @@ where
                     .get()
                     .and_then(move |file| {
                         instance.request_file(&file.download.binary_url.to_string(), w)
+                    })
+                    .map_err(move |e| match e.kind() {
+                        error::ErrorKind::Fault {
+                            code: StatusCode::NOT_FOUND,
+                            ..
+                        } => error::download_file_not_found(game_id, mod_id, file_id),
+                        _ => e,
                     }),
             ),
             DownloadAction::Version {
@@ -355,23 +365,22 @@ where
                             let (file, error) = match (list.count, policy) {
                                 (0, _) => (
                                     None,
-                                    Some(format!("File with version '{}' not found", version)),
+                                    Some(error::download_version_not_found(
+                                        game_id, mod_id, version,
+                                    )),
                                 ),
                                 (1, _) => (Some(&list[0]), None),
                                 (_, Latest) => (Some(&list[0]), None),
                                 (_, Fail) => (
                                     None,
-                                    Some(format!(
-                                        "Multiple files with version '{}' found",
-                                        version,
-                                    )),
+                                    Some(error::download_multiple_files(game_id, mod_id, version)),
                                 ),
                             };
 
                             if let Some(file) = file {
                                 instance.request_file(&file.download.binary_url.to_string(), w)
                             } else {
-                                future_err!(dl error.unwrap())
+                                future_err!(error.expect("bug in previous match!"))
                             }
                         }),
                 )
@@ -468,20 +477,20 @@ where
                         } else {
                             let error = match (remaining, reset) {
                                 (Some(remaining), Some(reset)) if remaining == 0 => {
-                                    Error::RateLimit {
+                                    error::ErrorKind::RateLimit {
                                         reset: Duration::from_secs(reset as u64 * 60),
                                     }
                                 }
                                 _ => {
                                     let mer: ModioErrorResponse =
                                         serde_json::from_slice(&response_body)?;
-                                    Error::Fault {
+                                    error::ErrorKind::Fault {
                                         code: status,
                                         error: mer.error,
                                     }
                                 }
                             };
-                            Err(error)
+                            Err(error.into())
                         }
                     }),
             )
@@ -588,9 +597,9 @@ where
                 Method::DELETE,
                 &(self.host.clone() + uri),
                 RequestBody::Vec(message.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
-            ).or_else(|err| match err {
-                error::Error::Codec(_) => Ok(()),
-                otherwise => Err(otherwise),
+            ).or_else(|err| match err.kind() {
+                error::ErrorKind::Codec(_) => Ok(()),
+                _ => Err(err),
             }),
         )
     }
@@ -684,7 +693,7 @@ filter_options!{
 }
 
 trait MultipartForm: MultipartFormClone + Send {
-    fn to_form(&self) -> Result<multipart::Form, error::Error>;
+    fn to_form(&self) -> Result<multipart::Form>;
 }
 
 trait MultipartFormClone {

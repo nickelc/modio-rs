@@ -11,6 +11,7 @@ keywords = ["modio", "hyper"]
 categories = ["api-bindings", "web-programming::http-client"]
 
 [dependencies]
+failure = "0.1"
 futures = "0.1"
 http = "0.1"
 hyper = "0.12"

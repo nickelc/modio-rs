@@ -8,7 +8,7 @@ use hyper::StatusCode;
 use hyper_multipart::client::multipart;
 use url::{form_urlencoded, Url};
 
-use error::Error;
+use error::{ErrorKind, Result};
 use files::{FileRef, Files};
 use metadata::Metadata;
 use teams::Members;
@@ -212,12 +212,12 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
             self.modio
                 .post::<ModioMessage, _>(&self.path("/ratings"), params)
                 .map(|_| ())
-                .or_else(|err| match err {
-                    Error::Fault {
+                .or_else(|err| match err.kind() {
+                    ErrorKind::Fault {
                         code: StatusCode::BAD_REQUEST,
                         ..
                     } => Ok(()),
-                    otherwise => Err(otherwise),
+                    _ => Err(err),
                 }),
         )
     }
@@ -228,12 +228,12 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
             self.modio
                 .post::<Mod, _>(&self.path("/subscribe"), Vec::new())
                 .map(|_| ())
-                .or_else(|err| match err {
-                    Error::Fault {
+                .or_else(|err| match err.kind() {
+                    ErrorKind::Fault {
                         code: StatusCode::BAD_REQUEST,
                         ..
                     } => Ok(()),
-                    otherwise => Err(otherwise),
+                    _ => Err(err),
                 }),
         )
     }
@@ -243,12 +243,12 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
         Box::new(
             self.modio
                 .delete(&self.path("/subscribe"), Vec::new())
-                .or_else(|err| match err {
-                    Error::Fault {
+                .or_else(|err| match err.kind() {
+                    ErrorKind::Fault {
                         code: StatusCode::BAD_REQUEST,
                         ..
                     } => Ok(()),
-                    otherwise => Err(otherwise),
+                    _ => Err(err),
                 }),
         )
     }
@@ -375,7 +375,7 @@ impl AddModOptions {
 }
 
 impl MultipartForm for AddModOptions {
-    fn to_form(&self) -> Result<multipart::Form, Error> {
+    fn to_form(&self) -> Result<multipart::Form> {
         let mut form = multipart::Form::default();
 
         form.add_text("name", self.name.clone());
@@ -670,7 +670,7 @@ impl AddMediaOptions {
 }
 
 impl MultipartForm for AddMediaOptions {
-    fn to_form(&self) -> Result<multipart::Form, Error> {
+    fn to_form(&self) -> Result<multipart::Form> {
         let mut form = multipart::Form::default();
         if let Some(ref logo) = self.logo {
             if let Err(e) = form.add_file("logo", logo) {
