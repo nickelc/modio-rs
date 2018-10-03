@@ -497,7 +497,7 @@ where
         }))
     }
 
-    fn request_file<W>(&self, uri: &str, mut out: W) -> Future<(u64, W)>
+    fn request_file<W>(&self, uri: &str, out: W) -> Future<(u64, W)>
     where
         W: Write + 'static + Send,
     {
@@ -530,18 +530,15 @@ where
                     return instance2.request_file(&location.to_string(), out);
                 }
             }
-            Box::new(
-                response
-                    .into_body()
-                    .concat2()
-                    .map_err(Error::from)
-                    .and_then(move |body| {
-                        io::copy(&mut io::Cursor::new(&body), &mut out)
-                            .map(|s| (s, out))
-                            .map_err(Error::from)
-                            .into_future()
-                    }),
-            )
+            Box::new(response.into_body().map_err(Error::from).fold(
+                (0, out),
+                |(len, mut out), chunk| {
+                    io::copy(&mut io::Cursor::new(&chunk), &mut out)
+                        .map(|n| (n + len, out))
+                        .map_err(Error::from)
+                        .into_future()
+                },
+            ))
         }))
     }
 
