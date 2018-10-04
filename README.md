@@ -30,7 +30,7 @@ that facilitates the upload, search, browsing, downloading and trading of mods i
 To use `modio`, add this to your `Cargo.toml`
 ```toml
 [dependencies]
-modio = "0.2"
+modio = "0.3"
 ```
 
 ### Basic Setup

@@ -1,4 +1,12 @@
-### v0.2.2
+### v0.3 (2018-10-04)
+* builtin method `Modio::download` for downloading files
+  ([c4029f1b](https://github.com/nickelc/modio-rs/commit/c4029f1bd9ba099df582f2c5ce10420d7a85db9c))
+
+#### Breaking Changes
+* reworked errors with `failure` crate
+  ([0acc1e80](https://github.com/nickelc/modio-rs/commit/0acc1e807ef5de36950604d3d15e7ef86ea88027))
+
+### v0.2.2 (2018-09-20)
 * add missing `Mod::stats` property
   ([0af0580b](https://github.com/nickelc/modio-rs/commit/0af0580b9a588024fa38ca60ad419fc499321574))
 
@@ -8,7 +16,7 @@
 * new method to add custom filters to list options
   ([a81771c4](https://github.com/nickelc/modio-rs/commit/a81771c4902448d45379eedc4a98aa5f24394827))
 
-### v0.2.1
+### v0.2.1 (2018-09-10)
 * use the new endpoint `/me/ratings` to list the submitted mod ratings
   ([09117df5](https://github.com/nickelc/modio-rs/commit/09117df59e6f9a9de2fc104fc458b7f99d5740a8))
 

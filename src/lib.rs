@@ -96,7 +96,7 @@
 //! }
 //! ```
 
-#![doc(html_root_url = "https://docs.rs/modio/0.2.2")]
+#![doc(html_root_url = "https://docs.rs/modio/0.3.0")]
 
 #[macro_use]
 extern crate failure;
