@@ -418,12 +418,10 @@ where
         };
 
         let instance = self.clone();
-        let body2 = body.clone();
-        let method2 = method.clone();
 
         let response = url.map_err(Error::from).and_then(move |url| {
             let mut req = Request::builder();
-            req.method(method2)
+            req.method(method)
                 .uri(url)
                 .header(USER_AGENT, &*instance.agent);
 
@@ -431,7 +429,7 @@ where
                 req.header(AUTHORIZATION, &*format!("Bearer {}", token));
             }
 
-            let req = match body2 {
+            let req = match body {
                 RequestBody::Vec(body, mime) => {
                     req.header(CONTENT_TYPE, &*mime.to_string());
                     req.body(Body::from(body)).map_err(Error::from)
@@ -446,7 +444,6 @@ where
                 .and_then(move |req| instance.client.request(req).map_err(Error::from))
         });
 
-        let instance2 = self.clone();
         Box::new(response.and_then(move |response| {
             let remaining = response
                 .headers()
@@ -460,12 +457,6 @@ where
                 .and_then(|v| v.parse::<u64>().ok());
 
             let status = response.status();
-            if StatusCode::MOVED_PERMANENTLY == status || StatusCode::TEMPORARY_REDIRECT == status {
-                if let Some(location) = response.headers().get(LOCATION) {
-                    let location = location.to_str().unwrap().to_owned();
-                    return instance2.request(method, &location, body);
-                }
-            }
             Box::new(
                 response
                     .into_body()
@@ -564,7 +555,7 @@ where
     fn post_form<F, D>(&self, uri: &str, data: F) -> Future<D>
     where
         D: DeserializeOwned + 'static + Send,
-        F: MultipartForm + Clone + 'static,
+        F: MultipartForm + 'static,
     {
         self.request(
             Method::POST,
@@ -602,7 +593,6 @@ where
     }
 }
 
-#[derive(Clone)]
 enum RequestBody {
     Empty,
     Vec(Vec<u8>, Mime),
@@ -689,27 +679,8 @@ filter_options!{
     }
 }
 
-trait MultipartForm: MultipartFormClone + Send {
+trait MultipartForm: Send {
     fn to_form(&self) -> Result<multipart::Form>;
-}
-
-trait MultipartFormClone {
-    fn clone_box(&self) -> Box<MultipartForm>;
-}
-
-impl<T> MultipartFormClone for T
-where
-    T: 'static + MultipartForm + Clone,
-{
-    fn clone_box(&self) -> Box<MultipartForm> {
-        Box::new(self.clone())
-    }
-}
-
-impl Clone for Box<MultipartForm> {
-    fn clone(&self) -> Self {
-        self.clone_box()
-    }
 }
 
 pub trait AddOptions {}
