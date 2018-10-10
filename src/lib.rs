@@ -405,8 +405,9 @@ where
         Reports::new(self.clone())
     }
 
-    fn request<Out>(&self, method: Method, uri: &str, body: RequestBody) -> Future<Out>
+    fn request<B, Out>(&self, method: Method, uri: &str, body: B) -> Future<Out>
     where
+        B: Into<RequestBody> + 'static + Send,
         Out: DeserializeOwned + 'static + Send,
     {
         let url = if let Credentials::ApiKey(ref api_key) = self.credentials {
@@ -429,15 +430,16 @@ where
                 req.header(AUTHORIZATION, &*format!("Bearer {}", token));
             }
 
-            let req = match body {
-                RequestBody::Vec(body, mime) => {
-                    req.header(CONTENT_TYPE, &*mime.to_string());
-                    req.body(Body::from(body)).map_err(Error::from)
+            let req = match body.into() {
+                RequestBody::Body(body, mime) => {
+                    if let Some(mime) = mime {
+                        req.header(CONTENT_TYPE, &*mime.to_string());
+                    }
+                    req.body(body).map_err(Error::from)
                 }
                 RequestBody::Form(data) => data
                     .to_form()
                     .and_then(move |form| form.set_body(&mut req).map_err(Error::from)),
-                RequestBody::Empty => req.body(Body::empty()).map_err(Error::from),
             };
 
             req.into_future()
@@ -537,18 +539,18 @@ where
     where
         D: DeserializeOwned + 'static + Send,
     {
-        self.request(Method::GET, &(self.host.clone() + uri), RequestBody::Empty)
+        self.request(Method::GET, &(self.host.clone() + uri), Body::empty())
     }
 
-    fn post<D, M>(&self, uri: &str, message: M) -> Future<D>
+    fn post<D, B>(&self, uri: &str, body: B) -> Future<D>
     where
         D: DeserializeOwned + 'static + Send,
-        M: Into<Vec<u8>>,
+        B: Into<Body>,
     {
         self.request(
             Method::POST,
             &(self.host.clone() + uri),
-            RequestBody::Vec(message.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
+            (body.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
         )
     }
 
@@ -564,27 +566,27 @@ where
         )
     }
 
-    fn put<D, M>(&self, uri: &str, message: M) -> Future<D>
+    fn put<D, B>(&self, uri: &str, body: B) -> Future<D>
     where
         D: DeserializeOwned + 'static + Send,
-        M: Into<Vec<u8>>,
+        B: Into<Body>,
     {
         self.request(
             Method::PUT,
             &(self.host.clone() + uri),
-            RequestBody::Vec(message.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
+            (body.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
         )
     }
 
-    fn delete<M>(&self, uri: &str, message: M) -> Future<()>
+    fn delete<B>(&self, uri: &str, body: B) -> Future<()>
     where
-        M: Into<Vec<u8>>,
+        B: Into<Body>,
     {
         Box::new(
             self.request(
                 Method::DELETE,
                 &(self.host.clone() + uri),
-                RequestBody::Vec(message.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
+                (body.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
             ).or_else(|err| match err.kind() {
                 error::ErrorKind::Codec(_) => Ok(()),
                 _ => Err(err),
@@ -594,9 +596,20 @@ where
 }
 
 enum RequestBody {
-    Empty,
-    Vec(Vec<u8>, Mime),
+    Body(Body, Option<Mime>),
     Form(Box<MultipartForm>),
+}
+
+impl From<Body> for RequestBody {
+    fn from(body: Body) -> RequestBody {
+        RequestBody::Body(body, None)
+    }
+}
+
+impl From<(Body, Mime)> for RequestBody {
+    fn from(body: (Body, Mime)) -> RequestBody {
+        RequestBody::Body(body.0, Some(body.1))
+    }
 }
 
 /// Generic endpoint for sub-resources

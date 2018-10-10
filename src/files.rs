@@ -3,6 +3,7 @@
 use std::path::{Path, PathBuf};
 
 use hyper::client::connect::Connect;
+use hyper::Body;
 use hyper_multipart::client::multipart;
 use url::form_urlencoded;
 
@@ -124,7 +125,7 @@ impl<C: Clone + Connect + 'static> FileRef<C> {
 
     /// Delete a modfile.
     pub fn delete(&self) -> Future<()> {
-        self.modio.delete(&self.path(), Vec::new())
+        self.modio.delete(&self.path(), Body::empty())
     }
 }
 

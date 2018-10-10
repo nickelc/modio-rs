@@ -1,6 +1,7 @@
 //! Team members interface
 
 use hyper::client::connect::Connect;
+use hyper::Body;
 use url::form_urlencoded;
 
 use Future;
@@ -59,7 +60,7 @@ impl<C: Clone + Connect + 'static> Members<C> {
     /// Delete a team member by id.
     pub fn delete(&self, id: u32) -> Future<()> {
         self.modio
-            .delete(&self.path(&format!("/{}", id)), Vec::new())
+            .delete(&self.path(&format!("/{}", id)), Body::empty())
     }
 }
 

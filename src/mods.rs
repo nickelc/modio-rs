@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use futures::Future as StdFuture;
 use hyper::client::connect::Connect;
-use hyper::StatusCode;
+use hyper::{Body, StatusCode};
 use hyper_multipart::client::multipart;
 use url::{form_urlencoded, Url};
 
@@ -226,7 +226,7 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
     pub fn subscribe(&self) -> Future<()> {
         Box::new(
             self.modio
-                .post::<Mod, _>(&self.path("/subscribe"), Vec::new())
+                .post::<Mod, _>(&self.path("/subscribe"), Body::empty())
                 .map(|_| ())
                 .or_else(|err| match err.kind() {
                     ErrorKind::Fault {
@@ -242,7 +242,7 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
     pub fn unsubscribe(&self) -> Future<()> {
         Box::new(
             self.modio
-                .delete(&self.path("/subscribe"), Vec::new())
+                .delete(&self.path("/subscribe"), Body::empty())
                 .or_else(|err| match err.kind() {
                     ErrorKind::Fault {
                         code: StatusCode::BAD_REQUEST,

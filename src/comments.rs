@@ -1,6 +1,7 @@
 //! Mod comments interface
 
 use hyper::client::connect::Connect;
+use hyper::Body;
 
 pub use types::mods::Comment;
 use Future;
@@ -48,7 +49,7 @@ impl<C: Clone + Connect + 'static> Comments<C> {
     /// Delete a comment by id.
     pub fn delete(&self, id: u32) -> Future<()> {
         self.modio
-            .delete(&self.path(&format!("/{}", id)), Vec::new())
+            .delete(&self.path(&format!("/{}", id)), Body::empty())
     }
 }
 
