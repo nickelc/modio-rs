@@ -1,17 +1,18 @@
 //! Modfile interface
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use hyper::client::connect::Connect;
 use hyper::Body;
-use hyper_multipart::client::multipart;
 use url::form_urlencoded;
 
-use error::Error;
+use mime::APPLICATION_OCTET_STREAM;
+use tokio_io::AsyncRead;
+
+use multipart::{FileSource, FileStream, MultipartForm};
 use Future;
 use Modio;
 use ModioListResponse;
-use MultipartForm;
 use QueryParams;
 
 pub use types::mods::{Download, File, FileHash};
@@ -188,9 +189,8 @@ filter_options!{
     }
 }
 
-#[derive(Clone, Debug, Default)]
 pub struct AddFileOptions {
-    filedata: PathBuf,
+    source: FileSource,
     version: Option<String>,
     changelog: Option<String>,
     active: Option<bool>,
@@ -199,45 +199,83 @@ pub struct AddFileOptions {
 }
 
 impl AddFileOptions {
-    pub fn builder<P: AsRef<Path>>(filedata: P) -> AddFileOptionsBuilder {
-        AddFileOptionsBuilder::new(filedata)
+    pub fn new<R, S>(inner: R, filename: S) -> AddFileOptionsBuilder
+    where
+        R: AsyncRead + 'static + Send + Sync,
+        S: Into<String>,
+    {
+        AddFileOptionsBuilder::new(FileSource {
+            inner: FileStream::new(inner),
+            filename: filename.into(),
+            mime: APPLICATION_OCTET_STREAM,
+        })
+    }
+
+    pub fn file<P: AsRef<Path>>(file: P) -> AddFileOptionsBuilder {
+        let file = file.as_ref();
+        let filename = file
+            .file_name()
+            .and_then(|n| n.to_str())
+            .map_or_else(String::new, |n| n.to_string());
+
+        Self::file_with_name(file, filename)
+    }
+
+    pub fn file_with_name<P, S>(file: P, filename: S) -> AddFileOptionsBuilder
+    where
+        P: AsRef<Path>,
+        S: Into<String>,
+    {
+        let file = file.as_ref();
+
+        AddFileOptionsBuilder::new(FileSource {
+            inner: FileStream::open(file),
+            filename: filename.into(),
+            mime: APPLICATION_OCTET_STREAM,
+        })
     }
 }
 
-impl MultipartForm for AddFileOptions {
-    fn to_form(&self) -> Result<multipart::Form, Error> {
-        let mut form = multipart::Form::default();
-
-        match form.add_file("filedata", self.filedata.clone()) {
-            Ok(_) => {}
-            Err(err) => return Err(err.into()),
-        };
-        if let Some(ref version) = self.version {
-            form.add_text("version", version.clone());
+#[doc(hidden)]
+impl From<AddFileOptions> for MultipartForm {
+    fn from(opts: AddFileOptions) -> MultipartForm {
+        let mut mpart = MultipartForm::default();
+        if let Some(version) = opts.version {
+            mpart.add_field("version", &version);
         }
-        if let Some(ref changelog) = self.changelog {
-            form.add_text("changelog", changelog.clone());
+        if let Some(changelog) = opts.changelog {
+            mpart.add_field("changelog", &changelog);
         }
-        if let Some(active) = self.active {
-            form.add_text("active", active.to_string());
+        if let Some(active) = opts.active {
+            mpart.add_field("active", &active.to_string());
         }
-        if let Some(ref filehash) = self.filehash {
-            form.add_text("filehash", filehash.clone());
+        if let Some(filehash) = opts.filehash {
+            mpart.add_field("filehash", &filehash);
         }
-        if let Some(ref metadata_blob) = self.metadata_blob {
-            form.add_text("metadata_blob", metadata_blob.clone());
+        if let Some(metadata_blob) = opts.metadata_blob {
+            mpart.add_field("metadata_blob", &metadata_blob);
         }
-        Ok(form)
+        mpart.add_stream(
+            "filedata",
+            &opts.source.filename,
+            &opts.source.mime.to_string(),
+            opts.source.inner,
+        );
+        mpart
     }
 }
 
 pub struct AddFileOptionsBuilder(AddFileOptions);
 
 impl AddFileOptionsBuilder {
-    pub fn new<P: AsRef<Path>>(filedata: P) -> Self {
+    fn new(source: FileSource) -> Self {
         AddFileOptionsBuilder(AddFileOptions {
-            filedata: filedata.as_ref().to_path_buf(),
-            ..Default::default()
+            source,
+            version: None,
+            changelog: None,
+            active: None,
+            filehash: None,
+            metadata_blob: None,
         })
     }
 
@@ -266,14 +304,14 @@ impl AddFileOptionsBuilder {
         self
     }
 
-    pub fn build(&self) -> AddFileOptions {
+    pub fn build(self) -> AddFileOptions {
         AddFileOptions {
-            filedata: self.0.filedata.clone(),
-            version: self.0.version.clone(),
-            changelog: self.0.changelog.clone(),
+            source: self.0.source,
+            version: self.0.version,
+            changelog: self.0.changelog,
             active: self.0.active,
-            filehash: self.0.filehash.clone(),
-            metadata_blob: self.0.metadata_blob.clone(),
+            filehash: self.0.filehash,
+            metadata_blob: self.0.metadata_blob,
         }
     }
 }

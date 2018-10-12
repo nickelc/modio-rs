@@ -1,16 +1,17 @@
 //! Mods Interface
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use futures::Future as StdFuture;
 use hyper::client::connect::Connect;
 use hyper::{Body, StatusCode};
-use hyper_multipart::client::multipart;
+use mime::{APPLICATION_OCTET_STREAM, IMAGE_STAR};
 use url::{form_urlencoded, Url};
 
-use error::{ErrorKind, Result};
+use error::ErrorKind;
 use files::{FileRef, Files};
 use metadata::Metadata;
+use multipart::{FileSource, FileStream, MultipartForm};
 use teams::Members;
 use types::Event;
 use Comments;
@@ -20,7 +21,6 @@ use Future;
 use Modio;
 use ModioListResponse;
 use ModioMessage;
-use MultipartForm;
 use {AddOptions, DeleteOptions, QueryParams};
 
 pub use types::mods::{
@@ -349,10 +349,9 @@ filter_options!{
     }
 }
 
-#[derive(Clone, Debug, Default)]
 pub struct AddModOptions {
     visible: Option<u32>,
-    logo: PathBuf,
+    logo: FileSource,
     name: String,
     name_id: Option<String>,
     summary: String,
@@ -370,63 +369,86 @@ impl AddModOptions {
         T: Into<String>,
         P: AsRef<Path>,
     {
-        AddModOptionsBuilder::new(name, logo, summary)
+        let logo = logo.as_ref();
+        let filename = logo
+            .file_name()
+            .and_then(|n| n.to_str())
+            .map_or_else(String::new, |n| n.to_string());
+
+        AddModOptionsBuilder::new(
+            name,
+            FileSource {
+                inner: FileStream::open(logo),
+                filename,
+                mime: IMAGE_STAR,
+            },
+            summary,
+        )
     }
 }
 
-impl MultipartForm for AddModOptions {
-    fn to_form(&self) -> Result<multipart::Form> {
-        let mut form = multipart::Form::default();
+#[doc(hidden)]
+impl From<AddModOptions> for MultipartForm {
+    fn from(opts: AddModOptions) -> MultipartForm {
+        let mut mpart = MultipartForm::default();
 
-        form.add_text("name", self.name.clone());
-        form.add_text("summary", self.summary.clone());
-        match form.add_file("logo", self.logo.clone()) {
-            Ok(_) => {}
-            Err(err) => return Err(err.into()),
-        };
-        if let Some(visible) = self.visible {
-            form.add_text("visible", visible.to_string());
+        mpart.add_field("name", &opts.name);
+        mpart.add_field("summary", &opts.summary);
+        if let Some(visible) = opts.visible {
+            mpart.add_field("visible", &visible.to_string());
         }
-        if let Some(ref name_id) = self.name_id {
-            form.add_text("name_id", name_id.clone());
+        if let Some(ref name_id) = opts.name_id {
+            mpart.add_field("name_id", &name_id);
         }
-        if let Some(ref desc) = self.description {
-            form.add_text("description", desc.clone());
+        if let Some(ref desc) = opts.description {
+            mpart.add_field("description", &desc);
         }
-        if let Some(ref url) = self.homepage_url {
-            form.add_text("homepage_url", url.to_string());
+        if let Some(ref url) = opts.homepage_url {
+            mpart.add_field("homepage_url", &url.to_string());
         }
-        if let Some(stock) = self.stock {
-            form.add_text("stock", stock.to_string());
+        if let Some(stock) = opts.stock {
+            mpart.add_field("stock", &stock.to_string());
         }
-        if let Some(maturity_option) = self.maturity_option {
-            form.add_text("maturity_option", maturity_option.to_string());
+        if let Some(maturity_option) = opts.maturity_option {
+            mpart.add_field("maturity_option", &maturity_option.to_string());
         }
-        if let Some(ref metadata_blob) = self.metadata_blob {
-            form.add_text("metadata_blob", metadata_blob.clone());
+        if let Some(ref metadata_blob) = opts.metadata_blob {
+            mpart.add_field("metadata_blob", &metadata_blob);
         }
-        if let Some(ref tags) = self.tags {
+        if let Some(ref tags) = opts.tags {
             for tag in tags {
-                form.add_text("tags[]", tag.clone());
+                mpart.add_field("tags[]", &tag);
             }
         }
-        Ok(form)
+        mpart.add_stream(
+            "logo",
+            &opts.logo.filename,
+            &opts.logo.mime.to_string(),
+            opts.logo.inner,
+        );
+        mpart
     }
 }
 
 pub struct AddModOptionsBuilder(AddModOptions);
 
 impl AddModOptionsBuilder {
-    pub fn new<T, P>(name: T, logo: P, summary: T) -> Self
+    fn new<T>(name: T, logo: FileSource, summary: T) -> Self
     where
         T: Into<String>,
-        P: AsRef<Path>,
     {
         AddModOptionsBuilder(AddModOptions {
             name: name.into(),
-            logo: logo.as_ref().to_path_buf(),
+            logo: logo,
             summary: summary.into(),
-            ..Default::default()
+            visible: None,
+            name_id: None,
+            description: None,
+            homepage_url: None,
+            stock: None,
+            maturity_option: None,
+            metadata_blob: None,
+            tags: None,
         })
     }
 
@@ -470,19 +492,19 @@ impl AddModOptionsBuilder {
         self
     }
 
-    pub fn build(&self) -> AddModOptions {
+    pub fn build(self) -> AddModOptions {
         AddModOptions {
             visible: self.0.visible,
-            logo: self.0.logo.clone(),
-            name: self.0.name.clone(),
-            name_id: self.0.name_id.clone(),
-            summary: self.0.summary.clone(),
-            description: self.0.description.clone(),
-            homepage_url: self.0.homepage_url.clone(),
+            logo: self.0.logo,
+            name: self.0.name,
+            name_id: self.0.name_id,
+            summary: self.0.summary,
+            description: self.0.description,
+            homepage_url: self.0.homepage_url,
             stock: self.0.stock,
             maturity_option: self.0.maturity_option,
-            metadata_blob: self.0.metadata_blob.clone(),
-            tags: self.0.tags.clone(),
+            metadata_blob: self.0.metadata_blob,
+            tags: self.0.tags,
         }
     }
 }
@@ -654,11 +676,10 @@ impl QueryParams for EditTagsOptions {
     }
 }
 
-#[derive(Clone, Default)]
 pub struct AddMediaOptions {
-    logo: Option<PathBuf>,
-    images_zip: Option<PathBuf>,
-    images: Option<Vec<PathBuf>>,
+    logo: Option<FileSource>,
+    images_zip: Option<FileSource>,
+    images: Option<Vec<FileSource>>,
     youtube: Option<Vec<String>>,
     sketchfab: Option<Vec<String>>,
 }
@@ -669,55 +690,74 @@ impl AddMediaOptions {
     }
 }
 
-impl MultipartForm for AddMediaOptions {
-    fn to_form(&self) -> Result<multipart::Form> {
-        let mut form = multipart::Form::default();
-        if let Some(ref logo) = self.logo {
-            if let Err(e) = form.add_file("logo", logo) {
-                return Err(e.into());
+#[doc(hidden)]
+impl From<AddMediaOptions> for MultipartForm {
+    fn from(opts: AddMediaOptions) -> MultipartForm {
+        let mut mpart = MultipartForm::default();
+        if let Some(logo) = opts.logo {
+            mpart.add_stream("logo", &logo.filename, &logo.mime.to_string(), logo.inner);
+        }
+        if let Some(zip) = opts.images_zip {
+            mpart.add_stream("images", &zip.filename, &zip.mime.to_string(), zip.inner);
+        }
+        if let Some(images) = opts.images {
+            for (i, image) in images.into_iter().enumerate() {
+                mpart.add_stream(
+                    format!("image{}", i),
+                    image.filename,
+                    image.mime.to_string(),
+                    image.inner,
+                );
             }
         }
-        if let Some(ref images) = self.images_zip {
-            if let Err(e) = form.add_file("images", images) {
-                return Err(e.into());
-            }
-        }
-        if let Some(ref images) = self.images {
-            for (i, image) in images.iter().enumerate() {
-                if let Err(e) = form.add_file(format!("image{}", i), image) {
-                    return Err(e.into());
-                }
-            }
-        }
-        if let Some(ref youtube) = self.youtube {
+        if let Some(youtube) = opts.youtube {
             for url in youtube {
-                form.add_text("youtube[]", url.clone());
+                mpart.add_field("youtube[]", &url);
             }
         }
-        if let Some(ref sketchfab) = self.sketchfab {
+        if let Some(ref sketchfab) = opts.sketchfab {
             for url in sketchfab {
-                form.add_text("sketchfab[]", url.clone());
+                mpart.add_field("sketchfab[]", &url);
             }
         }
-        Ok(form)
+        mpart
     }
 }
 
-#[derive(Default)]
 pub struct AddMediaOptionsBuilder(AddMediaOptions);
 
 impl AddMediaOptionsBuilder {
-    pub fn new() -> Self {
-        Default::default()
+    fn new() -> Self {
+        AddMediaOptionsBuilder(AddMediaOptions {
+            logo: None,
+            images_zip: None,
+            images: None,
+            youtube: None,
+            sketchfab: None,
+        })
     }
 
     pub fn logo<P: AsRef<Path>>(&mut self, logo: P) -> &mut Self {
-        self.0.logo = Some(logo.as_ref().to_path_buf());
+        let logo = logo.as_ref();
+        let filename = logo
+            .file_name()
+            .and_then(|n| n.to_str())
+            .map_or_else(String::new, |n| n.to_string());
+
+        self.0.logo = Some(FileSource {
+            inner: FileStream::open(logo),
+            filename,
+            mime: IMAGE_STAR,
+        });
         self
     }
 
     pub fn images_zip<P: AsRef<Path>>(&mut self, images: P) -> &mut Self {
-        self.0.images_zip = Some(images.as_ref().to_path_buf());
+        self.0.images_zip = Some(FileSource {
+            inner: FileStream::open(images),
+            filename: "images.zip".into(),
+            mime: APPLICATION_OCTET_STREAM,
+        });
         self
     }
 
@@ -725,8 +765,19 @@ impl AddMediaOptionsBuilder {
         self.0.images = Some(
             images
                 .iter()
-                .map(|p| p.as_ref().to_path_buf())
-                .collect::<Vec<_>>(),
+                .map(|p| {
+                    let file = p.as_ref();
+                    let filename = file
+                        .file_name()
+                        .and_then(|n| n.to_str())
+                        .map_or_else(String::new, |n| n.to_string());
+
+                    FileSource {
+                        inner: FileStream::open(file),
+                        filename,
+                        mime: IMAGE_STAR,
+                    }
+                }).collect::<Vec<_>>(),
         );
         self
     }
@@ -741,13 +792,13 @@ impl AddMediaOptionsBuilder {
         self
     }
 
-    pub fn build(&self) -> AddMediaOptions {
+    pub fn build(self) -> AddMediaOptions {
         AddMediaOptions {
-            logo: self.0.logo.clone(),
-            images_zip: self.0.images_zip.clone(),
-            images: self.0.images.clone(),
-            youtube: self.0.youtube.clone(),
-            sketchfab: self.0.sketchfab.clone(),
+            logo: self.0.logo,
+            images_zip: self.0.images_zip,
+            images: self.0.images,
+            youtube: self.0.youtube,
+            sketchfab: self.0.sketchfab,
         }
     }
 }

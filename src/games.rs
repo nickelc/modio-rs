@@ -1,12 +1,12 @@
 //! Games interface
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use hyper::client::connect::Connect;
-use hyper_multipart::client::multipart;
+use mime::IMAGE_STAR;
 use url::form_urlencoded;
 
-use error::Error;
+use multipart::{FileSource, FileStream, MultipartForm};
 use Endpoint;
 use Future;
 use ModRef;
@@ -14,7 +14,7 @@ use Modio;
 use ModioListResponse;
 use ModioMessage;
 use Mods;
-use {AddOptions, DeleteOptions, MultipartForm, QueryParams};
+use {AddOptions, DeleteOptions, QueryParams};
 
 pub use types::game::{Game, HeaderImage, Icon, TagOption, TagType};
 pub use types::Logo;
@@ -270,11 +270,10 @@ impl QueryParams for DeleteTagsOptions {
     }
 }
 
-#[derive(Clone, Default)]
 pub struct GameMediaOptions {
-    logo: Option<PathBuf>,
-    icon: Option<PathBuf>,
-    header: Option<PathBuf>,
+    logo: Option<FileSource>,
+    icon: Option<FileSource>,
+    header: Option<FileSource>,
 }
 
 impl GameMediaOptions {
@@ -283,56 +282,89 @@ impl GameMediaOptions {
     }
 }
 
-impl MultipartForm for GameMediaOptions {
-    fn to_form(&self) -> Result<multipart::Form, Error> {
-        let mut form = multipart::Form::default();
-        if let Some(ref logo) = self.logo {
-            if let Err(e) = form.add_file("logo", logo) {
-                return Err(e.into());
-            }
+#[doc(hidden)]
+impl From<GameMediaOptions> for MultipartForm {
+    fn from(opts: GameMediaOptions) -> MultipartForm {
+        let mut mpart = MultipartForm::default();
+        if let Some(logo) = opts.logo {
+            mpart.add_stream("logo", &logo.filename, &logo.mime.to_string(), logo.inner);
         }
-        if let Some(ref icon) = self.icon {
-            if let Err(e) = form.add_file("icon", icon) {
-                return Err(e.into());
-            };
+        if let Some(icon) = opts.icon {
+            mpart.add_stream("icon", &icon.filename, &icon.mime.to_string(), icon.inner);
         }
-        if let Some(ref header) = self.header {
-            if let Err(e) = form.add_file("header", header) {
-                return Err(e.into());
-            }
+        if let Some(header) = opts.header {
+            mpart.add_stream(
+                "header",
+                &header.filename,
+                &header.mime.to_string(),
+                header.inner,
+            );
         }
-        Ok(form)
+        mpart
     }
 }
 
-#[derive(Default)]
 pub struct GameMediaOptionsBuilder(GameMediaOptions);
 
 impl GameMediaOptionsBuilder {
-    pub fn new() -> Self {
-        GameMediaOptionsBuilder(Default::default())
+    fn new() -> Self {
+        GameMediaOptionsBuilder(GameMediaOptions {
+            logo: None,
+            icon: None,
+            header: None,
+        })
     }
 
     pub fn logo<P: AsRef<Path>>(&mut self, logo: P) -> &mut Self {
-        self.0.logo = Some(logo.as_ref().to_path_buf());
+        let logo = logo.as_ref();
+        let filename = logo
+            .file_name()
+            .and_then(|n| n.to_str())
+            .map_or_else(String::new, |n| n.to_string());
+
+        self.0.logo = Some(FileSource {
+            inner: FileStream::open(logo),
+            filename,
+            mime: IMAGE_STAR,
+        });
         self
     }
 
     pub fn icon<P: AsRef<Path>>(&mut self, icon: P) -> &mut Self {
-        self.0.icon = Some(icon.as_ref().to_path_buf());
+        let icon = icon.as_ref();
+        let filename = icon
+            .file_name()
+            .and_then(|n| n.to_str())
+            .map_or_else(String::new, |n| n.to_string());
+
+        self.0.icon = Some(FileSource {
+            inner: FileStream::open(icon),
+            filename,
+            mime: IMAGE_STAR,
+        });
         self
     }
 
     pub fn header<P: AsRef<Path>>(&mut self, header: P) -> &mut Self {
-        self.0.header = Some(header.as_ref().to_path_buf());
+        let header = header.as_ref();
+        let filename = header
+            .file_name()
+            .and_then(|n| n.to_str())
+            .map_or_else(String::new, |n| n.to_string());
+
+        self.0.header = Some(FileSource {
+            inner: FileStream::open(header),
+            filename,
+            mime: IMAGE_STAR,
+        });
         self
     }
 
-    pub fn build(&self) -> GameMediaOptions {
+    pub fn build(self) -> GameMediaOptions {
         GameMediaOptions {
-            logo: self.0.logo.clone(),
-            icon: self.0.icon.clone(),
-            header: self.0.header.clone(),
+            logo: self.0.logo,
+            icon: self.0.icon,
+            header: self.0.header,
         }
     }
 }

@@ -98,18 +98,22 @@
 
 #![doc(html_root_url = "https://docs.rs/modio/0.3.0")]
 
+extern crate bytes;
 #[macro_use]
 extern crate failure;
 extern crate futures;
 extern crate http;
 extern crate hyper;
-extern crate hyper_multipart_rfc7578 as hyper_multipart;
 extern crate hyper_tls;
 extern crate mime;
+extern crate mpart_async;
 extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
+extern crate tokio_codec;
+extern crate tokio_fs;
+extern crate tokio_io;
 extern crate url;
 extern crate url_serde;
 
@@ -123,7 +127,6 @@ use hyper::client::connect::Connect;
 use hyper::client::HttpConnector;
 use hyper::header::{AUTHORIZATION, CONTENT_TYPE, LOCATION, USER_AGENT};
 use hyper::{Body, Client, Method, Request, StatusCode, Uri};
-use hyper_multipart::client::multipart;
 use hyper_tls::HttpsConnector;
 use mime::Mime;
 use serde::de::DeserializeOwned;
@@ -141,6 +144,7 @@ pub mod games;
 pub mod me;
 pub mod metadata;
 pub mod mods;
+mod multipart;
 pub mod reports;
 pub mod teams;
 mod types;
@@ -151,6 +155,7 @@ use comments::Comments;
 use games::{GameRef, Games};
 use me::Me;
 use mods::{ModRef, Mods};
+use multipart::MultipartForm;
 use reports::Reports;
 use users::Users;
 
@@ -437,9 +442,13 @@ where
                     }
                     req.body(body).map_err(Error::from)
                 }
-                RequestBody::Form(data) => data
-                    .to_form()
-                    .and_then(move |form| form.set_body(&mut req).map_err(Error::from)),
+                RequestBody::Form(mpart) => {
+                    req.header(
+                        CONTENT_TYPE,
+                        &*format!("multipart/form-data; boundary={}", mpart.get_boundary()),
+                    );
+                    req.body(Body::wrap_stream(mpart)).map_err(Error::from)
+                }
             };
 
             req.into_future()
@@ -554,15 +563,15 @@ where
         )
     }
 
-    fn post_form<F, D>(&self, uri: &str, data: F) -> Future<D>
+    fn post_form<M, D>(&self, uri: &str, data: M) -> Future<D>
     where
         D: DeserializeOwned + 'static + Send,
-        F: MultipartForm + 'static,
+        M: Into<MultipartForm>,
     {
         self.request(
             Method::POST,
             &(self.host.clone() + uri),
-            RequestBody::Form(Box::new(data)),
+            RequestBody::Form(data.into()),
         )
     }
 
@@ -597,7 +606,7 @@ where
 
 enum RequestBody {
     Body(Body, Option<Mime>),
-    Form(Box<MultipartForm>),
+    Form(MultipartForm),
 }
 
 impl From<Body> for RequestBody {
@@ -690,10 +699,6 @@ filter_options!{
         Sort
         - ID = "id";
     }
-}
-
-trait MultipartForm: Send {
-    fn to_form(&self) -> Result<multipart::Form>;
 }
 
 pub trait AddOptions {}
