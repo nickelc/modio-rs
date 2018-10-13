@@ -203,21 +203,21 @@ pub struct AddTagsOptions {
 }
 
 impl AddTagsOptions {
-    pub fn public<S: Into<String>>(name: S, kind: TagType, tags: Vec<String>) -> Self {
+    pub fn public<S: Into<String>>(name: S, kind: TagType, tags: &[String]) -> Self {
         Self {
             name: name.into(),
             kind,
             hidden: false,
-            tags,
+            tags: tags.to_vec(),
         }
     }
 
-    pub fn hidden<S: Into<String>>(name: S, kind: TagType, tags: Vec<String>) -> Self {
+    pub fn hidden<S: Into<String>>(name: S, kind: TagType, tags: &[String]) -> Self {
         Self {
             name: name.into(),
             kind,
             hidden: true,
-            tags,
+            tags: tags.to_vec(),
         }
     }
 }
@@ -248,10 +248,14 @@ impl DeleteTagsOptions {
         }
     }
 
-    pub fn some<S: Into<String>>(name: S, tags: Vec<String>) -> Self {
+    pub fn some<S: Into<String>>(name: S, tags: &[String]) -> Self {
         Self {
             name: name.into(),
-            tags: if tags.is_empty() { None } else { Some(tags) },
+            tags: if tags.is_empty() {
+                None
+            } else {
+                Some(tags.to_vec())
+            },
         }
     }
 }

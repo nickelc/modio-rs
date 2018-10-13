@@ -487,8 +487,8 @@ impl AddModOptionsBuilder {
         self
     }
 
-    pub fn tags(&mut self, tags: Vec<String>) -> &mut Self {
-        self.0.tags = Some(tags);
+    pub fn tags(&mut self, tags: &[String]) -> &mut Self {
+        self.0.tags = Some(tags.to_vec());
         self
     }
 
@@ -629,8 +629,10 @@ pub struct EditDepencenciesOptions {
 }
 
 impl EditDepencenciesOptions {
-    pub fn new(dependencies: Vec<u32>) -> Self {
-        Self { dependencies }
+    pub fn new(dependencies: &[u32]) -> Self {
+        Self {
+            dependencies: dependencies.to_vec(),
+        }
     }
 
     pub fn one(dependency: u32) -> Self {
@@ -660,8 +662,10 @@ pub struct EditTagsOptions {
 }
 
 impl EditTagsOptions {
-    pub fn new(tags: Vec<String>) -> Self {
-        Self { tags }
+    pub fn new(tags: &[String]) -> Self {
+        Self {
+            tags: tags.to_vec(),
+        }
     }
 }
 
@@ -782,13 +786,13 @@ impl AddMediaOptionsBuilder {
         self
     }
 
-    pub fn youtube(&mut self, urls: Vec<String>) -> &mut Self {
-        self.0.youtube = Some(urls);
+    pub fn youtube(&mut self, urls: &[String]) -> &mut Self {
+        self.0.youtube = Some(urls.to_vec());
         self
     }
 
-    pub fn sketchfab(&mut self, urls: Vec<String>) -> &mut Self {
-        self.0.sketchfab = Some(urls);
+    pub fn sketchfab(&mut self, urls: &[String]) -> &mut Self {
+        self.0.sketchfab = Some(urls.to_vec());
         self
     }
 
@@ -840,18 +844,18 @@ impl DeleteMediaOptionsBuilder {
         Default::default()
     }
 
-    pub fn images(&mut self, images: Vec<String>) -> &mut Self {
-        self.0.images = Some(images);
+    pub fn images(&mut self, images: &[String]) -> &mut Self {
+        self.0.images = Some(images.to_vec());
         self
     }
 
-    pub fn youtube(&mut self, urls: Vec<String>) -> &mut Self {
-        self.0.youtube = Some(urls);
+    pub fn youtube(&mut self, urls: &[String]) -> &mut Self {
+        self.0.youtube = Some(urls.to_vec());
         self
     }
 
-    pub fn sketchfab(&mut self, urls: Vec<String>) -> &mut Self {
-        self.0.sketchfab = Some(urls);
+    pub fn sketchfab(&mut self, urls: &[String]) -> &mut Self {
+        self.0.sketchfab = Some(urls.to_vec());
         self
     }
 
