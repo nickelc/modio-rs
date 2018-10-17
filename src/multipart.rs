@@ -76,3 +76,39 @@ impl Stream for FileStream {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    extern crate tokio;
+
+    use super::*;
+    use std::io;
+
+    use self::tokio::runtime::Runtime;
+    use futures::{Future, Stream};
+
+    #[test]
+    fn new() {
+        let mut rt = Runtime::new().expect("new rt");
+
+        let r = io::Cursor::new(b"Hello World");
+        let fs = FileStream::new(r).concat2().and_then(|bytes| {
+            assert_eq!(bytes, &b"Hello World"[..]);
+            Ok(())
+        });
+
+        rt.block_on(fs).unwrap();
+    }
+
+    #[test]
+    fn open() {
+        let mut rt = Runtime::new().expect("new rt");
+
+        let fs = FileStream::open("Cargo.toml").concat2().and_then(|bytes| {
+            assert_eq!(bytes, &include_bytes!("../Cargo.toml")[..]);
+            Ok(())
+        });
+
+        rt.block_on(fs).unwrap();
+    }
+}
