@@ -46,6 +46,50 @@
 //! For testing purposes use [`Modio::host`](struct.Modio.html#method.host) to create a client for the
 //! mod.io [test environment](https://docs.mod.io/#testing).
 //!
+//! # Example: Chaining api requests
+//!
+//! ```no_run
+//! extern crate modio;
+//! extern crate tokio;
+//!
+//! use modio::{Credentials, Error, Modio};
+//! use tokio::prelude::*;
+//! use tokio::runtime::Runtime;
+//!
+//! fn main() -> Result<(), Error> {
+//!     let mut rt = Runtime::new()?;
+//!     let modio = Modio::new(
+//!         "user-agent-name/1.0",
+//!         Credentials::ApiKey(String::from("user-or-game-api-key")),
+//!     );
+//!
+//!     // OpenXcom: The X-Com Files
+//!     let modref = modio.mod_(51, 158);
+//!
+//!     // Get mod with its dependencies and all files
+//!     let mod_ = modref.get();
+//!     let deps = modref.dependencies().list();
+//!     let files = modref.files().list(&Default::default());
+//!
+//!     let task = mod_.join(deps).join(files);
+//!
+//!     match rt.block_on(task) {
+//!         Ok(((m, deps), files)) => {
+//!             println!("{}", m.name);
+//!             println!(
+//!                 "deps: {:?}",
+//!                 deps.into_iter().map(|d| d.mod_id).collect::<Vec<_>>()
+//!             );
+//!             for file in files {
+//!                 println!("file id: {} version: {:?}", file.id, file.version);
+//!             }
+//!         }
+//!         Err(e) => println!("{}", e),
+//!     };
+//!     Ok(())
+//! }
+//! ```
+//!
 //! # Example: Downloading mods
 //!
 //! ```no_run
