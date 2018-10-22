@@ -60,8 +60,7 @@ fn main() -> Result<(), Error> {
                     // Set a new timestamp for the next run.
                     time = current_timestamp();
                     Ok(())
-                })
-                .map_err(|e| panic!("interval errored; err={:?}", e));
+                }).map_err(|e| panic!("interval errored; err={:?}", e));
 
             tokio::run(task);
             Ok(())

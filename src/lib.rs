@@ -384,8 +384,7 @@ where
                     .get()
                     .and_then(move |file| {
                         instance.request_file(&file.download.binary_url.to_string(), w)
-                    })
-                    .map_err(move |e| match e.kind() {
+                    }).map_err(move |e| match e.kind() {
                         error::ErrorKind::Fault {
                             code: StatusCode::NOT_FOUND,
                             ..

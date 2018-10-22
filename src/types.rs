@@ -301,7 +301,10 @@ pub mod mods {
         #[serde(deserialize_with = "deserialize_modfile")]
         pub modfile: Option<File>,
         pub media: Media,
-        #[serde(rename = "metadata_kvp", deserialize_with = "deserialize_kvp")]
+        #[serde(
+            rename = "metadata_kvp",
+            deserialize_with = "deserialize_kvp"
+        )]
         pub metadata: MetadataMap,
         pub tags: Vec<Tag>,
         pub stats: Statistics,

@@ -544,8 +544,7 @@ impl QueryParams for EditModOptions {
                 self.maturity_option
                     .iter()
                     .map(|m| ("maturity_option", m.to_string())),
-            )
-            .extend_pairs(self.metadata_blob.iter().map(|m| ("metadata_blob", m)))
+            ).extend_pairs(self.metadata_blob.iter().map(|m| ("metadata_blob", m)))
             .finish()
     }
 }
@@ -652,8 +651,7 @@ impl QueryParams for EditDepencenciesOptions {
                 self.dependencies
                     .iter()
                     .map(|d| ("dependencies[]", d.to_string())),
-            )
-            .finish()
+            ).finish()
     }
 }
 
