@@ -439,7 +439,7 @@ impl AddModOptionsBuilder {
     {
         AddModOptionsBuilder(AddModOptions {
             name: name.into(),
-            logo: logo,
+            logo,
             summary: summary.into(),
             visible: None,
             name_id: None,
