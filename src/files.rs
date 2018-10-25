@@ -199,7 +199,7 @@ pub struct AddFileOptions {
 }
 
 impl AddFileOptions {
-    pub fn new<R, S>(inner: R, filename: S) -> AddFileOptionsBuilder
+    pub fn read<R, S>(inner: R, filename: S) -> AddFileOptionsBuilder
     where
         R: AsyncRead + 'static + Send + Sync,
         S: Into<String>,
