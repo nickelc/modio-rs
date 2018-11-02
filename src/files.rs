@@ -199,7 +199,7 @@ pub struct AddFileOptions {
 }
 
 impl AddFileOptions {
-    pub fn read<R, S>(inner: R, filename: S) -> AddFileOptionsBuilder
+    pub fn with_read<R, S>(inner: R, filename: S) -> AddFileOptionsBuilder
     where
         R: AsyncRead + 'static + Send + Sync,
         S: Into<String>,
@@ -211,17 +211,17 @@ impl AddFileOptions {
         })
     }
 
-    pub fn file<P: AsRef<Path>>(file: P) -> AddFileOptionsBuilder {
+    pub fn with_file<P: AsRef<Path>>(file: P) -> AddFileOptionsBuilder {
         let file = file.as_ref();
         let filename = file
             .file_name()
             .and_then(|n| n.to_str())
             .map_or_else(String::new, |n| n.to_string());
 
-        Self::file_with_name(file, filename)
+        Self::with_file_name(file, filename)
     }
 
-    pub fn file_with_name<P, S>(file: P, filename: S) -> AddFileOptionsBuilder
+    pub fn with_file_name<P, S>(file: P, filename: S) -> AddFileOptionsBuilder
     where
         P: AsRef<Path>,
         S: Into<String>,
