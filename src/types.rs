@@ -173,7 +173,7 @@ where
     match Avatar::deserialize(deserializer) {
         Ok(avatar) => Ok(Some(avatar)),
         Err(err) => {
-            let err_s = format!("{}", err);
+            let err_s = err.to_string();
             if err_s.starts_with("missing field `filename`")
                 || err_s.starts_with("invalid type: null")
             {
@@ -629,7 +629,7 @@ pub mod mods {
         match File::deserialize(deserializer) {
             Ok(file) => Ok(Some(file)),
             Err(err) => {
-                let err_s = format!("{}", err);
+                let err_s = err.to_string();
                 if err_s.starts_with("missing field `id`")
                     || err_s.starts_with("invalid type: null")
                 {
