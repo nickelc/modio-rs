@@ -143,15 +143,18 @@ pub enum DownloadError {
 
 impl fmt::Display for ClientError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut buf = String::new();
+        buf.push_str(&self.message);
         if let Some(ref errors) = self.errors {
-            writeln!(f, "{}", self.message);
             for (k, v) in errors {
-                writeln!(f, "  {}: {}", k, v);
+                buf.push('\n');
+                buf.push_str("  ");
+                buf.push_str(&k);
+                buf.push_str(": ");
+                buf.push_str(&v);
             }
-            Ok(())
-        } else {
-            fmt::Display::fmt(&self.message, f)
         }
+        fmt::Display::fmt(&buf, f)
     }
 }
 
@@ -228,5 +231,36 @@ impl From<IoError> for Error {
 impl From<InvalidUri> for Error {
     fn from(err: InvalidUri) -> Error {
         ErrorKind::Uri(err).into()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashMap;
+
+    #[test]
+    fn display_client_error() {
+        let e = ClientError {
+            code: 1,
+            message: "Message".to_string(),
+            errors: None,
+        };
+        assert_eq!(e.to_string(), "Message");
+
+        let e = ClientError {
+            errors: Some(HashMap::new()),
+            ..e
+        };
+        assert_eq!(e.to_string(), "Message");
+
+        let mut map = HashMap::new();
+        map.insert("A".to_string(), "1".to_string());
+
+        let e = ClientError {
+            errors: Some(map),
+            ..e
+        };
+        assert_eq!(e.to_string(), "Message\n  A: 1");
     }
 }
