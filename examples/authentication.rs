@@ -1,6 +1,3 @@
-extern crate modio;
-extern crate tokio;
-
 use std::io::{self, Write};
 use tokio::runtime::Runtime;
 

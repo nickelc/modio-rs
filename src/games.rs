@@ -6,18 +6,18 @@ use hyper::client::connect::Connect;
 use mime::IMAGE_STAR;
 use url::form_urlencoded;
 
-use multipart::{FileSource, FileStream, MultipartForm};
-use Endpoint;
-use Future;
-use ModRef;
-use Modio;
-use ModioListResponse;
-use ModioMessage;
-use Mods;
-use {AddOptions, DeleteOptions, QueryParams};
+use crate::multipart::{FileSource, FileStream, MultipartForm};
+use crate::Endpoint;
+use crate::Future;
+use crate::ModRef;
+use crate::Modio;
+use crate::ModioListResponse;
+use crate::ModioMessage;
+use crate::Mods;
+use crate::{AddOptions, DeleteOptions, QueryParams};
 
-pub use types::game::{Game, HeaderImage, Icon, TagOption, TagType};
-pub use types::Logo;
+pub use crate::types::game::{Game, HeaderImage, Icon, TagOption, TagType};
+pub use crate::types::Logo;
 
 /// Interface for games the authenticated user added or is team member of.
 pub struct MyGames<C>
@@ -120,7 +120,7 @@ impl<C: Clone + Connect + 'static> GameRef<C> {
     }
 }
 
-filter_options!{
+filter_options! {
     /// Options used to filter game listings.
     ///
     /// # Filter parameters

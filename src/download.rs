@@ -1,6 +1,6 @@
 use url::Url;
 
-use types::mods::{File, Mod};
+use crate::types::mods::{File, Mod};
 
 /// Defines the action that is performed for [`Modio::download`](struct.Modio.html#method.download).
 #[derive(Debug)]

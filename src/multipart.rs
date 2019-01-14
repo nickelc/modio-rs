@@ -19,7 +19,7 @@ pub struct FileSource {
 
 enum State {
     File(OpenFuture<PathBuf>),
-    Read(FramedRead<Box<AsyncRead + Send + Sync>, BytesCodec>),
+    Read(FramedRead<Box<dyn AsyncRead + Send + Sync>, BytesCodec>),
 }
 
 pub struct FileStream {
@@ -29,7 +29,7 @@ pub struct FileStream {
 impl FileStream {
     pub fn new<T: 'static + AsyncRead + Send + Sync>(inner: T) -> FileStream {
         let framed = FramedRead::new(
-            Box::new(inner) as Box<AsyncRead + Send + Sync>,
+            Box::new(inner) as Box<dyn AsyncRead + Send + Sync>,
             BytesCodec::new(),
         );
         FileStream {
@@ -53,7 +53,7 @@ impl Stream for FileStream {
             Some(State::File(mut stream)) => {
                 if let Async::Ready(file) = stream.poll()? {
                     let framed = FramedRead::new(
-                        Box::new(file) as Box<AsyncRead + Send + Sync>,
+                        Box::new(file) as Box<dyn AsyncRead + Send + Sync>,
                         BytesCodec::new(),
                     );
                     self.state = Some(State::Read(framed));
@@ -79,13 +79,11 @@ impl Stream for FileStream {
 
 #[cfg(test)]
 mod tests {
-    extern crate tokio;
-
     use super::*;
     use std::io;
 
-    use self::tokio::runtime::Runtime;
     use futures::{Future, Stream};
+    use tokio::runtime::Runtime;
 
     #[test]
     fn new() {

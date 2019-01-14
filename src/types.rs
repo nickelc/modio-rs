@@ -146,7 +146,7 @@ pub enum EventType {
 }
 
 impl fmt::Display for EventType {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             EventType::ModfileChanged => "MODFILE_CHANGED",
             EventType::ModAvailable => "MOD_AVAILABLE",
@@ -158,7 +158,8 @@ impl fmt::Display for EventType {
             EventType::UserTeamLeave => "USER_TEAM_LEAVE",
             EventType::UserSubscribe => "USER_SUBSCRIBE",
             EventType::UserUnsubscribe => "USER_UNSUBSCRIBE",
-        }.fmt(fmt)
+        }
+        .fmt(fmt)
     }
 }
 
@@ -262,7 +263,7 @@ pub mod game {
     }
 
     impl fmt::Display for TagType {
-        fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
             match *self {
                 TagType::Checkboxes => write!(fmt, "checkboxes"),
                 TagType::Dropdown => write!(fmt, "dropdown"),
@@ -301,10 +302,7 @@ pub mod mods {
         #[serde(deserialize_with = "deserialize_modfile")]
         pub modfile: Option<File>,
         pub media: Media,
-        #[serde(
-            rename = "metadata_kvp",
-            deserialize_with = "deserialize_kvp"
-        )]
+        #[serde(rename = "metadata_kvp", deserialize_with = "deserialize_kvp")]
         pub metadata: MetadataMap,
         pub tags: Vec<Tag>,
         pub stats: Statistics,
@@ -478,7 +476,7 @@ pub mod mods {
         impl<'de> Visitor<'de> for MetadataVisitor {
             type Value = MetadataMap;
 
-            fn expecting(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+            fn expecting(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
                 fmt.write_str("metadata kvp")
             }
 
@@ -592,7 +590,7 @@ pub mod mods {
             impl<'de> ::serde::de::Visitor<'de> for Visitor {
                 type Value = TeamLevel;
 
-                fn expecting(&self, fmt: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+                fn expecting(&self, fmt: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
                     fmt.write_str("positive integer")
                 }
 

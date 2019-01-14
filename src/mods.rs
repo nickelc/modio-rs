@@ -8,25 +8,25 @@ use hyper::{Body, StatusCode};
 use mime::{APPLICATION_OCTET_STREAM, IMAGE_STAR};
 use url::{form_urlencoded, Url};
 
-use error::ErrorKind;
-use files::{FileRef, Files};
-use metadata::Metadata;
-use multipart::{FileSource, FileStream, MultipartForm};
-use teams::Members;
-use types::Event;
-use Comments;
-use Endpoint;
-use EventListOptions;
-use Future;
-use Modio;
-use ModioListResponse;
-use ModioMessage;
-use {AddOptions, DeleteOptions, QueryParams};
+use crate::error::ErrorKind;
+use crate::files::{FileRef, Files};
+use crate::metadata::Metadata;
+use crate::multipart::{FileSource, FileStream, MultipartForm};
+use crate::teams::Members;
+use crate::types::Event;
+use crate::Comments;
+use crate::Endpoint;
+use crate::EventListOptions;
+use crate::Future;
+use crate::Modio;
+use crate::ModioListResponse;
+use crate::ModioMessage;
+use crate::{AddOptions, DeleteOptions, QueryParams};
 
-pub use types::mods::{
+pub use crate::types::mods::{
     Dependency, Image, Media, MetadataMap, Mod, Popularity, Ratings, Statistics, Tag,
 };
-pub use types::Logo;
+pub use crate::types::Logo;
 
 /// Interface for mods the authenticated user added or is team member of.
 pub struct MyMods<C>
@@ -272,7 +272,7 @@ impl QueryParams for Rating {
     }
 }
 
-filter_options!{
+filter_options! {
     /// Options used to filter mod listings.
     ///
     /// # Filter parameters
@@ -544,7 +544,8 @@ impl QueryParams for EditModOptions {
                 self.maturity_option
                     .iter()
                     .map(|m| ("maturity_option", m.to_string())),
-            ).extend_pairs(self.metadata_blob.iter().map(|m| ("metadata_blob", m)))
+            )
+            .extend_pairs(self.metadata_blob.iter().map(|m| ("metadata_blob", m)))
             .finish()
     }
 }
@@ -651,7 +652,8 @@ impl QueryParams for EditDepencenciesOptions {
                 self.dependencies
                     .iter()
                     .map(|d| ("dependencies[]", d.to_string())),
-            ).finish()
+            )
+            .finish()
     }
 }
 
@@ -779,7 +781,8 @@ impl AddMediaOptionsBuilder {
                         filename,
                         mime: IMAGE_STAR,
                     }
-                }).collect::<Vec<_>>(),
+                })
+                .collect::<Vec<_>>(),
         );
         self
     }
@@ -866,7 +869,7 @@ impl DeleteMediaOptionsBuilder {
     }
 }
 
-filter_options!{
+filter_options! {
     /// Options used to filter mod statistics.
     ///
     /// # Filter parameters

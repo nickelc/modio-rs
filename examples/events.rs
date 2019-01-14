@@ -1,6 +1,3 @@
-extern crate modio;
-extern crate tokio;
-
 use std::env;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use tokio::prelude::*;
@@ -60,7 +57,8 @@ fn main() -> Result<(), Error> {
                     // Set a new timestamp for the next run.
                     time = current_timestamp();
                     Ok(())
-                }).map_err(|e| panic!("interval errored; err={:?}", e));
+                })
+                .map_err(|e| panic!("interval errored; err={:?}", e));
 
             tokio::run(task);
             Ok(())

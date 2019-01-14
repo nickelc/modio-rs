@@ -4,9 +4,9 @@ use futures::Future as StdFuture;
 use hyper::client::connect::Connect;
 use url::form_urlencoded;
 
-use Future;
-use Modio;
-use ModioMessage;
+use crate::Future;
+use crate::Modio;
+use crate::ModioMessage;
 
 /// Various forms of authentication credentials supported by [mod.io](https://mod.io).
 #[derive(Clone, Debug, PartialEq)]
@@ -20,9 +20,6 @@ pub enum Credentials {
 ///
 /// # Example
 /// ```no_run
-/// extern crate modio;
-/// extern crate tokio;
-///
 /// use std::io::{self, Write};
 /// use tokio::runtime::Runtime;
 ///

@@ -18,7 +18,7 @@ macro_rules! filter_options {
     ) => {
         $(#[$outer])*
         pub struct $FilterOptions {
-            filters: ::std::collections::BTreeMap<String, ::filter::Filter>,
+            filters: ::std::collections::BTreeMap<String, crate::filter::Filter>,
             sorting: Option<String>,
             limit: Option<usize>,
             offset: Option<usize>,
@@ -27,20 +27,20 @@ macro_rules! filter_options {
         impl $FilterOptions {
             $(
                 $(#[$sort_inner $($sort_args)*])*
-                pub const $sort_ident: ::filter::SortField = ::filter::SortField($sort_name);
+                pub const $sort_ident: crate::filter::SortField = crate::filter::SortField($sort_name);
             )+
 
             pub fn new() -> Self {
                 Default::default()
             }
 
-            pub fn add_filter<S, T, V>(&mut self, name: S, op: ::filter::Operator, value: V) -> &mut Self
+            pub fn add_filter<S, T, V>(&mut self, name: S, op: crate::filter::Operator, value: V) -> &mut Self
             where
                 S: Into<String>,
                 T: ::std::fmt::Display,
-                V: Into<::filter::OneOrMany<T>>,
+                V: Into<crate::filter::OneOrMany<T>>,
             {
-                let f = ::filter::Filter::new(name, op, value);
+                let f = crate::filter::Filter::new(name, op, value);
                 self.filters.insert(f.name(), f);
                 self
             }
@@ -48,30 +48,30 @@ macro_rules! filter_options {
             pub fn fulltext<T, V>(&mut self, value: V) -> &mut Self
             where
                 T: ::std::fmt::Display,
-                V: Into<::filter::OneOrMany<T>>,
+                V: Into<crate::filter::OneOrMany<T>>,
             {
-                let f = ::filter::Filter::new("_q", ::filter::Operator::Equals, value);
+                let f = crate::filter::Filter::new("_q", crate::filter::Operator::Equals, value);
                 self.filters.insert(f.name(), f);
                 self
             }
 
             $(
                 $(#[$filter_inner $($filter_args)*])*
-                pub fn $filter_fn<T, V>(&mut self, op: ::filter::Operator, value: V) -> &mut Self
+                pub fn $filter_fn<T, V>(&mut self, op: crate::filter::Operator, value: V) -> &mut Self
                 where
                     T: ::std::fmt::Display,
-                    V: Into<::filter::OneOrMany<T>>,
+                    V: Into<crate::filter::OneOrMany<T>>,
                 {
-                    let f = ::filter::Filter::new($filter_name, op, value);
+                    let f = crate::filter::Filter::new($filter_name, op, value);
                     self.filters.insert(f.name(), f);
                     self
                 }
             )+
 
-            pub fn sort_by(&mut self, field: ::filter::SortField, order: ::filter::Order) -> &mut Self {
+            pub fn sort_by(&mut self, field: crate::filter::SortField, order: crate::filter::Order) -> &mut Self {
                 self.sorting = match order {
-                    ::filter::Order::Asc => Some(field.to_string()),
-                    ::filter::Order::Desc => Some(format!("-{}", field)),
+                    crate::filter::Order::Asc => Some(field.to_string()),
+                    crate::filter::Order::Desc => Some(format!("-{}", field)),
                 };
                 self
             }
@@ -169,7 +169,7 @@ pub enum Operator {
 }
 
 impl fmt::Display for Operator {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             Operator::Equals => "",
             Operator::Not => "-not",
@@ -182,7 +182,8 @@ impl fmt::Display for Operator {
             Operator::SmallerThan => "-st",
             Operator::GreaterThan => "-gt",
             Operator::BitwiseAnd => "-bitwise-and",
-        }.fmt(fmt)
+        }
+        .fmt(fmt)
     }
 }
 
@@ -221,7 +222,7 @@ impl<T: fmt::Display> From<Vec<T>> for OneOrMany<T> {
 pub struct SortField(pub(crate) &'static str);
 
 impl fmt::Display for SortField {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.0.fmt(fmt)
     }
 }

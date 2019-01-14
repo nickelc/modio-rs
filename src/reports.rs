@@ -3,10 +3,10 @@
 use hyper::client::connect::Connect;
 use url::form_urlencoded;
 
-use Future;
-use Modio;
-use ModioMessage;
-use QueryParams;
+use crate::Future;
+use crate::Modio;
+use crate::ModioMessage;
+use crate::QueryParams;
 
 pub struct Reports<C>
 where

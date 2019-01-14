@@ -3,12 +3,12 @@
 use hyper::client::connect::Connect;
 use url::form_urlencoded;
 
-use Future;
-use Modio;
-use ModioListResponse;
-use QueryParams;
+use crate::Future;
+use crate::Modio;
+use crate::ModioListResponse;
+use crate::QueryParams;
 
-pub use types::{Avatar, User};
+pub use crate::types::{Avatar, User};
 
 /// Interface for users.
 pub struct Users<C>
@@ -66,7 +66,7 @@ impl QueryParams for Resource {
     }
 }
 
-filter_options!{
+filter_options! {
     /// Options used to filter user listings
     ///
     /// # Filter parameters

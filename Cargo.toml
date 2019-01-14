@@ -9,6 +9,7 @@ license = "MIT/Apache-2.0"
 authors = ["Constantin Nickel <constantin.nickel@gmail.com>"]
 keywords = ["modio", "hyper"]
 categories = ["api-bindings", "web-programming::http-client"]
+edition = "2018"
 
 [dependencies]
 bytes = "0.4"

@@ -2,19 +2,19 @@
 
 use hyper::client::connect::Connect;
 
-use files::MyFiles;
-use games::MyGames;
-use mods::MyMods;
-use types::mods::Mod;
-use types::Event;
-use types::User;
-use EventListOptions;
-use Future;
-use Modio;
-use ModioListResponse;
-use QueryParams;
+use crate::files::MyFiles;
+use crate::games::MyGames;
+use crate::mods::MyMods;
+use crate::types::mods::Mod;
+use crate::types::Event;
+use crate::types::User;
+use crate::EventListOptions;
+use crate::Future;
+use crate::Modio;
+use crate::ModioListResponse;
+use crate::QueryParams;
 
-pub use types::mods::Rating;
+pub use crate::types::mods::Rating;
 
 /// Interface for resources owned by the authenticated user or is team member of.
 pub struct Me<C>
@@ -86,7 +86,7 @@ impl<C: Clone + Connect + 'static> Me<C> {
     }
 }
 
-filter_options!{
+filter_options! {
     /// Options used to filter subscription listings.
     ///
     /// # Filter parameters
@@ -155,7 +155,7 @@ filter_options!{
     }
 }
 
-filter_options!{
+filter_options! {
     /// Options used to filter rating listings.
     ///
     /// # Filter parameters

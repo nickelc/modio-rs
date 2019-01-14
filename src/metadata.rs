@@ -4,12 +4,12 @@ use futures::Future as StdFuture;
 use hyper::client::connect::Connect;
 use url::form_urlencoded;
 
-use types::mods::MetadataMap;
-use Future;
-use Modio;
-use ModioListResponse;
-use ModioMessage;
-use QueryParams;
+use crate::types::mods::MetadataMap;
+use crate::Future;
+use crate::Modio;
+use crate::ModioListResponse;
+use crate::ModioMessage;
+use crate::QueryParams;
 
 pub struct Metadata<C>
 where

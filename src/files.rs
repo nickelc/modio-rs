@@ -9,13 +9,13 @@ use url::form_urlencoded;
 use mime::APPLICATION_OCTET_STREAM;
 use tokio_io::AsyncRead;
 
-use multipart::{FileSource, FileStream, MultipartForm};
-use Future;
-use Modio;
-use ModioListResponse;
-use QueryParams;
+use crate::multipart::{FileSource, FileStream, MultipartForm};
+use crate::Future;
+use crate::Modio;
+use crate::ModioListResponse;
+use crate::QueryParams;
 
-pub use types::mods::{Download, File, FileHash};
+pub use crate::types::mods::{Download, File, FileHash};
 
 /// Interface for the modfiles the authenticated user uploaded.
 pub struct MyFiles<C>
@@ -130,7 +130,7 @@ impl<C: Clone + Connect + 'static> FileRef<C> {
     }
 }
 
-filter_options!{
+filter_options! {
     /// Options used to filter modfile listings
     ///
     /// # Filter parameters

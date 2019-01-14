@@ -4,13 +4,13 @@ use hyper::client::connect::Connect;
 use hyper::Body;
 use url::form_urlencoded;
 
-use Future;
-use Modio;
-use ModioListResponse;
-use ModioMessage;
-use QueryParams;
+use crate::Future;
+use crate::Modio;
+use crate::ModioListResponse;
+use crate::ModioMessage;
+use crate::QueryParams;
 
-pub use types::mods::{TeamLevel, TeamMember};
+pub use crate::types::mods::{TeamLevel, TeamMember};
 
 /// Interface for the team members of a mod.
 pub struct Members<C>
@@ -64,7 +64,7 @@ impl<C: Clone + Connect + 'static> Members<C> {
     }
 }
 
-filter_options!{
+filter_options! {
     /// Options used to filter team member listings
     ///
     /// # Filter parameters

@@ -3,11 +3,11 @@
 use hyper::client::connect::Connect;
 use hyper::Body;
 
-pub use types::mods::Comment;
-use Future;
-use Modio;
-use ModioListResponse;
-use QueryParams;
+pub use crate::types::mods::Comment;
+use crate::Future;
+use crate::Modio;
+use crate::ModioListResponse;
+use crate::QueryParams;
 
 pub struct Comments<C>
 where
@@ -53,7 +53,7 @@ impl<C: Clone + Connect + 'static> Comments<C> {
     }
 }
 
-filter_options!{
+filter_options! {
     /// Options used to filter comment listings
     ///
     /// # Filter parameters

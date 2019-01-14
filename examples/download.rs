@@ -1,11 +1,7 @@
-extern crate futures;
-extern crate md5;
-extern crate modio;
-extern crate tokio;
-
 use std::env;
 use std::io::{self, Write};
 
+use md5;
 use tokio::runtime::Runtime;
 
 use modio::error::Error;

@@ -24,9 +24,6 @@
 //! # Example: Basic setup
 //!
 //! ```no_run
-//! extern crate modio;
-//! extern crate tokio;
-//!
 //! use modio::{Credentials, Error, Modio};
 //! use tokio::runtime::Runtime;
 //!
@@ -49,9 +46,6 @@
 //! # Example: Chaining api requests
 //!
 //! ```no_run
-//! extern crate modio;
-//! extern crate tokio;
-//!
 //! use modio::{Credentials, Error, Modio};
 //! use tokio::prelude::*;
 //! use tokio::runtime::Runtime;
@@ -93,9 +87,6 @@
 //! # Example: Downloading mods
 //!
 //! ```no_run
-//! extern crate modio;
-//! extern crate tokio;
-//!
 //! use std::fs::File;
 //!
 //! use modio::download::ResolvePolicy;
@@ -142,24 +133,8 @@
 
 #![doc(html_root_url = "https://docs.rs/modio/0.3.0")]
 
-extern crate bytes;
-#[macro_use]
-extern crate failure;
-extern crate futures;
-extern crate http;
-extern crate hyper;
-extern crate hyper_tls;
-extern crate mime;
-extern crate mpart_async;
-extern crate serde;
 #[macro_use]
 extern crate serde_derive;
-extern crate serde_json;
-extern crate tokio_codec;
-extern crate tokio_fs;
-extern crate tokio_io;
-extern crate url;
-extern crate url_serde;
 
 use std::io;
 use std::io::prelude::*;
@@ -194,24 +169,24 @@ pub mod teams;
 mod types;
 pub mod users;
 
-use auth::Auth;
-use comments::Comments;
-use games::{GameRef, Games};
-use me::Me;
-use mods::{ModRef, Mods};
-use multipart::MultipartForm;
-use reports::Reports;
-use users::Users;
+use crate::auth::Auth;
+use crate::comments::Comments;
+use crate::games::{GameRef, Games};
+use crate::me::Me;
+use crate::mods::{ModRef, Mods};
+use crate::multipart::MultipartForm;
+use crate::reports::Reports;
+use crate::users::Users;
 
-pub use auth::Credentials;
-pub use download::DownloadAction;
-pub use error::{Error, Result};
-pub use types::{Event, EventType, ModioErrorResponse, ModioListResponse, ModioMessage};
+pub use crate::auth::Credentials;
+pub use crate::download::DownloadAction;
+pub use crate::error::{Error, Result};
+pub use crate::types::{Event, EventType, ModioErrorResponse, ModioListResponse, ModioMessage};
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 
-pub type Future<T> = Box<StdFuture<Item = T, Error = Error> + Send>;
-pub type Stream<T> = Box<StdStream<Item = T, Error = Error> + Send>;
+pub type Future<T> = Box<dyn StdFuture<Item = T, Error = Error> + Send>;
+pub type Stream<T> = Box<dyn StdStream<Item = T, Error = Error> + Send>;
 
 #[allow(dead_code)]
 const X_RATELIMIT_LIMIT: &str = "x-ratelimit-limit";
@@ -312,9 +287,6 @@ where
     /// a specific file or a specific version is not found.
     /// # Example
     /// ```no_run
-    /// extern crate modio;
-    /// extern crate tokio;
-    ///
     /// use std::fs::File;
     ///
     /// use modio::download::ResolvePolicy;
@@ -384,7 +356,8 @@ where
                     .get()
                     .and_then(move |file| {
                         instance.request_file(&file.download.binary_url.to_string(), w)
-                    }).map_err(move |e| match e.kind() {
+                    })
+                    .map_err(move |e| match e.kind() {
                         error::ErrorKind::Fault {
                             code: StatusCode::NOT_FOUND,
                             ..
@@ -408,7 +381,7 @@ where
                         .files()
                         .list(&opts)
                         .and_then(move |list| {
-                            use download::ResolvePolicy::*;
+                            use crate::download::ResolvePolicy::*;
 
                             let (file, error) = match (list.count, policy) {
                                 (0, _) => (
@@ -639,7 +612,8 @@ where
                 Method::DELETE,
                 &(self.host.clone() + uri),
                 (body.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
-            ).or_else(|err| match err.kind() {
+            )
+            .or_else(|err| match err.kind() {
                 error::ErrorKind::Codec(_) => Ok(()),
                 _ => Err(err),
             }),
@@ -703,7 +677,7 @@ where
     }
 }
 
-filter_options!{
+filter_options! {
     /// Options used to filter event listings.
     ///
     /// # Filter parameters
