@@ -17,7 +17,6 @@ failure = "0.1"
 futures = "0.1"
 http = "0.1"
 hyper = "0.12"
-hyper-tls = "0.3"
 mime = "0.3"
 mpart-async = { version = "0.2", default-features = false }
 serde = "1.0"
@@ -29,6 +28,19 @@ tokio-io = "0.1"
 url = "1.7"
 url_serde = "0.2"
 
+[dependencies.hyper-tls]
+version = "0.3"
+optional = true
+
+[dependencies.hyper-rustls]
+version = "0.15"
+optional = true
+
 [dev-dependencies]
 md5 = "0.3"
 tokio = "0.1"
+
+[features]
+default = ["tls"]
+tls = ["hyper-tls"]
+rustls = ["hyper-rustls"]

@@ -146,6 +146,9 @@ use hyper::client::connect::Connect;
 use hyper::client::HttpConnector;
 use hyper::header::{AUTHORIZATION, CONTENT_TYPE, LOCATION, USER_AGENT};
 use hyper::{Body, Client, Method, Request, StatusCode, Uri};
+#[cfg(feature = "rustls")]
+use hyper_rustls::HttpsConnector;
+#[cfg(feature = "tls")]
 use hyper_tls::HttpsConnector;
 use mime::Mime;
 use serde::de::DeserializeOwned;
@@ -222,7 +225,11 @@ impl Modio<HttpsConnector<HttpConnector>> {
         A: Into<String>,
         C: Into<Credentials>,
     {
+        #[cfg(feature = "rustls")]
+        let connector = HttpsConnector::new(4);
+        #[cfg(feature = "tls")]
         let connector = HttpsConnector::new(4).unwrap();
+
         let client = Client::builder().keep_alive(true).build(connector);
 
         Self::custom(host, agent, credentials, client)

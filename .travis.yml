@@ -12,6 +12,7 @@ matrix:
 
 script:
   - cargo build --all
+  - cargo build --no-default-features --features rustls
   - cargo test --all
 
 before_deploy:
