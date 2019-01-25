@@ -184,7 +184,7 @@ use crate::users::Users;
 pub use crate::auth::Credentials;
 pub use crate::download::DownloadAction;
 pub use crate::error::{Error, Result};
-pub use crate::types::{Event, EventType, ModioErrorResponse, ModioListResponse, ModioMessage};
+pub use crate::types::{ModioErrorResponse, ModioListResponse, ModioMessage};
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 
@@ -689,6 +689,7 @@ filter_options! {
     ///
     /// # Filter parameters
     /// - id
+    /// - game_id
     /// - mod_id
     /// - user_id
     /// - date_added
@@ -705,7 +706,7 @@ filter_options! {
     /// ```
     /// use modio::filter::{Order, Operator};
     /// use modio::EventListOptions;
-    /// use modio::EventType;
+    /// use modio::mods::EventType;
     ///
     /// let mut opts = EventListOptions::new();
     /// opts.id(Operator::GreaterThan, 1024);
@@ -715,6 +716,7 @@ filter_options! {
     pub struct EventListOptions {
         Filters
         - id = "id";
+        - game_id = "game_id";
         - mod_id = "mod_id";
         - user_id = "user_id";
         - date_added = "date_added";

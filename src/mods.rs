@@ -13,7 +13,6 @@ use crate::files::{FileRef, Files};
 use crate::metadata::Metadata;
 use crate::multipart::{FileSource, FileStream, MultipartForm};
 use crate::teams::Members;
-use crate::types::Event;
 use crate::Comments;
 use crate::Endpoint;
 use crate::EventListOptions;
@@ -24,7 +23,7 @@ use crate::ModioMessage;
 use crate::{AddOptions, DeleteOptions, QueryParams};
 
 pub use crate::types::mods::{
-    Dependency, Image, Media, MetadataMap, Mod, Popularity, Ratings, Statistics, Tag,
+    Dependency, Event, EventType, Image, Media, MetadataMap, Mod, Popularity, Ratings, Statistics, Tag,
 };
 pub use crate::types::Logo;
 

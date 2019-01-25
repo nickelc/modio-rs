@@ -6,7 +6,6 @@ use crate::files::MyFiles;
 use crate::games::MyGames;
 use crate::mods::MyMods;
 use crate::types::mods::Mod;
-use crate::types::Event;
 use crate::types::User;
 use crate::EventListOptions;
 use crate::Future;
@@ -15,6 +14,7 @@ use crate::ModioListResponse;
 use crate::QueryParams;
 
 pub use crate::types::mods::Rating;
+pub use crate::types::{Event, EventType};
 
 /// Interface for resources owned by the authenticated user or is team member of.
 pub struct Me<C>

@@ -110,10 +110,11 @@ pub struct Logo {
     pub thumb_1280x720: Url,
 }
 
-/// See the [Event Object](https://docs.mod.io/#event-object) docs for more informations.
+/// See the [User Event Object](https://docs.mod.io/#user-event-object) docs for more informations.
 #[derive(Debug, Deserialize)]
 pub struct Event {
     pub id: u32,
+    pub game_id: u32,
     pub mod_id: u32,
     pub user_id: u32,
     pub date_added: u64,
@@ -123,18 +124,6 @@ pub struct Event {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum EventType {
-    /// Primary file changed, the mod should be updated.
-    ModfileChanged,
-    /// Mod is marked as accepted and public.
-    ModAvailable,
-    /// Mod is marked as not accepted, deleted or hidden.
-    ModUnavailable,
-    /// Mod has been updated.
-    ModEdited,
-    /// Mod has been permanently deleted.
-    ModDeleted,
-    /// User has joined or left the mod team.
-    ModTeamChanged,
     /// User has joined a team.
     UserTeamJoin,
     /// User has left a team.
@@ -148,12 +137,6 @@ pub enum EventType {
 impl fmt::Display for EventType {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            EventType::ModfileChanged => "MODFILE_CHANGED",
-            EventType::ModAvailable => "MOD_AVAILABLE",
-            EventType::ModUnavailable => "MOD_UNAVAILABLE",
-            EventType::ModEdited => "MOD_EDITED",
-            EventType::ModDeleted => "MOD_DELETED",
-            EventType::ModTeamChanged => "MOD_TEAM_CHANGED",
             EventType::UserTeamJoin => "USER_TEAM_JOIN",
             EventType::UserTeamLeave => "USER_TEAM_LEAVE",
             EventType::UserSubscribe => "USER_SUBSCRIBE",
@@ -306,6 +289,59 @@ pub mod mods {
         pub metadata: MetadataMap,
         pub tags: Vec<Tag>,
         pub stats: Statistics,
+    }
+
+    /// See the [Mod Event Object](https://docs.mod.io/#mod-event-object) docs for more informations.
+    #[derive(Debug, Deserialize)]
+    pub struct Event {
+        pub id: u32,
+        pub mod_id: u32,
+        pub user_id: u32,
+        pub date_added: u64,
+        pub event_type: EventType,
+    }
+
+    #[derive(Debug, Deserialize)]
+    #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+    pub enum EventType {
+        /// Primary file changed, the mod should be updated.
+        ModfileChanged,
+        /// Mod is marked as accepted and public.
+        ModAvailable,
+        /// Mod is marked as not accepted, deleted or hidden.
+        ModUnavailable,
+        /// Mod has been updated.
+        ModEdited,
+        /// Mod has been permanently deleted.
+        ModDeleted,
+        /// User has joined or left the mod team.
+        ModTeamChanged,
+        /// User has joined a team.
+        UserTeamJoin,
+        /// User has left a team.
+        UserTeamLeave,
+        /// User has subscribed to a mod.
+        UserSubscribe,
+        /// User has unsubscribed to a mod.
+        UserUnsubscribe,
+    }
+
+    impl fmt::Display for EventType {
+        fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+            match *self {
+                EventType::ModfileChanged => "MODFILE_CHANGED",
+                EventType::ModAvailable => "MOD_AVAILABLE",
+                EventType::ModUnavailable => "MOD_UNAVAILABLE",
+                EventType::ModEdited => "MOD_EDITED",
+                EventType::ModDeleted => "MOD_DELETED",
+                EventType::ModTeamChanged => "MOD_TEAM_CHANGED",
+                EventType::UserTeamJoin => "USER_TEAM_JOIN",
+                EventType::UserTeamLeave => "USER_TEAM_LEAVE",
+                EventType::UserSubscribe => "USER_SUBSCRIBE",
+                EventType::UserUnsubscribe => "USER_UNSUBSCRIBE",
+            }
+            .fmt(fmt)
+        }
     }
 
     /// See the [Mod Dependency Object](https://docs.mod.io/#mod-dependencies-object) docs for more
