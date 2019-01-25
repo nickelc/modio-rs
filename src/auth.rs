@@ -60,6 +60,11 @@ where
     modio: Modio<C>,
 }
 
+#[derive(Deserialize)]
+struct AccessToken {
+    access_token: String,
+}
+
 impl<C: Clone + Connect> Auth<C> {
     pub(crate) fn new(modio: Modio<C>) -> Self {
         Self { modio }
@@ -75,11 +80,6 @@ impl<C: Clone + Connect> Auth<C> {
 
     /// Get the access token for a security code.
     pub fn security_code(&self, code: &str) -> Future<String> {
-        #[derive(Deserialize)]
-        struct AccessToken {
-            access_token: String,
-        }
-
         let data = form_urlencoded::Serializer::new(String::new())
             .append_pair("security_code", code)
             .finish();
@@ -87,6 +87,20 @@ impl<C: Clone + Connect> Auth<C> {
         Box::new(
             self.modio
                 .post::<AccessToken, _>("/oauth/emailexchange", data)
+                .map(|token| token.access_token),
+        )
+    }
+
+    /// Get the access token for an encrypted steam user auth ticket. See the [modio
+    /// docs](https://docs.mod.io/#authenticate-via-steam) for more information.
+    pub fn steam_auth(&self, ticket: &str) -> Future<String> {
+        let data = form_urlencoded::Serializer::new(String::new())
+            .append_pair("appdata", ticket)
+            .finish();
+
+        Box::new(
+            self.modio
+                .post::<AccessToken, _>("/external/steamauth", data)
                 .map(|token| token.access_token),
         )
     }

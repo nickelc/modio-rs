@@ -5,12 +5,14 @@
 //!
 //! # Authentication
 //!
-//! To access the API authentication is required and can be done via 3 ways:
+//! To access the API authentication is required and can be done via 4 ways:
 //!
 //! - Request an [API key (Read-only)](https://mod.io/apikey)
 //! - Manually create an [OAuth 2 Access Token (Read + Write)](https://mod.io/oauth)
 //! - [Email Authentication Flow](auth/struct.Auth.html#example) to create an OAuth 2 Access Token
 //! (Read + Write)
+//! - [Encrypted steam user auth ticket](auth/struct.Auth.html#method.steam_auth) to create an
+//! OAuth 2 Access Token (Read + Write)
 //!
 //! # Rate Limiting
 //!
