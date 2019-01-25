@@ -273,7 +273,7 @@ where
         Auth::new(self.clone())
     }
 
-    /// Return a reference to an interface that provides access to game informations.
+    /// Return a reference to an interface that provides access to game information.
     pub fn games(&self) -> Games<C> {
         Games::new(self.clone())
     }
@@ -423,7 +423,7 @@ where
         Me::new(self.clone())
     }
 
-    /// Return a reference to an interface that provides access to user informations.
+    /// Return a reference to an interface that provides access to user information.
     pub fn users(&self) -> Users<C> {
         Users::new(self.clone())
     }
@@ -698,7 +698,7 @@ filter_options! {
     /// # Sorting
     /// - id
     ///
-    /// See the [modio docs](https://docs.mod.io/#events) for more informations.
+    /// See the [modio docs](https://docs.mod.io/#events) for more information.
     ///
     /// By default this returns up to `100` items. You can limit the result using `limit` and
     /// `offset`.

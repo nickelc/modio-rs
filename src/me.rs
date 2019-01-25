@@ -113,7 +113,7 @@ filter_options! {
     /// - ratings
     /// - subscribers
     ///
-    /// See the [mod.io docs](https://docs.mod.io/#get-user-subscriptions) for more informations.
+    /// See the [mod.io docs](https://docs.mod.io/#get-user-subscriptions) for more information.
     ///
     /// By default this returns up to `100` items. You can limit the result using `limit` and
     /// `offset`.
@@ -164,7 +164,7 @@ filter_options! {
     /// - mod_id
     /// - date_added
     ///
-    /// See the [mod.io docs](https://docs.mod.io/#get-user-ratings) for more informations.
+    /// See the [mod.io docs](https://docs.mod.io/#get-user-ratings) for more information.
     ///
     /// By default this returns up to `100` items. You can limit the result using `limit` and
     /// `offset`.

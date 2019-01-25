@@ -16,7 +16,7 @@ pub enum Credentials {
 }
 
 /// Authentication Flow interface to retrieve access tokens. See the [mod.io Authentication
-/// docs](https://docs.mod.io/#email-authentication-flow) for more informations.
+/// docs](https://docs.mod.io/#email-authentication-flow) for more information.
 ///
 /// # Example
 /// ```no_run

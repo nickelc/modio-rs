@@ -81,7 +81,7 @@ filter_options! {
     /// - user_id
     /// - username
     ///
-    /// See [modio docs](https://docs.mod.io/#get-all-mod-team-members) for more informations.
+    /// See [modio docs](https://docs.mod.io/#get-all-mod-team-members) for more information.
     ///
     /// By default this returns up to `100` items. You can limit the result using `limit` and
     /// `offset`.

@@ -303,7 +303,7 @@ filter_options! {
     /// - ratings
     /// - subscribers
     ///
-    /// See the [modio docs](https://docs.mod.io/#get-all-mods) for more informations.
+    /// See the [modio docs](https://docs.mod.io/#get-all-mods) for more information.
     ///
     /// By default this returns up to `100` items. You can limit the result using `limit` and
     /// `offset`.
@@ -887,7 +887,7 @@ filter_options! {
     /// - ratings_positive
     /// - ratings_negative
     ///
-    /// See the [mod.io docs](https://docs.mod.io/#get-all-mod-stats) for more informations.
+    /// See the [mod.io docs](https://docs.mod.io/#get-all-mod-stats) for more information.
     ///
     /// By default this returns up to `100` items. You can limit the result using `limit` and
     /// `offset`.

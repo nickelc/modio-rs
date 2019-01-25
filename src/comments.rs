@@ -73,7 +73,7 @@ filter_options! {
     /// - submitted_by
     /// - date_added
     ///
-    /// See [modio docs](https://docs.mod.io/#get-all-mod-comments) for more informations.
+    /// See [modio docs](https://docs.mod.io/#get-all-mod-comments) for more information.
     ///
     /// By default this returns up to `100` items. You can limit the result using `limit` and
     /// `offset`.

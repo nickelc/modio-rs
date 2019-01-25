@@ -151,7 +151,7 @@ filter_options! {
     /// - name_id
     /// - date_updated
     ///
-    /// See [modio docs](https://docs.mod.io/#get-all-games) for more informations.
+    /// See [modio docs](https://docs.mod.io/#get-all-games) for more information.
     ///
     /// By default this returns up to `100` items. You can limit the result using `limit` and
     /// `offset`.
