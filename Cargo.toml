@@ -13,7 +13,6 @@ edition = "2018"
 
 [dependencies]
 bytes = "0.4"
-failure = "0.1"
 futures = "0.1"
 http = "0.1"
 hyper = "0.12"

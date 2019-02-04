@@ -623,7 +623,7 @@ where
                 (body.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
             )
             .or_else(|err| match err.kind() {
-                error::ErrorKind::Codec(_) => Ok(()),
+                error::ErrorKind::Json(_) => Ok(()),
                 _ => Err(err),
             }),
         )
