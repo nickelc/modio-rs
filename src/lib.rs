@@ -144,7 +144,7 @@ use std::marker::PhantomData;
 use std::time::Duration;
 
 use futures::{Future as StdFuture, IntoFuture, Stream as StdStream};
-use hyper::client::connect::Connect;
+pub use hyper::client::connect::Connect;
 use hyper::client::HttpConnector;
 use hyper::header::{AUTHORIZATION, CONTENT_TYPE, LOCATION, USER_AGENT};
 use hyper::{Body, Client, Method, Request, StatusCode, Uri};
