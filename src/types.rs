@@ -28,6 +28,20 @@ pub struct ModioListResponse<T> {
     pub offset: u32,
 }
 
+impl<T> ModioListResponse<T> {
+    pub fn first(&self) -> Option<&T> {
+        self.data.get(0)
+    }
+
+    pub fn shift(&mut self) -> Option<T> {
+        if self.data.is_empty() {
+            None
+        } else {
+            Some(self.data.remove(0))
+        }
+    }
+}
+
 impl<T> Index<usize> for ModioListResponse<T> {
     type Output = T;
 
