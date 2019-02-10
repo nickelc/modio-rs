@@ -493,6 +493,12 @@ pub mod mods {
         pub date_added: u64,
     }
 
+    impl fmt::Display for Tag {
+        fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+            self.name.fmt(fmt)
+        }
+    }
+
     /// See the [Metadata KVP Object](https://docs.mod.io/#metadata-kvp-object) docs for more
     /// information.
     pub type MetadataMap = HashMap<String, Vec<String>>;
