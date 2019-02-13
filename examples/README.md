@@ -4,7 +4,7 @@ Run examples with `cargo run --example example_name`
 
 ### Available examples
 
-* [`authentication`](authentication.rs) - Request an access token and print the authenticated user. See [Email Authentication Flow](https://docs.mod.io/#email-authentication-flow).
+* [`auth`](auth.rs) - Request an access token and print the authenticated user. See [Email Authentication Flow](https://docs.mod.io/#email-authentication-flow).
 
 * [`download`](download.rs) - Download the latest modfile for a given mod of a game.
 
