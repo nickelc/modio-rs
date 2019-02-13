@@ -1,3 +1,4 @@
+use std::env;
 use std::io::{self, Write};
 use tokio::runtime::Runtime;
 
@@ -13,12 +14,16 @@ fn prompt(prompt: &str) -> io::Result<String> {
 }
 
 fn main() -> Result<(), Error> {
+    dotenv::dotenv().ok();
+
+    let host = env::var("MODIO_HOST").unwrap_or_else(|_| "https://api.test.mod.io/v1".to_string());
+
     let api_key = prompt("Enter api key: ")?;
     let email = prompt("Enter email: ")?;
 
     let mut rt = Runtime::new()?;
     let modio = Modio::host(
-        "https://api.test.mod.io/v1",
+        host,
         concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")),
         Credentials::ApiKey(api_key),
     );
