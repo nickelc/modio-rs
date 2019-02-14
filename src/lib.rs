@@ -192,6 +192,7 @@ const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 
 pub type Future<T> = Box<dyn StdFuture<Item = T, Error = Error> + Send>;
 pub type Stream<T> = Box<dyn StdStream<Item = T, Error = Error> + Send>;
+pub type List<T> = ModioListResponse<T>;
 
 #[allow(dead_code)]
 const X_RATELIMIT_LIMIT: &str = "x-ratelimit-limit";
@@ -671,7 +672,7 @@ where
         }
     }
 
-    pub fn list(&self) -> Future<ModioListResponse<Out>> {
+    pub fn list(&self) -> Future<List<Out>> {
         self.modio.get(&self.path)
     }
 

@@ -11,8 +11,8 @@ use tokio_io::AsyncRead;
 
 use crate::multipart::{FileSource, FileStream, MultipartForm};
 use crate::Future;
+use crate::List;
 use crate::Modio;
-use crate::ModioListResponse;
 use crate::QueryParams;
 
 pub use crate::types::mods::{Download, File, FileHash};
@@ -31,7 +31,7 @@ impl<C: Clone + Connect + 'static> MyFiles<C> {
     }
 
     /// Return all modfiles the authenticated user uploaded.
-    pub fn list(&self, options: &FileListOptions) -> Future<ModioListResponse<File>> {
+    pub fn list(&self, options: &FileListOptions) -> Future<List<File>> {
         let mut uri = vec!["/me/files".to_owned()];
         let query = options.to_query_params();
         if !query.is_empty() {
@@ -65,7 +65,7 @@ impl<C: Clone + Connect + 'static> Files<C> {
     }
 
     /// Return all files that are published for a mod this `Files` refers to.
-    pub fn list(&self, options: &FileListOptions) -> Future<ModioListResponse<File>> {
+    pub fn list(&self, options: &FileListOptions) -> Future<List<File>> {
         let mut uri = vec![self.path("")];
         let query = options.to_query_params();
         if !query.is_empty() {

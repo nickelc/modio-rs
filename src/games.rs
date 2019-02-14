@@ -9,9 +9,9 @@ use url::form_urlencoded;
 use crate::multipart::{FileSource, FileStream, MultipartForm};
 use crate::Endpoint;
 use crate::Future;
+use crate::List;
 use crate::ModRef;
 use crate::Modio;
-use crate::ModioListResponse;
 use crate::ModioMessage;
 use crate::Mods;
 use crate::{AddOptions, DeleteOptions, QueryParams};
@@ -33,13 +33,13 @@ impl<C: Clone + Connect + 'static> MyGames<C> {
     }
 
     /// List all games the authenticated user added or is team member of.
-    pub fn list(&self, options: &GamesListOptions) -> Future<ModioListResponse<Game>> {
+    pub fn list(&self, options: &GamesListOptions) -> Future<List<Game>> {
         let mut uri = vec!["/me/games".to_owned()];
         let query = options.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get::<ModioListResponse<Game>>(&uri.join("?"))
+        self.modio.get(&uri.join("?"))
     }
 }
 
@@ -61,13 +61,13 @@ impl<C: Clone + Connect + 'static> Games<C> {
     }
 
     /// List all games.
-    pub fn list(&self, options: &GamesListOptions) -> Future<ModioListResponse<Game>> {
+    pub fn list(&self, options: &GamesListOptions) -> Future<List<Game>> {
         let mut uri = vec![self.path("")];
         let query = options.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get::<ModioListResponse<Game>>(&uri.join("?"))
+        self.modio.get(&uri.join("?"))
     }
 
     /// Return a reference to a game.

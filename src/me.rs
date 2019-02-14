@@ -9,8 +9,8 @@ use crate::types::mods::Mod;
 use crate::types::User;
 use crate::EventListOptions;
 use crate::Future;
+use crate::List;
 use crate::Modio;
-use crate::ModioListResponse;
 use crate::QueryParams;
 
 pub use crate::types::mods::Rating;
@@ -53,7 +53,7 @@ impl<C: Clone + Connect + 'static> Me<C> {
     }
 
     /// Return the events that have been fired specific to the authenticated user.
-    pub fn events(&self, options: &EventListOptions) -> Future<ModioListResponse<Event>> {
+    pub fn events(&self, options: &EventListOptions) -> Future<List<Event>> {
         let mut uri = vec!["/me/events".to_owned()];
         let query = options.to_query_params();
         if !query.is_empty() {
@@ -63,10 +63,7 @@ impl<C: Clone + Connect + 'static> Me<C> {
     }
 
     /// Return all mod's the authenticated user is subscribed to.
-    pub fn subscriptions(
-        &self,
-        options: &SubscriptionsListOptions,
-    ) -> Future<ModioListResponse<Mod>> {
+    pub fn subscriptions(&self, options: &SubscriptionsListOptions) -> Future<List<Mod>> {
         let mut uri = vec!["/me/subscribed".to_owned()];
         let query = options.to_query_params();
         if !query.is_empty() {
@@ -76,7 +73,7 @@ impl<C: Clone + Connect + 'static> Me<C> {
     }
 
     /// Return all mod rating's submitted by the authenticated user.
-    pub fn ratings(&self, options: &RatingsListOptions) -> Future<ModioListResponse<Rating>> {
+    pub fn ratings(&self, options: &RatingsListOptions) -> Future<List<Rating>> {
         let mut uri = vec!["/me/ratings".to_owned()];
         let query = options.to_query_params();
         if !query.is_empty() {

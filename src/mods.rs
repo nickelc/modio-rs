@@ -17,8 +17,8 @@ use crate::Comments;
 use crate::Endpoint;
 use crate::EventListOptions;
 use crate::Future;
+use crate::List;
 use crate::Modio;
-use crate::ModioListResponse;
 use crate::ModioMessage;
 use crate::{AddOptions, DeleteOptions, QueryParams};
 
@@ -41,13 +41,13 @@ impl<C: Clone + Connect + 'static> MyMods<C> {
     }
 
     /// List all mods the authenticated user added or is team member of.
-    pub fn list(&self, options: &ModsListOptions) -> Future<ModioListResponse<Mod>> {
+    pub fn list(&self, options: &ModsListOptions) -> Future<List<Mod>> {
         let mut uri = vec!["/me/mods".to_owned()];
         let query = options.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get::<ModioListResponse<Mod>>(&uri.join("?"))
+        self.modio.get(&uri.join("?"))
     }
 }
 
@@ -78,13 +78,13 @@ where
     }
 
     /// List all mods.
-    pub fn list(&self, options: &ModsListOptions) -> Future<ModioListResponse<Mod>> {
+    pub fn list(&self, options: &ModsListOptions) -> Future<List<Mod>> {
         let mut uri = vec![self.path("")];
         let query = options.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get::<ModioListResponse<Mod>>(&uri.join("?"))
+        self.modio.get(&uri.join("?"))
     }
 
     /// Add a mod and return the newly created Modio mod object.
@@ -93,7 +93,7 @@ where
     }
 
     /// Return the statistics for all mods of a game.
-    pub fn statistics(&self, options: &StatsListOptions) -> Future<ModioListResponse<Statistics>> {
+    pub fn statistics(&self, options: &StatsListOptions) -> Future<List<Statistics>> {
         let mut uri = vec![self.path("/stats")];
         let query = options.to_query_params();
         if !query.is_empty() {
@@ -103,7 +103,7 @@ where
     }
 
     /// Return the event log for all mods of a game sorted by latest event first.
-    pub fn events(&self, options: &EventListOptions) -> Future<ModioListResponse<Event>> {
+    pub fn events(&self, options: &EventListOptions) -> Future<List<Event>> {
         let mut uri = vec![self.path("/events")];
         let query = options.to_query_params();
         if !query.is_empty() {
@@ -173,7 +173,7 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
     }
 
     /// Return the event log for a mod sorted by latest event first.
-    pub fn events(&self, options: &EventListOptions) -> Future<ModioListResponse<Event>> {
+    pub fn events(&self, options: &EventListOptions) -> Future<List<Event>> {
         let mut uri = vec![self.path("/events")];
         let query = options.to_query_params();
         if !query.is_empty() {

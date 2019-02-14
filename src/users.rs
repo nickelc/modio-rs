@@ -4,8 +4,8 @@ use hyper::client::connect::Connect;
 use url::form_urlencoded;
 
 use crate::Future;
+use crate::List;
 use crate::Modio;
-use crate::ModioListResponse;
 use crate::QueryParams;
 
 pub use crate::types::{Avatar, User};
@@ -24,7 +24,7 @@ impl<C: Clone + Connect + 'static> Users<C> {
     }
 
     /// List all users registered on [mod.io](https:://mod.io).
-    pub fn list(&self, options: &UsersListOptions) -> Future<ModioListResponse<User>> {
+    pub fn list(&self, options: &UsersListOptions) -> Future<List<User>> {
         let mut uri = vec!["/users".into()];
         let query = options.to_query_params();
         if !query.is_empty() {

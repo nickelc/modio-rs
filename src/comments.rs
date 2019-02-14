@@ -5,8 +5,8 @@ use hyper::Body;
 
 pub use crate::types::mods::Comment;
 use crate::Future;
+use crate::List;
 use crate::Modio;
-use crate::ModioListResponse;
 use crate::QueryParams;
 
 pub struct Comments<C>
@@ -32,7 +32,7 @@ impl<C: Clone + Connect + 'static> Comments<C> {
     }
 
     /// List all comments.
-    pub fn list(&self, options: &CommentsListOptions) -> Future<ModioListResponse<Comment>> {
+    pub fn list(&self, options: &CommentsListOptions) -> Future<List<Comment>> {
         let mut uri = vec![self.path("")];
         let query = options.to_query_params();
         if !query.is_empty() {

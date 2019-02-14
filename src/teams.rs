@@ -5,8 +5,8 @@ use hyper::Body;
 use url::form_urlencoded;
 
 use crate::Future;
+use crate::List;
 use crate::Modio;
-use crate::ModioListResponse;
 use crate::ModioMessage;
 use crate::QueryParams;
 
@@ -36,7 +36,7 @@ impl<C: Clone + Connect + 'static> Members<C> {
     }
 
     /// List all team members.
-    pub fn list(&self, options: &TeamMemberListOptions) -> Future<ModioListResponse<TeamMember>> {
+    pub fn list(&self, options: &TeamMemberListOptions) -> Future<List<TeamMember>> {
         let mut uri = vec![self.path("")];
         let query = options.to_query_params();
         if !query.is_empty() {
