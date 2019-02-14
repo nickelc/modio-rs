@@ -4,11 +4,11 @@ use hyper::client::connect::Connect;
 use hyper::Body;
 use url::form_urlencoded;
 
-use crate::Future;
 use crate::List;
 use crate::Modio;
 use crate::ModioMessage;
 use crate::QueryParams;
+use crate::{Future, Stream};
 
 pub use crate::types::mods::{TeamLevel, TeamMember};
 
@@ -43,6 +43,16 @@ impl<C: Clone + Connect + 'static> Members<C> {
             uri.push(query);
         }
         self.modio.get(&uri.join("?"))
+    }
+
+    /// Provids a stream over all team members.
+    pub fn iter(&self, options: &TeamMemberListOptions) -> Stream<TeamMember> {
+        let mut uri = vec![self.path("")];
+        let query = options.to_query_params();
+        if !query.is_empty() {
+            uri.push(query);
+        }
+        self.modio.stream(&uri.join("?"))
     }
 
     /// Add a team member by email.

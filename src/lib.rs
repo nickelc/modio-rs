@@ -138,12 +138,13 @@
 #[macro_use]
 extern crate serde_derive;
 
+use std::collections::BTreeMap;
 use std::io;
 use std::io::prelude::*;
 use std::marker::PhantomData;
 use std::time::Duration;
 
-use futures::{Future as StdFuture, IntoFuture, Stream as StdStream};
+use futures::{future, stream, Future as StdFuture, IntoFuture, Stream as StdStream};
 pub use hyper::client::connect::Connect;
 use hyper::client::HttpConnector;
 use hyper::header::{AUTHORIZATION, CONTENT_TYPE, LOCATION, USER_AGENT};
@@ -436,7 +437,7 @@ where
         Reports::new(self.clone())
     }
 
-    fn request<B, Out>(&self, method: Method, uri: &str, body: B) -> Future<Out>
+    fn request<B, Out>(&self, method: Method, uri: &str, body: B) -> Future<(Uri, Out)>
     where
         B: Into<RequestBody> + 'static + Send,
         Out: DeserializeOwned + 'static + Send,
@@ -454,7 +455,7 @@ where
         let response = url.map_err(Error::from).and_then(move |url| {
             let mut req = Request::builder();
             req.method(method)
-                .uri(url)
+                .uri(&url)
                 .header(USER_AGENT, &*instance.agent);
 
             if let Credentials::Token(ref token) = instance.credentials {
@@ -479,9 +480,10 @@ where
 
             req.into_future()
                 .and_then(move |req| instance.client.request(req).map_err(Error::from))
+                .and_then(|res| Ok((url, res)))
         });
 
-        Box::new(response.and_then(move |response| {
+        Box::new(response.and_then(move |(url, response)| {
             let remaining = response
                 .headers()
                 .get(X_RATELIMIT_REMAINING)
@@ -501,7 +503,9 @@ where
                     .map_err(Error::from)
                     .and_then(move |response_body| {
                         if status.is_success() {
-                            serde_json::from_slice::<Out>(&response_body).map_err(Error::from)
+                            serde_json::from_slice::<Out>(&response_body)
+                                .map(|out| (url, out))
+                                .map_err(Error::from)
                         } else {
                             let error = match (remaining, reset) {
                                 (Some(remaining), Some(reset)) if remaining == 0 => {
@@ -523,6 +527,14 @@ where
                     }),
             )
         }))
+    }
+
+    fn request_entity<B, D>(&self, method: Method, uri: &str, body: B) -> Future<D>
+    where
+        B: Into<RequestBody> + 'static + Send,
+        D: DeserializeOwned + 'static + Send,
+    {
+        Box::new(self.request(method, uri, body).map(|(_, entity)| entity))
     }
 
     fn request_file<W>(&self, uri: &str, out: W) -> Future<(u64, W)>
@@ -570,11 +582,94 @@ where
         }))
     }
 
+    fn stream<D>(&self, uri: &str) -> Stream<D>
+    where
+        D: DeserializeOwned + 'static + Send,
+    {
+        struct State<D>
+        where
+            D: DeserializeOwned + 'static + Send,
+        {
+            uri: Uri,
+            items: Vec<D>,
+            offset: u32,
+            limit: u32,
+            count: u32,
+        }
+
+        let instance = self.clone();
+
+        Box::new(
+            self.request::<_, List<D>>(Method::GET, &(self.host.clone() + uri), Body::empty())
+                .map(move |(uri, list)| {
+                    let mut state = State {
+                        uri,
+                        items: list.data,
+                        offset: list.offset,
+                        limit: list.limit,
+                        count: list.total,
+                    };
+                    state.items.reverse();
+
+                    stream::unfold::<_, _, Future<(D, State<D>)>, _>(state, move |mut state| {
+                        match state.items.pop() {
+                            Some(item) => {
+                                state.count -= 1;
+                                Some(Box::new(future::ok((item, state))))
+                            }
+                            _ => {
+                                if state.count > 0 {
+                                    let mut url = Url::parse(&state.uri.to_string())
+                                        .expect("failed to parse uri");
+                                    let mut map = BTreeMap::new();
+                                    for (key, value) in url.query_pairs().into_owned() {
+                                        map.insert(key, value);
+                                    }
+                                    map.insert(
+                                        "_offset".to_string(),
+                                        (state.offset + state.limit).to_string(),
+                                    );
+                                    url.query_pairs_mut().clear();
+                                    url.query_pairs_mut().extend_pairs(map.iter());
+                                    let next = Box::new(
+                                        instance
+                                            .request::<_, List<D>>(
+                                                Method::GET,
+                                                &url.to_string(),
+                                                Body::empty(),
+                                            )
+                                            .map(move |(uri, list)| {
+                                                let mut state = State {
+                                                    uri,
+                                                    items: list.data,
+                                                    limit: state.limit,
+                                                    offset: state.offset + state.limit,
+                                                    count: state.count - 1,
+                                                };
+                                                let item = state.items.remove(0);
+                                                state.items.reverse();
+                                                (item, state)
+                                            }),
+                                    )
+                                        as Future<(D, State<D>)>;
+                                    Some(next)
+                                } else {
+                                    None
+                                }
+                            }
+                        }
+                    })
+                })
+                .into_stream()
+                .flatten(),
+        )
+    }
+
     fn get<D>(&self, uri: &str) -> Future<D>
     where
         D: DeserializeOwned + 'static + Send,
     {
-        self.request(Method::GET, &(self.host.clone() + uri), Body::empty())
+        self.request_entity(Method::GET, &(self.host.clone() + uri), Body::empty())
     }
 
     fn post<D, B>(&self, uri: &str, body: B) -> Future<D>
@@ -582,7 +677,7 @@ where
         D: DeserializeOwned + 'static + Send,
         B: Into<Body>,
     {
-        self.request(
+        self.request_entity(
             Method::POST,
             &(self.host.clone() + uri),
             (body.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
@@ -594,7 +689,7 @@ where
         D: DeserializeOwned + 'static + Send,
         M: Into<MultipartForm>,
     {
-        self.request(
+        self.request_entity(
             Method::POST,
             &(self.host.clone() + uri),
             RequestBody::Form(data.into()),
@@ -606,7 +701,7 @@ where
         D: DeserializeOwned + 'static + Send,
         B: Into<Body>,
     {
-        self.request(
+        self.request_entity(
             Method::PUT,
             &(self.host.clone() + uri),
             (body.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
@@ -618,7 +713,7 @@ where
         B: Into<Body>,
     {
         Box::new(
-            self.request(
+            self.request_entity(
                 Method::DELETE,
                 &(self.host.clone() + uri),
                 (body.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
@@ -674,6 +769,10 @@ where
 
     pub fn list(&self) -> Future<List<Out>> {
         self.modio.get(&self.path)
+    }
+
+    pub fn iter(&self) -> Stream<Out> {
+        self.modio.stream(&self.path)
     }
 
     pub fn add<T: AddOptions + QueryParams>(&self, options: &T) -> Future<ModioMessage> {

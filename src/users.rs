@@ -3,10 +3,10 @@
 use hyper::client::connect::Connect;
 use url::form_urlencoded;
 
-use crate::Future;
 use crate::List;
 use crate::Modio;
 use crate::QueryParams;
+use crate::{Future, Stream};
 
 pub use crate::types::{Avatar, User};
 
@@ -31,6 +31,16 @@ impl<C: Clone + Connect + 'static> Users<C> {
             uri.push(query);
         }
         self.modio.get(&uri.join("?"))
+    }
+
+    /// Provides a stream over all users registered on [mod.io](https:://mod.io).
+    pub fn iter(&self, options: &UsersListOptions) -> Stream<User> {
+        let mut uri = vec!["/users".into()];
+        let query = options.to_query_params();
+        if !query.is_empty() {
+            uri.push(query);
+        }
+        self.modio.stream(&uri.join("?"))
     }
 
     /// Return a user by id

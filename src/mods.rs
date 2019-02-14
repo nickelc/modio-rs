@@ -16,11 +16,11 @@ use crate::teams::Members;
 use crate::Comments;
 use crate::Endpoint;
 use crate::EventListOptions;
-use crate::Future;
 use crate::List;
 use crate::Modio;
 use crate::ModioMessage;
 use crate::{AddOptions, DeleteOptions, QueryParams};
+use crate::{Future, Stream};
 
 pub use crate::types::mods::{
     Dependency, Event, EventType, Image, Media, MetadataMap, Mod, Popularity, Ratings, Statistics, Tag,
@@ -48,6 +48,16 @@ impl<C: Clone + Connect + 'static> MyMods<C> {
             uri.push(query);
         }
         self.modio.get(&uri.join("?"))
+    }
+
+    /// Provides a stream over mods the authenticated user added or is team member of.
+    pub fn iter(&self, options: &ModsListOptions) -> Stream<Mod> {
+        let mut uri = vec!["/me/mods".to_owned()];
+        let query = options.to_query_params();
+        if !query.is_empty() {
+            uri.push(query);
+        }
+        self.modio.stream(&uri.join("?"))
     }
 }
 
@@ -85,6 +95,16 @@ where
             uri.push(query);
         }
         self.modio.get(&uri.join("?"))
+    }
+
+    /// Provides a stream over all mods of the game.
+    pub fn iter(&self, options: &ModsListOptions) -> Stream<Mod> {
+        let mut uri = vec![self.path("")];
+        let query = options.to_query_params();
+        if !query.is_empty() {
+            uri.push(query);
+        }
+        self.modio.stream(&uri.join("?"))
     }
 
     /// Add a mod and return the newly created Modio mod object.

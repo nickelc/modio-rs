@@ -4,10 +4,10 @@ use hyper::client::connect::Connect;
 use hyper::Body;
 
 pub use crate::types::mods::Comment;
-use crate::Future;
 use crate::List;
 use crate::Modio;
 use crate::QueryParams;
+use crate::{Future, Stream};
 
 pub struct Comments<C>
 where
@@ -39,6 +39,16 @@ impl<C: Clone + Connect + 'static> Comments<C> {
             uri.push(query);
         }
         self.modio.get(&uri.join("?"))
+    }
+
+    /// Provides a stream over all comments of the mod.
+    pub fn iter(&self, options: &CommentsListOptions) -> Stream<Comment> {
+        let mut uri = vec![self.path("")];
+        let query = options.to_query_params();
+        if !query.is_empty() {
+            uri.push(query);
+        }
+        self.modio.stream(&uri.join("?"))
     }
 
     /// Return comment by id.

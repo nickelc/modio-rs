@@ -8,10 +8,10 @@ use crate::mods::MyMods;
 use crate::types::mods::Mod;
 use crate::types::User;
 use crate::EventListOptions;
-use crate::Future;
 use crate::List;
 use crate::Modio;
 use crate::QueryParams;
+use crate::{Future, Stream};
 
 pub use crate::types::mods::Rating;
 pub use crate::types::{Event, EventType};

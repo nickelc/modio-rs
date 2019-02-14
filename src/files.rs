@@ -10,10 +10,10 @@ use mime::APPLICATION_OCTET_STREAM;
 use tokio_io::AsyncRead;
 
 use crate::multipart::{FileSource, FileStream, MultipartForm};
-use crate::Future;
 use crate::List;
 use crate::Modio;
 use crate::QueryParams;
+use crate::{Future, Stream};
 
 pub use crate::types::mods::{Download, File, FileHash};
 
@@ -38,6 +38,16 @@ impl<C: Clone + Connect + 'static> MyFiles<C> {
             uri.push(query);
         }
         self.modio.get(&uri.join("?"))
+    }
+
+    /// Provides a stream over all modfiles the authenticated user uploaded.
+    pub fn iter(&self, options: &FileListOptions) -> Stream<File> {
+        let mut uri = vec!["/me/files".to_owned()];
+        let query = options.to_query_params();
+        if !query.is_empty() {
+            uri.push(query);
+        }
+        self.modio.stream(&uri.join("?"))
     }
 }
 
@@ -72,6 +82,16 @@ impl<C: Clone + Connect + 'static> Files<C> {
             uri.push(query);
         }
         self.modio.get(&uri.join("?"))
+    }
+
+    /// Provides a stream over all files that are published for a mod this `Files` refers to.
+    pub fn iter(&self, options: &FileListOptions) -> Stream<File> {
+        let mut uri = vec![self.path("")];
+        let query = options.to_query_params();
+        if !query.is_empty() {
+            uri.push(query);
+        }
+        self.modio.stream(&uri.join("?"))
     }
 
     /// Return a reference to a file.
