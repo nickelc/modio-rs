@@ -77,7 +77,7 @@ where
         ModRef::new(self.modio.clone(), self.game, id)
     }
 
-    /// List all games.
+    /// List all mods.
     pub fn list(&self, options: &ModsListOptions) -> Future<ModioListResponse<Mod>> {
         let mut uri = vec![self.path("")];
         let query = options.to_query_params();
