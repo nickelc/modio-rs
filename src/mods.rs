@@ -23,7 +23,8 @@ use crate::{AddOptions, DeleteOptions, QueryParams};
 use crate::{Future, Stream};
 
 pub use crate::types::mods::{
-    Dependency, Event, EventType, Image, Media, MetadataMap, Mod, Popularity, Ratings, Statistics, Tag,
+    Dependency, Event, EventType, Image, Media, MetadataMap, Mod, Popularity, Ratings, Statistics,
+    Tag,
 };
 pub use crate::types::Logo;
 
