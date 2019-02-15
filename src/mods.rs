@@ -112,24 +112,24 @@ where
         self.modio.post_form(&self.path(""), options)
     }
 
-    /// Return the statistics for all mods of a game.
-    pub fn statistics(&self, options: &StatsListOptions) -> Future<List<Statistics>> {
+    /// Provides a stream over the statistics for all mods of a game.
+    pub fn statistics(&self, options: &StatsListOptions) -> Stream<Statistics> {
         let mut uri = vec![self.path("/stats")];
         let query = options.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get(&uri.join("?"))
+        self.modio.stream(&uri.join("?"))
     }
 
-    /// Return the event log for all mods of a game sorted by latest event first.
-    pub fn events(&self, options: &EventListOptions) -> Future<List<Event>> {
+    /// Provides a stream over the event log for all mods of a game sorted by latest event first.
+    pub fn events(&self, options: &EventListOptions) -> Stream<Event> {
         let mut uri = vec![self.path("/events")];
         let query = options.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get(&uri.join("?"))
+        self.modio.stream(&uri.join("?"))
     }
 }
 
@@ -192,14 +192,14 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
         self.modio.get(&self.path("/stats"))
     }
 
-    /// Return the event log for a mod sorted by latest event first.
-    pub fn events(&self, options: &EventListOptions) -> Future<List<Event>> {
+    /// Provides a stream over the event log for a mod sorted by latest event first.
+    pub fn events(&self, options: &EventListOptions) -> Stream<Event> {
         let mut uri = vec![self.path("/events")];
         let query = options.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get(&uri.join("?"))
+        self.modio.stream(&uri.join("?"))
     }
 
     /// Return a reference to an interface to manage team members of a mod.

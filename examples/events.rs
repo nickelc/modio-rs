@@ -52,15 +52,14 @@ fn main() -> Result<(), Error> {
             let mut opts = EventListOptions::new();
             opts.date_added(Operator::GreaterThan, time);
 
-            // Create the call for `/me/events` and wait for the `ModioListResponse<Event>`
-            // result.
-            let result = rt.block_on(modio.me().events(&opts));
+            // Create the call for `/me/events` and wait for the result.
+            let result = rt.block_on(modio.me().events(&opts).collect());
 
             match result {
                 Ok(list) => {
                     println!("event filter: {}", opts.to_query_params());
-                    println!("event count: {}", list.count);
-                    println!("{:#?}", list.data);
+                    println!("event count: {}", list.len());
+                    println!("{:#?}", list);
                 }
                 Err(e) => println!("modio error: {:?}", e),
             }

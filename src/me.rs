@@ -8,7 +8,6 @@ use crate::mods::MyMods;
 use crate::types::mods::Mod;
 use crate::types::User;
 use crate::EventListOptions;
-use crate::List;
 use crate::Modio;
 use crate::QueryParams;
 use crate::{Future, Stream};
@@ -52,34 +51,34 @@ impl<C: Clone + Connect + 'static> Me<C> {
         MyFiles::new(self.modio.clone())
     }
 
-    /// Return the events that have been fired specific to the authenticated user.
-    pub fn events(&self, options: &EventListOptions) -> Future<List<Event>> {
+    /// Provides a stream the events that have been fired specific to the authenticated user.
+    pub fn events(&self, options: &EventListOptions) -> Stream<Event> {
         let mut uri = vec!["/me/events".to_owned()];
         let query = options.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get(&uri.join("?"))
+        self.modio.stream(&uri.join("?"))
     }
 
-    /// Return all mod's the authenticated user is subscribed to.
-    pub fn subscriptions(&self, options: &SubscriptionsListOptions) -> Future<List<Mod>> {
+    /// Provides a stream over all mod's the authenticated user is subscribed to.
+    pub fn subscriptions(&self, options: &SubscriptionsListOptions) -> Stream<Mod> {
         let mut uri = vec!["/me/subscribed".to_owned()];
         let query = options.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get(&uri.join("?"))
+        self.modio.stream(&uri.join("?"))
     }
 
-    /// Return all mod rating's submitted by the authenticated user.
-    pub fn ratings(&self, options: &RatingsListOptions) -> Future<List<Rating>> {
+    /// Provides a stream over all mod rating's submitted by the authenticated user.
+    pub fn ratings(&self, options: &RatingsListOptions) -> Stream<Rating> {
         let mut uri = vec!["/me/ratings".to_owned()];
         let query = options.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get(&uri.join("?"))
+        self.modio.stream(&uri.join("?"))
     }
 }
 
