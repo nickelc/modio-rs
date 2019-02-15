@@ -53,16 +53,19 @@ fn main() -> Result<(), Error> {
             opts.date_added(Operator::GreaterThan, time);
 
             // Create the call for `/me/events` and wait for the result.
-            let result = rt.block_on(modio.me().events(&opts).collect());
-
-            match result {
-                Ok(list) => {
+            let print = modio
+                .me()
+                .events(&opts)
+                .collect()
+                .and_then(move |list| {
                     println!("event filter: {}", opts.to_query_params());
                     println!("event count: {}", list.len());
                     println!("{:#?}", list);
-                }
-                Err(e) => println!("modio error: {:?}", e),
-            }
+                    Ok(())
+                })
+                .map_err(|e| println!("{:?}", e));
+
+            rt.spawn(print);
 
             // Set a new timestamp for the next run.
             time = current_timestamp();
