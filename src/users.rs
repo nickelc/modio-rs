@@ -1,12 +1,8 @@
 //! Users interface
 
-use hyper::client::connect::Connect;
 use url::form_urlencoded;
 
-use crate::List;
-use crate::Modio;
-use crate::QueryParams;
-use crate::{Future, Stream};
+use crate::prelude::*;
 
 pub use crate::types::{Avatar, User};
 

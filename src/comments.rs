@@ -1,13 +1,7 @@
 //! Mod comments interface
 
-use hyper::client::connect::Connect;
-use hyper::Body;
-
+use crate::prelude::*;
 pub use crate::types::mods::Comment;
-use crate::List;
-use crate::Modio;
-use crate::QueryParams;
-use crate::{Future, Stream};
 
 pub struct Comments<C>
 where

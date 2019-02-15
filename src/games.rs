@@ -2,19 +2,13 @@
 
 use std::path::Path;
 
-use hyper::client::connect::Connect;
 use mime::IMAGE_STAR;
 use url::form_urlencoded;
 
 use crate::multipart::{FileSource, FileStream, MultipartForm};
-use crate::Endpoint;
-use crate::List;
+use crate::prelude::*;
 use crate::ModRef;
-use crate::Modio;
-use crate::ModioMessage;
 use crate::Mods;
-use crate::{AddOptions, DeleteOptions, QueryParams};
-use crate::{Future, Stream};
 
 pub use crate::types::game::{Game, HeaderImage, Icon, TagOption, TagType};
 pub use crate::types::Logo;

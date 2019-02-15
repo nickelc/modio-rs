@@ -1,12 +1,8 @@
 //! Reports interface
 
-use hyper::client::connect::Connect;
 use url::form_urlencoded;
 
-use crate::Future;
-use crate::Modio;
-use crate::ModioMessage;
-use crate::QueryParams;
+use crate::prelude::*;
 
 pub struct Reports<C>
 where

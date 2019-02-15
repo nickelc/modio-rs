@@ -1,14 +1,8 @@
 //! Team members interface
 
-use hyper::client::connect::Connect;
-use hyper::Body;
 use url::form_urlencoded;
 
-use crate::List;
-use crate::Modio;
-use crate::ModioMessage;
-use crate::QueryParams;
-use crate::{Future, Stream};
+use crate::prelude::*;
 
 pub use crate::types::mods::{TeamLevel, TeamMember};
 

@@ -1,15 +1,9 @@
 //! Mod metadata KVP interface
 
-use futures::Future as StdFuture;
-use hyper::client::connect::Connect;
 use url::form_urlencoded;
 
+use crate::prelude::*;
 use crate::types::mods::MetadataMap;
-use crate::Future;
-use crate::List;
-use crate::Modio;
-use crate::ModioMessage;
-use crate::QueryParams;
 
 pub struct Metadata<C>
 where

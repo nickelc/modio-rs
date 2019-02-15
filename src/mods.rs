@@ -2,9 +2,7 @@
 
 use std::path::Path;
 
-use futures::Future as StdFuture;
-use hyper::client::connect::Connect;
-use hyper::{Body, StatusCode};
+use hyper::StatusCode;
 use mime::{APPLICATION_OCTET_STREAM, IMAGE_STAR};
 use url::{form_urlencoded, Url};
 
@@ -12,15 +10,10 @@ use crate::error::ErrorKind;
 use crate::files::{FileRef, Files};
 use crate::metadata::Metadata;
 use crate::multipart::{FileSource, FileStream, MultipartForm};
+use crate::prelude::*;
 use crate::teams::Members;
 use crate::Comments;
-use crate::Endpoint;
 use crate::EventListOptions;
-use crate::List;
-use crate::Modio;
-use crate::ModioMessage;
-use crate::{AddOptions, DeleteOptions, QueryParams};
-use crate::{Future, Stream};
 
 pub use crate::types::mods::{
     Dependency, Event, EventType, Image, Media, MetadataMap, Mod, Popularity, Ratings, Statistics,

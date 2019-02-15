@@ -195,6 +195,19 @@ pub type Future<T> = Box<dyn StdFuture<Item = T, Error = Error> + Send>;
 pub type Stream<T> = Box<dyn StdStream<Item = T, Error = Error> + Send>;
 pub type List<T> = ModioListResponse<T>;
 
+mod prelude {
+    pub use futures::{Future as StdFuture, Stream as StdStream};
+    pub use hyper::client::connect::Connect;
+    pub use hyper::Body;
+
+    pub use crate::List;
+    pub use crate::Modio;
+    pub use crate::ModioMessage;
+    pub use crate::QueryParams;
+    pub use crate::{AddOptions, DeleteOptions, Endpoint};
+    pub use crate::{Future, Stream};
+}
+
 #[allow(dead_code)]
 const X_RATELIMIT_LIMIT: &str = "x-ratelimit-limit";
 const X_RATELIMIT_REMAINING: &str = "x-ratelimit-remaining";

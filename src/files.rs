@@ -2,7 +2,6 @@
 
 use std::path::Path;
 
-use hyper::client::connect::Connect;
 use hyper::Body;
 use url::form_urlencoded;
 
@@ -10,10 +9,7 @@ use mime::APPLICATION_OCTET_STREAM;
 use tokio_io::AsyncRead;
 
 use crate::multipart::{FileSource, FileStream, MultipartForm};
-use crate::List;
-use crate::Modio;
-use crate::QueryParams;
-use crate::{Future, Stream};
+use crate::prelude::*;
 
 pub use crate::types::mods::{Download, File, FileHash};
 
