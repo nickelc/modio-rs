@@ -10,6 +10,7 @@ use http::uri::InvalidUri;
 use http::Error as HttpError;
 use hyper::Error as HyperError;
 use hyper::StatusCode;
+use reqwest::Error as ReqwestError;
 use serde_json::Error as JsonError;
 
 pub use crate::types::ClientError;
@@ -34,6 +35,7 @@ impl StdError for Error {
             ErrorKind::Fault { ref error, .. } => Some(error),
             ErrorKind::Http(ref e) => Some(e),
             ErrorKind::Hyper(ref e) => Some(e),
+            ErrorKind::Reqwest(ref e) => Some(e),
             ErrorKind::Io(ref e) => Some(e),
             ErrorKind::Uri(ref e) => Some(e),
             _ => None,
@@ -75,6 +77,7 @@ pub enum ErrorKind {
     Json(JsonError),
     Http(HttpError),
     Hyper(HyperError),
+    Reqwest(ReqwestError),
     Io(IoError),
     Uri(InvalidUri),
 }
@@ -91,6 +94,7 @@ impl fmt::Display for ErrorKind {
             ErrorKind::Json(e) => e.fmt(fmt),
             ErrorKind::Http(e) => write!(fmt, "Failed to create http request: {}", e),
             ErrorKind::Hyper(e) => e.fmt(fmt),
+            ErrorKind::Reqwest(e) => e.fmt(fmt),
             ErrorKind::Io(e) => e.fmt(fmt),
             ErrorKind::Uri(e) => e.fmt(fmt),
         }
@@ -246,6 +250,12 @@ impl From<HttpError> for Error {
 impl From<HyperError> for Error {
     fn from(err: HyperError) -> Error {
         ErrorKind::Hyper(err).into()
+    }
+}
+
+impl From<ReqwestError> for Error {
+    fn from(err: ReqwestError) -> Error {
+        ErrorKind::Reqwest(err).into()
     }
 }
 

@@ -40,7 +40,7 @@ fn main() -> Result<(), Error> {
         host,
         concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")),
         creds,
-    );
+    )?;
 
     // Timestamp for the event filter
     let mut time = current_timestamp();

@@ -39,7 +39,7 @@ pub enum Credentials {
 ///     let modio = Modio::new(
 ///         "user-agent-name/1.0",
 ///         Credentials::ApiKey(String::from("api-key")),
-///     );
+///     )?;
 ///
 ///     let email = prompt("Enter email: ")?;
 ///     rt.block_on(modio.auth().request_code(&email))?;

@@ -38,7 +38,7 @@ fn main() -> Result<(), Error> {
         host,
         concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")),
         creds,
-    );
+    )?;
 
     let game_id = prompt("Enter game id: ")?;
     let mod_id = prompt("Enter mod id: ")?;

@@ -29,7 +29,7 @@ fn main() -> Result<(), Error> {
         host,
         concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")),
         creds,
-    );
+    )?;
 
     // Create a mod filter for `id` in (1043, 1041), limited to 30 results
     // and ordered by `id` desc.

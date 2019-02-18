@@ -57,7 +57,7 @@
 //!     let modio = Modio::new(
 //!         "user-agent-name/1.0",
 //!         Credentials::ApiKey(String::from("user-or-game-api-key")),
-//!     );
+//!     )?;
 //!
 //!     // OpenXcom: The X-Com Files
 //!     let modref = modio.mod_(51, 158);
@@ -100,7 +100,7 @@
 //!     let modio = Modio::new(
 //!         "user-agent-name/1.0",
 //!         Credentials::ApiKey(String::from("user-or-game-api-key")),
-//!     );
+//!     )?;
 //!     let out = File::open("mod.zip")?;
 //!
 //!     // Download the primary file of a mod.
@@ -154,6 +154,7 @@ use hyper_rustls::HttpsConnector;
 #[cfg(feature = "default-tls")]
 use hyper_tls::HttpsConnector;
 use mime::Mime;
+use reqwest::r#async::{Client as Client2};
 use serde::de::DeserializeOwned;
 use url::Url;
 
@@ -222,12 +223,13 @@ where
     host: String,
     agent: String,
     client: Client<C>,
+    client2: Client2,
     credentials: Credentials,
 }
 
 impl Modio<HttpsConnector<HttpConnector>> {
     /// Create an endpoint to [https://api.mod.io/v1](https://docs.mod.io/#mod-io-api-v1).
-    pub fn new<A, C>(agent: A, credentials: C) -> Self
+    pub fn new<A, C>(agent: A, credentials: C) -> Result<Self>
     where
         A: Into<String>,
         C: Into<Credentials>,
@@ -236,7 +238,7 @@ impl Modio<HttpsConnector<HttpConnector>> {
     }
 
     /// Create an endpoint to a different host.
-    pub fn host<H, A, C>(host: H, agent: A, credentials: C) -> Self
+    pub fn host<H, A, C>(host: H, agent: A, credentials: C) -> Result<Self>
     where
         H: Into<String>,
         A: Into<String>,
@@ -248,8 +250,9 @@ impl Modio<HttpsConnector<HttpConnector>> {
         let connector = HttpsConnector::new(4).unwrap();
 
         let client = Client::builder().keep_alive(true).build(connector);
+        let client2 = Client2::builder().build()?;
 
-        Self::custom(host, agent, credentials, client)
+        Ok(Self::custom(host, agent, credentials, client, client2))
     }
 }
 
@@ -258,7 +261,7 @@ where
     C: Clone + Connect + 'static,
 {
     /// Create an endpoint with a custom hyper client.
-    pub fn custom<H, A, CR>(host: H, agent: A, credentials: CR, client: Client<C>) -> Self
+    pub fn custom<H, A, CR>(host: H, agent: A, credentials: CR, client: Client<C>, client2: Client2) -> Self
     where
         H: Into<String>,
         A: Into<String>,
@@ -268,6 +271,7 @@ where
             host: host.into(),
             agent: agent.into(),
             client,
+            client2,
             credentials: credentials.into(),
         }
     }
@@ -281,6 +285,7 @@ where
             host: self.host,
             agent: self.agent,
             client: self.client,
+            client2: self.client2,
             credentials: credentials.into(),
         }
     }
@@ -322,7 +327,7 @@ where
     ///     let modio = Modio::new(
     ///         "user-agent-name/1.0",
     ///         Credentials::ApiKey(String::from("user-or-game-api-key")),
-    ///     );
+    ///     )?;
     ///     let out = File::open("mod.zip")?;
     ///
     ///     // Download the primary file of a mod.

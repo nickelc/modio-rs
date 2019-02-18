@@ -26,7 +26,7 @@ fn main() -> Result<(), Error> {
         host,
         concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")),
         Credentials::ApiKey(api_key),
-    );
+    )?;
 
     println!("{:#?}", rt.block_on(modio.auth().request_code(&email))?);
 
