@@ -25,11 +25,7 @@ fn main() -> Result<(), Error> {
     let mut rt = Runtime::new()?;
 
     // Creates a `Modio` endpoint for the test environment.
-    let modio = Modio::host(
-        host,
-        concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")),
-        creds,
-    )?;
+    let modio = Modio::host(host, creds)?;
 
     // Create a mod filter for `id` in (1043, 1041), limited to 30 results
     // and ordered by `id` desc.

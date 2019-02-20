@@ -36,11 +36,7 @@ fn main() -> Result<(), Error> {
     let mut rt = Runtime::new()?;
 
     // Creates a `Modio` endpoint for the test environment.
-    let modio = Modio::host(
-        host,
-        concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")),
-        creds,
-    )?;
+    let modio = Modio::host(host, creds)?;
 
     // Timestamp for the event filter
     let mut time = current_timestamp();

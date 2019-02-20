@@ -35,7 +35,6 @@ pub enum Credentials {
 /// fn main() -> Result<(), Error> {
 ///     let mut rt = Runtime::new()?;
 ///     let modio = Modio::new(
-///         "user-agent-name/1.0",
 ///         Credentials::ApiKey(String::from("api-key")),
 ///     )?;
 ///

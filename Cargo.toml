@@ -32,5 +32,6 @@ tokio = "0.1"
 
 [features]
 default = ["default-tls"]
-default-tls = ["reqwest/default-tls"]
-rustls-tls = ["reqwest/rustls-tls"]
+tls = []
+default-tls = ["reqwest/default-tls", "tls"]
+rustls-tls = ["reqwest/rustls-tls", "tls"]

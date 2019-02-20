@@ -22,11 +22,7 @@ fn main() -> Result<(), Error> {
     let email = prompt("Enter email: ")?;
 
     let mut rt = Runtime::new()?;
-    let modio = Modio::host(
-        host,
-        concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION")),
-        Credentials::ApiKey(api_key),
-    )?;
+    let modio = Modio::host(host, Credentials::ApiKey(api_key))?;
 
     println!("{:#?}", rt.block_on(modio.auth().request_code(&email))?);
 

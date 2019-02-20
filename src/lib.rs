@@ -32,7 +32,6 @@
 //! fn main() -> Result<(), Error> {
 //!     let mut rt = Runtime::new()?;
 //!     let modio = Modio::new(
-//!         "user-agent-name/1.0",
 //!         Credentials::ApiKey(String::from("user-or-game-api-key")),
 //!     );
 //!
@@ -55,7 +54,6 @@
 //! fn main() -> Result<(), Error> {
 //!     let mut rt = Runtime::new()?;
 //!     let modio = Modio::new(
-//!         "user-agent-name/1.0",
 //!         Credentials::ApiKey(String::from("user-or-game-api-key")),
 //!     )?;
 //!
@@ -98,7 +96,6 @@
 //! fn main() -> Result<(), Error> {
 //!     let mut rt = Runtime::new()?;
 //!     let modio = Modio::new(
-//!         "user-agent-name/1.0",
 //!         Credentials::ApiKey(String::from("user-or-game-api-key")),
 //!     )?;
 //!     let out = File::open("mod.zip")?;
@@ -185,6 +182,8 @@ pub use crate::error::{Error, Result};
 pub use crate::types::{ModioErrorResponse, ModioListResponse, ModioMessage};
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
+const TEST_HOST: &str = "https://api.test.mod.io/v1";
+const DEFAULT_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), '/', env!("CARGO_PKG_VERSION"));
 
 pub type Future<T> = Box<dyn StdFuture<Item = T, Error = Error> + Send>;
 pub type Stream<T> = Box<dyn StdStream<Item = T, Error = Error> + Send>;
@@ -210,6 +209,122 @@ const X_RATELIMIT_LIMIT: &str = "x-ratelimit-limit";
 const X_RATELIMIT_REMAINING: &str = "x-ratelimit-remaining";
 const X_RATELIMIT_RETRY_AFTER: &str = "x-ratelimit-retryafter";
 
+/// A `Builder` can be used to create a `Modio` client with custom configuration.
+pub struct Builder {
+    config: Config,
+}
+
+struct Config {
+    host: Option<String>,
+    agent: Option<String>,
+    credentials: Credentials,
+    #[cfg(feature = "tls")]
+    tls: TlsBackend,
+}
+
+#[cfg(feature = "tls")]
+enum TlsBackend {
+    #[cfg(feature = "default-tls")]
+    Default,
+    #[cfg(feature = "rustls-tls")]
+    Rustls,
+}
+
+#[cfg(feature = "tls")]
+impl Default for TlsBackend {
+    fn default() -> TlsBackend {
+        #[cfg(feature = "default-tls")]
+        {
+            TlsBackend::Default
+        }
+        #[cfg(all(feature = "rustls-tls", not(feature = "default-tls")))]
+        {
+            TlsBackend::Rustls
+        }
+    }
+}
+
+impl Builder {
+    /// Constructs a new `Builder`.
+    ///
+    /// This is the same as `Modio::builder(credentials)`.
+    pub fn new<C: Into<Credentials>>(credentials: C) -> Builder {
+        Builder {
+            config: Config {
+                host: None,
+                agent: None,
+                credentials: credentials.into(),
+                #[cfg(feature = "tls")]
+                tls: TlsBackend::default(),
+            },
+        }
+    }
+
+    /// Returns a `Modio` client that uses this `Builder` configuration.
+    pub fn build(self) -> Result<Modio> {
+        let config = self.config;
+        let host = config.host.unwrap_or_else(|| DEFAULT_HOST.to_string());
+        let agent = config.agent.unwrap_or_else(|| DEFAULT_AGENT.to_string());
+        let credentials = config.credentials;
+
+        let client = {
+            #[cfg(feature = "tls")]
+            match config.tls {
+                #[cfg(feature = "default-tls")]
+                TlsBackend::Default => Client::builder().use_default_tls().build()?,
+                #[cfg(feature = "rustls-tls")]
+                TlsBackend::Rustls => Client::builder().use_rustls_tls().build()?,
+            }
+
+            #[cfg(not(feature = "tls"))]
+            Client::builder().build()?
+        };
+
+        Ok(Modio {
+            host,
+            agent,
+            credentials,
+            client,
+        })
+    }
+
+    /// Set the mod.io api host.
+    ///
+    /// Defaults to `"https://api.mod.io/v1"`
+    pub fn host<S: Into<String>>(mut self, host: S) -> Builder {
+        self.config.host = Some(host.into());
+        self
+    }
+
+    /// Use the mod.io api test host.
+    pub fn use_test(mut self) -> Builder {
+        self.config.host = Some(TEST_HOST.into());
+        self
+    }
+
+    /// Set the user agent used for every request.
+    ///
+    /// Defaults to `"modio/{version}"`
+    pub fn agent<S: Into<String>>(mut self, agent: S) -> Builder {
+        self.config.agent = Some(agent.into());
+        self
+    }
+
+    /// Use native TLS backend.
+    #[cfg(feature = "default-tls")]
+    pub fn use_default_tls(mut self) -> Builder {
+        self.config.tls = TlsBackend::Default;
+        self
+    }
+
+    /// Use rustls TLS backend.
+    #[cfg(feature = "rustls-tls")]
+    pub fn use_rustls_tls(mut self) -> Builder {
+        self.config.tls = TlsBackend::Rustls;
+        self
+    }
+}
+
 /// Endpoint interface to interacting with the [mod.io](https://mod.io) API.
 #[derive(Clone, Debug)]
 pub struct Modio {
@@ -220,40 +335,28 @@ pub struct Modio {
 }
 
 impl Modio {
+    /// Constructs a new `Builder` to configure a `Modio` client.
+    ///
+    /// This is the same as `Builder::new(credentials)`.
+    pub fn builder<C: Into<Credentials>>(credentials: C) -> Builder {
+        Builder::new(credentials)
+    }
+
     /// Create an endpoint to [https://api.mod.io/v1](https://docs.mod.io/#mod-io-api-v1).
-    pub fn new<A, C>(agent: A, credentials: C) -> Result<Self>
+    pub fn new<C>(credentials: C) -> Result<Self>
     where
-        A: Into<String>,
         C: Into<Credentials>,
     {
-        Self::host(DEFAULT_HOST, agent, credentials)
+        Builder::new(credentials).build()
     }
 
     /// Create an endpoint to a different host.
-    pub fn host<H, A, C>(host: H, agent: A, credentials: C) -> Result<Self>
+    pub fn host<H, C>(host: H, credentials: C) -> Result<Self>
     where
         H: Into<String>,
-        A: Into<String>,
         C: Into<Credentials>,
     {
-        let client = Client::builder().build()?;
-
-        Ok(Self::custom(host, agent, credentials, client))
-    }
-
-    /// Create an endpoint with a custom hyper client.
-    pub fn custom<H, A, CR>(host: H, agent: A, credentials: CR, client: Client) -> Self
-    where
-        H: Into<String>,
-        A: Into<String>,
-        CR: Into<Credentials>,
-    {
-        Self {
-            host: host.into(),
-            agent: agent.into(),
-            client,
-            credentials: credentials.into(),
-        }
+        Builder::new(credentials).host(host).build()
     }
 
     /// Consume the endpoint and create an endpoint with new credentials.
@@ -304,7 +407,6 @@ impl Modio {
     /// fn main() -> Result<(), Error> {
     ///     let mut rt = Runtime::new()?;
     ///     let modio = Modio::new(
-    ///         "user-agent-name/1.0",
     ///         Credentials::ApiKey(String::from("user-or-game-api-key")),
     ///     )?;
     ///     let out = File::open("mod.zip")?;
