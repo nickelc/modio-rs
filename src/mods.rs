@@ -9,7 +9,7 @@ use url::{form_urlencoded, Url};
 use crate::error::ErrorKind;
 use crate::files::{FileRef, Files};
 use crate::metadata::Metadata;
-use crate::multipart::{FileSource, FileStream, MultipartForm};
+use crate::multipart::{FileSource, FileStream};
 use crate::prelude::*;
 use crate::teams::Members;
 use crate::Comments;
@@ -239,7 +239,7 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
     pub fn subscribe(&self) -> Future<()> {
         Box::new(
             self.modio
-                .post::<Mod, _>(&self.path("/subscribe"), Body::empty())
+                .post::<Mod, _>(&self.path("/subscribe"), RequestBody::Empty)
                 .map(|_| ())
                 .or_else(|err| match err.kind() {
                     ErrorKind::Fault {
@@ -255,7 +255,7 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
     pub fn unsubscribe(&self) -> Future<()> {
         Box::new(
             self.modio
-                .delete(&self.path("/subscribe"), Body::empty())
+                .delete(&self.path("/subscribe"), RequestBody::Empty)
                 .or_else(|err| match err.kind() {
                     ErrorKind::Fault {
                         code: StatusCode::BAD_REQUEST,
@@ -401,45 +401,39 @@ impl AddModOptions {
 }
 
 #[doc(hidden)]
-impl From<AddModOptions> for MultipartForm {
-    fn from(opts: AddModOptions) -> MultipartForm {
-        let mut mpart = MultipartForm::default();
+impl From<AddModOptions> for Form {
+    fn from(opts: AddModOptions) -> Form {
+        let mut form = Form::new();
 
-        mpart.add_field("name", &opts.name);
-        mpart.add_field("summary", &opts.summary);
+        form = form.text("name", opts.name).text("summary", opts.summary);
+
         if let Some(visible) = opts.visible {
-            mpart.add_field("visible", &visible.to_string());
+            form = form.text("visible", visible.to_string());
         }
-        if let Some(ref name_id) = opts.name_id {
-            mpart.add_field("name_id", &name_id);
+        if let Some(name_id) = opts.name_id {
+            form = form.text("name_id", name_id);
         }
-        if let Some(ref desc) = opts.description {
-            mpart.add_field("description", &desc);
+        if let Some(desc) = opts.description {
+            form = form.text("description", desc);
         }
-        if let Some(ref url) = opts.homepage_url {
-            mpart.add_field("homepage_url", &url.to_string());
+        if let Some(url) = opts.homepage_url {
+            form = form.text("homepage_url", url.to_string());
         }
         if let Some(stock) = opts.stock {
-            mpart.add_field("stock", &stock.to_string());
+            form = form.text("stock", stock.to_string());
         }
         if let Some(maturity_option) = opts.maturity_option {
-            mpart.add_field("maturity_option", &maturity_option.to_string());
+            form = form.text("maturity_option", maturity_option.to_string());
         }
-        if let Some(ref metadata_blob) = opts.metadata_blob {
-            mpart.add_field("metadata_blob", &metadata_blob);
+        if let Some(metadata_blob) = opts.metadata_blob {
+            form = form.text("metadata_blob", metadata_blob);
         }
-        if let Some(ref tags) = opts.tags {
+        if let Some(tags) = opts.tags {
             for tag in tags {
-                mpart.add_field("tags[]", &tag);
+                form = form.text("tags[]", tag);
             }
         }
-        mpart.add_stream(
-            "logo",
-            &opts.logo.filename,
-            &opts.logo.mime.to_string(),
-            opts.logo.inner,
-        );
-        mpart
+        form.part("logo", opts.logo.into())
     }
 }
 
@@ -708,36 +702,31 @@ impl AddMediaOptions {
 }
 
 #[doc(hidden)]
-impl From<AddMediaOptions> for MultipartForm {
-    fn from(opts: AddMediaOptions) -> MultipartForm {
-        let mut mpart = MultipartForm::default();
+impl From<AddMediaOptions> for Form {
+    fn from(opts: AddMediaOptions) -> Form {
+        let mut form = Form::new();
         if let Some(logo) = opts.logo {
-            mpart.add_stream("logo", &logo.filename, &logo.mime.to_string(), logo.inner);
+            form = form.part("logo", logo.into());
         }
         if let Some(zip) = opts.images_zip {
-            mpart.add_stream("images", &zip.filename, &zip.mime.to_string(), zip.inner);
+            form = form.part("images", zip.into());
         }
         if let Some(images) = opts.images {
             for (i, image) in images.into_iter().enumerate() {
-                mpart.add_stream(
-                    format!("image{}", i),
-                    image.filename,
-                    image.mime.to_string(),
-                    image.inner,
-                );
+                form = form.part(format!("image{}", i), image.into());
             }
         }
         if let Some(youtube) = opts.youtube {
             for url in youtube {
-                mpart.add_field("youtube[]", &url);
+                form = form.text("youtube[]", url);
             }
         }
-        if let Some(ref sketchfab) = opts.sketchfab {
+        if let Some(sketchfab) = opts.sketchfab {
             for url in sketchfab {
-                mpart.add_field("sketchfab[]", &url);
+                form = form.text("sketchfab[]", url);
             }
         }
-        mpart
+        form
     }
 }
 

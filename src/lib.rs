@@ -148,13 +148,14 @@ use futures::{future, stream, Future as StdFuture, IntoFuture, Stream as StdStre
 pub use hyper::client::connect::Connect;
 use hyper::client::HttpConnector;
 use hyper::header::{AUTHORIZATION, CONTENT_TYPE, LOCATION, USER_AGENT};
-use hyper::{Body, Client, Method, Request, StatusCode, Uri};
+use hyper::{Client, Method, StatusCode};
 #[cfg(feature = "rustls-tls")]
 use hyper_rustls::HttpsConnector;
 #[cfg(feature = "default-tls")]
 use hyper_tls::HttpsConnector;
 use mime::Mime;
-use reqwest::r#async::{Client as Client2};
+use reqwest::r#async::multipart::Form;
+use reqwest::r#async::{Body, Client as Client2};
 use serde::de::DeserializeOwned;
 use url::Url;
 
@@ -181,7 +182,6 @@ use crate::comments::Comments;
 use crate::games::{GameRef, Games};
 use crate::me::Me;
 use crate::mods::{ModRef, Mods};
-use crate::multipart::MultipartForm;
 use crate::reports::Reports;
 use crate::users::Users;
 
@@ -199,12 +199,14 @@ pub type List<T> = ModioListResponse<T>;
 mod prelude {
     pub use futures::{Future as StdFuture, Stream as StdStream};
     pub use hyper::client::connect::Connect;
-    pub use hyper::Body;
+    pub use reqwest::r#async::multipart::{Form, Part};
+    pub use reqwest::r#async::Body;
 
     pub use crate::List;
     pub use crate::Modio;
     pub use crate::ModioMessage;
     pub use crate::QueryParams;
+    pub(crate) use crate::RequestBody;
     pub use crate::{AddOptions, DeleteOptions, Endpoint};
     pub use crate::{Future, Stream};
 }
@@ -261,7 +263,13 @@ where
     C: Clone + Connect + 'static,
 {
     /// Create an endpoint with a custom hyper client.
-    pub fn custom<H, A, CR>(host: H, agent: A, credentials: CR, client: Client<C>, client2: Client2) -> Self
+    pub fn custom<H, A, CR>(
+        host: H,
+        agent: A,
+        credentials: CR,
+        client: Client<C>,
+        client2: Client2,
+    ) -> Self
     where
         H: Into<String>,
         A: Into<String>,
@@ -455,49 +463,49 @@ where
         Reports::new(self.clone())
     }
 
-    fn request<B, Out>(&self, method: Method, uri: &str, body: B) -> Future<(Uri, Out)>
+    fn request<B, Out>(&self, method: Method, uri: &str, body: B) -> Future<(Url, Out)>
     where
         B: Into<RequestBody> + 'static + Send,
         Out: DeserializeOwned + 'static + Send,
     {
         let url = if let Credentials::ApiKey(ref api_key) = self.credentials {
-            let mut parsed = Url::parse(&uri).unwrap();
-            parsed.query_pairs_mut().append_pair("api_key", api_key);
-            parsed.to_string().parse::<Uri>().into_future()
+            Url::parse(&uri)
+                .map(|mut url| {
+                    url.query_pairs_mut().append_pair("api_key", api_key);
+                    url
+                })
+                .map_err(Error::from)
+                .into_future()
         } else {
-            uri.parse().into_future()
+            uri.parse().map_err(Error::from).into_future()
         };
 
         let instance = self.clone();
 
         let response = url.map_err(Error::from).and_then(move |url| {
-            let mut req = Request::builder();
-            req.method(method)
-                .uri(&url)
+            let mut req = instance
+                .client2
+                .request(method, url.clone())
                 .header(USER_AGENT, &*instance.agent);
 
             if let Credentials::Token(ref token) = instance.credentials {
-                req.header(AUTHORIZATION, &*format!("Bearer {}", token));
+                req = req.header(AUTHORIZATION, &*format!("Bearer {}", token));
             }
 
-            let req = match body.into() {
+            match body.into() {
                 RequestBody::Body(body, mime) => {
                     if let Some(mime) = mime {
-                        req.header(CONTENT_TYPE, &*mime.to_string());
+                        req = req.header(CONTENT_TYPE, &*mime.to_string());
                     }
-                    req.body(body).map_err(Error::from)
+                    req = req.body(body);
                 }
-                RequestBody::Form(mpart) => {
-                    req.header(
-                        CONTENT_TYPE,
-                        &*format!("multipart/form-data; boundary={}", mpart.get_boundary()),
-                    );
-                    req.body(Body::wrap_stream(mpart)).map_err(Error::from)
+                RequestBody::Form(form) => {
+                    req = req.multipart(form);
                 }
-            };
-
-            req.into_future()
-                .and_then(move |req| instance.client.request(req).map_err(Error::from))
+                _ => {}
+            }
+            req.send()
+                .map_err(Error::from)
                 .and_then(|res| Ok((url, res)))
         });
 
@@ -559,18 +567,13 @@ where
     where
         W: Write + 'static + Send,
     {
-        let uri = uri.parse::<Uri>().into_future();
+        let url = Url::parse(uri).map_err(Error::from).into_future();
 
         let instance = self.clone();
-        let response = uri.map_err(Error::from).and_then(move |uri| {
-            let mut req = Request::builder();
-            req.method(Method::GET)
-                .uri(uri)
-                .header(USER_AGENT, &*instance.agent);
-            req.body(Body::empty())
-                .into_future()
-                .map_err(Error::from)
-                .and_then(move |req| instance.client.request(req).map_err(Error::from))
+        let response = url.and_then(move |url| {
+            let mut req = instance.client2.request(Method::GET, url);
+            req = req.header(USER_AGENT, &*instance.agent);
+            req.send().map_err(Error::from)
         });
 
         let instance2 = self.clone();
@@ -608,7 +611,7 @@ where
         where
             D: DeserializeOwned + 'static + Send,
         {
-            uri: Uri,
+            uri: Url,
             items: Vec<D>,
             offset: u32,
             limit: u32,
@@ -618,7 +621,7 @@ where
         let instance = self.clone();
 
         Box::new(
-            self.request::<_, List<D>>(Method::GET, &(self.host.clone() + uri), Body::empty())
+            self.request::<_, List<D>>(Method::GET, &(self.host.clone() + uri), RequestBody::Empty)
                 .map(move |(uri, list)| {
                     let mut state = State {
                         uri,
@@ -654,7 +657,7 @@ where
                                             .request::<_, List<D>>(
                                                 Method::GET,
                                                 &url.to_string(),
-                                                Body::empty(),
+                                                RequestBody::Empty,
                                             )
                                             .map(move |(uri, list)| {
                                                 let mut state = State {
@@ -687,13 +690,13 @@ where
     where
         D: DeserializeOwned + 'static + Send,
     {
-        self.request_entity(Method::GET, &(self.host.clone() + uri), Body::empty())
+        self.request_entity(Method::GET, &(self.host.clone() + uri), RequestBody::Empty)
     }
 
     fn post<D, B>(&self, uri: &str, body: B) -> Future<D>
     where
         D: DeserializeOwned + 'static + Send,
-        B: Into<Body>,
+        B: Into<RequestBody>,
     {
         self.request_entity(
             Method::POST,
@@ -705,7 +708,7 @@ where
     fn post_form<M, D>(&self, uri: &str, data: M) -> Future<D>
     where
         D: DeserializeOwned + 'static + Send,
-        M: Into<MultipartForm>,
+        M: Into<Form>,
     {
         self.request_entity(
             Method::POST,
@@ -717,7 +720,7 @@ where
     fn put<D, B>(&self, uri: &str, body: B) -> Future<D>
     where
         D: DeserializeOwned + 'static + Send,
-        B: Into<Body>,
+        B: Into<RequestBody>,
     {
         self.request_entity(
             Method::PUT,
@@ -728,7 +731,7 @@ where
 
     fn delete<B>(&self, uri: &str, body: B) -> Future<()>
     where
-        B: Into<Body>,
+        B: Into<RequestBody>,
     {
         Box::new(
             self.request_entity(
@@ -744,20 +747,25 @@ where
     }
 }
 
-enum RequestBody {
+pub(crate) enum RequestBody {
+    Empty,
     Body(Body, Option<Mime>),
-    Form(MultipartForm),
+    Form(Form),
 }
 
-impl From<Body> for RequestBody {
-    fn from(body: Body) -> RequestBody {
-        RequestBody::Body(body, None)
+impl From<String> for RequestBody {
+    fn from(s: String) -> RequestBody {
+        RequestBody::Body(Body::from(s), None)
     }
 }
 
-impl From<(Body, Mime)> for RequestBody {
-    fn from(body: (Body, Mime)) -> RequestBody {
-        RequestBody::Body(body.0, Some(body.1))
+impl From<(RequestBody, Mime)> for RequestBody {
+    fn from(body: (RequestBody, Mime)) -> RequestBody {
+        match body {
+            (RequestBody::Body(body, _), mime) => RequestBody::Body(body, Some(mime)),
+            (RequestBody::Empty, _) => RequestBody::Empty,
+            _ => body.0,
+        }
     }
 }
 

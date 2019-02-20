@@ -64,7 +64,7 @@ impl<C: Clone + Connect + 'static> Members<C> {
     /// Delete a team member by id.
     pub fn delete(&self, id: u32) -> Future<()> {
         self.modio
-            .delete(&self.path(&format!("/{}", id)), Body::empty())
+            .delete(&self.path(&format!("/{}", id)), RequestBody::Empty)
     }
 }
 

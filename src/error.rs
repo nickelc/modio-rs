@@ -12,6 +12,7 @@ use hyper::Error as HyperError;
 use hyper::StatusCode;
 use reqwest::Error as ReqwestError;
 use serde_json::Error as JsonError;
+use url::ParseError;
 
 pub use crate::types::ClientError;
 
@@ -38,6 +39,7 @@ impl StdError for Error {
             ErrorKind::Reqwest(ref e) => Some(e),
             ErrorKind::Io(ref e) => Some(e),
             ErrorKind::Uri(ref e) => Some(e),
+            ErrorKind::Url(ref e) => Some(e),
             _ => None,
         }
     }
@@ -80,6 +82,7 @@ pub enum ErrorKind {
     Reqwest(ReqwestError),
     Io(IoError),
     Uri(InvalidUri),
+    Url(ParseError),
 }
 
 impl fmt::Display for ErrorKind {
@@ -97,6 +100,7 @@ impl fmt::Display for ErrorKind {
             ErrorKind::Reqwest(e) => e.fmt(fmt),
             ErrorKind::Io(e) => e.fmt(fmt),
             ErrorKind::Uri(e) => e.fmt(fmt),
+            ErrorKind::Url(e) => e.fmt(fmt),
         }
     }
 }
@@ -268,6 +272,12 @@ impl From<IoError> for Error {
 impl From<InvalidUri> for Error {
     fn from(err: InvalidUri) -> Error {
         ErrorKind::Uri(err).into()
+    }
+}
+
+impl From<ParseError> for Error {
+    fn from(err: ParseError) -> Error {
+        ErrorKind::Url(err).into()
     }
 }
 

@@ -4,17 +4,24 @@ use std::path::{Path, PathBuf};
 use bytes::Bytes;
 use futures::{task, Async, Future, Poll, Stream};
 use mime::Mime;
-use mpart_async::MultipartRequest;
+use reqwest::r#async::multipart::Part;
 use tokio_codec::{BytesCodec, FramedRead};
 use tokio_fs::file::{File, OpenFuture};
 use tokio_io::AsyncRead;
-
-pub type MultipartForm = MultipartRequest<FileStream>;
 
 pub struct FileSource {
     pub inner: FileStream,
     pub filename: String,
     pub mime: Mime,
+}
+
+impl From<FileSource> for Part {
+    fn from(source: FileSource) -> Part {
+        Part::stream(source.inner)
+            .file_name(source.filename)
+            .mime_str(&source.mime.to_string())
+            .expect("FileSource::into::<Part>()")
+    }
 }
 
 enum State {

@@ -5,7 +5,7 @@ use std::path::Path;
 use mime::IMAGE_STAR;
 use url::form_urlencoded;
 
-use crate::multipart::{FileSource, FileStream, MultipartForm};
+use crate::multipart::{FileSource, FileStream};
 use crate::prelude::*;
 use crate::ModRef;
 use crate::Mods;
@@ -301,24 +301,19 @@ impl GameMediaOptions {
 }
 
 #[doc(hidden)]
-impl From<GameMediaOptions> for MultipartForm {
-    fn from(opts: GameMediaOptions) -> MultipartForm {
-        let mut mpart = MultipartForm::default();
+impl From<GameMediaOptions> for Form {
+    fn from(opts: GameMediaOptions) -> Form {
+        let mut form = Form::new();
         if let Some(logo) = opts.logo {
-            mpart.add_stream("logo", &logo.filename, &logo.mime.to_string(), logo.inner);
+            form = form.part("logo", logo.into());
         }
         if let Some(icon) = opts.icon {
-            mpart.add_stream("icon", &icon.filename, &icon.mime.to_string(), icon.inner);
+            form = form.part("icon", icon.into());
         }
         if let Some(header) = opts.header {
-            mpart.add_stream(
-                "header",
-                &header.filename,
-                &header.mime.to_string(),
-                header.inner,
-            );
+            form = form.part("header", header.into());
         }
-        mpart
+        form
     }
 }
 

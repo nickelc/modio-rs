@@ -53,7 +53,7 @@ impl<C: Clone + Connect + 'static> Comments<C> {
     /// Delete a comment by id.
     pub fn delete(&self, id: u32) -> Future<()> {
         self.modio
-            .delete(&self.path(&format!("/{}", id)), Body::empty())
+            .delete(&self.path(&format!("/{}", id)), RequestBody::Empty)
     }
 }
 

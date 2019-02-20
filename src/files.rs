@@ -2,13 +2,12 @@
 
 use std::path::Path;
 
-use hyper::Body;
 use url::form_urlencoded;
 
 use mime::APPLICATION_OCTET_STREAM;
 use tokio_io::AsyncRead;
 
-use crate::multipart::{FileSource, FileStream, MultipartForm};
+use crate::multipart::{FileSource, FileStream};
 use crate::prelude::*;
 
 pub use crate::types::mods::{Download, File, FileHash};
@@ -142,7 +141,7 @@ impl<C: Clone + Connect + 'static> FileRef<C> {
 
     /// Delete a modfile.
     pub fn delete(&self) -> Future<()> {
-        self.modio.delete(&self.path(), Body::empty())
+        self.modio.delete(&self.path(), RequestBody::Empty)
     }
 }
 
@@ -253,31 +252,25 @@ impl AddFileOptions {
 }
 
 #[doc(hidden)]
-impl From<AddFileOptions> for MultipartForm {
-    fn from(opts: AddFileOptions) -> MultipartForm {
-        let mut mpart = MultipartForm::default();
+impl From<AddFileOptions> for Form {
+    fn from(opts: AddFileOptions) -> Form {
+        let mut form = Form::new();
         if let Some(version) = opts.version {
-            mpart.add_field("version", &version);
+            form = form.text("version", version);
         }
         if let Some(changelog) = opts.changelog {
-            mpart.add_field("changelog", &changelog);
+            form = form.text("changelog", changelog);
         }
         if let Some(active) = opts.active {
-            mpart.add_field("active", &active.to_string());
+            form = form.text("active", active.to_string());
         }
         if let Some(filehash) = opts.filehash {
-            mpart.add_field("filehash", &filehash);
+            form = form.text("filehash", filehash);
         }
         if let Some(metadata_blob) = opts.metadata_blob {
-            mpart.add_field("metadata_blob", &metadata_blob);
+            form = form.text("metadata_blob", metadata_blob);
         }
-        mpart.add_stream(
-            "filedata",
-            &opts.source.filename,
-            &opts.source.mime.to_string(),
-            opts.source.inner,
-        );
-        mpart
+        form.part("filedata", opts.source.into())
     }
 }
 
