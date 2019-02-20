@@ -14,8 +14,6 @@ edition = "2018"
 [dependencies]
 bytes = "0.4"
 futures = "0.1"
-http = "0.1"
-hyper = "0.12"
 mime = "0.3"
 reqwest = { version = "0.9", default-features = false }
 serde = "1.0"
@@ -27,14 +25,6 @@ tokio-io = "0.1"
 url = "1.7"
 url_serde = "0.2"
 
-[dependencies.hyper-tls]
-version = "0.3"
-optional = true
-
-[dependencies.hyper-rustls]
-version = "0.16"
-optional = true
-
 [dev-dependencies]
 dotenv = "0.13"
 md5 = "0.3"
@@ -42,5 +32,5 @@ tokio = "0.1"
 
 [features]
 default = ["default-tls"]
-default-tls = ["hyper-tls", "reqwest/default-tls"]
-rustls-tls = ["hyper-rustls", "reqwest/rustls-tls"]
+default-tls = ["reqwest/default-tls"]
+rustls-tls = ["reqwest/rustls-tls"]

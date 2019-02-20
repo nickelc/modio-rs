@@ -1,7 +1,6 @@
 //! Mods Interface
 use std::path::Path;
 
-use hyper::StatusCode;
 use mime::{APPLICATION_OCTET_STREAM, IMAGE_STAR};
 use url::{form_urlencoded, Url};
 

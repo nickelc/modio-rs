@@ -5,11 +5,8 @@ use std::io::Error as IoError;
 use std::result::Result as StdResult;
 use std::time::Duration;
 
-use http::uri::InvalidUri;
-use http::Error as HttpError;
-use hyper::Error as HyperError;
-use hyper::StatusCode;
 use reqwest::Error as ReqwestError;
+use reqwest::StatusCode;
 use serde_json::Error as JsonError;
 use url::ParseError;
 
@@ -33,11 +30,8 @@ impl StdError for Error {
         match *self.inner {
             ErrorKind::Download(ref e) => Some(e),
             ErrorKind::Fault { ref error, .. } => Some(error),
-            ErrorKind::Http(ref e) => Some(e),
-            ErrorKind::Hyper(ref e) => Some(e),
             ErrorKind::Reqwest(ref e) => Some(e),
             ErrorKind::Io(ref e) => Some(e),
-            ErrorKind::Uri(ref e) => Some(e),
             ErrorKind::Url(ref e) => Some(e),
             _ => None,
         }
@@ -76,11 +70,8 @@ pub enum ErrorKind {
     },
     Download(DownloadError),
     Json(JsonError),
-    Http(HttpError),
-    Hyper(HyperError),
     Reqwest(ReqwestError),
     Io(IoError),
-    Uri(InvalidUri),
     Url(ParseError),
 }
 
@@ -94,11 +85,8 @@ impl fmt::Display for ErrorKind {
             }
             ErrorKind::Download(e) => write!(fmt, "Download failed: {}", e),
             ErrorKind::Json(e) => e.fmt(fmt),
-            ErrorKind::Http(e) => write!(fmt, "Failed to create http request: {}", e),
-            ErrorKind::Hyper(e) => e.fmt(fmt),
             ErrorKind::Reqwest(e) => e.fmt(fmt),
             ErrorKind::Io(e) => e.fmt(fmt),
-            ErrorKind::Uri(e) => e.fmt(fmt),
             ErrorKind::Url(e) => e.fmt(fmt),
         }
     }
@@ -244,18 +232,6 @@ impl From<JsonError> for Error {
     }
 }
 
-impl From<HttpError> for Error {
-    fn from(err: HttpError) -> Error {
-        ErrorKind::Http(err).into()
-    }
-}
-
-impl From<HyperError> for Error {
-    fn from(err: HyperError) -> Error {
-        ErrorKind::Hyper(err).into()
-    }
-}
-
 impl From<ReqwestError> for Error {
     fn from(err: ReqwestError) -> Error {
         ErrorKind::Reqwest(err).into()
@@ -265,12 +241,6 @@ impl From<ReqwestError> for Error {
 impl From<IoError> for Error {
     fn from(err: IoError) -> Error {
         ErrorKind::Io(err).into()
-    }
-}
-
-impl From<InvalidUri> for Error {
-    fn from(err: InvalidUri) -> Error {
-        ErrorKind::Uri(err).into()
     }
 }
 

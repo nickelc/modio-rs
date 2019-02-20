@@ -145,11 +145,11 @@ use std::marker::PhantomData;
 use std::time::Duration;
 
 use futures::{future, stream, Future as StdFuture, IntoFuture, Stream as StdStream};
-use hyper::header::{AUTHORIZATION, CONTENT_TYPE, LOCATION, USER_AGENT};
-use hyper::{Method, StatusCode};
 use mime::Mime;
+use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, LOCATION, USER_AGENT};
 use reqwest::r#async::multipart::Form;
 use reqwest::r#async::{Body, Client};
+use reqwest::{Method, StatusCode};
 use serde::de::DeserializeOwned;
 use url::Url;
 
@@ -194,6 +194,7 @@ mod prelude {
     pub use futures::{Future as StdFuture, Stream as StdStream};
     pub use reqwest::r#async::multipart::{Form, Part};
     pub use reqwest::r#async::Body;
+    pub use reqwest::StatusCode;
 
     pub use crate::List;
     pub use crate::Modio;
