@@ -1,19 +1,15 @@
 //! Mod comments interface
-
 use crate::prelude::*;
 pub use crate::types::mods::Comment;
 
-pub struct Comments<C>
-where
-    C: Clone + Connect + 'static,
-{
-    modio: Modio<C>,
+pub struct Comments {
+    modio: Modio,
     game: u32,
     mod_id: u32,
 }
 
-impl<C: Clone + Connect + 'static> Comments<C> {
-    pub fn new(modio: Modio<C>, game: u32, mod_id: u32) -> Self {
+impl Comments {
+    pub fn new(modio: Modio, game: u32, mod_id: u32) -> Self {
         Self {
             modio,
             game,

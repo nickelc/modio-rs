@@ -1,18 +1,14 @@
 //! Reports interface
-
 use url::form_urlencoded;
 
 use crate::prelude::*;
 
-pub struct Reports<C>
-where
-    C: Clone + Connect + 'static,
-{
-    modio: Modio<C>,
+pub struct Reports {
+    modio: Modio,
 }
 
-impl<C: Clone + Connect + 'static> Reports<C> {
-    pub(crate) fn new(modio: Modio<C>) -> Self {
+impl Reports {
+    pub(crate) fn new(modio: Modio) -> Self {
         Self { modio }
     }
 

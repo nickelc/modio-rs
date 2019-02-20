@@ -1,5 +1,4 @@
 //! Users interface
-
 use url::form_urlencoded;
 
 use crate::prelude::*;
@@ -7,15 +6,12 @@ use crate::prelude::*;
 pub use crate::types::{Avatar, User};
 
 /// Interface for users.
-pub struct Users<C>
-where
-    C: Clone + Connect + 'static,
-{
-    modio: Modio<C>,
+pub struct Users {
+    modio: Modio,
 }
 
-impl<C: Clone + Connect + 'static> Users<C> {
-    pub(crate) fn new(modio: Modio<C>) -> Self {
+impl Users {
+    pub(crate) fn new(modio: Modio) -> Self {
         Self { modio }
     }
 

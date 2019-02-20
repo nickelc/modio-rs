@@ -1,5 +1,4 @@
 //! Games interface
-
 use std::path::Path;
 
 use mime::IMAGE_STAR;
@@ -14,15 +13,12 @@ pub use crate::types::game::{Game, HeaderImage, Icon, TagOption, TagType};
 pub use crate::types::Logo;
 
 /// Interface for games the authenticated user added or is team member of.
-pub struct MyGames<C>
-where
-    C: Clone + Connect + 'static,
-{
-    modio: Modio<C>,
+pub struct MyGames {
+    modio: Modio,
 }
 
-impl<C: Clone + Connect + 'static> MyGames<C> {
-    pub(crate) fn new(modio: Modio<C>) -> Self {
+impl MyGames {
+    pub(crate) fn new(modio: Modio) -> Self {
         Self { modio }
     }
 
@@ -48,15 +44,12 @@ impl<C: Clone + Connect + 'static> MyGames<C> {
 }
 
 /// Interface for games.
-pub struct Games<C>
-where
-    C: Clone + Connect + 'static,
-{
-    modio: Modio<C>,
+pub struct Games {
+    modio: Modio,
 }
 
-impl<C: Clone + Connect + 'static> Games<C> {
-    pub(crate) fn new(modio: Modio<C>) -> Self {
+impl Games {
+    pub(crate) fn new(modio: Modio) -> Self {
         Self { modio }
     }
 
@@ -85,22 +78,19 @@ impl<C: Clone + Connect + 'static> Games<C> {
     }
 
     /// Return a reference to a game.
-    pub fn get(&self, id: u32) -> GameRef<C> {
+    pub fn get(&self, id: u32) -> GameRef {
         GameRef::new(self.modio.clone(), id)
     }
 }
 
 /// Reference interface of a game.
-pub struct GameRef<C>
-where
-    C: Clone + Connect + 'static,
-{
-    modio: Modio<C>,
+pub struct GameRef {
+    modio: Modio,
     id: u32,
 }
 
-impl<C: Clone + Connect + 'static> GameRef<C> {
-    pub(crate) fn new(modio: Modio<C>, id: u32) -> Self {
+impl GameRef {
+    pub(crate) fn new(modio: Modio, id: u32) -> Self {
         Self { modio, id }
     }
 
@@ -114,17 +104,17 @@ impl<C: Clone + Connect + 'static> GameRef<C> {
     }
 
     /// Return a reference to a mod of a game.
-    pub fn mod_(&self, mod_id: u32) -> ModRef<C> {
+    pub fn mod_(&self, mod_id: u32) -> ModRef {
         ModRef::new(self.modio.clone(), self.id, mod_id)
     }
 
     /// Return a reference to an interface that provides access to the mods of a game.
-    pub fn mods(&self) -> Mods<C> {
+    pub fn mods(&self) -> Mods {
         Mods::new(self.modio.clone(), self.id)
     }
 
     /// Return a reference to an interface that provides access to the tags of a game.
-    pub fn tags(&self) -> Endpoint<C, TagOption> {
+    pub fn tags(&self) -> Endpoint<TagOption> {
         Endpoint::new(self.modio.clone(), self.path("/tags"))
     }
 

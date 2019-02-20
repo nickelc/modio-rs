@@ -1,5 +1,4 @@
 //! Mods Interface
-
 use std::path::Path;
 
 use hyper::StatusCode;
@@ -22,15 +21,12 @@ pub use crate::types::mods::{
 pub use crate::types::Logo;
 
 /// Interface for mods the authenticated user added or is team member of.
-pub struct MyMods<C>
-where
-    C: Clone + Connect + 'static,
-{
-    modio: Modio<C>,
+pub struct MyMods {
+    modio: Modio,
 }
 
-impl<C: Clone + Connect + 'static> MyMods<C> {
-    pub(crate) fn new(modio: Modio<C>) -> Self {
+impl MyMods {
+    pub(crate) fn new(modio: Modio) -> Self {
         Self { modio }
     }
 
@@ -56,19 +52,13 @@ impl<C: Clone + Connect + 'static> MyMods<C> {
 }
 
 /// Interface for mods of a game.
-pub struct Mods<C>
-where
-    C: Clone + Connect + 'static,
-{
-    modio: Modio<C>,
+pub struct Mods {
+    modio: Modio,
     game: u32,
 }
 
-impl<C> Mods<C>
-where
-    C: Clone + Connect + 'static,
-{
-    pub(crate) fn new(modio: Modio<C>, game: u32) -> Self {
+impl Mods where {
+    pub(crate) fn new(modio: Modio, game: u32) -> Self {
         Self { modio, game }
     }
 
@@ -77,7 +67,7 @@ where
     }
 
     /// Return a reference to a mod.
-    pub fn get(&self, id: u32) -> ModRef<C> {
+    pub fn get(&self, id: u32) -> ModRef {
         ModRef::new(self.modio.clone(), self.game, id)
     }
 
@@ -128,17 +118,14 @@ where
 }
 
 /// Reference interface of a mod.
-pub struct ModRef<C>
-where
-    C: Clone + Connect + 'static,
-{
-    modio: Modio<C>,
+pub struct ModRef {
+    modio: Modio,
     game: u32,
     id: u32,
 }
 
-impl<C: Clone + Connect + 'static> ModRef<C> {
-    pub(crate) fn new(modio: Modio<C>, game: u32, id: u32) -> Self {
+impl ModRef {
+    pub(crate) fn new(modio: Modio, game: u32, id: u32) -> Self {
         Self { modio, game, id }
     }
 
@@ -152,32 +139,32 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
     }
 
     /// Return a reference to an interface that provides access to the files of a mod.
-    pub fn files(&self) -> Files<C> {
+    pub fn files(&self) -> Files {
         Files::new(self.modio.clone(), self.game, self.id)
     }
 
     /// Return a reference to a file of a mod.
-    pub fn file(&self, id: u32) -> FileRef<C> {
+    pub fn file(&self, id: u32) -> FileRef {
         FileRef::new(self.modio.clone(), self.game, self.id, id)
     }
 
     /// Return a reference to an interface to manage metadata key value pairs of a mod.
-    pub fn metadata(&self) -> Metadata<C> {
+    pub fn metadata(&self) -> Metadata {
         Metadata::new(self.modio.clone(), self.game, self.id)
     }
 
     /// Return a reference to an interface to manage the tags of a mod.
-    pub fn tags(&self) -> Endpoint<C, Tag> {
+    pub fn tags(&self) -> Endpoint<Tag> {
         Endpoint::new(self.modio.clone(), self.path("/tags"))
     }
 
     /// Return a reference to an interface that provides access to the comments of a mod.
-    pub fn comments(&self) -> Comments<C> {
+    pub fn comments(&self) -> Comments {
         Comments::new(self.modio.clone(), self.game, self.id)
     }
 
     /// Return a reference to an interface to manage the dependencies of a mod.
-    pub fn dependencies(&self) -> Endpoint<C, Dependency> {
+    pub fn dependencies(&self) -> Endpoint<Dependency> {
         Endpoint::new(self.modio.clone(), self.path("/dependencies"))
     }
 
@@ -197,7 +184,7 @@ impl<C: Clone + Connect + 'static> ModRef<C> {
     }
 
     /// Return a reference to an interface to manage team members of a mod.
-    pub fn members(&self) -> Members<C> {
+    pub fn members(&self) -> Members {
         Members::new(self.modio.clone(), self.game, self.id)
     }
 

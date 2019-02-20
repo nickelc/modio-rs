@@ -1,5 +1,4 @@
 //! Client errors
-
 use std::error::Error as StdError;
 use std::fmt;
 use std::io::Error as IoError;

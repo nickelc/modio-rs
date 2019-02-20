@@ -145,17 +145,11 @@ use std::marker::PhantomData;
 use std::time::Duration;
 
 use futures::{future, stream, Future as StdFuture, IntoFuture, Stream as StdStream};
-pub use hyper::client::connect::Connect;
-use hyper::client::HttpConnector;
 use hyper::header::{AUTHORIZATION, CONTENT_TYPE, LOCATION, USER_AGENT};
-use hyper::{Client, Method, StatusCode};
-#[cfg(feature = "rustls-tls")]
-use hyper_rustls::HttpsConnector;
-#[cfg(feature = "default-tls")]
-use hyper_tls::HttpsConnector;
+use hyper::{Method, StatusCode};
 use mime::Mime;
 use reqwest::r#async::multipart::Form;
-use reqwest::r#async::{Body, Client as Client2};
+use reqwest::r#async::{Body, Client};
 use serde::de::DeserializeOwned;
 use url::Url;
 
@@ -198,7 +192,6 @@ pub type List<T> = ModioListResponse<T>;
 
 mod prelude {
     pub use futures::{Future as StdFuture, Stream as StdStream};
-    pub use hyper::client::connect::Connect;
     pub use reqwest::r#async::multipart::{Form, Part};
     pub use reqwest::r#async::Body;
 
@@ -218,18 +211,14 @@ const X_RATELIMIT_RETRY_AFTER: &str = "x-ratelimit-retryafter";
 
 /// Endpoint interface to interacting with the [mod.io](https://mod.io) API.
 #[derive(Clone, Debug)]
-pub struct Modio<C>
-where
-    C: Clone + Connect + 'static,
-{
+pub struct Modio {
     host: String,
     agent: String,
-    client: Client<C>,
-    client2: Client2,
+    client: Client,
     credentials: Credentials,
 }
 
-impl Modio<HttpsConnector<HttpConnector>> {
+impl Modio {
     /// Create an endpoint to [https://api.mod.io/v1](https://docs.mod.io/#mod-io-api-v1).
     pub fn new<A, C>(agent: A, credentials: C) -> Result<Self>
     where
@@ -246,30 +235,13 @@ impl Modio<HttpsConnector<HttpConnector>> {
         A: Into<String>,
         C: Into<Credentials>,
     {
-        #[cfg(feature = "rustls-tls")]
-        let connector = HttpsConnector::new(4);
-        #[cfg(feature = "default-tls")]
-        let connector = HttpsConnector::new(4).unwrap();
+        let client = Client::builder().build()?;
 
-        let client = Client::builder().keep_alive(true).build(connector);
-        let client2 = Client2::builder().build()?;
-
-        Ok(Self::custom(host, agent, credentials, client, client2))
+        Ok(Self::custom(host, agent, credentials, client))
     }
-}
 
-impl<C> Modio<C>
-where
-    C: Clone + Connect + 'static,
-{
     /// Create an endpoint with a custom hyper client.
-    pub fn custom<H, A, CR>(
-        host: H,
-        agent: A,
-        credentials: CR,
-        client: Client<C>,
-        client2: Client2,
-    ) -> Self
+    pub fn custom<H, A, CR>(host: H, agent: A, credentials: CR, client: Client) -> Self
     where
         H: Into<String>,
         A: Into<String>,
@@ -279,7 +251,6 @@ where
             host: host.into(),
             agent: agent.into(),
             client,
-            client2,
             credentials: credentials.into(),
         }
     }
@@ -293,28 +264,27 @@ where
             host: self.host,
             agent: self.agent,
             client: self.client,
-            client2: self.client2,
             credentials: credentials.into(),
         }
     }
 
     /// Return a reference to an interface for requesting access tokens.
-    pub fn auth(&self) -> Auth<C> {
+    pub fn auth(&self) -> Auth {
         Auth::new(self.clone())
     }
 
     /// Return a reference to an interface that provides access to game information.
-    pub fn games(&self) -> Games<C> {
+    pub fn games(&self) -> Games {
         Games::new(self.clone())
     }
 
     /// Return a reference to a game.
-    pub fn game(&self, game_id: u32) -> GameRef<C> {
+    pub fn game(&self, game_id: u32) -> GameRef {
         GameRef::new(self.clone(), game_id)
     }
 
     /// Return a reference to a mod.
-    pub fn mod_(&self, game_id: u32, mod_id: u32) -> ModRef<C> {
+    pub fn mod_(&self, game_id: u32, mod_id: u32) -> ModRef {
         ModRef::new(self.clone(), game_id, mod_id)
     }
 
@@ -449,17 +419,17 @@ where
 
     /// Return a reference to an interface that provides access to resources owned by the user
     /// associated with the current authentication credentials.
-    pub fn me(&self) -> Me<C> {
+    pub fn me(&self) -> Me {
         Me::new(self.clone())
     }
 
     /// Return a reference to an interface that provides access to user information.
-    pub fn users(&self) -> Users<C> {
+    pub fn users(&self) -> Users {
         Users::new(self.clone())
     }
 
     /// Return a reference to an interface to report games, mods and users.
-    pub fn reports(&self) -> Reports<C> {
+    pub fn reports(&self) -> Reports {
         Reports::new(self.clone())
     }
 
@@ -484,7 +454,7 @@ where
 
         let response = url.map_err(Error::from).and_then(move |url| {
             let mut req = instance
-                .client2
+                .client
                 .request(method, url.clone())
                 .header(USER_AGENT, &*instance.agent);
 
@@ -571,7 +541,7 @@ where
 
         let instance = self.clone();
         let response = url.and_then(move |url| {
-            let mut req = instance.client2.request(Method::GET, url);
+            let mut req = instance.client.request(Method::GET, url);
             req = req.header(USER_AGENT, &*instance.agent);
             req.send().map_err(Error::from)
         });
@@ -770,22 +740,20 @@ impl From<(RequestBody, Mime)> for RequestBody {
 }
 
 /// Generic endpoint for sub-resources
-pub struct Endpoint<C, Out>
+pub struct Endpoint<Out>
 where
-    C: Clone + Connect + 'static,
     Out: DeserializeOwned + 'static,
 {
-    modio: Modio<C>,
+    modio: Modio,
     path: String,
     phantom: PhantomData<Out>,
 }
 
-impl<C, Out> Endpoint<C, Out>
+impl<Out> Endpoint<Out>
 where
-    C: Clone + Connect,
     Out: DeserializeOwned + 'static + Send,
 {
-    pub(crate) fn new(modio: Modio<C>, path: String) -> Endpoint<C, Out> {
+    pub(crate) fn new(modio: Modio, path: String) -> Endpoint<Out> {
         Self {
             modio,
             path,

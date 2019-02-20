@@ -1,7 +1,5 @@
 //! Authentication Flow interface
-
 use futures::Future as StdFuture;
-use hyper::client::connect::Connect;
 use url::form_urlencoded;
 
 use crate::Future;
@@ -53,11 +51,8 @@ pub enum Credentials {
 ///     Ok(())
 /// }
 /// ```
-pub struct Auth<C>
-where
-    C: Clone + Connect + 'static,
-{
-    modio: Modio<C>,
+pub struct Auth {
+    modio: Modio,
 }
 
 #[derive(Deserialize)]
@@ -65,8 +60,8 @@ struct AccessToken {
     access_token: String,
 }
 
-impl<C: Clone + Connect> Auth<C> {
-    pub(crate) fn new(modio: Modio<C>) -> Self {
+impl Auth {
+    pub(crate) fn new(modio: Modio) -> Self {
         Self { modio }
     }
 

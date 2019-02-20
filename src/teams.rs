@@ -1,5 +1,4 @@
 //! Team members interface
-
 use url::form_urlencoded;
 
 use crate::prelude::*;
@@ -7,17 +6,14 @@ use crate::prelude::*;
 pub use crate::types::mods::{TeamLevel, TeamMember};
 
 /// Interface for the team members of a mod.
-pub struct Members<C>
-where
-    C: Clone + Connect + 'static,
-{
-    modio: Modio<C>,
+pub struct Members {
+    modio: Modio,
     game: u32,
     mod_id: u32,
 }
 
-impl<C: Clone + Connect + 'static> Members<C> {
-    pub(crate) fn new(modio: Modio<C>, game: u32, mod_id: u32) -> Self {
+impl Members {
+    pub(crate) fn new(modio: Modio, game: u32, mod_id: u32) -> Self {
         Self {
             modio,
             game,

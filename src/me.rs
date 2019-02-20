@@ -1,5 +1,4 @@
 //! Me interface
-
 use crate::files::MyFiles;
 use crate::games::MyGames;
 use crate::mods::MyMods;
@@ -12,15 +11,12 @@ pub use crate::types::mods::Rating;
 pub use crate::types::{Event, EventType};
 
 /// Interface for resources owned by the authenticated user or is team member of.
-pub struct Me<C>
-where
-    C: Clone + Connect + 'static,
-{
-    modio: Modio<C>,
+pub struct Me {
+    modio: Modio,
 }
 
-impl<C: Clone + Connect + 'static> Me<C> {
-    pub(crate) fn new(modio: Modio<C>) -> Self {
+impl Me {
+    pub(crate) fn new(modio: Modio) -> Self {
         Self { modio }
     }
 
@@ -31,19 +27,19 @@ impl<C: Clone + Connect + 'static> Me<C> {
 
     /// Return a reference to an interface that provides access to games the authenticated user
     /// added or is a team member of.
-    pub fn games(&self) -> MyGames<C> {
+    pub fn games(&self) -> MyGames {
         MyGames::new(self.modio.clone())
     }
 
     /// Return a reference to an interface that provides access to mods the authenticated user
     /// added or is a team member of.
-    pub fn mods(&self) -> MyMods<C> {
+    pub fn mods(&self) -> MyMods {
         MyMods::new(self.modio.clone())
     }
 
     /// Return a reference to an interface that provides access to modfiles the authenticated user
     /// uploaded.
-    pub fn files(&self) -> MyFiles<C> {
+    pub fn files(&self) -> MyFiles {
         MyFiles::new(self.modio.clone())
     }
 

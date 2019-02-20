@@ -1,11 +1,9 @@
 //! Modfile interface
-
 use std::path::Path;
-
-use url::form_urlencoded;
 
 use mime::APPLICATION_OCTET_STREAM;
 use tokio_io::AsyncRead;
+use url::form_urlencoded;
 
 use crate::multipart::{FileSource, FileStream};
 use crate::prelude::*;
@@ -13,15 +11,12 @@ use crate::prelude::*;
 pub use crate::types::mods::{Download, File, FileHash};
 
 /// Interface for the modfiles the authenticated user uploaded.
-pub struct MyFiles<C>
-where
-    C: Clone + Connect + 'static,
-{
-    modio: Modio<C>,
+pub struct MyFiles {
+    modio: Modio,
 }
 
-impl<C: Clone + Connect + 'static> MyFiles<C> {
-    pub(crate) fn new(modio: Modio<C>) -> Self {
+impl MyFiles {
+    pub(crate) fn new(modio: Modio) -> Self {
         Self { modio }
     }
 
@@ -47,17 +42,14 @@ impl<C: Clone + Connect + 'static> MyFiles<C> {
 }
 
 /// Interface for the modfiles of a mod.
-pub struct Files<C>
-where
-    C: Clone + Connect + 'static,
-{
-    modio: Modio<C>,
+pub struct Files {
+    modio: Modio,
     game: u32,
     mod_id: u32,
 }
 
-impl<C: Clone + Connect + 'static> Files<C> {
-    pub(crate) fn new(modio: Modio<C>, game: u32, mod_id: u32) -> Self {
+impl Files {
+    pub(crate) fn new(modio: Modio, game: u32, mod_id: u32) -> Self {
         Self {
             modio,
             game,
@@ -90,7 +82,7 @@ impl<C: Clone + Connect + 'static> Files<C> {
     }
 
     /// Return a reference to a file.
-    pub fn get(&self, id: u32) -> FileRef<C> {
+    pub fn get(&self, id: u32) -> FileRef {
         FileRef::new(self.modio.clone(), self.game, self.mod_id, id)
     }
 
@@ -101,18 +93,15 @@ impl<C: Clone + Connect + 'static> Files<C> {
 }
 
 /// Reference interface of a modfile.
-pub struct FileRef<C>
-where
-    C: Clone + Connect + 'static,
-{
-    modio: Modio<C>,
+pub struct FileRef {
+    modio: Modio,
     game: u32,
     mod_id: u32,
     id: u32,
 }
 
-impl<C: Clone + Connect + 'static> FileRef<C> {
-    pub(crate) fn new(modio: Modio<C>, game: u32, mod_id: u32, id: u32) -> Self {
+impl FileRef {
+    pub(crate) fn new(modio: Modio, game: u32, mod_id: u32, id: u32) -> Self {
         Self {
             modio,
             game,

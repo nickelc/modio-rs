@@ -1,21 +1,17 @@
 //! Mod metadata KVP interface
-
 use url::form_urlencoded;
 
 use crate::prelude::*;
 use crate::types::mods::MetadataMap;
 
-pub struct Metadata<C>
-where
-    C: Clone + Connect + 'static,
-{
-    modio: Modio<C>,
+pub struct Metadata {
+    modio: Modio,
     game: u32,
     mod_id: u32,
 }
 
-impl<C: Clone + Connect + 'static> Metadata<C> {
-    pub(crate) fn new(modio: Modio<C>, game: u32, mod_id: u32) -> Self {
+impl Metadata {
+    pub(crate) fn new(modio: Modio, game: u32, mod_id: u32) -> Self {
         Self {
             modio,
             game,
