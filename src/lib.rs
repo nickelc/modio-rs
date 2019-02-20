@@ -143,6 +143,7 @@ use std::time::Duration;
 
 use futures::{future, stream, Future as StdFuture, IntoFuture, Stream as StdStream};
 use mime::Mime;
+use reqwest::header::{HeaderMap, HeaderValue};
 use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, USER_AGENT};
 use reqwest::r#async::multipart::Form;
 use reqwest::r#async::{Body, Client};
@@ -267,7 +268,6 @@ impl Builder {
     pub fn build(self) -> Result<Modio> {
         let config = self.config;
         let host = config.host.unwrap_or_else(|| DEFAULT_HOST.to_string());
-        let agent = config.agent.unwrap_or_else(|| DEFAULT_AGENT.to_string());
         let credentials = config.credentials;
 
         let client = {
@@ -284,16 +284,22 @@ impl Builder {
                 Client::builder()
             };
 
+            let mut headers = HeaderMap::new();
+            let agent = match config.agent {
+                Some(agent) => HeaderValue::from_str(&agent).map_err(|e| http::Error::from(e))?,
+                None => HeaderValue::from_static(DEFAULT_AGENT),
+            };
+            headers.insert(USER_AGENT, agent);
+
             for proxy in config.proxies {
                 builder = builder.proxy(proxy);
             }
 
-            builder.build()?
+            builder.default_headers(headers).build()?
         };
 
         Ok(Modio {
             host,
-            agent,
             credentials,
             client,
         })
@@ -346,7 +352,6 @@ impl Builder {
 #[derive(Clone, Debug)]
 pub struct Modio {
     host: String,
-    agent: String,
     client: Client,
     credentials: Credentials,
 }
@@ -383,7 +388,6 @@ impl Modio {
     {
         Self {
             host: self.host,
-            agent: self.agent,
             client: self.client,
             credentials: credentials.into(),
         }
@@ -573,10 +577,7 @@ impl Modio {
         let instance = self.clone();
 
         let response = url.map_err(Error::from).and_then(move |url| {
-            let mut req = instance
-                .client
-                .request(method, url.clone())
-                .header(USER_AGENT, &*instance.agent);
+            let mut req = instance.client.request(method, url.clone());
 
             if let Credentials::Token(ref token) = instance.credentials {
                 req = req.header(AUTHORIZATION, &*format!("Bearer {}", token));
@@ -661,9 +662,11 @@ impl Modio {
 
         let instance = self.clone();
         let response = url.and_then(move |url| {
-            let mut req = instance.client.request(Method::GET, url);
-            req = req.header(USER_AGENT, &*instance.agent);
-            req.send().map_err(Error::from)
+            instance
+                .client
+                .request(Method::GET, url)
+                .send()
+                .map_err(Error::from)
         });
 
         Box::new(response.and_then(move |response| {

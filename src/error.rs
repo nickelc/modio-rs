@@ -5,6 +5,7 @@ use std::io::Error as IoError;
 use std::result::Result as StdResult;
 use std::time::Duration;
 
+use http::Error as HttpError;
 use reqwest::Error as ReqwestError;
 use reqwest::StatusCode;
 use serde_json::Error as JsonError;
@@ -30,6 +31,7 @@ impl StdError for Error {
         match *self.inner {
             ErrorKind::Download(ref e) => Some(e),
             ErrorKind::Fault { ref error, .. } => Some(error),
+            ErrorKind::Http(ref e) => Some(e),
             ErrorKind::Reqwest(ref e) => Some(e),
             ErrorKind::Io(ref e) => Some(e),
             ErrorKind::Url(ref e) => Some(e),
@@ -70,6 +72,7 @@ pub enum ErrorKind {
     },
     Download(DownloadError),
     Json(JsonError),
+    Http(HttpError),
     Reqwest(ReqwestError),
     Io(IoError),
     Url(ParseError),
@@ -85,6 +88,7 @@ impl fmt::Display for ErrorKind {
             }
             ErrorKind::Download(e) => write!(fmt, "Download failed: {}", e),
             ErrorKind::Json(e) => e.fmt(fmt),
+            ErrorKind::Http(e) => e.fmt(fmt),
             ErrorKind::Reqwest(e) => e.fmt(fmt),
             ErrorKind::Io(e) => e.fmt(fmt),
             ErrorKind::Url(e) => e.fmt(fmt),
@@ -229,6 +233,12 @@ impl<'a> From<&'a str> for Error {
 impl From<JsonError> for Error {
     fn from(err: JsonError) -> Error {
         ErrorKind::Json(err).into()
+    }
+}
+
+impl From<HttpError> for Error {
+    fn from(err: HttpError) -> Error {
+        ErrorKind::Http(err).into()
     }
 }
 
