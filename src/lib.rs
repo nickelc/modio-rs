@@ -180,6 +180,7 @@ pub use crate::auth::Credentials;
 pub use crate::download::DownloadAction;
 pub use crate::error::{Error, Result};
 pub use crate::types::{ModioErrorResponse, ModioListResponse, ModioMessage};
+pub use reqwest::Proxy;
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 const TEST_HOST: &str = "https://api.test.mod.io/v1";
@@ -218,6 +219,7 @@ struct Config {
     host: Option<String>,
     agent: Option<String>,
     credentials: Credentials,
+    proxies: Vec<Proxy>,
     #[cfg(feature = "tls")]
     tls: TlsBackend,
 }
@@ -254,6 +256,7 @@ impl Builder {
                 host: None,
                 agent: None,
                 credentials: credentials.into(),
+                proxies: Vec::new(),
                 #[cfg(feature = "tls")]
                 tls: TlsBackend::default(),
             },
@@ -268,16 +271,24 @@ impl Builder {
         let credentials = config.credentials;
 
         let client = {
-            #[cfg(feature = "tls")]
-            match config.tls {
-                #[cfg(feature = "default-tls")]
-                TlsBackend::Default => Client::builder().use_default_tls().build()?,
-                #[cfg(feature = "rustls-tls")]
-                TlsBackend::Rustls => Client::builder().use_rustls_tls().build()?,
+            let mut builder = {
+                #[cfg(feature = "tls")]
+                match config.tls {
+                    #[cfg(feature = "default-tls")]
+                    TlsBackend::Default => Client::builder().use_default_tls(),
+                    #[cfg(feature = "rustls-tls")]
+                    TlsBackend::Rustls => Client::builder().use_rustls_tls(),
+                }
+
+                #[cfg(not(feature = "tls"))]
+                Client::builder()
+            };
+
+            for proxy in config.proxies {
+                builder = builder.proxy(proxy);
             }
 
-            #[cfg(not(feature = "tls"))]
-            Client::builder().build()?
+            builder.build()?
         };
 
         Ok(Modio {
@@ -307,6 +318,12 @@ impl Builder {
     /// Defaults to `"modio/{version}"`
     pub fn agent<S: Into<String>>(mut self, agent: S) -> Builder {
         self.config.agent = Some(agent.into());
+        self
+    }
+
+    /// Add a `Proxy` to the list of proxies the client will use.
+    pub fn proxy(mut self, proxy: Proxy) -> Builder {
+        self.config.proxies.push(proxy);
         self
     }
 
