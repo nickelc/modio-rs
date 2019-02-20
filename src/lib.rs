@@ -146,7 +146,7 @@ use std::time::Duration;
 
 use futures::{future, stream, Future as StdFuture, IntoFuture, Stream as StdStream};
 use mime::Mime;
-use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, LOCATION, USER_AGENT};
+use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, USER_AGENT};
 use reqwest::r#async::multipart::Form;
 use reqwest::r#async::{Body, Client};
 use reqwest::{Method, StatusCode};
@@ -547,21 +547,7 @@ impl Modio {
             req.send().map_err(Error::from)
         });
 
-        let instance2 = self.clone();
         Box::new(response.and_then(move |response| {
-            let status = response.status();
-            if StatusCode::MOVED_PERMANENTLY == status
-                || StatusCode::TEMPORARY_REDIRECT == status
-                || StatusCode::FOUND == status
-            {
-                let location = response
-                    .headers()
-                    .get(LOCATION)
-                    .and_then(|l| l.to_str().ok());
-                if let Some(location) = location {
-                    return instance2.request_file(&location.to_string(), out);
-                }
-            }
             Box::new(response.into_body().map_err(Error::from).fold(
                 (0, out),
                 |(len, mut out), chunk| {
