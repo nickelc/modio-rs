@@ -5,15 +5,33 @@ cache:
   - cargo
 
 matrix:
+  fast_finish: true
+  allow_failures:
+      - rust: nightly
   include:
-  - rust: stable
-  - rust: beta
-  - rust: nightly
+      - os: osx
+        rust: stable
+
+      - rust: stable
+      - rust: beta
+      - rust: nightly
+
+      # Disable default-tls
+      - rust: stable
+        env: FEATURES="--no-default-features"
+
+      # rustls-tls
+      - rust: stable
+        env: FEATURES="--no-default-features --features rustls-tls"
+
+      # default-tls and rustls-tls
+      - rust: stable
+        env: FEATURES="--features rustls-tls"
+
 
 script:
-  - cargo build --all
-  - cargo build --no-default-features --features rustls
-  - cargo test --all
+  - cargo build $FEATURES
+  - cargo test $FEATURES
 
 before_deploy:
   - cargo doc --all --no-deps
