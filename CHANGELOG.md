@@ -1,3 +1,68 @@
+### v0.4 (not released)
+
+#### Features
+
+* A `Builder` to create a `Modio` client with custom configuration.
+
+```rust
+let creds = Credentials::Token("<token>".to_string());
+let modio = Modio::builder(creds)
+    .host("host")
+    .agent("user-agent")
+    .build()?;
+```
+
+* Proxy support
+
+```rust
+let proxy = modio::Proxy::all("http://127.0.0.1:8888")?;
+let modio = Modio::builder(creds)
+    .proxy(proxy)
+    .build()?;
+```
+
+* Add optional `rustls-tls` feature to use rustls instead of native-tls.
+
+  if compiled with `default-tls` and `rustls-tls` features then it's possible to choose the backend with `Builder::use_default_tls()` and `Builder::use_rustls_tls()`.
+
+* Add methods to provide streams over entities.
+
+```rust
+let mut opts = ModsListOptions::new();
+opts.fulltext("foobar");
+
+let mods = game.mods().iter(&opts).for_each(|m| {
+    // do stuff
+});
+let stats = game.mods().statistics(&Default::default()).for_each(|stats| {
+    // do stuff
+});
+```
+
+* Add type alias `List<T>` for `ModioListResponse<T>`.
+
+* Add Steam authentication `modio.auth().steam_auth("<auth-ticket>")`.
+
+* `modio::me::Event` with new field `game_id`.
+
+#### Breaking Changes
+
+* Switch from `hyper` to `reqwest`. Type parameter for `Modio` is no longer necessary.
+
+* Drop `failure` crate again and implement std error trait.
+
+* Restrict conversion to `Error` to internal use only.
+
+* `Modio::new` and `Modio::host` return `Result<Modio>`.
+
+* `Modio::custom` removed in flavor of `Builder`.
+
+* User-Agent parameter removed from `Modio::new` and `Modio::host`
+
+* Break up event & event types to `modio::me::{Event, EventType}` and `modio::mods::{Event, EventType}`.
+
+* Change `Me::{events, subscriptions, ratings}`, `Mods::{events, statistics}` and `Mod::events` to streams over entities.
+
 ### v0.3 (2018-10-04)
 * builtin method `Modio::download` for downloading files
   ([c4029f1b](https://github.com/nickelc/modio-rs/commit/c4029f1bd9ba099df582f2c5ce10420d7a85db9c))
