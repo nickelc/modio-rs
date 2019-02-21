@@ -18,15 +18,15 @@ fn main() -> Result<(), Error> {
 
     let host = env::var("MODIO_HOST").unwrap_or_else(|_| "https://api.test.mod.io/v1".to_string());
 
-    let api_key = prompt("Enter api key: ")?;
-    let email = prompt("Enter email: ")?;
+    let api_key = prompt("Enter api key: ").expect("read api key");
+    let email = prompt("Enter email: ").expect("read email");
 
-    let mut rt = Runtime::new()?;
+    let mut rt = Runtime::new().expect("new rt");
     let modio = Modio::host(host, Credentials::ApiKey(api_key))?;
 
     println!("{:#?}", rt.block_on(modio.auth().request_code(&email))?);
 
-    let code = prompt("Enter security code: ")?;
+    let code = prompt("Enter security code: ").expect("read code");
     let token = rt.block_on(modio.auth().security_code(&code))?;
     println!("Access token:\n{}", token);
 

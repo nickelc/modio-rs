@@ -30,10 +30,10 @@
 //! use tokio::runtime::Runtime;
 //!
 //! fn main() -> Result<(), Error> {
-//!     let mut rt = Runtime::new()?;
+//!     let mut rt = Runtime::new().expect("new rt");
 //!     let modio = Modio::new(
 //!         Credentials::ApiKey(String::from("user-or-game-api-key")),
-//!     );
+//!     )?;
 //!
 //!     // create some tasks and execute them
 //!     // let result = rt.block_on(task)?;
@@ -52,7 +52,7 @@
 //! use tokio::runtime::Runtime;
 //!
 //! fn main() -> Result<(), Error> {
-//!     let mut rt = Runtime::new()?;
+//!     let mut rt = Runtime::new().expect("new rt");
 //!     let modio = Modio::new(
 //!         Credentials::ApiKey(String::from("user-or-game-api-key")),
 //!     )?;
@@ -94,11 +94,11 @@
 //! use tokio::runtime::Runtime;
 //!
 //! fn main() -> Result<(), Error> {
-//!     let mut rt = Runtime::new()?;
+//!     let mut rt = Runtime::new().expect("new rt");
 //!     let modio = Modio::new(
 //!         Credentials::ApiKey(String::from("user-or-game-api-key")),
 //!     )?;
-//!     let out = File::open("mod.zip")?;
+//!     let out = File::create("mod.zip").expect("new file");
 //!
 //!     // Download the primary file of a mod.
 //!     let action = DownloadAction::Primary {
@@ -139,7 +139,6 @@ use std::collections::BTreeMap;
 use std::io;
 use std::io::prelude::*;
 use std::marker::PhantomData;
-use std::time::Duration;
 
 use futures::{future, stream, Future as StdFuture, IntoFuture, Stream as StdStream};
 use mime::Mime;
@@ -286,7 +285,7 @@ impl Builder {
 
             let mut headers = HeaderMap::new();
             let agent = match config.agent {
-                Some(agent) => HeaderValue::from_str(&agent).map_err(|e| http::Error::from(e))?,
+                Some(agent) => HeaderValue::from_str(&agent).map_err(error::from)?,
                 None => HeaderValue::from_static(DEFAULT_AGENT),
             };
             headers.insert(USER_AGENT, agent);
@@ -295,7 +294,10 @@ impl Builder {
                 builder = builder.proxy(proxy);
             }
 
-            builder.default_headers(headers).build()?
+            builder
+                .default_headers(headers)
+                .build()
+                .map_err(error::from)?
         };
 
         Ok(Modio {
@@ -426,11 +428,11 @@ impl Modio {
     /// use tokio::runtime::Runtime;
     ///
     /// fn main() -> Result<(), Error> {
-    ///     let mut rt = Runtime::new()?;
+    ///     let mut rt = Runtime::new().expect("new rt");
     ///     let modio = Modio::new(
     ///         Credentials::ApiKey(String::from("user-or-game-api-key")),
     ///     )?;
-    ///     let out = File::open("mod.zip")?;
+    ///     let out = File::create("mod.zip").expect("new file");
     ///
     ///     // Download the primary file of a mod.
     ///     let action = DownloadAction::Primary {
@@ -568,15 +570,15 @@ impl Modio {
                     url.query_pairs_mut().append_pair("api_key", api_key);
                     url
                 })
-                .map_err(Error::from)
+                .map_err(error::from)
                 .into_future()
         } else {
-            uri.parse().map_err(Error::from).into_future()
+            uri.parse().map_err(error::from).into_future()
         };
 
         let instance = self.clone();
 
-        let response = url.map_err(Error::from).and_then(move |url| {
+        let response = url.and_then(move |url| {
             let mut req = instance.client.request(method, url.clone());
 
             if let Credentials::Token(ref token) = instance.credentials {
@@ -596,7 +598,7 @@ impl Modio {
                 _ => {}
             }
             req.send()
-                .map_err(Error::from)
+                .map_err(error::from)
                 .and_then(|res| Ok((url, res)))
         });
 
@@ -617,29 +619,24 @@ impl Modio {
                 response
                     .into_body()
                     .concat2()
-                    .map_err(Error::from)
+                    .map_err(error::from)
                     .and_then(move |response_body| {
                         if status.is_success() {
                             serde_json::from_slice::<Out>(&response_body)
                                 .map(|out| (url, out))
-                                .map_err(Error::from)
+                                .map_err(error::from)
                         } else {
-                            let error = match (remaining, reset) {
+                            match (remaining, reset) {
                                 (Some(remaining), Some(reset)) if remaining == 0 => {
-                                    error::ErrorKind::RateLimit {
-                                        reset: Duration::from_secs(reset as u64 * 60),
-                                    }
+                                    Err(error::ratelimit(reset))
                                 }
                                 _ => {
                                     let mer: ModioErrorResponse =
-                                        serde_json::from_slice(&response_body)?;
-                                    error::ErrorKind::Fault {
-                                        code: status,
-                                        error: mer.error,
-                                    }
+                                        serde_json::from_slice(&response_body)
+                                            .map_err(error::from)?;
+                                    Err(error::fault(status, mer.error))
                                 }
-                            };
-                            Err(error.into())
+                            }
                         }
                     }),
             )
@@ -658,7 +655,7 @@ impl Modio {
     where
         W: Write + 'static + Send,
     {
-        let url = Url::parse(uri).map_err(Error::from).into_future();
+        let url = Url::parse(uri).map_err(error::from).into_future();
 
         let instance = self.clone();
         let response = url.and_then(move |url| {
@@ -666,16 +663,16 @@ impl Modio {
                 .client
                 .request(Method::GET, url)
                 .send()
-                .map_err(Error::from)
+                .map_err(error::from)
         });
 
         Box::new(response.and_then(move |response| {
-            Box::new(response.into_body().map_err(Error::from).fold(
+            Box::new(response.into_body().map_err(error::from).fold(
                 (0, out),
                 |(len, mut out), chunk| {
                     io::copy(&mut io::Cursor::new(&chunk), &mut out)
                         .map(|n| (n + len, out))
-                        .map_err(Error::from)
+                        .map_err(error::from)
                         .into_future()
                 },
             ))

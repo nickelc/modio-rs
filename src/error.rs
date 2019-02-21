@@ -5,6 +5,7 @@ use std::io::Error as IoError;
 use std::result::Result as StdResult;
 use std::time::Duration;
 
+use http::header::InvalidHeaderValue;
 use http::Error as HttpError;
 use reqwest::Error as ReqwestError;
 use reqwest::StatusCode;
@@ -17,7 +18,7 @@ pub type Result<T> = StdResult<T, Error>;
 
 macro_rules! future_err {
     ($e:expr) => {
-        Box::new(::futures::future::err($e))
+        Box::new(futures::future::err($e))
     };
 }
 
@@ -33,9 +34,10 @@ impl StdError for Error {
             ErrorKind::Fault { ref error, .. } => Some(error),
             ErrorKind::Http(ref e) => Some(e),
             ErrorKind::Reqwest(ref e) => Some(e),
+            ErrorKind::Json(ref e) => Some(e),
             ErrorKind::Io(ref e) => Some(e),
             ErrorKind::Url(ref e) => Some(e),
-            _ => None,
+            ErrorKind::RateLimit { .. } | ErrorKind::Message(_) => None,
         }
     }
 }
@@ -47,16 +49,29 @@ impl fmt::Display for Error {
 }
 
 impl Error {
-    pub fn kind(&self) -> &ErrorKind {
-        &self.inner
-    }
-}
-
-impl From<ErrorKind> for Error {
-    fn from(kind: ErrorKind) -> Error {
+    fn new(kind: ErrorKind) -> Error {
         Error {
             inner: Box::new(kind),
         }
+    }
+
+    pub fn is_client_error(&self) -> bool {
+        match *self.inner {
+            ErrorKind::Fault { .. } => true,
+            ErrorKind::Reqwest(ref e) => e.is_client_error(),
+            _ => false,
+        }
+    }
+
+    pub fn is_server_error(&self) -> bool {
+        match *self.inner {
+            ErrorKind::Reqwest(ref e) => e.is_server_error(),
+            _ => false,
+        }
+    }
+
+    pub fn kind(&self) -> &ErrorKind {
+        &self.inner
     }
 }
 
@@ -181,83 +196,120 @@ impl fmt::Display for ClientError {
     }
 }
 
+pub(crate) fn fault(code: StatusCode, error: ClientError) -> Error {
+    Error::new(ErrorKind::Fault { code, error })
+}
+
+pub(crate) fn ratelimit(reset: u64) -> Error {
+    Error::new(ErrorKind::RateLimit {
+        reset: Duration::from_secs(reset * 60),
+    })
+}
+
 pub(crate) fn download_no_primary(game_id: u32, mod_id: u32) -> Error {
-    ErrorKind::Download(DownloadError::NoPrimaryFile { game_id, mod_id }).into()
+    Error::new(ErrorKind::Download(DownloadError::NoPrimaryFile {
+        game_id,
+        mod_id,
+    }))
 }
 
 pub(crate) fn download_file_not_found(game_id: u32, mod_id: u32, file_id: u32) -> Error {
-    ErrorKind::Download(DownloadError::FileNotFound {
+    Error::new(ErrorKind::Download(DownloadError::FileNotFound {
         game_id,
         mod_id,
         file_id,
-    })
-    .into()
+    }))
 }
 
 pub(crate) fn download_multiple_files<S>(game_id: u32, mod_id: u32, version: S) -> Error
 where
     S: Into<String>,
 {
-    ErrorKind::Download(DownloadError::MultipleFilesFound {
+    Error::new(ErrorKind::Download(DownloadError::MultipleFilesFound {
         game_id,
         mod_id,
         version: version.into(),
-    })
-    .into()
+    }))
 }
 
 pub(crate) fn download_version_not_found<S>(game_id: u32, mod_id: u32, version: S) -> Error
 where
     S: Into<String>,
 {
-    ErrorKind::Download(DownloadError::VersionNotFound {
+    Error::new(ErrorKind::Download(DownloadError::VersionNotFound {
         game_id,
         mod_id,
         version: version.into(),
-    })
-    .into()
+    }))
 }
 
-impl From<String> for Error {
-    fn from(s: String) -> Error {
-        ErrorKind::Message(s).into()
+impl From<String> for ErrorKind {
+    fn from(s: String) -> ErrorKind {
+        ErrorKind::Message(s)
     }
 }
 
-impl<'a> From<&'a str> for Error {
-    fn from(s: &'a str) -> Error {
-        ErrorKind::Message(s.into()).into()
+impl<'a> From<&'a str> for ErrorKind {
+    fn from(s: &'a str) -> ErrorKind {
+        ErrorKind::Message(s.into())
     }
 }
 
-impl From<JsonError> for Error {
-    fn from(err: JsonError) -> Error {
-        ErrorKind::Json(err).into()
+impl From<JsonError> for ErrorKind {
+    fn from(err: JsonError) -> ErrorKind {
+        ErrorKind::Json(err)
     }
 }
 
-impl From<HttpError> for Error {
-    fn from(err: HttpError) -> Error {
-        ErrorKind::Http(err).into()
+impl From<InvalidHeaderValue> for ErrorKind {
+    fn from(err: InvalidHeaderValue) -> ErrorKind {
+        ErrorKind::Http(err.into())
     }
 }
 
-impl From<ReqwestError> for Error {
-    fn from(err: ReqwestError) -> Error {
-        ErrorKind::Reqwest(err).into()
+impl From<ReqwestError> for ErrorKind {
+    fn from(err: ReqwestError) -> ErrorKind {
+        ErrorKind::Reqwest(err)
     }
 }
 
-impl From<IoError> for Error {
-    fn from(err: IoError) -> Error {
-        ErrorKind::Io(err).into()
+impl From<IoError> for ErrorKind {
+    fn from(err: IoError) -> ErrorKind {
+        ErrorKind::Io(err)
     }
 }
 
-impl From<ParseError> for Error {
-    fn from(err: ParseError) -> Error {
-        ErrorKind::Url(err).into()
+impl From<ParseError> for ErrorKind {
+    fn from(err: ParseError) -> ErrorKind {
+        ErrorKind::Url(err)
     }
+}
+
+#[allow(missing_debug_implementations)]
+pub(crate) struct InternalFrom<T>(pub T);
+
+impl From<InternalFrom<Error>> for Error {
+    fn from(err: InternalFrom<Error>) -> Error {
+        err.0
+    }
+}
+
+impl<T> From<InternalFrom<T>> for Error
+where
+    T: Into<ErrorKind>,
+{
+    fn from(err: InternalFrom<T>) -> Error {
+        Error {
+            inner: Box::new(err.0.into()),
+        }
+    }
+}
+
+pub(crate) fn from<T>(err: T) -> Error
+where
+    T: Into<ErrorKind>,
+{
+    InternalFrom(err).into()
 }
 
 #[cfg(test)]

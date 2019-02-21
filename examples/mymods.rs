@@ -22,7 +22,7 @@ fn main() -> Result<(), Error> {
     let host = env::var("MODIO_HOST").unwrap_or_else(|_| "https://api.test.mod.io/v1".to_string());
 
     // tokio runtime to execute the modio futures.
-    let mut rt = Runtime::new()?;
+    let mut rt = Runtime::new().expect("new rt");
 
     // Creates a `Modio` endpoint for the test environment.
     let modio = Modio::host(host, creds)?;

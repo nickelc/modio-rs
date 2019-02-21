@@ -31,13 +31,13 @@ fn main() -> Result<(), Error> {
     let host = env::var("MODIO_HOST").unwrap_or_else(|_| "https://api.test.mod.io/v1".to_string());
 
     // tokio runtime to execute the modio futures.
-    let mut rt = Runtime::new()?;
+    let mut rt = Runtime::new().expect("new rt");
 
     // Creates a `Modio` endpoint for the test environment.
     let modio = Modio::host(host, creds)?;
 
-    let game_id = prompt("Enter game id: ")?;
-    let mod_id = prompt("Enter mod id: ")?;
+    let game_id = prompt("Enter game id: ").expect("read game id");
+    let mod_id = prompt("Enter mod id: ").expect("read mod id");
 
     // Create the call for `/games/{game_id}/mods/{mod_id}` and wait for the result.
     let m = rt.block_on(modio.mod_(game_id, mod_id).get())?;
