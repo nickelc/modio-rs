@@ -7,26 +7,28 @@ cache:
 matrix:
   fast_finish: true
   allow_failures:
-      - rust: nightly
+    - rust: nightly
   include:
-      - os: osx
-        rust: stable
+    - os: osx
+      rust: stable
 
-      - rust: stable
-      - rust: beta
-      - rust: nightly
+    - rust: stable
+    - rust: beta
+    - rust: nightly
 
-      # Disable default-tls
-      - rust: stable
-        env: FEATURES="--no-default-features"
+    # Disable default-tls
+    - rust: stable
+      env: FEATURES="--no-default-features"
 
-      # rustls-tls
-      - rust: stable
-        env: FEATURES="--no-default-features --features rustls-tls"
+    # rustls-tls
+    - rust: stable
+      env: FEATURES="--no-default-features --features rustls-tls"
 
-      # default-tls and rustls-tls
-      - rust: stable
-        env: FEATURES="--features rustls-tls"
+    # default-tls and rustls-tls
+    - rust: stable
+      env:
+        - DEPLOY_DOCS=1
+        - FEATURES="--features rustls-tls"
 
 
 script:
@@ -41,12 +43,14 @@ deploy:
     skip_cleanup: true
     script: bash .travis/docs.sh
     on:
+      condition: $DEPLOY_DOCS = 1
       branch: master
       rust: stable
   - provider: script
     skip_cleanup: true
     script: bash .travis/docs.sh
     on:
+      condition: $DEPLOY_DOCS = 1
       tags: true
       rust: stable
 
