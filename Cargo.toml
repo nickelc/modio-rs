@@ -36,3 +36,6 @@ default = ["default-tls"]
 tls = []
 default-tls = ["reqwest/default-tls", "tls"]
 rustls-tls = ["reqwest/rustls-tls", "tls"]
+
+[package.metadata.docs.rs]
+all-features = true
