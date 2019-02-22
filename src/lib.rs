@@ -715,42 +715,41 @@ impl Modio {
                                 Some(Box::new(future::ok((item, state))))
                             }
                             _ => {
-                                if state.count > 0 {
-                                    let mut map = BTreeMap::new();
-                                    for (key, value) in state.url.query_pairs().into_owned() {
-                                        map.insert(key, value);
-                                    }
-                                    map.insert(
-                                        "_offset".to_string(),
-                                        (state.offset + state.limit).to_string(),
-                                    );
-                                    state.url.query_pairs_mut().clear();
-                                    state.url.query_pairs_mut().extend_pairs(map.iter());
-                                    let next = Box::new(
-                                        instance
-                                            .request::<_, List<D>>(
-                                                Method::GET,
-                                                &state.url.to_string(),
-                                                RequestBody::Empty,
-                                            )
-                                            .map(move |(url, list)| {
-                                                let mut state = State {
-                                                    url,
-                                                    items: list.data,
-                                                    limit: state.limit,
-                                                    offset: state.offset + state.limit,
-                                                    count: state.count - 1,
-                                                };
-                                                let item = state.items.remove(0);
-                                                state.items.reverse();
-                                                (item, state)
-                                            }),
-                                    )
-                                        as Future<(D, State<D>)>;
-                                    Some(next)
-                                } else {
-                                    None
+                                if state.count == 0 {
+                                    return None;
                                 }
+                                let mut map = BTreeMap::new();
+                                for (key, value) in state.url.query_pairs().into_owned() {
+                                    map.insert(key, value);
+                                }
+                                map.insert(
+                                    "_offset".to_string(),
+                                    (state.offset + state.limit).to_string(),
+                                );
+                                state.url.query_pairs_mut().clear();
+                                state.url.query_pairs_mut().extend_pairs(map.iter());
+                                let next = Box::new(
+                                    instance
+                                        .request::<_, List<D>>(
+                                            Method::GET,
+                                            &state.url.to_string(),
+                                            RequestBody::Empty,
+                                        )
+                                        .map(move |(url, list)| {
+                                            let mut state = State {
+                                                url,
+                                                items: list.data,
+                                                limit: state.limit,
+                                                offset: state.offset + state.limit,
+                                                count: state.count - 1,
+                                            };
+                                            let item = state.items.remove(0);
+                                            state.items.reverse();
+                                            (item, state)
+                                        }),
+                                )
+                                    as Future<(D, State<D>)>;
+                                Some(next)
                             }
                         }
                     })
