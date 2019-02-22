@@ -687,7 +687,7 @@ impl Modio {
         where
             D: DeserializeOwned + 'static + Send,
         {
-            uri: Url,
+            url: Url,
             items: Vec<D>,
             offset: u32,
             limit: u32,
@@ -698,9 +698,9 @@ impl Modio {
 
         Box::new(
             self.request::<_, List<D>>(Method::GET, &(self.host.clone() + uri), RequestBody::Empty)
-                .map(move |(uri, list)| {
+                .map(move |(url, list)| {
                     let mut state = State {
-                        uri,
+                        url,
                         items: list.data,
                         offset: list.offset,
                         limit: list.limit,
@@ -716,28 +716,26 @@ impl Modio {
                             }
                             _ => {
                                 if state.count > 0 {
-                                    let mut url = Url::parse(&state.uri.to_string())
-                                        .expect("failed to parse uri");
                                     let mut map = BTreeMap::new();
-                                    for (key, value) in url.query_pairs().into_owned() {
+                                    for (key, value) in state.url.query_pairs().into_owned() {
                                         map.insert(key, value);
                                     }
                                     map.insert(
                                         "_offset".to_string(),
                                         (state.offset + state.limit).to_string(),
                                     );
-                                    url.query_pairs_mut().clear();
-                                    url.query_pairs_mut().extend_pairs(map.iter());
+                                    state.url.query_pairs_mut().clear();
+                                    state.url.query_pairs_mut().extend_pairs(map.iter());
                                     let next = Box::new(
                                         instance
                                             .request::<_, List<D>>(
                                                 Method::GET,
-                                                &url.to_string(),
+                                                &state.url.to_string(),
                                                 RequestBody::Empty,
                                             )
-                                            .map(move |(uri, list)| {
+                                            .map(move |(url, list)| {
                                                 let mut state = State {
-                                                    uri,
+                                                    url,
                                                     items: list.data,
                                                     limit: state.limit,
                                                     offset: state.offset + state.limit,
