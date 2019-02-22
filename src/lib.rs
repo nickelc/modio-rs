@@ -579,6 +579,7 @@ impl Modio {
         let instance = self.clone();
 
         let response = url.and_then(move |url| {
+            debug!("request: {} {}", method, url);
             let mut req = instance.client.request(method, url.clone());
 
             if let Credentials::Token(ref token) = instance.credentials {
@@ -593,6 +594,7 @@ impl Modio {
                     req = req.body(body);
                 }
                 RequestBody::Form(form) => {
+                    trace!("{:?}", form);
                     req = req.multipart(form);
                 }
                 _ => {}
@@ -621,6 +623,13 @@ impl Modio {
                     .concat2()
                     .map_err(error::from)
                     .and_then(move |response_body| {
+                        if log_enabled!(log::Level::Trace) {
+                            match std::str::from_utf8(&response_body) {
+                                Ok(s) => trace!("response: {}", s),
+                                Err(_) => trace!("response: {:?}", response_body),
+                            }
+                        }
+
                         if status.is_success() {
                             serde_json::from_slice::<Out>(&response_body)
                                 .map(|out| (url, out))
@@ -628,14 +637,12 @@ impl Modio {
                         } else {
                             match (remaining, reset) {
                                 (Some(remaining), Some(reset)) if remaining == 0 => {
+                                    debug!("ratelimit reached: reset in {} mins", reset);
                                     Err(error::ratelimit(reset))
                                 }
-                                _ => {
-                                    let mer: ModioErrorResponse =
-                                        serde_json::from_slice(&response_body)
-                                            .map_err(error::from)?;
-                                    Err(error::fault(status, mer.error))
-                                }
+                                _ => serde_json::from_slice::<ModioErrorResponse>(&response_body)
+                                        .map(|mer| Err(error::fault(status, mer.error)))
+                                        .map_err(error::from)?,
                             }
                         }
                     }),
@@ -655,6 +662,7 @@ impl Modio {
     where
         W: Write + 'static + Send,
     {
+        debug!("downloading file: {}", uri);
         let url = Url::parse(uri).map_err(error::from).into_future();
 
         let instance = self.clone();
@@ -699,6 +707,8 @@ impl Modio {
         Box::new(
             self.request::<_, List<D>>(Method::GET, &(self.host.clone() + uri), RequestBody::Empty)
                 .map(move |(url, list)| {
+                    debug!("streaming result: {}", url);
+
                     let mut state = State {
                         url,
                         items: list.data,
@@ -728,6 +738,9 @@ impl Modio {
                                 );
                                 state.url.query_pairs_mut().clear();
                                 state.url.query_pairs_mut().extend_pairs(map.iter());
+
+                                debug!("loading next page: {}", state.url);
+
                                 let next = Box::new(
                                     instance
                                         .request::<_, List<D>>(

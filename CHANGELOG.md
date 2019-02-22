@@ -45,6 +45,8 @@ let stats = game.mods().statistics(&Default::default()).for_each(|stats| {
 
 * `modio::me::Event` with new field `game_id`.
 
+* debug & trace log for requests & responses.
+
 #### Breaking Changes
 
 * Switch from `hyper` to `reqwest`. Type parameter for `Modio` is no longer necessary.

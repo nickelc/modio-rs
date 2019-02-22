@@ -15,6 +15,7 @@ edition = "2018"
 bytes = "0.4"
 futures = "0.1"
 http = "0.1"
+log = "0.4"
 mime = "0.3"
 reqwest = { version = "0.9", default-features = false }
 serde = "1.0"
