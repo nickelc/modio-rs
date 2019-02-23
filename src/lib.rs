@@ -141,6 +141,7 @@ use std::io::prelude::*;
 use std::marker::PhantomData;
 
 use futures::{future, stream, Future as StdFuture, IntoFuture, Stream as StdStream};
+use log::{debug, log_enabled, trace};
 use mime::Mime;
 use reqwest::header::{HeaderMap, HeaderValue};
 use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, USER_AGENT};
