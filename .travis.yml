@@ -36,7 +36,7 @@ script:
   - cargo test $FEATURES
 
 before_deploy:
-  - cargo doc --all --no-deps
+  - cargo doc --all --no-deps $FEATURES
 
 deploy:
   - provider: script
