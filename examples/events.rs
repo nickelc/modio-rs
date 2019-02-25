@@ -1,6 +1,6 @@
 use std::env;
 use std::process;
-use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use tokio::prelude::*;
 use tokio::runtime::Runtime;
 use tokio::timer::Interval;
@@ -38,15 +38,12 @@ fn main() -> Result<(), Error> {
     // Creates a `Modio` endpoint for the test environment.
     let modio = Modio::host(host, creds)?;
 
-    // Timestamp for the event filter
-    let mut time = current_timestamp();
-
     // Creates an `Interval` task that yields every 10 seconds starting now.
-    let task = Interval::new(Instant::now(), Duration::from_secs(10))
-        .for_each(move |_| {
+    let task = Interval::new_interval(Duration::from_secs(10))
+        .fold(current_timestamp(), move |tstamp, _| {
             // Create an event filter for `date_added` > time.
             let mut opts = EventListOptions::new();
-            opts.date_added(Operator::GreaterThan, time);
+            opts.date_added(Operator::GreaterThan, tstamp);
 
             // Create the call for `/me/events` and wait for the result.
             let print = modio
@@ -63,10 +60,10 @@ fn main() -> Result<(), Error> {
 
             rt.spawn(print);
 
-            // Set a new timestamp for the next run.
-            time = current_timestamp();
-            Ok(())
+            // timestamp for the next run.
+            Ok(current_timestamp())
         })
+        .map(|_| ())
         .map_err(|e| panic!("interval errored; err={:?}", e));
 
     tokio::run(task);
