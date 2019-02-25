@@ -35,9 +35,6 @@ modio = "0.3"
 
 ### Basic Setup
 ```rust
-extern crate modio;
-extern crate tokio;
-
 use modio::{Credentials, Error, Modio};
 use tokio::runtime::Runtime;
 
