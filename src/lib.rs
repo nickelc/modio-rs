@@ -794,7 +794,7 @@ impl Modio {
         )
     }
 
-    fn post_form<M, D>(&self, uri: &str, data: M) -> Future<D>
+    fn post_form<D, M>(&self, uri: &str, data: M) -> Future<D>
     where
         D: DeserializeOwned + 'static + Send,
         M: Into<Form>,
