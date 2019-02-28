@@ -43,6 +43,8 @@ let stats = game.mods().statistics(&Default::default()).for_each(|stats| {
 
 * Add Steam authentication `modio.auth().steam_auth("<auth-ticket>")`.
 
+* Link external accounts `modio.auth().link("email", modio::auth::Service)`.
+
 * `modio::me::Event` with new field `game_id`.
 
 * debug & trace log for requests & responses.

@@ -13,6 +13,15 @@ pub enum Credentials {
     Token(String),
 }
 
+/// Various forms of supported external platforms.
+pub enum Service {
+    Steam(u64),
+    Gog(u64),
+    Twitter(String),
+    Facebook(String),
+    Google(String),
+}
+
 /// Authentication Flow interface to retrieve access tokens. See the [mod.io Authentication
 /// docs](https://docs.mod.io/#email-authentication-flow) for more information.
 ///
@@ -85,7 +94,27 @@ impl Auth {
         )
     }
 
-    /// Get the access token for an encrypted steam user auth ticket. See the [modio
+    /// Link an external account. Requires an auth token from the external platform.
+    ///
+    /// See the [mod.io docs](https://docs.mod.io/#link-external-account) for more information.
+    pub fn link(&self, email: &str, service: Service) -> Future<ModioMessage> {
+        let (service, id) = match service {
+            Service::Steam(id) => ("steam", id.to_string()),
+            Service::Gog(id) => ("gog", id.to_string()),
+            Service::Twitter(id) => ("twitter", id),
+            Service::Facebook(id) => ("facebook", id),
+            Service::Google(id) => ("google", id),
+        };
+        let data = form_urlencoded::Serializer::new(String::new())
+            .append_pair("email", email)
+            .append_pair("service", service)
+            .append_pair("service_id", &id)
+            .finish();
+
+        self.modio.post("/external/link", data)
+    }
+
+    /// Get the access token for an encrypted steam user auth ticket. See the [mod.io
     /// docs](https://docs.mod.io/#authenticate-via-steam) for more information.
     pub fn steam_auth(&self, ticket: &str) -> Future<String> {
         let data = form_urlencoded::Serializer::new(String::new())
