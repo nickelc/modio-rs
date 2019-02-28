@@ -20,8 +20,9 @@ impl Me {
         Self { modio }
     }
 
-    /// Return the authenticated user.
+    /// Return the authenticated user. [required: token]
     pub fn authenticated_user(&self) -> Future<User> {
+        token_required!(self.modio);
         self.modio.get("/me")
     }
 
@@ -44,7 +45,9 @@ impl Me {
     }
 
     /// Provides a stream the events that have been fired specific to the authenticated user.
+    /// [required: token]
     pub fn events(&self, options: &EventListOptions) -> Stream<Event> {
+        token_required!(s self.modio);
         let mut uri = vec!["/me/events".to_owned()];
         let query = options.to_query_params();
         if !query.is_empty() {
@@ -53,8 +56,9 @@ impl Me {
         self.modio.stream(&uri.join("?"))
     }
 
-    /// Provides a stream over all mod's the authenticated user is subscribed to.
+    /// Provides a stream over all mod's the authenticated user is subscribed to. [required: token]
     pub fn subscriptions(&self, options: &SubscriptionsListOptions) -> Stream<Mod> {
+        token_required!(s self.modio);
         let mut uri = vec!["/me/subscribed".to_owned()];
         let query = options.to_query_params();
         if !query.is_empty() {
@@ -63,8 +67,10 @@ impl Me {
         self.modio.stream(&uri.join("?"))
     }
 
-    /// Provides a stream over all mod rating's submitted by the authenticated user.
+    /// Provides a stream over all mod rating's submitted by the authenticated user. [required:
+    /// token]
     pub fn ratings(&self, options: &RatingsListOptions) -> Stream<Rating> {
+        token_required!(s self.modio);
         let mut uri = vec!["/me/ratings".to_owned()];
         let query = options.to_query_params();
         if !query.is_empty() {

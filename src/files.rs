@@ -20,8 +20,9 @@ impl MyFiles {
         Self { modio }
     }
 
-    /// Return all modfiles the authenticated user uploaded.
+    /// Return all modfiles the authenticated user uploaded. [required: token]
     pub fn list(&self, options: &FileListOptions) -> Future<List<File>> {
+        token_required!(self.modio);
         let mut uri = vec!["/me/files".to_owned()];
         let query = options.to_query_params();
         if !query.is_empty() {
@@ -30,8 +31,9 @@ impl MyFiles {
         self.modio.get(&uri.join("?"))
     }
 
-    /// Provides a stream over all modfiles the authenticated user uploaded.
+    /// Provides a stream over all modfiles the authenticated user uploaded. [required: token]
     pub fn iter(&self, options: &FileListOptions) -> Stream<File> {
+        token_required!(s self.modio);
         let mut uri = vec!["/me/files".to_owned()];
         let query = options.to_query_params();
         if !query.is_empty() {
@@ -86,8 +88,9 @@ impl Files {
         FileRef::new(self.modio.clone(), self.game, self.mod_id, id)
     }
 
-    /// Add a file for a mod that this `Files` refers to.
+    /// Add a file for a mod that this `Files` refers to. [required: token]
     pub fn add(&self, options: AddFileOptions) -> Future<File> {
+        token_required!(self.modio);
         self.modio.post_form(&self.path(""), options)
     }
 }
@@ -122,14 +125,16 @@ impl FileRef {
         self.modio.get(&self.path())
     }
 
-    /// Edit details of a modfile.
+    /// Edit details of a modfile. [required: token]
     pub fn edit(&self, options: &EditFileOptions) -> Future<File> {
+        token_required!(self.modio);
         let params = options.to_query_params();
         self.modio.put(&self.path(), params)
     }
 
-    /// Delete a modfile.
+    /// Delete a modfile. [required: token]
     pub fn delete(&self) -> Future<()> {
+        token_required!(self.modio);
         self.modio.delete(&self.path(), RequestBody::Empty)
     }
 }

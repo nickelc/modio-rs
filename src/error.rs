@@ -16,12 +16,6 @@ pub use crate::types::ClientError;
 
 pub type Result<T> = StdResult<T, Error>;
 
-macro_rules! future_err {
-    ($e:expr) => {
-        Box::new(futures::future::err($e))
-    };
-}
-
 #[derive(Debug)]
 pub struct Error {
     inner: Box<ErrorKind>,
@@ -37,7 +31,7 @@ impl StdError for Error {
             ErrorKind::Json(ref e) => Some(e),
             ErrorKind::Io(ref e) => Some(e),
             ErrorKind::Url(ref e) => Some(e),
-            ErrorKind::RateLimit { .. } | ErrorKind::Message(_) => None,
+            ErrorKind::Auth(_) | ErrorKind::RateLimit { .. } | ErrorKind::Message(_) => None,
         }
     }
 }
@@ -78,6 +72,7 @@ impl Error {
 #[derive(Debug)]
 pub enum ErrorKind {
     Message(String),
+    Auth(AuthenticationError),
     Fault {
         code: StatusCode,
         error: ClientError,
@@ -97,6 +92,7 @@ impl fmt::Display for ErrorKind {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             ErrorKind::Message(msg) => msg.fmt(fmt),
+            ErrorKind::Auth(e) => e.fmt(fmt),
             ErrorKind::Fault { code, error } => write!(fmt, "{}: {}", code, error),
             ErrorKind::RateLimit { reset } => {
                 write!(fmt, "API rate limit reached. Try again in {:?}.", reset)
@@ -107,6 +103,21 @@ impl fmt::Display for ErrorKind {
             ErrorKind::Reqwest(e) => e.fmt(fmt),
             ErrorKind::Io(e) => e.fmt(fmt),
             ErrorKind::Url(e) => e.fmt(fmt),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum AuthenticationError {
+    ApiKeyRequired,
+    TokenRequired,
+}
+
+impl fmt::Display for AuthenticationError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            AuthenticationError::ApiKeyRequired => f.write_str("API key is required"),
+            AuthenticationError::TokenRequired => f.write_str("Authentication token is required"),
         }
     }
 }
@@ -194,6 +205,14 @@ impl fmt::Display for ClientError {
         }
         fmt::Display::fmt(&buf, f)
     }
+}
+
+pub(crate) fn apikey_required() -> Error {
+    Error::new(ErrorKind::Auth(AuthenticationError::ApiKeyRequired))
+}
+
+pub(crate) fn token_required() -> Error {
+    Error::new(ErrorKind::Auth(AuthenticationError::TokenRequired))
 }
 
 pub(crate) fn fault(code: StatusCode, error: ClientError) -> Error {

@@ -46,8 +46,9 @@ impl Comments {
         self.modio.get(&self.path(&format!("/{}", id)))
     }
 
-    /// Delete a comment by id.
+    /// Delete a comment by id. [required: token]
     pub fn delete(&self, id: u32) -> Future<()> {
+        token_required!(self.modio);
         self.modio
             .delete(&self.path(&format!("/{}", id)), RequestBody::Empty)
     }

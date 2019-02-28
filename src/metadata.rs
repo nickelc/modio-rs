@@ -44,11 +44,13 @@ impl Metadata {
 
     /// Add metadata for a mod that this `Metadata` refers to.
     pub fn add(&self, metadata: &MetadataMap) -> Future<ModioMessage> {
+        token_required!(self.modio);
         self.modio.post(&self.path(), metadata.to_query_params())
     }
 
     /// Delete metadata for a mod that this `Metadata` refers to.
     pub fn delete(&self, metadata: &MetadataMap) -> Future<()> {
+        token_required!(self.modio);
         self.modio.delete(&self.path(), metadata.to_query_params())
     }
 }

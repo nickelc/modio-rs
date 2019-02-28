@@ -73,16 +73,18 @@ impl Auth {
         Self { modio }
     }
 
-    /// Request a security code be sent to the email of the user.
+    /// Request a security code be sent to the email of the user. [required: apikey]
     pub fn request_code(&self, email: &str) -> Future<ModioMessage> {
+        apikey_required!(self.modio);
         let data = form_urlencoded::Serializer::new(String::new())
             .append_pair("email", email)
             .finish();
         self.modio.post("/oauth/emailrequest", data)
     }
 
-    /// Get the access token for a security code.
+    /// Get the access token for a security code. [required: apikey]
     pub fn security_code(&self, code: &str) -> Future<String> {
+        apikey_required!(self.modio);
         let data = form_urlencoded::Serializer::new(String::new())
             .append_pair("security_code", code)
             .finish();
@@ -98,6 +100,7 @@ impl Auth {
     ///
     /// See the [mod.io docs](https://docs.mod.io/#link-external-account) for more information.
     pub fn link(&self, email: &str, service: Service) -> Future<ModioMessage> {
+        token_required!(self.modio);
         let (service, id) = match service {
             Service::Steam(id) => ("steam", id.to_string()),
             Service::Gog(id) => ("gog", id.to_string()),
@@ -114,9 +117,11 @@ impl Auth {
         self.modio.post("/external/link", data)
     }
 
-    /// Get the access token for an encrypted steam user auth ticket. See the [mod.io
-    /// docs](https://docs.mod.io/#authenticate-via-steam) for more information.
+    /// Get the access token for an encrypted steam user auth ticket. [required: apikey]
+    ///
+    /// See the [mod.io docs](https://docs.mod.io/#authenticate-via-steam) for more information.
     pub fn steam_auth(&self, ticket: &str) -> Future<String> {
+        apikey_required!(self.modio);
         let data = form_urlencoded::Serializer::new(String::new())
             .append_pair("appdata", ticket)
             .finish();

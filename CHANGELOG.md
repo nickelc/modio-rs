@@ -47,6 +47,8 @@ let stats = game.mods().statistics(&Default::default()).for_each(|stats| {
 
 * `modio::me::Event` with new field `game_id`.
 
+* Validate credentials before sending requests.
+
 * debug & trace log for requests & responses.
 
 #### Breaking Changes

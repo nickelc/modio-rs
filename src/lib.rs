@@ -151,12 +151,14 @@ use reqwest::{Method, StatusCode};
 use serde::de::DeserializeOwned;
 use url::Url;
 
+#[macro_use]
+mod macros;
+
 pub mod auth;
 #[macro_use]
 pub mod filter;
 pub mod comments;
 pub mod download;
-#[macro_use]
 pub mod error;
 pub mod files;
 pub mod games;
@@ -356,7 +358,7 @@ impl Builder {
 pub struct Modio {
     host: String,
     client: Client,
-    credentials: Credentials,
+    pub(crate) credentials: Credentials,
 }
 
 impl Modio {
@@ -886,12 +888,16 @@ where
         self.modio.stream(&self.path)
     }
 
+    /// [required: token]
     pub fn add<T: AddOptions + QueryParams>(&self, options: &T) -> Future<ModioMessage> {
+        token_required!(self.modio);
         let params = options.to_query_params();
         self.modio.post(&self.path, params)
     }
 
+    /// [required: token]
     pub fn delete<T: DeleteOptions + QueryParams>(&self, options: &T) -> Future<()> {
+        token_required!(self.modio);
         let params = options.to_query_params();
         self.modio.delete(&self.path, params)
     }

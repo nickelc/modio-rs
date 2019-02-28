@@ -22,8 +22,9 @@ impl MyGames {
         Self { modio }
     }
 
-    /// List all games the authenticated user added or is team member of.
+    /// List all games the authenticated user added or is team member of. [required: token]
     pub fn list(&self, options: &GamesListOptions) -> Future<List<Game>> {
+        token_required!(self.modio);
         let mut uri = vec!["/me/games".to_owned()];
         let query = options.to_query_params();
         if !query.is_empty() {
@@ -33,7 +34,9 @@ impl MyGames {
     }
 
     /// Provides a stream over all games the authenticated user added or is team member of.
+    /// [required: token]
     pub fn iter(&self, options: &GamesListOptions) -> Stream<Game> {
+        token_required!(s self.modio);
         let mut uri = vec!["/me/games".to_owned()];
         let query = options.to_query_params();
         if !query.is_empty() {
@@ -118,8 +121,9 @@ impl GameRef {
         Endpoint::new(self.modio.clone(), self.path("/tags"))
     }
 
-    /// Add or edit new media to a game.
+    /// Add or edit new media to a game. [required: token]
     pub fn add_media(&self, media: GameMediaOptions) -> Future<ModioMessage> {
+        token_required!(self.modio);
         self.modio.post_form(&self.path("/media"), media)
     }
 }

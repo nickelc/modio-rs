@@ -12,7 +12,9 @@ impl Reports {
         Self { modio }
     }
 
+    /// Submit a report for any resource on mod.io. [required: token]
     pub fn submit(&self, report: &Report) -> Future<ModioMessage> {
+        token_required!(self.modio);
         self.modio.post("/report", report.to_query_params())
     }
 }

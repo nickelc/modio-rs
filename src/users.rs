@@ -40,8 +40,9 @@ impl Users {
         self.modio.get(&format!("/users/{}", id))
     }
 
-    /// Return the user that is the original submitter of a resource.
+    /// Return the user that is the original submitter of a resource. [required: token]
     pub fn get_owner(&self, resource: Resource) -> Future<User> {
+        token_required!(self.modio);
         let params = resource.to_query_params();
         self.modio.post("/general/ownership", params)
     }

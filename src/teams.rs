@@ -45,20 +45,23 @@ impl Members {
         self.modio.stream(&uri.join("?"))
     }
 
-    /// Add a team member by email.
+    /// Add a team member by email. [required: token]
     pub fn add(&self, options: &InviteTeamMemberOptions) -> Future<ModioMessage> {
+        token_required!(self.modio);
         let params = options.to_query_params();
         self.modio.post(&self.path(""), params)
     }
 
-    /// Edit a team member by id.
+    /// Edit a team member by id. [required: token]
     pub fn edit(&self, id: u32, options: &EditTeamMemberOptions) -> Future<ModioMessage> {
+        token_required!(self.modio);
         let params = options.to_query_params();
         self.modio.put(&self.path(&format!("/{}", id)), params)
     }
 
-    /// Delete a team member by id.
+    /// Delete a team member by id. [required: token]
     pub fn delete(&self, id: u32) -> Future<()> {
+        token_required!(self.modio);
         self.modio
             .delete(&self.path(&format!("/{}", id)), RequestBody::Empty)
     }

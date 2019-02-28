@@ -29,8 +29,9 @@ impl MyMods {
         Self { modio }
     }
 
-    /// List all mods the authenticated user added or is team member of.
+    /// List all mods the authenticated user added or is team member of. [required: token]
     pub fn list(&self, options: &ModsListOptions) -> Future<List<Mod>> {
+        token_required!(self.modio);
         let mut uri = vec!["/me/mods".to_owned()];
         let query = options.to_query_params();
         if !query.is_empty() {
@@ -39,8 +40,10 @@ impl MyMods {
         self.modio.get(&uri.join("?"))
     }
 
-    /// Provides a stream over mods the authenticated user added or is team member of.
+    /// Provides a stream over mods the authenticated user added or is team member of. [required:
+    /// token]
     pub fn iter(&self, options: &ModsListOptions) -> Stream<Mod> {
+        token_required!(s self.modio);
         let mut uri = vec!["/me/mods".to_owned()];
         let query = options.to_query_params();
         if !query.is_empty() {
@@ -90,8 +93,9 @@ impl Mods where {
         self.modio.stream(&uri.join("?"))
     }
 
-    /// Add a mod and return the newly created Modio mod object.
+    /// Add a mod and return the newly created Modio mod object. [required: token]
     pub fn add(&self, options: AddModOptions) -> Future<Mod> {
+        token_required!(self.modio);
         self.modio.post_form(&self.path(""), options)
     }
 
@@ -187,25 +191,29 @@ impl ModRef {
         Members::new(self.modio.clone(), self.game, self.id)
     }
 
-    /// Edit details for a mod.
+    /// Edit details for a mod. [required: token]
     pub fn edit(&self, options: &EditModOptions) -> Future<Mod> {
+        token_required!(self.modio);
         let params = options.to_query_params();
         self.modio.put(&self.path(""), params)
     }
 
-    /// Add new media to a mod.
+    /// Add new media to a mod. [required: token]
     pub fn add_media(&self, options: AddMediaOptions) -> Future<ModioMessage> {
+        token_required!(self.modio);
         self.modio.post_form(&self.path("/media"), options)
     }
 
-    /// Delete media from a mod.
+    /// Delete media from a mod. [required: token]
     pub fn delete_media(&self, options: &DeleteMediaOptions) -> Future<()> {
+        token_required!(self.modio);
         self.modio
             .delete(&self.path("/media"), options.to_query_params())
     }
 
-    /// Submit a positive or negative rating for a mod.
+    /// Submit a positive or negative rating for a mod. [required: token]
     pub fn rate(&self, rating: Rating) -> Future<()> {
+        token_required!(self.modio);
         let params = rating.to_query_params();
         Box::new(
             self.modio
@@ -221,8 +229,9 @@ impl ModRef {
         )
     }
 
-    /// Subscribe the authenticated user to a mod.
+    /// Subscribe the authenticated user to a mod. [required: token]
     pub fn subscribe(&self) -> Future<()> {
+        token_required!(self.modio);
         Box::new(
             self.modio
                 .post::<Mod, _>(&self.path("/subscribe"), RequestBody::Empty)
@@ -237,8 +246,9 @@ impl ModRef {
         )
     }
 
-    /// Unsubscribe the authenticated user from a mod.
+    /// Unsubscribe the authenticated user from a mod. [required: token]
     pub fn unsubscribe(&self) -> Future<()> {
+        token_required!(self.modio);
         Box::new(
             self.modio
                 .delete(&self.path("/subscribe"), RequestBody::Empty)
