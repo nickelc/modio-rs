@@ -199,9 +199,13 @@ impl ModRef {
     }
 
     /// Add new media to a mod. [required: token]
-    pub fn add_media(&self, options: AddMediaOptions) -> Future<ModioMessage> {
+    pub fn add_media(&self, options: AddMediaOptions) -> Future<String> {
         token_required!(self.modio);
-        self.modio.post_form(&self.path("/media"), options)
+        Box::new(
+            self.modio
+                .post_form::<ModioMessage, _>(&self.path("/media"), options)
+                .map(|m| m.message),
+        )
     }
 
     /// Delete media from a mod. [required: token]

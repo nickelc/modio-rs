@@ -43,9 +43,13 @@ impl Metadata {
     }
 
     /// Add metadata for a mod that this `Metadata` refers to.
-    pub fn add(&self, metadata: &MetadataMap) -> Future<ModioMessage> {
+    pub fn add(&self, metadata: &MetadataMap) -> Future<String> {
         token_required!(self.modio);
-        self.modio.post(&self.path(), metadata.to_query_params())
+        Box::new(
+            self.modio
+                .post::<ModioMessage, _>(&self.path(), metadata.to_query_params())
+                .map(|m| m.message),
+        )
     }
 
     /// Delete metadata for a mod that this `Metadata` refers to.

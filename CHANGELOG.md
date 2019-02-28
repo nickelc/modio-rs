@@ -63,7 +63,9 @@ let stats = game.mods().statistics(&Default::default()).for_each(|stats| {
 
 * `Modio::custom` removed in flavor of `Builder`.
 
-* User-Agent parameter removed from `Modio::new` and `Modio::host`
+* User-Agent parameter removed from `Modio::new` and `Modio::host`.
+
+* No longer expose `ModioMessage`.
 
 * Break up event & event types to `modio::me::{Event, EventType}` and `modio::mods::{Event, EventType}`.
 

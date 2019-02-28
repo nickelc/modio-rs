@@ -177,12 +177,13 @@ use crate::games::{GameRef, Games};
 use crate::me::Me;
 use crate::mods::{ModRef, Mods};
 use crate::reports::Reports;
+use crate::types::ModioMessage;
 use crate::users::Users;
 
 pub use crate::auth::Credentials;
 pub use crate::download::DownloadAction;
 pub use crate::error::{Error, Result};
-pub use crate::types::{ModioErrorResponse, ModioListResponse, ModioMessage};
+pub use crate::types::{ModioErrorResponse, ModioListResponse};
 pub use reqwest::Proxy;
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
@@ -201,7 +202,7 @@ mod prelude {
 
     pub use crate::List;
     pub use crate::Modio;
-    pub use crate::ModioMessage;
+    pub(crate) use crate::ModioMessage;
     pub use crate::QueryParams;
     pub(crate) use crate::RequestBody;
     pub use crate::{AddOptions, DeleteOptions, Endpoint};
@@ -889,10 +890,14 @@ where
     }
 
     /// [required: token]
-    pub fn add<T: AddOptions + QueryParams>(&self, options: &T) -> Future<ModioMessage> {
+    pub fn add<T: AddOptions + QueryParams>(&self, options: &T) -> Future<String> {
         token_required!(self.modio);
         let params = options.to_query_params();
-        self.modio.post(&self.path, params)
+        Box::new(
+            self.modio
+                .post::<ModioMessage, _>(&self.path, params)
+                .map(|m| m.message),
+        )
     }
 
     /// [required: token]

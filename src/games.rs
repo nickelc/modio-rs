@@ -122,9 +122,13 @@ impl GameRef {
     }
 
     /// Add or edit new media to a game. [required: token]
-    pub fn add_media(&self, media: GameMediaOptions) -> Future<ModioMessage> {
+    pub fn add_media(&self, media: GameMediaOptions) -> Future<String> {
         token_required!(self.modio);
-        self.modio.post_form(&self.path("/media"), media)
+        Box::new(
+            self.modio
+                .post_form::<ModioMessage, _>(&self.path("/media"), media)
+                .map(|m| m.message),
+        )
     }
 }
 

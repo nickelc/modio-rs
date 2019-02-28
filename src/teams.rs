@@ -46,17 +46,25 @@ impl Members {
     }
 
     /// Add a team member by email. [required: token]
-    pub fn add(&self, options: &InviteTeamMemberOptions) -> Future<ModioMessage> {
+    pub fn add(&self, options: &InviteTeamMemberOptions) -> Future<String> {
         token_required!(self.modio);
         let params = options.to_query_params();
-        self.modio.post(&self.path(""), params)
+        Box::new(
+            self.modio
+                .post::<ModioMessage, _>(&self.path(""), params)
+                .map(|m| m.message),
+        )
     }
 
     /// Edit a team member by id. [required: token]
-    pub fn edit(&self, id: u32, options: &EditTeamMemberOptions) -> Future<ModioMessage> {
+    pub fn edit(&self, id: u32, options: &EditTeamMemberOptions) -> Future<String> {
         token_required!(self.modio);
         let params = options.to_query_params();
-        self.modio.put(&self.path(&format!("/{}", id)), params)
+        Box::new(
+            self.modio
+                .put::<ModioMessage, _>(&self.path(&format!("/{}", id)), params)
+                .map(|m| m.message),
+        )
     }
 
     /// Delete a team member by id. [required: token]
