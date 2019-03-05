@@ -1,4 +1,6 @@
 //! Authentication Flow interface
+use std::fmt;
+
 use futures::Future as StdFuture;
 use url::form_urlencoded;
 
@@ -11,6 +13,15 @@ use crate::ModioMessage;
 pub enum Credentials {
     ApiKey(String),
     Token(String),
+}
+
+impl fmt::Display for Credentials {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Credentials::ApiKey(key) => f.write_str(&key),
+            Credentials::Token(token) => f.write_str(&token),
+        }
+    }
 }
 
 /// Various forms of supported external platforms.
@@ -51,7 +62,7 @@ pub enum Service {
 ///     let token = rt.block_on(modio.auth().security_code(&code))?;
 ///
 ///     // Consume the endpoint and create an endpoint with new credentials.
-///     let _modio = modio.with_credentials(Credentials::Token(token));
+///     let _modio = modio.with_credentials(token);
 ///
 ///     Ok(())
 /// }
@@ -84,7 +95,7 @@ impl Auth {
     }
 
     /// Get the access token for a security code. [required: apikey]
-    pub fn security_code(&self, code: &str) -> Future<String> {
+    pub fn security_code(&self, code: &str) -> Future<Credentials> {
         apikey_required!(self.modio);
         let data = form_urlencoded::Serializer::new(String::new())
             .append_pair("security_code", code)
@@ -93,7 +104,7 @@ impl Auth {
         Box::new(
             self.modio
                 .post::<AccessToken, _>("/oauth/emailexchange", data)
-                .map(|token| token.access_token),
+                .map(|token| Credentials::Token(token.access_token)),
         )
     }
 
@@ -123,7 +134,7 @@ impl Auth {
     ///
     /// See the [mod.io docs](https://docs.mod.io/#authenticate-via-gog-galaxy) for more
     /// information.
-    pub fn gog_auth(&self, ticket: &str) -> Future<String> {
+    pub fn gog_auth(&self, ticket: &str) -> Future<Credentials> {
         apikey_required!(self.modio);
         let data = form_urlencoded::Serializer::new(String::new())
             .append_pair("appdata", ticket)
@@ -132,14 +143,14 @@ impl Auth {
         Box::new(
             self.modio
                 .post::<AccessToken, _>("/external/galaxyauth", data)
-                .map(|token| token.access_token),
+                .map(|token| Credentials::Token(token.access_token)),
         )
     }
 
     /// Get the access token for an encrypted steam app ticket. [required: apikey]
     ///
     /// See the [mod.io docs](https://docs.mod.io/#authenticate-via-steam) for more information.
-    pub fn steam_auth(&self, ticket: &str) -> Future<String> {
+    pub fn steam_auth(&self, ticket: &str) -> Future<Credentials> {
         apikey_required!(self.modio);
         let data = form_urlencoded::Serializer::new(String::new())
             .append_pair("appdata", ticket)
@@ -148,7 +159,7 @@ impl Auth {
         Box::new(
             self.modio
                 .post::<AccessToken, _>("/external/steamauth", data)
-                .map(|token| token.access_token),
+                .map(|token| Credentials::Token(token.access_token)),
         )
     }
 }
