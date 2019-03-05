@@ -146,7 +146,7 @@ use mime::Mime;
 use reqwest::header::{HeaderMap, HeaderValue};
 use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, USER_AGENT};
 use reqwest::r#async::multipart::Form;
-use reqwest::r#async::{Body, Client};
+use reqwest::r#async::{Body, Client, ClientBuilder};
 use reqwest::{Method, StatusCode};
 use serde::de::DeserializeOwned;
 use url::Url;
@@ -223,6 +223,7 @@ struct Config {
     host: Option<String>,
     agent: Option<String>,
     credentials: Credentials,
+    builder: Option<ClientBuilder>,
     proxies: Vec<Proxy>,
     #[cfg(feature = "tls")]
     tls: TlsBackend,
@@ -260,6 +261,7 @@ impl Builder {
                 host: None,
                 agent: None,
                 credentials: credentials.into(),
+                builder: None,
                 proxies: Vec::new(),
                 #[cfg(feature = "tls")]
                 tls: TlsBackend::default(),
@@ -275,16 +277,17 @@ impl Builder {
 
         let client = {
             let mut builder = {
+                let builder = config.builder.unwrap_or_else(Client::builder);
                 #[cfg(feature = "tls")]
                 match config.tls {
                     #[cfg(feature = "default-tls")]
-                    TlsBackend::Default => Client::builder().use_default_tls(),
+                    TlsBackend::Default => builder.use_default_tls(),
                     #[cfg(feature = "rustls-tls")]
-                    TlsBackend::Rustls => Client::builder().use_rustls_tls(),
+                    TlsBackend::Rustls => builder.use_rustls_tls(),
                 }
 
                 #[cfg(not(feature = "tls"))]
-                Client::builder()
+                builder
             };
 
             let mut headers = HeaderMap::new();
@@ -309,6 +312,15 @@ impl Builder {
             credentials,
             client,
         })
+    }
+
+    /// Configure the underlying `reqwest` client using `reqwest::async::ClientBuilder`.
+    pub fn client<F>(mut self, f: F) -> Builder
+    where
+        F: FnOnce(ClientBuilder) -> ClientBuilder,
+    {
+        self.config.builder = Some(f(Client::builder()));
+        self
     }
 
     /// Set the mod.io api host.
