@@ -17,9 +17,6 @@ pub enum Credentials {
 pub enum Service {
     Steam(u64),
     Gog(u64),
-    Twitter(String),
-    Facebook(String),
-    Google(String),
 }
 
 /// Authentication Flow interface to retrieve access tokens. See the [mod.io Authentication
@@ -108,9 +105,6 @@ impl Auth {
         let (service, id) = match service {
             Service::Steam(id) => ("steam", id.to_string()),
             Service::Gog(id) => ("gog", id.to_string()),
-            Service::Twitter(id) => ("twitter", id),
-            Service::Facebook(id) => ("facebook", id),
-            Service::Google(id) => ("google", id),
         };
         let data = form_urlencoded::Serializer::new(String::new())
             .append_pair("email", email)
@@ -125,7 +119,24 @@ impl Auth {
         )
     }
 
-    /// Get the access token for an encrypted steam user auth ticket. [required: apikey]
+    /// Get the access token for an encrypted gog app ticket. [required: apikey]
+    ///
+    /// See the [mod.io docs](https://docs.mod.io/#authenticate-via-gog-galaxy) for more
+    /// information.
+    pub fn gog_auth(&self, ticket: &str) -> Future<String> {
+        apikey_required!(self.modio);
+        let data = form_urlencoded::Serializer::new(String::new())
+            .append_pair("appdata", ticket)
+            .finish();
+
+        Box::new(
+            self.modio
+                .post::<AccessToken, _>("/external/galaxyauth", data)
+                .map(|token| token.access_token),
+        )
+    }
+
+    /// Get the access token for an encrypted steam app ticket. [required: apikey]
     ///
     /// See the [mod.io docs](https://docs.mod.io/#authenticate-via-steam) for more information.
     pub fn steam_auth(&self, ticket: &str) -> Future<String> {
