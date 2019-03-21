@@ -29,6 +29,7 @@ url_serde = "0.2"
 
 [dev-dependencies]
 dotenv = "0.13"
+env_logger = { version = "0.6", default-features = false }
 md5 = "0.3"
 tokio = "0.1"
 

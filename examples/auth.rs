@@ -15,6 +15,7 @@ fn prompt(prompt: &str) -> io::Result<String> {
 
 fn main() -> Result<(), Error> {
     dotenv::dotenv().ok();
+    env_logger::init();
 
     let host = env::var("MODIO_HOST").unwrap_or_else(|_| "https://api.test.mod.io/v1".to_string());
 

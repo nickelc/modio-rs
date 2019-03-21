@@ -18,6 +18,7 @@ fn prompt(prompt: &str) -> io::Result<u32> {
 
 fn main() -> Result<(), Error> {
     dotenv::dotenv().ok();
+    env_logger::init();
 
     // Fetch the access token / api key from the environment of the current process.
     let creds = match (env::var("MODIO_TOKEN"), env::var("MODIO_API_KEY")) {
