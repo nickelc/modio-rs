@@ -28,10 +28,10 @@ let modio = Modio::builder(creds)
 * Add methods to provide streams over entities.
 
 ```rust
-let mut opts = ModsListOptions::new();
-opts.fulltext("foobar");
+use modio::filter::prelude::*;
+let filter = Fulltext::eq("foobar");
 
-let mods = game.mods().iter(&opts).for_each(|m| {
+let mods = game.mods().iter(&filter).for_each(|m| {
     // do stuff
 });
 let stats = game.mods().statistics(&Default::default()).for_each(|stats| {
@@ -54,6 +54,26 @@ let stats = game.mods().statistics(&Default::default()).for_each(|stats| {
 * debug & trace log for requests & responses.
 
 #### Breaking Changes
+
+* Rewrite of filtering and sorting.
+
+  ```rust
+  // Before
+  use modio::filter::{Operator, Order};
+
+  let mut opts = ModsListOptions::new();
+  opts.game_id(Operator::In, vec![1, 2]);
+  opts.limit(10);
+  opts.sort_by(ModsListOptions::POPULAR, Order::Desc);
+
+  // After
+  use modio::filter::prelude::*;
+  use modio::mods::filters::{GameId, Popular};
+
+  let filter = GameId::_in(vec![1, 2])
+      .limit(10)
+      .order_by(Popular::desc());
+  ```
 
 * Switch from `hyper` to `reqwest`. Type parameter for `Modio` is no longer necessary.
 

@@ -200,6 +200,7 @@ mod prelude {
     pub use reqwest::r#async::Body;
     pub use reqwest::StatusCode;
 
+    pub use crate::filter::Filter;
     pub use crate::List;
     pub use crate::Modio;
     pub(crate) use crate::ModioMessage;
@@ -520,15 +521,17 @@ impl Modio {
                 version,
                 policy,
             } => {
-                let mut opts = files::FileListOptions::new();
-                opts.version(filter::Operator::Equals, version.clone());
-                opts.sort_by(files::FileListOptions::DATE_ADDED, filter::Order::Desc);
-                opts.limit(2);
+                use files::filters::{DateAdded, Version};
+                use filter::prelude::*;
+
+                let filter = Version::eq(version.clone())
+                    .order_by(DateAdded::desc())
+                    .limit(2);
 
                 Box::new(
                     self.mod_(game_id, mod_id)
                         .files()
-                        .list(&opts)
+                        .list(&filter)
                         .and_then(move |list| {
                             use crate::download::ResolvePolicy::*;
 
@@ -917,49 +920,6 @@ where
         token_required!(self.modio);
         let params = options.to_query_params();
         self.modio.delete(&self.path, params)
-    }
-}
-
-filter_options! {
-    /// Options used to filter event listings.
-    ///
-    /// # Filter parameters
-    /// - id
-    /// - game_id
-    /// - mod_id
-    /// - user_id
-    /// - date_added
-    /// - event_type
-    ///
-    /// # Sorting
-    /// - id
-    ///
-    /// See the [modio docs](https://docs.mod.io/#events) for more information.
-    ///
-    /// By default this returns up to `100` items. You can limit the result using `limit` and
-    /// `offset`.
-    /// # Example
-    /// ```
-    /// use modio::filter::{Order, Operator};
-    /// use modio::EventListOptions;
-    /// use modio::mods::EventType;
-    ///
-    /// let mut opts = EventListOptions::new();
-    /// opts.id(Operator::GreaterThan, 1024);
-    /// opts.event_type(Operator::Equals, EventType::ModfileChanged);
-    /// ```
-    #[derive(Debug)]
-    pub struct EventListOptions {
-        Filters
-        - id = "id";
-        - game_id = "game_id";
-        - mod_id = "mod_id";
-        - user_id = "user_id";
-        - date_added = "date_added";
-        - event_type = "event_type";
-
-        Sort
-        - ID = "id";
     }
 }
 

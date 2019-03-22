@@ -3,8 +3,7 @@ use std::process;
 use tokio::runtime::Runtime;
 
 use modio::error::Error;
-use modio::filter::{Operator, Order};
-use modio::mods::ModsListOptions;
+use modio::filter::prelude::*;
 use modio::{auth::Credentials, Modio};
 
 fn main() -> Result<(), Error> {
@@ -30,15 +29,14 @@ fn main() -> Result<(), Error> {
 
     // Create a mod filter for `id` in (1043, 1041), limited to 30 results
     // and ordered by `id` desc.
-    let mut opts = ModsListOptions::new();
-    opts.id(Operator::In, vec![1043, 1041]);
-    opts.limit(30);
-    opts.offset(0);
-    opts.sort_by(ModsListOptions::ID, Order::Desc);
+    let filter = Id::_in(vec![1043, 1041])
+        .limit(30)
+        .offset(0)
+        .order_by(Id::desc());
 
     // Create the call for `/me/mods` and wait for the `ModioListResponse<Mod>`
     // result.
-    for mod_ in rt.block_on(modio.me().mods().list(&opts))? {
+    for mod_ in rt.block_on(modio.me().mods().list(&filter))? {
         println!("{:#?}", mod_);
     }
     Ok(())

@@ -21,10 +21,12 @@ impl MyFiles {
     }
 
     /// Return all modfiles the authenticated user uploaded. [required: token]
-    pub fn list(&self, options: &FileListOptions) -> Future<List<File>> {
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn list(&self, filter: &Filter) -> Future<List<File>> {
         token_required!(self.modio);
         let mut uri = vec!["/me/files".to_owned()];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -32,10 +34,12 @@ impl MyFiles {
     }
 
     /// Provides a stream over all modfiles the authenticated user uploaded. [required: token]
-    pub fn iter(&self, options: &FileListOptions) -> Stream<File> {
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn iter(&self, filter: &Filter) -> Stream<File> {
         token_required!(s self.modio);
         let mut uri = vec!["/me/files".to_owned()];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -64,9 +68,11 @@ impl Files {
     }
 
     /// Return all files that are published for a mod this `Files` refers to.
-    pub fn list(&self, options: &FileListOptions) -> Future<List<File>> {
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn list(&self, filter: &Filter) -> Future<List<File>> {
         let mut uri = vec![self.path("")];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -74,9 +80,11 @@ impl Files {
     }
 
     /// Provides a stream over all files that are published for a mod this `Files` refers to.
-    pub fn iter(&self, options: &FileListOptions) -> Stream<File> {
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn iter(&self, filter: &Filter) -> Stream<File> {
         let mut uri = vec![self.path("")];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -139,63 +147,59 @@ impl FileRef {
     }
 }
 
-filter_options! {
-    /// Options used to filter modfile listings
-    ///
-    /// # Filter parameters
-    /// - _q
-    /// - id
-    /// - mod_id
-    /// - date_added
-    /// - date_scanned
-    /// - virus_status
-    /// - virus_positive
-    /// - filesize
-    /// - filehash
-    /// - filename
-    /// - version
-    /// - changelog
-    ///
-    /// # Sorting
-    /// - id
-    /// - mod_id
-    /// - date_added
-    /// - version
-    ///
-    /// See [modio docs](https://docs.mod.io/#get-all-modfiles) for more information.
-    ///
-    /// By default this returns up to `100` items. You can limit the result using `limit` and
-    /// `offset`.
-    /// # Example
-    /// ```
-    /// use modio::filter::{Order, Operator};
-    /// use modio::files::FileListOptions;
-    ///
-    /// let mut opts = FileListOptions::new();
-    /// opts.id(Operator::In, vec![1, 2]);
-    /// opts.sort_by(FileListOptions::ID, Order::Desc);
-    /// ```
-    #[derive(Debug)]
-    pub struct FileListOptions {
-        Filters
-        - id = "id";
-        - mod_id = "mod_id";
-        - date_added = "date_added";
-        - date_scanned = "date_scanned";
-        - virus_status = "virus_status";
-        - virus_positive = "virus_positive";
-        - filesize = "filesize";
-        - filehash = "filehash";
-        - filename = "filename";
-        - version = "version";
-        - changelog = "changelog";
+/// Modfile filters and sorting.
+///
+/// # Filters
+/// - Fulltext
+/// - Id
+/// - ModId
+/// - DateAdded
+/// - DateScanned
+/// - VirusStatus
+/// - VirusPositive
+/// - Filesize
+/// - Filehash
+/// - Filename
+/// - Version
+/// - Changelog
+///
+/// # Sorting
+/// - Id
+/// - ModId
+/// - DateAdded
+/// - Version
+///
+/// See [modio docs](https://docs.mod.io/#get-all-modfiles) for more information.
+///
+/// By default this returns up to `100` items. You can limit the result by using `limit` and
+/// `offset`.
+///
+/// # Example
+/// ```
+/// use modio::filter::prelude::*;
+/// use modio::files::filters::Id;
+///
+/// let filter = Id::_in(vec![1, 2]).order_by(Id::desc());
+/// ```
+#[rustfmt::skip]
+pub mod filters {
+    #[doc(inline)]
+    pub use crate::filter::prelude::Fulltext;
+    #[doc(inline)]
+    pub use crate::filter::prelude::Id;
+    #[doc(inline)]
+    pub use crate::filter::prelude::ModId;
+    #[doc(inline)]
+    pub use crate::filter::prelude::DateAdded;
 
-        Sort
-        - ID = "id";
-        - MOD_ID = "mod_id";
-        - DATE_ADDED = "date_added";
-        - VERSION = "version";
-    }
+    filter!(DateScanned, DATE_SCANNED, "date_scanned", Eq, NotEq, In, Cmp);
+    filter!(VirusStatus, VIRUS_STATUS, "virus_status", Eq, NotEq, In, Cmp);
+    filter!(VirusPositive, VIRUS_POSITIVE, "virus_positive", Eq, NotEq, In, Cmp);
+    filter!(Filesize, FILESIZE, "filesize", Eq, NotEq, In, Cmp, OrderBy);
+    filter!(Filehash, FILEHASH, "filehash", Eq, NotEq, In, Like);
+    filter!(Filename, FILENAME, "filename", Eq, NotEq, In, Like);
+    filter!(Version, VERSION, "version", Eq, NotEq, In, Like, OrderBy);
+    filter!(Changelog, CHANGELOG, "changelog", Eq, NotEq, In, Like);
 }
 
 pub struct AddFileOptions {

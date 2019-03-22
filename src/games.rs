@@ -23,10 +23,12 @@ impl MyGames {
     }
 
     /// List all games the authenticated user added or is team member of. [required: token]
-    pub fn list(&self, options: &GamesListOptions) -> Future<List<Game>> {
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn list(&self, filter: &Filter) -> Future<List<Game>> {
         token_required!(self.modio);
         let mut uri = vec!["/me/games".to_owned()];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -35,10 +37,12 @@ impl MyGames {
 
     /// Provides a stream over all games the authenticated user added or is team member of.
     /// [required: token]
-    pub fn iter(&self, options: &GamesListOptions) -> Stream<Game> {
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn iter(&self, filter: &Filter) -> Stream<Game> {
         token_required!(s self.modio);
         let mut uri = vec!["/me/games".to_owned()];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -61,9 +65,11 @@ impl Games {
     }
 
     /// List all games.
-    pub fn list(&self, options: &GamesListOptions) -> Future<List<Game>> {
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn list(&self, filter: &Filter) -> Future<List<Game>> {
         let mut uri = vec![self.path("")];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -71,9 +77,11 @@ impl Games {
     }
 
     /// Provides a stream over all games.
-    pub fn iter(&self, options: &GamesListOptions) -> Stream<Game> {
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn iter(&self, filter: &Filter) -> Stream<Game> {
         let mut uri = vec![self.path("")];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -132,79 +140,79 @@ impl GameRef {
     }
 }
 
-filter_options! {
-    /// Options used to filter game listings.
-    ///
-    /// # Filter parameters
-    /// - _q
-    /// - id
-    /// - status
-    /// - submitted_by
-    /// - date_added
-    /// - date_updated
-    /// - date_live
-    /// - name
-    /// - name_id
-    /// - summary
-    /// - instructions_url
-    /// - ugc_name
-    /// - presentation_option
-    /// - submission_option
-    /// - curation_option
-    /// - community_options
-    /// - revenue_options
-    /// - api_access_options
-    /// - maturity_options
-    ///
-    /// # Sorting
-    /// - id
-    /// - status
-    /// - name
-    /// - name_id
-    /// - date_updated
-    ///
-    /// See [modio docs](https://docs.mod.io/#get-all-games) for more information.
-    ///
-    /// By default this returns up to `100` items. You can limit the result using `limit` and
-    /// `offset`.
-    /// # Example
-    /// ```
-    /// use modio::filter::{Order, Operator};
-    /// use modio::games::GamesListOptions;
-    ///
-    /// let mut opts = GamesListOptions::new();
-    /// opts.id(Operator::In, vec![1, 2]);
-    /// opts.sort_by(GamesListOptions::ID, Order::Desc);
-    /// ```
-    #[derive(Debug)]
-    pub struct GamesListOptions {
-        Filters
-        - id = "id";
-        - status = "status";
-        - submitted_by = "submitted_by";
-        - date_added = "date_added";
-        - date_updated = "date_updated";
-        - date_live = "date_live";
-        - name = "name";
-        - name_id = "name_id";
-        - summary = "summary";
-        - instructions_url = "instructions_url";
-        - ugc_name = "ugc_name";
-        - presentation_option = "presentation_option";
-        - submission_option = "submission_option";
-        - curation_option = "curation_option";
-        - community_options = "community_options";
-        - revenue_options = "revenue_options";
-        - api_access_options = "api_access_options";
-        - maturity_options = "maturity_options";
+/// Game filters and sorting.
+///
+/// # Filters
+/// - Fulltext
+/// - Id
+/// - Status
+/// - SubmittedBy
+/// - DateAdded
+/// - DateUpdated
+/// - DateLive
+/// - Name
+/// - NameId
+/// - Summary
+/// - InstructionsUrl
+/// - UgcName
+/// - PresentationOption
+/// - SubmissionOption
+/// - CurationOption
+/// - CommunityOptions
+/// - RevenueOptions
+/// - ApiAccessOptions
+/// - MaturityOptions
+///
+/// # Sorting
+/// - Id
+/// - Status
+/// - Name
+/// - NameId
+/// - DateUpdated
+///
+/// See [modio docs](https://docs.mod.io/#get-all-games) for more information.
+///
+/// By default this returns up to `100` items. You can limit the result by using `limit` and
+/// `offset`.
+///
+/// # Example
+/// ```
+/// use modio::filter::prelude::*;
+/// use modio::games::filters::Id;
+///
+/// let filter = Id::_in(vec![1, 2]).order_by(Id::desc());
+/// ```
+#[rustfmt::skip]
+pub mod filters {
+    #[doc(inline)]
+    pub use crate::filter::prelude::Fulltext;
+    #[doc(inline)]
+    pub use crate::filter::prelude::Id;
+    #[doc(inline)]
+    pub use crate::filter::prelude::Name;
+    #[doc(inline)]
+    pub use crate::filter::prelude::NameId;
+    #[doc(inline)]
+    pub use crate::filter::prelude::Status;
+    #[doc(inline)]
+    pub use crate::filter::prelude::DateAdded;
+    #[doc(inline)]
+    pub use crate::filter::prelude::DateUpdated;
+    #[doc(inline)]
+    pub use crate::filter::prelude::DateLive;
+    #[doc(inline)]
+    pub use crate::filter::prelude::SubmittedBy;
 
-        Sort
-        - ID = "id";
-        - STATUS = "status";
-        - NAME = "name";
-        - NAME_ID = "name_id";
-        - DATE_UPDATED = "date_updated";
-    }
+    filter!(Summary, SUMMARY, "summary", Eq, NotEq, Like);
+    filter!(InstructionsUrl, INSTRUCTIONS_URL, "instructions_url", Eq, NotEq, In, Like);
+    filter!(UgcName, UGC_NAME, "ugc_name", Eq, NotEq, In, Like);
+    filter!(PresentationOption, PRESENTATION_OPTION, "presentation_option", Eq, NotEq, In, Cmp, Bit);
+    filter!(SubmissionOption, SUBMISSION_OPTION, "submission_option", Eq, NotEq, In, Cmp, Bit);
+    filter!(CurationOption, CURATION_OPTION, "curation_option", Eq, NotEq, In, Cmp, Bit);
+    filter!(CommunityOptions, COMMUNITY_OPTIONS, "community_options", Eq, NotEq, In, Cmp, Bit);
+    filter!(RevenueOptions, REVENUE_OPTIONS, "revenue_options", Eq, NotEq, In, Cmp, Bit);
+    filter!(ApiAccessOptions, API_ACCESS_OPTIONS, "api_access_options", Eq, NotEq, In, Cmp, Bit);
+    filter!(MaturityOptions, MATURITY_OPTIONS, "maturity_options", Eq, NotEq, In, Cmp, Bit);
 }
 
 pub struct AddTagsOptions {

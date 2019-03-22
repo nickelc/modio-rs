@@ -26,9 +26,11 @@ impl Members {
     }
 
     /// List all team members.
-    pub fn list(&self, options: &TeamMemberListOptions) -> Future<List<TeamMember>> {
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn list(&self, filter: &Filter) -> Future<List<TeamMember>> {
         let mut uri = vec![self.path("")];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -36,9 +38,11 @@ impl Members {
     }
 
     /// Provids a stream over all team members.
-    pub fn iter(&self, options: &TeamMemberListOptions) -> Stream<TeamMember> {
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn iter(&self, filter: &Filter) -> Stream<TeamMember> {
         let mut uri = vec![self.path("")];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -75,51 +79,47 @@ impl Members {
     }
 }
 
-filter_options! {
-    /// Options used to filter team member listings
-    ///
-    /// # Filter parameters
-    /// - _q
-    /// - id
-    /// - user_id
-    /// - username
-    /// - level
-    /// - date_added
-    /// - position
-    ///
-    /// # Sorting
-    /// - id
-    /// - user_id
-    /// - username
-    ///
-    /// See [modio docs](https://docs.mod.io/#get-all-mod-team-members) for more information.
-    ///
-    /// By default this returns up to `100` items. You can limit the result using `limit` and
-    /// `offset`.
-    /// # Example
-    /// ```
-    /// use modio::filter::{Order, Operator};
-    /// use modio::teams::TeamMemberListOptions;
-    ///
-    /// let mut opts = TeamMemberListOptions::new();
-    /// opts.id(Operator::In, vec![1, 2]);
-    /// opts.sort_by(TeamMemberListOptions::ID, Order::Desc);
-    /// ```
-    #[derive(Debug)]
-    pub struct TeamMemberListOptions {
-        Filters
-        - id = "id";
-        - user_id = "user_id";
-        - username = "username";
-        - level = "level";
-        - date_added = "date_added";
-        - position = "position";
+/// Team member filters and sorting.
+///
+/// # Filters
+/// - Fulltext
+/// - Id
+/// - UserId
+/// - Username
+/// - Level
+/// - DateAdded
+/// - Position
+///
+/// # Sorting
+/// - Id
+/// - UserId
+/// - Username
+///
+/// See [modio docs](https://docs.mod.io/#get-all-mod-team-members) for more information.
+///
+/// By default this returns up to `100` items. You can limit the result by using `limit` and
+/// `offset`.
+///
+/// # Example
+/// ```
+/// use modio::filter::prelude::*;
+/// use modio::teams::filters::Id;
+///
+/// let filter = Id::_in(vec![1, 2]).order_by(Id::desc());
+/// ```
+#[rustfmt::skip]
+pub mod filters {
+    #[doc(inline)]
+    pub use crate::filter::prelude::Fulltext;
+    #[doc(inline)]
+    pub use crate::filter::prelude::Id;
+    #[doc(inline)]
+    pub use crate::filter::prelude::DateAdded;
 
-        Sort
-        - ID = "id";
-        - USER_ID = "user_id";
-        - USERNAME = "username";
-    }
+    filter!(UserId, USER_ID, "user_id", Eq, NotEq, In, Cmp, OrderBy);
+    filter!(Username, USERNAME, "username", Eq, NotEq, In, Like, OrderBy);
+    filter!(Level, LEVEL, "level", Eq, NotEq, In, Cmp, OrderBy);
+    filter!(Position, POSITION, "position", Eq, NotEq, In, Like, OrderBy);
 }
 
 #[derive(Debug)]

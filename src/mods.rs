@@ -11,7 +11,6 @@ use crate::multipart::{FileSource, FileStream};
 use crate::prelude::*;
 use crate::teams::Members;
 use crate::Comments;
-use crate::EventListOptions;
 
 pub use crate::types::mods::{
     Dependency, Event, EventType, Image, Media, MetadataMap, Mod, Popularity, Ratings, Statistics,
@@ -30,10 +29,12 @@ impl MyMods {
     }
 
     /// List all mods the authenticated user added or is team member of. [required: token]
-    pub fn list(&self, options: &ModsListOptions) -> Future<List<Mod>> {
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn list(&self, filter: &Filter) -> Future<List<Mod>> {
         token_required!(self.modio);
         let mut uri = vec!["/me/mods".to_owned()];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -42,10 +43,12 @@ impl MyMods {
 
     /// Provides a stream over mods the authenticated user added or is team member of. [required:
     /// token]
-    pub fn iter(&self, options: &ModsListOptions) -> Stream<Mod> {
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn iter(&self, filter: &Filter) -> Stream<Mod> {
         token_required!(s self.modio);
         let mut uri = vec!["/me/mods".to_owned()];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -74,9 +77,11 @@ impl Mods where {
     }
 
     /// List all mods.
-    pub fn list(&self, options: &ModsListOptions) -> Future<List<Mod>> {
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn list(&self, filter: &Filter) -> Future<List<Mod>> {
         let mut uri = vec![self.path("")];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -84,9 +89,11 @@ impl Mods where {
     }
 
     /// Provides a stream over all mods of the game.
-    pub fn iter(&self, options: &ModsListOptions) -> Stream<Mod> {
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn iter(&self, filter: &Filter) -> Stream<Mod> {
         let mut uri = vec![self.path("")];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -100,9 +107,11 @@ impl Mods where {
     }
 
     /// Provides a stream over the statistics for all mods of a game.
-    pub fn statistics(&self, options: &StatsListOptions) -> Stream<Statistics> {
+    ///
+    /// See [Filters and sorting](filters/stats/index.html).
+    pub fn statistics(&self, filter: &Filter) -> Stream<Statistics> {
         let mut uri = vec![self.path("/stats")];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -110,9 +119,11 @@ impl Mods where {
     }
 
     /// Provides a stream over the event log for all mods of a game sorted by latest event first.
-    pub fn events(&self, options: &EventListOptions) -> Stream<Event> {
+    ///
+    /// See [Filters and sorting](filters/events/index.html).
+    pub fn events(&self, filter: &Filter) -> Stream<Event> {
         let mut uri = vec![self.path("/events")];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -177,9 +188,11 @@ impl ModRef {
     }
 
     /// Provides a stream over the event log for a mod sorted by latest event first.
-    pub fn events(&self, options: &EventListOptions) -> Stream<Event> {
+    ///
+    /// See [Filters and sorting](filters/events/index.html).
+    pub fn events(&self, filter: &Filter) -> Stream<Event> {
         let mut uri = vec![self.path("/events")];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -267,6 +280,166 @@ impl ModRef {
     }
 }
 
+/// Mod filters & sorting
+///
+/// # Filters
+/// - Fulltext
+/// - Id
+/// - GameId
+/// - Status
+/// - Visible
+/// - SubmittedBy
+/// - DateAdded
+/// - DateUpdated
+/// - DateLive
+/// - MaturityOption
+/// - Name
+/// - NameId
+/// - Summary
+/// - Description
+/// - Homepage
+/// - Modfile
+/// - MetadataBlob
+/// - MetadataKVP
+/// - Tags
+///
+/// # Sorting
+/// - Id
+/// - Name
+/// - Downloads
+/// - Popular
+/// - Ratings
+/// - Subscribers
+///
+/// See the [modio docs](https://docs.mod.io/#get-all-mods) for more information.
+///
+/// By default this returns up to `100` items. you can limit the result by using `limit` and
+/// `offset`.
+///
+/// # Example
+/// ```
+/// use modio::filter::prelude::*;
+/// use modio::mods::filters::Id;
+/// use modio::mods::filters::GameId;
+/// use modio::mods::filters::Tags;
+///
+/// let filter = Id::_in(vec![1, 2]).order_by(Id::desc());
+///
+/// let filter = GameId::eq(6).and(Tags::eq("foobar")).limit(10);
+/// ```
+#[rustfmt::skip]
+pub mod filters {
+    #[doc(inline)]
+    pub use crate::filter::prelude::Fulltext;
+    #[doc(inline)]
+    pub use crate::filter::prelude::Id;
+    #[doc(inline)]
+    pub use crate::filter::prelude::Name;
+    #[doc(inline)]
+    pub use crate::filter::prelude::NameId;
+    #[doc(inline)]
+    pub use crate::filter::prelude::Status;
+    #[doc(inline)]
+    pub use crate::filter::prelude::DateAdded;
+    #[doc(inline)]
+    pub use crate::filter::prelude::DateUpdated;
+    #[doc(inline)]
+    pub use crate::filter::prelude::DateLive;
+    #[doc(inline)]
+    pub use crate::filter::prelude::SubmittedBy;
+
+    filter!(GameId, GAME_ID, "game_id", Eq, NotEq, In, Cmp, OrderBy);
+    filter!(Visible, VISIBLE, "visible", Eq);
+    filter!(MaturityOption, MATURITY_OPTION, "maturity_option", Eq, Cmp, Bit);
+    filter!(Summary, SUMMARY, "summary", Like);
+    filter!(Description, DESCRIPTION, "description", Like);
+    filter!(Homepage, HOMEPAGE, "homepage_url", Eq, NotEq, Like, In);
+    filter!(Modfile, MODFILE, "modfile", Eq, NotEq, In, Cmp);
+    filter!(MetadataBlob, METADATA_BLOB, "metadata_blob", Eq, NotEq, Like);
+    filter!(MetadataKVP, METADATA_KVP, "metadata_kvp", Eq, NotEq, Like);
+    filter!(Tags, TAGS, "tags", Eq, NotEq, Like);
+
+    filter!(Downloads, DOWNLOADS, "downloads", OrderBy);
+    filter!(Popular, POPULAR, "popular", OrderBy);
+    filter!(Ratings, RATINGS, "ratings", OrderBy);
+    filter!(Subscribers, SUBSCRIBERS, "subscribers", OrderBy);
+
+    /// Mod event filters and sorting.
+    ///
+    /// # Filters
+    /// - Id
+    /// - ModId
+    /// - UserId
+    /// - DateAdded
+    /// - EventType
+    ///
+    /// # Sorting
+    /// - Id
+    /// - DateAdded
+    ///
+    /// See the [modio docs](https://docs.mod.io/#events) for more information.
+    ///
+    /// By default this returns up to `100` items. You can limit the result by using `limit` and
+    /// `offset`.
+    ///
+    /// # Example
+    /// ```
+    /// use modio::filter::prelude::*;
+    /// use modio::mods::filters::events::EventType as Filter;
+    /// use modio::mods::EventType;
+    ///
+    /// let filter = Id::gt(1024).and(Filter::eq(EventType::ModfileChanged));
+    /// ```
+    pub mod events {
+        #[doc(inline)]
+        pub use crate::filter::prelude::Id;
+        #[doc(inline)]
+        pub use crate::filter::prelude::ModId;
+        #[doc(inline)]
+        pub use crate::filter::prelude::DateAdded;
+
+        filter!(UserId, USER_ID, "user_id", Eq, NotEq, In, Cmp, OrderBy);
+        filter!(EventType, EVENT_TYPE, "event_type", Eq, NotEq, In, OrderBy);
+    }
+
+    /// Mod statistics filters & sorting
+    ///
+    /// # Filters
+    /// - ModId
+    /// - Popularity
+    /// - Downloads
+    /// - Subscribers
+    /// - RatingsPositive
+    /// - RatingsNegative
+    ///
+    /// # Sorting
+    /// - ModId
+    /// - Popularity
+    /// - Downloads
+    /// - Subscribers
+    /// - RatingsPositive
+    /// - RatingsNegative
+    ///
+    /// # Example
+    /// ```
+    /// use modio::filter::prelude::*;
+    /// use modio::mods::filters::stats::ModId;
+    /// use modio::mods::filters::stats::Popularity;
+    ///
+    /// let filter = ModId::_in(vec![1, 2]).order_by(Popularity::desc());
+    /// ```
+    pub mod stats {
+        #[doc(inline)]
+        pub use crate::filter::prelude::ModId;
+
+        filter!(Popularity, POPULARITY, "popularity_rank_position", Eq, NotEq, In, Cmp, OrderBy);
+        filter!(Downloads, DOWNLOADS, "downloads_total", Eq, NotEq, In, Cmp, OrderBy);
+        filter!(Subscribers, SUBSCRIBERS, "subscribers_total", Eq, NotEq, In, Cmp, OrderBy);
+        filter!(RatingsPositive, RATINGS_POSITIVE, "ratings_positive", Eq, NotEq, In, Cmp, OrderBy);
+        filter!(RatingsNegative, RATINGS_NEGATIVE, "ratings_negative", Eq, NotEq, In, Cmp, OrderBy);
+    }
+}
+
 #[derive(Clone, Copy)]
 pub enum Rating {
     Positive,
@@ -282,83 +455,6 @@ impl QueryParams for Rating {
                 Rating::Positive => 1,
             }
         )
-    }
-}
-
-filter_options! {
-    /// Options used to filter mod listings.
-    ///
-    /// # Filter parameters
-    /// - _q
-    /// - id
-    /// - game_id
-    /// - status
-    /// - visible
-    /// - submitted_by
-    /// - date_added
-    /// - date_updated
-    /// - date_live
-    /// - maturity_option
-    /// - name
-    /// - name_id
-    /// - summary
-    /// - description
-    /// - homepage_url
-    /// - modfile
-    /// - metadata_blob
-    /// - metadata_kvp
-    /// - tags
-    ///
-    /// # Sorting
-    /// - id
-    /// - name
-    /// - downloads
-    /// - popular
-    /// - ratings
-    /// - subscribers
-    ///
-    /// See the [modio docs](https://docs.mod.io/#get-all-mods) for more information.
-    ///
-    /// By default this returns up to `100` items. You can limit the result using `limit` and
-    /// `offset`.
-    /// # Example
-    /// ```
-    /// use modio::filter::{Order, Operator};
-    /// use modio::mods::ModsListOptions;
-    ///
-    /// let mut opts = ModsListOptions::new();
-    /// opts.id(Operator::In, vec![1, 2]);
-    /// opts.sort_by(ModsListOptions::ID, Order::Desc);
-    /// ```
-    #[derive(Debug)]
-    pub struct ModsListOptions {
-        Filters
-        - id = "id";
-        - game_id = "game_id";
-        - status = "status";
-        - visible = "visible";
-        - submitted_by = "submitted_by";
-        - date_added = "date_added";
-        - date_updated = "date_updated";
-        - date_live = "date_live";
-        - maturity_option = "maturity_option";
-        - name = "name";
-        - name_id = "name_id";
-        - summary = "summary";
-        - description = "description";
-        - homepage_url = "homepage_url";
-        - modfile = "modfile";
-        - metadata_blob = "metadata_blob";
-        - metadata_kvp = "metadata_kvp";
-        - tags = "tags";
-
-        Sort
-        - ID = "id";
-        - NAME = "name";
-        - DOWNLOADS = "downloads";
-        - POPULAR = "popular";
-        - RATINGS = "ratings";
-        - SUBSCRIBERS = "subscribers";
     }
 }
 
@@ -868,57 +964,5 @@ impl DeleteMediaOptionsBuilder {
             youtube: self.0.youtube.clone(),
             sketchfab: self.0.sketchfab.clone(),
         }
-    }
-}
-
-filter_options! {
-    /// Options used to filter mod statistics.
-    ///
-    /// # Filter parameters
-    /// - mod_id
-    /// - popularity_rank_position
-    /// - downloads_total
-    /// - subscribers_total
-    /// - ratings_positive
-    /// - ratings_negative
-    ///
-    /// # Sorting
-    /// - mod_id
-    /// - popularity_rank_position
-    /// - downloads_total
-    /// - subscribers_total
-    /// - ratings_positive
-    /// - ratings_negative
-    ///
-    /// See the [mod.io docs](https://docs.mod.io/#get-all-mod-stats) for more information.
-    ///
-    /// By default this returns up to `100` items. You can limit the result using `limit` and
-    /// `offset`.
-    /// # Example
-    /// ```
-    /// use modio::filter::{Order, Operator};
-    /// use modio::mods::StatsListOptions;
-    ///
-    /// let mut opts = StatsListOptions::new();
-    /// opts.mod_id(Operator::In, vec![1, 2]);
-    /// opts.sort_by(StatsListOptions::MOD_ID, Order::Desc);
-    /// ```
-    #[derive(Debug)]
-    pub struct StatsListOptions {
-        Filters
-        - mod_id = "mod_id";
-        - downloads = "downloads_total";
-        - subscribers = "subscribers_total";
-        - rank_position = "popularity_rank_position";
-        - ratings_positive = "ratings_positive";
-        - ratings_negative = "ratings_negative";
-
-        Sort
-        - MOD_ID = "mod_id";
-        - DOWNLOADS = "downloads_total";
-        - SUBSCRIBERS = "subscribers_total";
-        - RANK_POSITION = "popularity_rank_position";
-        - RATINGS_POSITIVE = "ratings_positive";
-        - RATINGS_NEGATIVE = "ratings_negative";
     }
 }

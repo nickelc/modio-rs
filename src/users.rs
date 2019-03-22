@@ -16,9 +16,11 @@ impl Users {
     }
 
     /// List all users registered on [mod.io](https:://mod.io).
-    pub fn list(&self, options: &UsersListOptions) -> Future<List<User>> {
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn list(&self, filter: &Filter) -> Future<List<User>> {
         let mut uri = vec!["/users".into()];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -26,9 +28,11 @@ impl Users {
     }
 
     /// Provides a stream over all users registered on [mod.io](https:://mod.io).
-    pub fn iter(&self, options: &UsersListOptions) -> Stream<User> {
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn iter(&self, filter: &Filter) -> Stream<User> {
         let mut uri = vec!["/users".into()];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -46,6 +50,47 @@ impl Users {
         let params = resource.to_query_params();
         self.modio.post("/general/ownership", params)
     }
+}
+
+/// Options used to filter user listings
+///
+/// # Filter parameters
+/// - Fulltext
+/// - Id
+/// - NameId
+/// - DateOnline
+/// - Username
+/// - Timezone
+/// - Language
+///
+/// # Sorting
+/// - Id
+/// - Username
+///
+/// See [modio docs](https://docs.mod.io/#get-all-users) for more information.
+///
+/// By default this returns up to `100` items. You can limit the result by using `limit` and
+/// `offset`.
+/// # Example
+/// ```
+/// use modio::filter::prelude::*;
+/// use modio::users::filters::Id;
+///
+/// let filter = Id::_in(vec![1, 2]).order_by(Id::desc());
+/// ```
+#[rustfmt::skip]
+pub mod filters {
+    #[doc(inline)]
+    pub use crate::filter::prelude::Fulltext;
+    #[doc(inline)]
+    pub use crate::filter::prelude::Id;
+    #[doc(inline)]
+    pub use crate::filter::prelude::NameId;
+
+    filter!(DateOnline, DATE_ONLINE, "date_online", Eq, NotEq, In, Cmp, OrderBy);
+    filter!(Username, USERNAME, "username", Eq, NotEq, In, Like, OrderBy);
+    filter!(Timezone, TIMEZONE, "timezone", Eq, NotEq, In, Like);
+    filter!(Language, LANGUAGE, "language", Eq, NotEq, In, Like);
 }
 
 #[derive(Clone, Copy)]
@@ -66,51 +111,5 @@ impl QueryParams for Resource {
             .append_pair("resource_type", _type)
             .append_pair("resource_id", &id.to_string())
             .finish()
-    }
-}
-
-filter_options! {
-    /// Options used to filter user listings
-    ///
-    /// # Filter parameters
-    /// - _q
-    /// - id
-    /// - name_id
-    /// - level
-    /// - date_online
-    /// - username
-    /// - timezone
-    /// - language
-    ///
-    /// # Sorting
-    /// - id
-    /// - username
-    ///
-    /// See [modio docs](https://docs.mod.io/#get-all-users) for more information.
-    ///
-    /// By default this returns up to `100` items. You can limit the result using `limit` and
-    /// `offset`.
-    /// # Example
-    /// ```
-    /// use modio::filter::{Order, Operator};
-    /// use modio::users::UsersListOptions;
-    ///
-    /// let mut opts = UsersListOptions::new();
-    /// opts.id(Operator::In, vec![1, 2]);
-    /// opts.sort_by(UsersListOptions::ID, Order::Desc);
-    /// ```
-    #[derive(Debug)]
-    pub struct UsersListOptions {
-        Filters
-        - id = "id";
-        - name_id = "name_id";
-        - date_online = "date_online";
-        - username = "username";
-        - timezone = "timezone";
-        - language = "language";
-
-        Sort
-        - ID = "id";
-        - USERNAME = "username";
     }
 }

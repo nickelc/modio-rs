@@ -5,7 +5,6 @@ use crate::mods::MyMods;
 use crate::prelude::*;
 use crate::types::mods::Mod;
 use crate::types::User;
-use crate::EventListOptions;
 
 pub use crate::types::mods::Rating;
 pub use crate::types::{Event, EventType};
@@ -46,10 +45,12 @@ impl Me {
 
     /// Provides a stream the events that have been fired specific to the authenticated user.
     /// [required: token]
-    pub fn events(&self, options: &EventListOptions) -> Stream<Event> {
+    ///
+    /// See [Filters and sorting](filters/events/index.html).
+    pub fn events(&self, filter: &Filter) -> Stream<Event> {
         token_required!(s self.modio);
         let mut uri = vec!["/me/events".to_owned()];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -57,10 +58,12 @@ impl Me {
     }
 
     /// Provides a stream over all mod's the authenticated user is subscribed to. [required: token]
-    pub fn subscriptions(&self, options: &SubscriptionsListOptions) -> Stream<Mod> {
+    ///
+    /// See [Filters and sorting](filters/subscriptions/index.html).
+    pub fn subscriptions(&self, filter: &Filter) -> Stream<Mod> {
         token_required!(s self.modio);
         let mut uri = vec!["/me/subscribed".to_owned()];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -69,10 +72,12 @@ impl Me {
 
     /// Provides a stream over all mod rating's submitted by the authenticated user. [required:
     /// token]
-    pub fn ratings(&self, options: &RatingsListOptions) -> Stream<Rating> {
+    ///
+    /// See [Filters and sorting](filters/ratings/index.html).
+    pub fn ratings(&self, filter: &Filter) -> Stream<Rating> {
         token_required!(s self.modio);
         let mut uri = vec!["/me/ratings".to_owned()];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -80,107 +85,194 @@ impl Me {
     }
 }
 
-filter_options! {
-    /// Options used to filter subscription listings.
+/// Filters for events, subscriptions and ratings.
+#[rustfmt::skip]
+pub mod filters {
+    /// User event filters and sorting.
     ///
-    /// # Filter parameters
-    /// - _q
-    /// - id
-    /// - game_id
-    /// - submitted_by
-    /// - date_added
-    /// - date_updated
-    /// - date_live
-    /// - name
-    /// - name_id
-    /// - summary
-    /// - description
-    /// - homepage_url
-    /// - metadata_blob
-    /// - tags
+    /// # Filters
+    /// - Id
+    /// - GameId
+    /// - ModId
+    /// - UserId
+    /// - DateAdded
+    /// - EventType
     ///
     /// # Sorting
-    /// - id
-    /// - name
-    /// - downloads
-    /// - popular
-    /// - ratings
-    /// - subscribers
+    /// - Id
+    /// - DateAdded
+    ///
+    /// See the [modio docs](https://docs.mod.io/#get-user-events) for more information.
+    ///
+    /// By default this returns up to `100` items. You can limit the result by using `limit` and
+    /// `offset`.
+    ///
+    /// # Example
+    /// ```
+    /// use modio::filter::prelude::*;
+    /// use modio::me::filters::events::EventType as Filter;
+    /// use modio::mods::EventType;
+    ///
+    /// let filter = Id::gt(1024).and(Filter::eq(EventType::ModfileChanged));
+    /// ```
+    pub mod events {
+        #[doc(inline)]
+        pub use crate::filter::prelude::Id;
+        #[doc(inline)]
+        pub use crate::filter::prelude::ModId;
+        #[doc(inline)]
+        pub use crate::filter::prelude::DateAdded;
+
+        #[doc(inline)]
+        pub use crate::mods::filters::events::UserId;
+        #[doc(inline)]
+        pub use crate::mods::filters::events::EventType;
+
+        filter!(GameId, GAME_ID, "game_id", Eq, NotEq, In, Cmp, OrderBy);
+    }
+
+    /// Subscriptions filters and sorting.
+    ///
+    /// # Filters
+    /// - Fulltext
+    /// - Id
+    /// - GameId
+    /// - Status
+    /// - Visible
+    /// - SubmittedBy
+    /// - DateAdded
+    /// - DateUpdated
+    /// - DateLive
+    /// - MaturityOption
+    /// - Name
+    /// - NameId
+    /// - Summary
+    /// - Description
+    /// - Homepage
+    /// - Modfile
+    /// - MetadataBlob
+    /// - MetadataKVP
+    /// - Tags
+    ///
+    /// # Sorting
+    /// - Id
+    /// - Name
+    /// - Downloads
+    /// - Popular
+    /// - Ratings
+    /// - Subscribers
     ///
     /// See the [mod.io docs](https://docs.mod.io/#get-user-subscriptions) for more information.
     ///
-    /// By default this returns up to `100` items. You can limit the result using `limit` and
+    /// By default this returns up to `100` items. you can limit the result by using `limit` and
     /// `offset`.
+    ///
     /// # Example
     /// ```
-    /// use modio::filter::{Order, Operator};
-    /// use modio::me::SubscriptionsListOptions;
+    /// use modio::filter::prelude::*;
+    /// use modio::me::filters::subscriptions::Id;
     ///
-    /// let mut opts = SubscriptionsListOptions::new();
-    /// opts.game_id(Operator::In, vec![1, 2]);
-    /// opts.sort_by(SubscriptionsListOptions::DATE_UPDATED, Order::Desc);
+    /// let filter = Id::_in(vec![1, 2]).order_by(Id::desc());
     /// ```
-    #[derive(Debug)]
-    pub struct SubscriptionsListOptions {
-        Filters
-        - id = "id";
-        - game_id = "game_id";
-        - submitted_by = "submitted_by";
-        - date_added = "date_added";
-        - date_updated = "date_updated";
-        - date_live = "date_live";
-        - name = "name";
-        - name_id = "name_id";
-        - summary = "summary";
-        - description = "description";
-        - homepage_url = "homepage_url";
-        - metadata_blob = "metadata_blob";
-        - tags = "tags";
+    pub mod subscriptions {
+        #[doc(inline)]
+        pub use crate::filter::prelude::Fulltext;
+        #[doc(inline)]
+        pub use crate::filter::prelude::Id;
+        #[doc(inline)]
+        pub use crate::filter::prelude::Name;
+        #[doc(inline)]
+        pub use crate::filter::prelude::NameId;
 
-        Sort
-        - ID = "id";
-        - GAME_ID = "game_id";
-        - DATE_UPDATED = "date_updated";
-        - NAME = "name";
-        - DOWNLOADS = "downloads";
-        - POPULAR = "popular";
-        - RATINGS = "ratings";
-        - SUBSCRIBERS = "subscribers";
+        #[doc(inline)]
+        pub use crate::mods::filters::GameId;
+        #[doc(inline)]
+        pub use crate::mods::filters::Status;
+        #[doc(inline)]
+        pub use crate::mods::filters::Visible;
+        #[doc(inline)]
+        pub use crate::mods::filters::SubmittedBy;
+        #[doc(inline)]
+        pub use crate::mods::filters::DateAdded;
+        #[doc(inline)]
+        pub use crate::mods::filters::DateUpdated;
+        #[doc(inline)]
+        pub use crate::mods::filters::DateLive;
+        #[doc(inline)]
+        pub use crate::mods::filters::MaturityOption;
+        #[doc(inline)]
+        pub use crate::mods::filters::Summary;
+        #[doc(inline)]
+        pub use crate::mods::filters::Description;
+        #[doc(inline)]
+        pub use crate::mods::filters::Homepage;
+        #[doc(inline)]
+        pub use crate::mods::filters::Modfile;
+        #[doc(inline)]
+        pub use crate::mods::filters::MetadataBlob;
+        #[doc(inline)]
+        pub use crate::mods::filters::MetadataKVP;
+        #[doc(inline)]
+        pub use crate::mods::filters::Tags;
+
+        #[doc(inline)]
+        pub use crate::mods::filters::Downloads;
+        #[doc(inline)]
+        pub use crate::mods::filters::Popular;
+        #[doc(inline)]
+        pub use crate::mods::filters::Ratings;
+        #[doc(inline)]
+        pub use crate::mods::filters::Subscribers;
     }
-}
 
-filter_options! {
-    /// Options used to filter rating listings.
+    /// Rating filters and sorting.
     ///
-    /// # Filter parameters
-    /// - _q
-    /// - game_id
-    /// - mod_id
-    /// - date_added
+    /// # Filters
+    /// - GameId
+    /// - ModId
+    /// - Rating
+    /// - DateAdded
+    ///
+    /// # Sorting
+    /// - GameId
+    /// - ModId
+    /// - Rating
+    /// - DateAdded
     ///
     /// See the [mod.io docs](https://docs.mod.io/#get-user-ratings) for more information.
     ///
-    /// By default this returns up to `100` items. You can limit the result using `limit` and
+    /// By default this returns up to `100` items. You can limit the result by using `limit` and
     /// `offset`.
+    ///
     /// # Example
     /// ```
-    /// use modio::filter::{Order, Operator};
-    /// use modio::me::RatingsListOptions;
+    /// use modio::filter::prelude::*;
+    /// use modio::me::filters::ratings::GameId;
+    /// use modio::me::filters::ratings::DateAdded;
+    /// use modio::me::filters::ratings::Rating;
     ///
-    /// let mut opts = RatingsListOptions::new();
-    /// opts.game_id(Operator::In, vec![1, 2]);
-    /// opts.sort_by(RatingsListOptions::DATE_ADDED, Order::Desc);
+    /// let filter = GameId::_in(vec![1, 2]).order_by(DateAdded::desc());
+    ///
+    /// let filter = Rating::positive().order_by(DateAdded::desc());
     /// ```
-    #[derive(Debug)]
-    pub struct RatingsListOptions {
-        Filters
-        - game_id = "game_id";
-        - mod_id = "mod_id";
-        - date_added = "date_added";
+    pub mod ratings {
+        use crate::filter::prelude::*;
 
-        Sort
-        - GAME_ID = "game_id";
-        - MOD_ID = "mod_id";
-        - DATE_ADDED = "date_added";
+        #[doc(inline)]
+        pub use crate::filter::prelude::ModId;
+
+        filter!(GameId, GAME_ID, "game_id", Eq, NotEq, In, Cmp, OrderBy);
+        filter!(Rating, RATING, "rating", Eq, NotEq, In, Cmp, OrderBy);
+        filter!(DateAdded, DATE_ADDED, "date_added", Eq, NotEq, In, Cmp, OrderBy);
+
+        impl Rating {
+            pub fn positive() -> Filter {
+                Rating::eq(1)
+            }
+
+            pub fn negative() -> Filter {
+                Rating::eq(-1)
+            }
+        }
     }
 }

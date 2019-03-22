@@ -6,8 +6,7 @@ use tokio::runtime::Runtime;
 use tokio::timer::Interval;
 
 use modio::error::Error;
-use modio::filter::Operator;
-use modio::EventListOptions;
+use modio::filter::prelude::*;
 use modio::QueryParams;
 use modio::{auth::Credentials, Modio};
 
@@ -43,16 +42,15 @@ fn main() -> Result<(), Error> {
     let task = Interval::new_interval(Duration::from_secs(10))
         .fold(current_timestamp(), move |tstamp, _| {
             // Create an event filter for `date_added` > time.
-            let mut opts = EventListOptions::new();
-            opts.date_added(Operator::GreaterThan, tstamp);
+            let filter = DateAdded::gt(tstamp);
 
             // Create the call for `/me/events` and wait for the result.
             let print = modio
                 .me()
-                .events(&opts)
+                .events(&filter)
                 .collect()
                 .and_then(move |list| {
-                    println!("event filter: {}", opts.to_query_params());
+                    println!("event filter: {}", filter.to_query_params());
                     println!("event count: {}", list.len());
                     println!("{:#?}", list);
                     Ok(())

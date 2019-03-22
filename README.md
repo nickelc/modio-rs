@@ -66,14 +66,10 @@ See [full example](examples/authentication.rs).
 
 ### Games
 ```rust
-use modio::filter::Operator;
-use modio::games::GamesListOptions;
+use modio::filter::prelude::*;
 
 // List games with filter `name_id = "0ad"`
-let task = modio.games().list(
-    &GamesListOptions::new()
-        .name_id(Operator::Equals, "0ad"),
-);
+let task = modio.games().list(&NameId::eq("0ad"));
 
 let games = rt.block_on(task)?;
 ```

@@ -22,9 +22,11 @@ impl Comments {
     }
 
     /// List all comments.
-    pub fn list(&self, options: &CommentsListOptions) -> Future<List<Comment>> {
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn list(&self, filter: &Filter) -> Future<List<Comment>> {
         let mut uri = vec![self.path("")];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -32,9 +34,11 @@ impl Comments {
     }
 
     /// Provides a stream over all comments of the mod.
-    pub fn iter(&self, options: &CommentsListOptions) -> Stream<Comment> {
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn iter(&self, filter: &Filter) -> Stream<Comment> {
         let mut uri = vec![self.path("")];
-        let query = options.to_query_params();
+        let query = filter.to_query_params();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -54,55 +58,52 @@ impl Comments {
     }
 }
 
-filter_options! {
-    /// Options used to filter comment listings
-    ///
-    /// # Filter parameters
-    /// - _q
-    /// - id
-    /// - mod_id
-    /// - submitted_by
-    /// - date_added
-    /// - reply_id
-    /// - thread_position
-    /// - karma
-    /// - content
-    ///
-    /// # Sorting
-    /// - id
-    /// - mod_id
-    /// - submitted_by
-    /// - date_added
-    ///
-    /// See [modio docs](https://docs.mod.io/#get-all-mod-comments) for more information.
-    ///
-    /// By default this returns up to `100` items. You can limit the result using `limit` and
-    /// `offset`.
-    /// # Example
-    /// ```
-    /// use modio::filter::{Order, Operator};
-    /// use modio::comments::CommentsListOptions;
-    ///
-    /// let mut opts = CommentsListOptions::new();
-    /// opts.id(Operator::In, vec![1, 2]);
-    /// opts.sort_by(CommentsListOptions::ID, Order::Desc);
-    /// ```
-    #[derive(Debug)]
-    pub struct CommentsListOptions {
-        Filters
-        - id = "id";
-        - mod_id = "mod_id";
-        - submitted_by = "submitted_by";
-        - date_added = "date_added";
-        - reply_id = "reply_id";
-        - thread_position = "thread_position";
-        - karma = "karma";
-        - content = "content";
+/// Comment filters and sorting.
+///
+/// # Filters
+/// - Fulltext
+/// - Id
+/// - ModId
+/// - SubmittedBy
+/// - DateAdded
+/// - ReplyId
+/// - ThreadPosition
+/// - Karma
+/// - Content
+///
+/// # Sorting
+/// - Id
+/// - ModId
+/// - SubmittedBy
+/// - DateAdded
+///
+/// See [modio docs](https://docs.mod.io/#get-all-mod-comments) for more information.
+///
+/// By default this returns up to `100` items. You can limit the result by using `limit` and
+/// `offset`.
+///
+/// # Example
+/// ```
+/// use modio::filter::prelude::*;
+/// use modio::comments::filters::Id;
+///
+/// let filter = Id::_in(vec![1, 2]).order_by(Id::desc());
+/// ```
+#[rustfmt::skip]
+pub mod filters {
+    #[doc(inline)]
+    pub use crate::filter::prelude::Fulltext;
+    #[doc(inline)]
+    pub use crate::filter::prelude::Id;
+    #[doc(inline)]
+    pub use crate::filter::prelude::ModId;
+    #[doc(inline)]
+    pub use crate::filter::prelude::DateAdded;
+    #[doc(inline)]
+    pub use crate::filter::prelude::SubmittedBy;
 
-        Sort
-        - ID = "id";
-        - MOD_ID = "mod_id";
-        - SUBMITTED_BY = "submitted_by";
-        - DATE_ADDED = "date_added";
-    }
+    filter!(ReplyId, REPLY_ID, "reply_id", Eq, NotEq, In, Cmp);
+    filter!(ThreadPosition, THREAD_POSITION, "thread_position", Eq, NotEq, In, Like);
+    filter!(Karma, KARMA, "karma", Eq, NotEq, In, Cmp);
+    filter!(Content, CONTENT, "content", Eq, NotEq, Like);
 }
