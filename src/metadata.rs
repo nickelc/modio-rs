@@ -1,6 +1,8 @@
 //! Mod metadata KVP interface
+use futures::future;
 use url::form_urlencoded;
 
+use crate::error::Error;
 use crate::prelude::*;
 use crate::types::mods::MetadataMap;
 
@@ -31,15 +33,16 @@ impl Metadata {
             metavalue: String,
         }
 
-        Box::new(self.modio.get::<List<KV>>(&self.path()).map(|list| {
-            let mut map = MetadataMap::new();
-            for kv in list {
-                map.entry(kv.metakey)
-                    .or_insert_with(Vec::new)
-                    .push(kv.metavalue);
-            }
-            map
-        }))
+        Box::new(
+            self.modio
+                .stream::<KV>(&self.path())
+                .fold(MetadataMap::new(), |mut map, kv| {
+                    map.entry(kv.metakey)
+                        .or_insert_with(Vec::new)
+                        .push(kv.metavalue);
+                    future::ok::<_, Error>(map)
+                }),
+        )
     }
 
     /// Add metadata for a mod that this `Metadata` refers to.
