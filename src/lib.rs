@@ -146,7 +146,7 @@ use mime::Mime;
 use reqwest::header::{HeaderMap, HeaderValue};
 use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, USER_AGENT};
 use reqwest::r#async::multipart::Form;
-use reqwest::r#async::{Body, Client, ClientBuilder};
+use reqwest::r#async::{Client, ClientBuilder};
 use reqwest::{Method, StatusCode};
 use serde::de::DeserializeOwned;
 use url::Url;
@@ -607,6 +607,7 @@ impl Modio {
 
             match body.into() {
                 RequestBody::Body(body, mime) => {
+                    trace!("body: {}", body);
                     if let Some(mime) = mime {
                         req = req.header(CONTENT_TYPE, &*mime.to_string());
                     }
@@ -854,13 +855,13 @@ impl Modio {
 
 pub(crate) enum RequestBody {
     Empty,
-    Body(Body, Option<Mime>),
+    Body(String, Option<Mime>),
     Form(Form),
 }
 
 impl From<String> for RequestBody {
     fn from(s: String) -> RequestBody {
-        RequestBody::Body(Body::from(s), None)
+        RequestBody::Body(s, None)
     }
 }
 
