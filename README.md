@@ -41,9 +41,8 @@ use tokio::runtime::Runtime;
 fn main() -> Result<(), Error> {
     let mut rt = Runtime::new()?;
     let modio = Modio::new(
-        "user-agent-name/1.0",
         Credentials::ApiKey(String::from("user-or-game-apikey")),
-    );
+    )?;
 
     // create some tasks and execute them
     // let result = rt.block_on(task)?;
@@ -62,7 +61,7 @@ let token = rt.block_on(modio.auth().security_code("QWERT"))?;
 // Create an endpoint with the new credentials
 let modio = modio.with_credentials(Credentials::Token(token));
 ```
-See [full example](examples/authentication.rs).
+See [full example](examples/auth.rs).
 
 ### Games
 ```rust
