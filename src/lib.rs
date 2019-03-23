@@ -660,8 +660,8 @@ impl Modio {
                                     Err(error::ratelimit(reset))
                                 }
                                 _ => serde_json::from_slice::<ModioErrorResponse>(&response_body)
-                                        .map(|mer| Err(error::fault(status, mer.error)))
-                                        .map_err(error::from)?,
+                                    .map(|mer| Err(error::fault(status, mer.error)))
+                                    .map_err(error::from)?,
                             }
                         }
                     }),
