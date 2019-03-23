@@ -89,6 +89,8 @@ let stats = game.mods().statistics(&Default::default()).for_each(|stats| {
 
 * No longer expose `ModioMessage`.
 
+* Status & visibility mapped as enum.
+
 * Break up event & event types to `modio::me::{Event, EventType}` and `modio::mods::{Event, EventType}`.
 
 * Change `Me::{events, subscriptions, ratings}`, `Mods::{events, statistics}` and `Mod::events` to streams over entities.

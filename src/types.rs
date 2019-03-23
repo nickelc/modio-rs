@@ -3,6 +3,7 @@ use std::fmt;
 use std::ops::Index;
 
 use serde::de::{Deserialize, Deserializer};
+use serde::ser::{Serialize, Serializer};
 use url::Url;
 use url_serde;
 
@@ -124,6 +125,69 @@ pub struct Logo {
     pub thumb_1280x720: Url,
 }
 
+/// See [Status & Visibility](https://docs.mod.io/#status-amp-visibility) docs for more information.
+#[derive(Clone, Copy, Debug)]
+pub enum Status {
+    NotAccepted = 0,
+    Accepted = 1,
+    Archived = 2,
+    Deleted = 3,
+}
+
+impl fmt::Display for Status {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        (*self as u8).fmt(f)
+    }
+}
+
+// impl Serialize, Deserialize for Status {{{
+impl Serialize for Status {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        // Serialize the enum as a u64.
+        serializer.serialize_u64(*self as u64)
+    }
+}
+
+impl<'de> Deserialize<'de> for Status {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        struct Visitor;
+
+        impl<'de> serde::de::Visitor<'de> for Visitor {
+            type Value = Status;
+
+            fn expecting(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+                fmt.write_str("positive integer")
+            }
+
+            fn visit_u64<E>(self, value: u64) -> Result<Status, E>
+            where
+                E: serde::de::Error,
+            {
+                match value {
+                    0 => Ok(Status::NotAccepted),
+                    1 => Ok(Status::Accepted),
+                    2 => Ok(Status::Archived),
+                    3 => Ok(Status::Deleted),
+                    _ => Err(E::custom(format!(
+                        "unknown {} value {}",
+                        stringify!(Status),
+                        value
+                    ))),
+                }
+            }
+        }
+
+        deserializer.deserialize_u64(Visitor)
+    }
+}
+// }}}
+
 /// See the [User Event Object](https://docs.mod.io/#user-event-object) docs for more information.
 #[derive(Debug, Deserialize)]
 pub struct Event {
@@ -191,7 +255,7 @@ pub mod game {
     #[derive(Debug, Deserialize)]
     pub struct Game {
         pub id: u32,
-        pub status: u8,
+        pub status: Status,
         pub submitted_by: User,
         pub date_added: u64,
         pub date_updated: u64,
@@ -278,8 +342,8 @@ pub mod mods {
     pub struct Mod {
         pub id: u32,
         pub game_id: u32,
-        pub status: u32,
-        pub visible: u32,
+        pub status: Status,
+        pub visible: Visibility,
         pub submitted_by: User,
         pub date_added: u64,
         pub date_updated: u64,
@@ -304,6 +368,65 @@ pub mod mods {
         pub tags: Vec<Tag>,
         pub stats: Statistics,
     }
+
+    /// See [Status & Visibility](https://docs.mod.io/#status-amp-visibility) docs for more information.
+    #[derive(Clone, Copy, Debug)]
+    pub enum Visibility {
+        Hidden = 0,
+        Public = 1,
+    }
+
+    impl fmt::Display for Visibility {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            (*self as u8).fmt(f)
+        }
+    }
+
+    // impl Serialize, Deserialize for Visibility {{{
+    impl Serialize for Visibility {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: Serializer,
+        {
+            // Serialize the enum as a u64.
+            serializer.serialize_u64(*self as u64)
+        }
+    }
+
+    impl<'de> Deserialize<'de> for Visibility {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: Deserializer<'de>,
+        {
+            struct Visitor;
+
+            impl<'de> serde::de::Visitor<'de> for Visitor {
+                type Value = Visibility;
+
+                fn expecting(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+                    fmt.write_str("positive integer")
+                }
+
+                fn visit_u64<E>(self, value: u64) -> Result<Visibility, E>
+                where
+                    E: serde::de::Error,
+                {
+                    match value {
+                        0 => Ok(Visibility::Hidden),
+                        1 => Ok(Visibility::Public),
+                        _ => Err(E::custom(format!(
+                            "unknown {} value {}",
+                            stringify!(Visibility),
+                            value
+                        ))),
+                    }
+                }
+            }
+
+            deserializer.deserialize_u64(Visitor)
+        }
+    }
+    // }}}
 
     /// See the [Mod Event Object](https://docs.mod.io/#mod-event-object) docs for more information.
     #[derive(Debug, Deserialize)]

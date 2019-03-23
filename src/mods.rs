@@ -14,9 +14,10 @@ use crate::Comments;
 
 pub use crate::types::mods::{
     Dependency, Event, EventType, Image, Media, MetadataMap, Mod, Popularity, Ratings, Statistics,
-    Tag,
+    Tag, Visibility,
 };
 pub use crate::types::Logo;
+pub use crate::types::Status;
 
 /// Interface for mods the authenticated user added or is team member of.
 pub struct MyMods {

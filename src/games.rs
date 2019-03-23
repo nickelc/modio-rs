@@ -11,6 +11,7 @@ use crate::Mods;
 
 pub use crate::types::game::{Game, HeaderImage, Icon, TagOption, TagType};
 pub use crate::types::Logo;
+pub use crate::types::Status;
 
 /// Interface for games the authenticated user added or is team member of.
 pub struct MyGames {
