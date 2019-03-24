@@ -12,6 +12,7 @@ categories = ["api-bindings", "web-programming::http-client"]
 edition = "2018"
 
 [dependencies]
+bitflags = "1"
 bytes = "0.4"
 futures = "0.1"
 http = "0.1"

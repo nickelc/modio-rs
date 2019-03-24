@@ -9,7 +9,10 @@ use crate::prelude::*;
 use crate::ModRef;
 use crate::Mods;
 
-pub use crate::types::game::{Game, HeaderImage, Icon, TagOption, TagType};
+pub use crate::types::game::{
+    ApiAccessOptions, CommunityOptions, CurationOption, Game, HeaderImage, Icon, MaturityOptions,
+    PresentationOption, RevenueOptions, SubmissionOption, TagOption, TagType,
+};
 pub use crate::types::Logo;
 pub use crate::types::Status;
 

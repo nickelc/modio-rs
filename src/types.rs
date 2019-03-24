@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::ops::Index;
 
+use bitflags::bitflags;
 use serde::de::{Deserialize, Deserializer};
 use serde::ser::{Serialize, Serializer};
 use url::Url;
@@ -12,13 +13,19 @@ macro_rules! enum_number {
     (
         $(#[$outer:meta])*
         pub enum $name:ident {
-            $($variant:ident = $value:expr, )*
+            $(
+                $(#[$inner:ident $($args:tt)*])*
+                $variant:ident = $value:expr,
+            )*
         }
     ) => {
         $(#[$outer])*
         #[derive(Clone, Copy)]
         pub enum $name {
-            $($variant = $value,)*
+            $(
+                $(#[$inner $($args)*])*
+                $variant = $value,
+            )*
         }
 
         impl fmt::Display for $name {
@@ -69,7 +76,47 @@ macro_rules! enum_number {
                 deserializer.deserialize_u64(Visitor)
             }
         }
-    }
+    };
+}
+// }}}
+
+// macro: bitflags_serde {{{
+macro_rules! bitflags_serde {
+    ($name:ident, $type:ty) => {
+        impl<'de> Deserialize<'de> for $name {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
+                struct Visitor;
+
+                impl<'de> serde::de::Visitor<'de> for Visitor {
+                    type Value = $name;
+
+                    fn expecting(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+                        fmt.write_str("positive integer")
+                    }
+
+                    fn visit_u64<E>(self, value: u64) -> Result<$name, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        $name::from_bits(value as $type).ok_or_else(|| {
+                            E::custom(format!("invalid {} bits {}", stringify!($name), value))
+                        })
+                    }
+                }
+
+                deserializer.deserialize_u64(Visitor)
+            }
+        }
+
+        impl fmt::Display for $name {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                self.bits.fmt(f)
+            }
+        }
+    };
 }
 // }}}
 
@@ -274,13 +321,13 @@ pub mod game {
         pub date_added: u64,
         pub date_updated: u64,
         pub date_live: u64,
-        pub presentation_option: u8,
-        pub submission_option: u8,
-        pub curation_option: u8,
-        pub community_options: u8,
-        pub revenue_options: u16,
-        pub api_access_options: u8,
-        pub maturity_options: u8,
+        pub presentation_option: PresentationOption,
+        pub submission_option: SubmissionOption,
+        pub curation_option: CurationOption,
+        pub community_options: CommunityOptions,
+        pub revenue_options: RevenueOptions,
+        pub api_access_options: ApiAccessOptions,
+        pub maturity_options: MaturityOptions,
         pub ugc_name: String,
         pub icon: Icon,
         pub logo: Logo,
@@ -295,6 +342,92 @@ pub mod game {
         pub profile_url: Url,
         pub tag_options: Vec<TagOption>,
     }
+
+    enum_number! {
+        /// Presentation style used on the mod.io website.
+        #[derive(Debug)]
+        pub enum PresentationOption {
+            /// Displays mods in a grid.
+            GridView = 0,
+            /// Displays mods in a table.
+            TableView = 1,
+        }
+    }
+
+    enum_number! {
+        /// Submission process modders must follow.
+        #[derive(Debug)]
+        pub enum SubmissionOption {
+            /// Mod uploads must occur via the API using a tool by the game developers.
+            ApiOnly = 0,
+            /// Mod uploads can occur from anywhere, include the website and API.
+            Anywhere = 1,
+        }
+    }
+
+    enum_number! {
+        /// Curation process used to approve mods.
+        #[derive(Debug)]
+        pub enum CurationOption {
+            /// No curation: Mods are immediately available to play.
+            No = 0,
+            /// Paid curation: Mods are immediately to play unless they choose to receive
+            /// donations. These mods must be accepted to be listed.
+            Paid = 1,
+            /// Full curation: All mods must be accepted by someone to be listed.
+            Full = 2,
+        }
+    }
+
+    enum_number! {
+        /// Option to allow developers to select if they flag their mods containing mature content.
+        #[derive(Debug)]
+        pub enum MaturityOptions {
+            NotAllowed = 0,
+            /// Allow flagging mods as mature.
+            Allowed = 1,
+        }
+    }
+
+    bitflags! {
+        /// Community features enabled on the mod.io website.
+        pub struct CommunityOptions: u8 {
+            /// Discussion board enabled.
+            const DISCUSSIONS   = 0b0001;
+            /// Guides & News enabled.
+            const GUIDES_NEWS   = 0b0010;
+            const ALL = Self::DISCUSSIONS.bits | Self::GUIDES_NEWS.bits;
+        }
+    }
+    bitflags_serde!(CommunityOptions, u8);
+
+    bitflags! {
+        /// Revenue capabilities mods can enable.
+        pub struct RevenueOptions: u8 {
+            /// Allow mods to be sold.
+            const SELL      = 0b0001;
+            /// Allow mods to receive donations.
+            const DONATIONS = 0b0010;
+            /// Allow mods to be traded.
+            const TRADE     = 0b0100;
+            /// Allow mods to control supply and scarcity.
+            const SCARCITY  = 0b1000;
+            const ALL = Self::SELL.bits | Self::DONATIONS.bits | Self::TRADE.bits | Self::SCARCITY.bits;
+        }
+    }
+    bitflags_serde!(RevenueOptions, u8);
+
+    bitflags! {
+        /// Level of API access allowed by a game.
+        pub struct ApiAccessOptions: u8 {
+            /// Allow third parties to access a game's API endpoints.
+            const ALLOW_THIRD_PARTY     = 0b0001;
+            /// Allow mods to be downloaded directly.
+            const ALLOW_DIRECT_DOWNLOAD = 0b0010;
+            const ALL = Self::ALLOW_THIRD_PARTY.bits | Self::ALLOW_DIRECT_DOWNLOAD.bits;
+        }
+    }
+    bitflags_serde!(ApiAccessOptions, u8);
 
     /// See the [Icon Object](https://docs.mod.io/#icon-object) docs for more information.
     #[derive(Debug, Deserialize)]
@@ -362,7 +495,7 @@ pub mod mods {
         pub date_added: u64,
         pub date_updated: u64,
         pub date_live: u64,
-        pub maturity_option: u8,
+        pub maturity_option: MaturityOption,
         pub logo: Logo,
         #[serde(with = "url_serde")]
         pub homepage_url: Option<Url>,
@@ -391,6 +524,20 @@ pub mod mods {
             Public = 1,
         }
     }
+
+    bitflags! {
+        /// Maturity options a mod can be flagged.
+        ///
+        /// This is only relevant if the parent game allows mods to be labelled as mature.
+        pub struct MaturityOption: u8 {
+            const ALCOHOL   = 0b0001;
+            const DRUGS     = 0b0010;
+            const VIOLENCE  = 0b0100;
+            const EXPLICIT  = 0b1000;
+            const ALL = Self::ALCOHOL.bits | Self::DRUGS.bits | Self::VIOLENCE.bits | Self::EXPLICIT.bits;
+        }
+    }
+    bitflags_serde!(MaturityOption, u8);
 
     /// See the [Mod Event Object](https://docs.mod.io/#mod-event-object) docs for more information.
     #[derive(Debug, Deserialize)]
