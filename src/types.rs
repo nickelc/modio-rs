@@ -7,6 +7,72 @@ use serde::ser::{Serialize, Serializer};
 use url::Url;
 use url_serde;
 
+// macro: enum_number {{{
+macro_rules! enum_number {
+    (
+        $(#[$outer:meta])*
+        pub enum $name:ident {
+            $($variant:ident = $value:expr, )*
+        }
+    ) => {
+        $(#[$outer])*
+        #[derive(Clone, Copy)]
+        pub enum $name {
+            $($variant = $value,)*
+        }
+
+        impl fmt::Display for $name {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                (*self as u8).fmt(f)
+            }
+        }
+
+        impl Serialize for $name {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: Serializer,
+            {
+                // Serialize the enum as a u64.
+                serializer.serialize_u64(*self as u64)
+            }
+        }
+
+        impl<'de> Deserialize<'de> for $name {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
+                struct Visitor;
+
+                impl<'de> serde::de::Visitor<'de> for Visitor {
+                    type Value = $name;
+
+                    fn expecting(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+                        fmt.write_str("positive integer")
+                    }
+
+                    fn visit_u64<E>(self, value: u64) -> Result<$name, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        match value {
+                            $( $value => Ok($name::$variant), )*
+                            _ => Err(E::custom(format!(
+                                "unknown {} value {}",
+                                stringify!($name),
+                                value
+                            ))),
+                        }
+                    }
+                }
+
+                deserializer.deserialize_u64(Visitor)
+            }
+        }
+    }
+}
+// }}}
+
 /// See the [Message Object](https://docs.mod.io/#message-object) docs for more information.
 #[derive(Debug, Deserialize)]
 pub struct ModioMessage {
@@ -125,68 +191,16 @@ pub struct Logo {
     pub thumb_1280x720: Url,
 }
 
-/// See [Status & Visibility](https://docs.mod.io/#status-amp-visibility) docs for more information.
-#[derive(Clone, Copy, Debug)]
-pub enum Status {
-    NotAccepted = 0,
-    Accepted = 1,
-    Archived = 2,
-    Deleted = 3,
-}
-
-impl fmt::Display for Status {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        (*self as u8).fmt(f)
+enum_number! {
+    /// See [Status & Visibility](https://docs.mod.io/#status-amp-visibility) docs for more information.
+    #[derive(Debug)]
+    pub enum Status {
+        NotAccepted = 0,
+        Accepted = 1,
+        Archived = 2,
+        Deleted = 3,
     }
 }
-
-// impl Serialize, Deserialize for Status {{{
-impl Serialize for Status {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        // Serialize the enum as a u64.
-        serializer.serialize_u64(*self as u64)
-    }
-}
-
-impl<'de> Deserialize<'de> for Status {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        struct Visitor;
-
-        impl<'de> serde::de::Visitor<'de> for Visitor {
-            type Value = Status;
-
-            fn expecting(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-                fmt.write_str("positive integer")
-            }
-
-            fn visit_u64<E>(self, value: u64) -> Result<Status, E>
-            where
-                E: serde::de::Error,
-            {
-                match value {
-                    0 => Ok(Status::NotAccepted),
-                    1 => Ok(Status::Accepted),
-                    2 => Ok(Status::Archived),
-                    3 => Ok(Status::Deleted),
-                    _ => Err(E::custom(format!(
-                        "unknown {} value {}",
-                        stringify!(Status),
-                        value
-                    ))),
-                }
-            }
-        }
-
-        deserializer.deserialize_u64(Visitor)
-    }
-}
-// }}}
 
 /// See the [User Event Object](https://docs.mod.io/#user-event-object) docs for more information.
 #[derive(Debug, Deserialize)]
@@ -369,64 +383,14 @@ pub mod mods {
         pub stats: Statistics,
     }
 
-    /// See [Status & Visibility](https://docs.mod.io/#status-amp-visibility) docs for more information.
-    #[derive(Clone, Copy, Debug)]
-    pub enum Visibility {
-        Hidden = 0,
-        Public = 1,
-    }
-
-    impl fmt::Display for Visibility {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            (*self as u8).fmt(f)
+    enum_number! {
+        /// See [Status & Visibility](https://docs.mod.io/#status-amp-visibility) docs for more information.
+        #[derive(Debug)]
+        pub enum Visibility {
+            Hidden = 0,
+            Public = 1,
         }
     }
-
-    // impl Serialize, Deserialize for Visibility {{{
-    impl Serialize for Visibility {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: Serializer,
-        {
-            // Serialize the enum as a u64.
-            serializer.serialize_u64(*self as u64)
-        }
-    }
-
-    impl<'de> Deserialize<'de> for Visibility {
-        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: Deserializer<'de>,
-        {
-            struct Visitor;
-
-            impl<'de> serde::de::Visitor<'de> for Visitor {
-                type Value = Visibility;
-
-                fn expecting(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-                    fmt.write_str("positive integer")
-                }
-
-                fn visit_u64<E>(self, value: u64) -> Result<Visibility, E>
-                where
-                    E: serde::de::Error,
-                {
-                    match value {
-                        0 => Ok(Visibility::Hidden),
-                        1 => Ok(Visibility::Public),
-                        _ => Err(E::custom(format!(
-                            "unknown {} value {}",
-                            stringify!(Visibility),
-                            value
-                        ))),
-                    }
-                }
-            }
-
-            deserializer.deserialize_u64(Visitor)
-        }
-    }
-    // }}}
 
     /// See the [Mod Event Object](https://docs.mod.io/#mod-event-object) docs for more information.
     #[derive(Debug, Deserialize)]
@@ -736,11 +700,13 @@ pub mod mods {
         pub position: String,
     }
 
-    #[derive(Clone, Copy, Debug)]
-    pub enum TeamLevel {
-        Moderator = 1,
-        Creator = 4,
-        Admin = 8,
+    enum_number! {
+        #[derive(Debug)]
+        pub enum TeamLevel {
+            Moderator = 1,
+            Creator = 4,
+            Admin = 8,
+        }
     }
 
     impl TeamLevel {
@@ -748,52 +714,6 @@ pub mod mods {
             self as u64
         }
     }
-
-    // impl Serialize, Deserialize for TeamLevel {{{
-    impl ::serde::Serialize for TeamLevel {
-        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where
-            S: ::serde::Serializer,
-        {
-            serializer.serialize_u64(*self as u64)
-        }
-    }
-
-    impl<'de> ::serde::Deserialize<'de> for TeamLevel {
-        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where
-            D: ::serde::Deserializer<'de>,
-        {
-            struct Visitor;
-
-            impl<'de> ::serde::de::Visitor<'de> for Visitor {
-                type Value = TeamLevel;
-
-                fn expecting(&self, fmt: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-                    fmt.write_str("positive integer")
-                }
-
-                fn visit_u64<E>(self, value: u64) -> Result<TeamLevel, E>
-                where
-                    E: ::serde::de::Error,
-                {
-                    match value {
-                        1 => Ok(TeamLevel::Moderator),
-                        4 => Ok(TeamLevel::Creator),
-                        8 => Ok(TeamLevel::Admin),
-                        _ => Err(E::custom(format!(
-                            "unknown {} value {}",
-                            stringify!(TeamLevel),
-                            value
-                        ))),
-                    }
-                }
-            }
-
-            deserializer.deserialize_u64(Visitor)
-        }
-    }
-    // }}}
 
     /// Deserialize empty objects for the `modfile` property of the Mod object as `None`.
     ///
