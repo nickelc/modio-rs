@@ -506,12 +506,14 @@ impl AddModOptions {
         }
     }
 
-    pub fn visible(&mut self, v: bool) -> &mut Self {
-        self.visible = match v {
-            true => Some(Visibility::Public),
-            false => Some(Visibility::Hidden),
-        };
-        self
+    pub fn visible(self, v: bool) -> Self {
+        Self {
+            visible: match v {
+                true => Some(Visibility::Public),
+                false => Some(Visibility::Hidden),
+            },
+            ..self
+        }
     }
 
     option!(name_id);
@@ -521,9 +523,11 @@ impl AddModOptions {
     option!(maturity_option: MaturityOption);
     option!(metadata_blob);
 
-    pub fn tags(&mut self, tags: &[String]) -> &mut Self {
-        self.tags = Some(tags.to_vec());
-        self
+    pub fn tags(self, tags: &[String]) -> Self {
+        Self {
+            tags: Some(tags.to_vec()),
+            ..self
+        }
     }
 }
 
@@ -572,14 +576,15 @@ pub struct EditModOptions {
 impl EditModOptions {
     option!(status: Status >> "status");
 
-    pub fn visible(&mut self, v: bool) -> &mut Self {
+    pub fn visible(self, v: bool) -> Self {
         let value = if v {
             Visibility::Public
         } else {
             Visibility::Hidden
         };
-        self.params.insert("visible", value.to_string());
-        self
+        let mut params = self.params;
+        params.insert("visible", value.to_string());
+        Self { params }
     }
 
     option!(visibility: Visibility >> "visible");
@@ -667,60 +672,70 @@ pub struct AddMediaOptions {
 }
 
 impl AddMediaOptions {
-    pub fn logo<P: AsRef<Path>>(&mut self, logo: P) -> &mut Self {
+    pub fn logo<P: AsRef<Path>>(self, logo: P) -> Self {
         let logo = logo.as_ref();
         let filename = logo
             .file_name()
             .and_then(|n| n.to_str())
             .map_or_else(String::new, |n| n.to_string());
 
-        self.logo = Some(FileSource {
-            inner: FileStream::open(logo),
-            filename,
-            mime: IMAGE_STAR,
-        });
-        self
+        Self {
+            logo: Some(FileSource {
+                inner: FileStream::open(logo),
+                filename,
+                mime: IMAGE_STAR,
+            }),
+            ..self
+        }
     }
 
-    pub fn images_zip<P: AsRef<Path>>(&mut self, images: P) -> &mut Self {
-        self.images_zip = Some(FileSource {
-            inner: FileStream::open(images),
-            filename: "images.zip".into(),
-            mime: APPLICATION_OCTET_STREAM,
-        });
-        self
+    pub fn images_zip<P: AsRef<Path>>(self, images: P) -> Self {
+        Self {
+            images_zip: Some(FileSource {
+                inner: FileStream::open(images),
+                filename: "images.zip".into(),
+                mime: APPLICATION_OCTET_STREAM,
+            }),
+            ..self
+        }
     }
 
-    pub fn images<P: AsRef<Path>>(&mut self, images: &[P]) -> &mut Self {
-        self.images = Some(
-            images
-                .iter()
-                .map(|p| {
-                    let file = p.as_ref();
-                    let filename = file
-                        .file_name()
-                        .and_then(|n| n.to_str())
-                        .map_or_else(String::new, |n| n.to_string());
+    pub fn images<P: AsRef<Path>>(self, images: &[P]) -> Self {
+        Self {
+            images: Some(
+                images
+                    .iter()
+                    .map(|p| {
+                        let file = p.as_ref();
+                        let filename = file
+                            .file_name()
+                            .and_then(|n| n.to_str())
+                            .map_or_else(String::new, |n| n.to_string());
 
-                    FileSource {
-                        inner: FileStream::open(file),
-                        filename,
-                        mime: IMAGE_STAR,
-                    }
-                })
-                .collect::<Vec<_>>(),
-        );
-        self
+                        FileSource {
+                            inner: FileStream::open(file),
+                            filename,
+                            mime: IMAGE_STAR,
+                        }
+                    })
+                    .collect::<Vec<_>>(),
+            ),
+            ..self
+        }
     }
 
-    pub fn youtube(&mut self, urls: &[String]) -> &mut Self {
-        self.youtube = Some(urls.to_vec());
-        self
+    pub fn youtube(self, urls: &[String]) -> Self {
+        Self {
+            youtube: Some(urls.to_vec()),
+            ..self
+        }
     }
 
-    pub fn sketchfab(&mut self, urls: &[String]) -> &mut Self {
-        self.sketchfab = Some(urls.to_vec());
-        self
+    pub fn sketchfab(self, urls: &[String]) -> Self {
+        Self {
+            sketchfab: Some(urls.to_vec()),
+            ..self
+        }
     }
 }
 
@@ -761,19 +776,25 @@ pub struct DeleteMediaOptions {
 }
 
 impl DeleteMediaOptions {
-    pub fn images(&mut self, images: &[String]) -> &mut Self {
-        self.images = Some(images.to_vec());
-        self
+    pub fn images(self, images: &[String]) -> Self {
+        Self {
+            images: Some(images.to_vec()),
+            ..self
+        }
     }
 
-    pub fn youtube(&mut self, urls: &[String]) -> &mut Self {
-        self.youtube = Some(urls.to_vec());
-        self
+    pub fn youtube(self, urls: &[String]) -> Self {
+        Self {
+            youtube: Some(urls.to_vec()),
+            ..self
+        }
     }
 
-    pub fn sketchfab(&mut self, urls: &[String]) -> &mut Self {
-        self.sketchfab = Some(urls.to_vec());
-        self
+    pub fn sketchfab(self, urls: &[String]) -> Self {
+        Self {
+            sketchfab: Some(urls.to_vec()),
+            ..self
+        }
     }
 }
 

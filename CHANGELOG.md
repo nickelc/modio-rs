@@ -75,6 +75,25 @@ let stats = game.mods().statistics(&Default::default()).for_each(|stats| {
       .order_by(Popular::desc());
   ```
 
+* Removed builders of all \*Options types and changed the options to be by-value instead of by-ref.
+
+  ```rust
+  // Before
+  let mut builder = EditModOptions::builder();
+  if some_val {
+      builder.name("foobar");
+  }
+  let opts = builder.build();
+  modio.mod_(34, 101).edit(&opts);
+
+  // After
+  let mut opts = EditModOptions::default();
+  if some_val {
+      opts = opts.name("foobar");
+  }
+  modio.mod_(34, 101).edit(&opts);
+  ```
+
 * Switch from `hyper` to `reqwest`. Type parameter for `Modio` is no longer necessary.
 
 * Drop `failure` crate again and implement std error trait.
