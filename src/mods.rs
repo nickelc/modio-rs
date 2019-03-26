@@ -460,7 +460,7 @@ impl QueryParams for Rating {
 }
 
 pub struct AddModOptions {
-    visible: Option<u32>,
+    visible: Option<Visibility>,
     logo: FileSource,
     name: String,
     name_id: Option<String>,
@@ -468,32 +468,62 @@ pub struct AddModOptions {
     description: Option<String>,
     homepage_url: Option<Url>,
     stock: Option<u32>,
-    maturity_option: Option<u8>,
+    maturity_option: Option<MaturityOption>,
     metadata_blob: Option<String>,
     tags: Option<Vec<String>>,
 }
 
 impl AddModOptions {
-    pub fn builder<T, P>(name: T, logo: P, summary: T) -> AddModOptionsBuilder
+    pub fn new<T, P>(name: T, logo: P, summary: T) -> AddModOptions
     where
         T: Into<String>,
         P: AsRef<Path>,
     {
-        let logo = logo.as_ref();
         let filename = logo
+            .as_ref()
             .file_name()
             .and_then(|n| n.to_str())
             .map_or_else(String::new, |n| n.to_string());
 
-        AddModOptionsBuilder::new(
-            name,
-            FileSource {
-                inner: FileStream::open(logo),
-                filename,
-                mime: IMAGE_STAR,
-            },
-            summary,
-        )
+        let logo = FileSource {
+            inner: FileStream::open(logo),
+            filename,
+            mime: IMAGE_STAR,
+        };
+
+        AddModOptions {
+            name: name.into(),
+            logo,
+            summary: summary.into(),
+            visible: None,
+            name_id: None,
+            description: None,
+            homepage_url: None,
+            stock: None,
+            maturity_option: None,
+            metadata_blob: None,
+            tags: None,
+        }
+    }
+
+    pub fn visible(&mut self, v: bool) -> &mut Self {
+        self.visible = match v {
+            true => Some(Visibility::Public),
+            false => Some(Visibility::Hidden),
+        };
+        self
+    }
+
+    option!(name_id);
+    option!(description);
+    option!(homepage_url: Url);
+    option!(stock: u32);
+    option!(maturity_option: MaturityOption);
+    option!(metadata_blob);
+
+    pub fn tags(&mut self, tags: &[String]) -> &mut Self {
+        self.tags = Some(tags.to_vec());
+        self
     }
 }
 
@@ -534,197 +564,40 @@ impl From<AddModOptions> for Form {
     }
 }
 
-pub struct AddModOptionsBuilder(AddModOptions);
-
-impl AddModOptionsBuilder {
-    fn new<T>(name: T, logo: FileSource, summary: T) -> Self
-    where
-        T: Into<String>,
-    {
-        AddModOptionsBuilder(AddModOptions {
-            name: name.into(),
-            logo,
-            summary: summary.into(),
-            visible: None,
-            name_id: None,
-            description: None,
-            homepage_url: None,
-            stock: None,
-            maturity_option: None,
-            metadata_blob: None,
-            tags: None,
-        })
-    }
-
-    pub fn visible(&mut self, v: bool) -> &mut Self {
-        self.0.visible = if v { Some(1) } else { Some(0) };
-        self
-    }
-
-    pub fn name_id<S: Into<String>>(&mut self, name_id: S) -> &mut Self {
-        self.0.name_id = Some(name_id.into());
-        self
-    }
-
-    pub fn description<S: Into<String>>(&mut self, description: S) -> &mut Self {
-        self.0.description = Some(description.into());
-        self
-    }
-
-    pub fn homepage_url<U: Into<Url>>(&mut self, url: U) -> &mut Self {
-        self.0.homepage_url = Some(url.into());
-        self
-    }
-
-    pub fn stock(&mut self, stock: u32) -> &mut Self {
-        self.0.stock = Some(stock);
-        self
-    }
-
-    pub fn maturity_option(&mut self, options: u8) -> &mut Self {
-        self.0.maturity_option = Some(options);
-        self
-    }
-
-    pub fn metadata_blob<S: Into<String>>(&mut self, metadata_blob: S) -> &mut Self {
-        self.0.metadata_blob = Some(metadata_blob.into());
-        self
-    }
-
-    pub fn tags(&mut self, tags: &[String]) -> &mut Self {
-        self.0.tags = Some(tags.to_vec());
-        self
-    }
-
-    pub fn build(self) -> AddModOptions {
-        AddModOptions {
-            visible: self.0.visible,
-            logo: self.0.logo,
-            name: self.0.name,
-            name_id: self.0.name_id,
-            summary: self.0.summary,
-            description: self.0.description,
-            homepage_url: self.0.homepage_url,
-            stock: self.0.stock,
-            maturity_option: self.0.maturity_option,
-            metadata_blob: self.0.metadata_blob,
-            tags: self.0.tags,
-        }
-    }
-}
-
 #[derive(Debug, Default)]
 pub struct EditModOptions {
-    status: Option<u32>,
-    visible: Option<u32>,
-    name: Option<String>,
-    name_id: Option<String>,
-    summary: Option<String>,
-    description: Option<String>,
-    homepage_url: Option<Url>,
-    stock: Option<u32>,
-    maturity_option: Option<u8>,
-    metadata_blob: Option<String>,
+    params: std::collections::BTreeMap<&'static str, String>,
 }
 
 impl EditModOptions {
-    pub fn builder() -> EditModOptionsBuilder {
-        EditModOptionsBuilder::new()
+    option!(status: Status >> "status");
+
+    pub fn visible(&mut self, v: bool) -> &mut Self {
+        let value = if v {
+            Visibility::Public
+        } else {
+            Visibility::Hidden
+        };
+        self.params.insert("visible", value.to_string());
+        self
     }
+
+    option!(visibility: Visibility >> "visible");
+    option!(name >> "name");
+    option!(name_id >> "name_id");
+    option!(summary >> "summary");
+    option!(description >> "description");
+    option!(homepage_url: Url >> "homepage_url");
+    option!(stock >> "stock");
+    option!(maturity_option: MaturityOption >> "maturity_option");
+    option!(metadata_blob >> "metadata_blob");
 }
 
 impl QueryParams for EditModOptions {
     fn to_query_params(&self) -> String {
         form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(self.status.iter().map(|s| ("status", s.to_string())))
-            .extend_pairs(self.visible.iter().map(|v| ("visible", v.to_string())))
-            .extend_pairs(self.name.iter().map(|n| ("name", n)))
-            .extend_pairs(self.name_id.iter().map(|n| ("name_id", n)))
-            .extend_pairs(self.summary.iter().map(|s| ("summary", s)))
-            .extend_pairs(self.description.iter().map(|d| ("description", d)))
-            .extend_pairs(self.homepage_url.iter().map(|h| ("homepage_url", h)))
-            .extend_pairs(self.stock.iter().map(|s| ("stock", s.to_string())))
-            .extend_pairs(
-                self.maturity_option
-                    .iter()
-                    .map(|m| ("maturity_option", m.to_string())),
-            )
-            .extend_pairs(self.metadata_blob.iter().map(|m| ("metadata_blob", m)))
+            .extend_pairs(&self.params)
             .finish()
-    }
-}
-
-#[derive(Default)]
-pub struct EditModOptionsBuilder(EditModOptions);
-
-impl EditModOptionsBuilder {
-    pub fn new() -> Self {
-        Default::default()
-    }
-
-    pub fn status(&mut self, status: u32) -> &mut Self {
-        self.0.status = Some(status);
-        self
-    }
-
-    pub fn visible(&mut self, visible: bool) -> &mut Self {
-        self.0.visible = if visible { Some(1) } else { Some(0) };
-        self
-    }
-
-    pub fn name<T: Into<String>>(&mut self, name: T) -> &mut Self {
-        self.0.name = Some(name.into());
-        self
-    }
-
-    pub fn name_id<T: Into<String>>(&mut self, name_id: T) -> &mut Self {
-        self.0.name_id = Some(name_id.into());
-        self
-    }
-
-    pub fn summary<T: Into<String>>(&mut self, summary: T) -> &mut Self {
-        self.0.summary = Some(summary.into());
-        self
-    }
-
-    pub fn description<T: Into<String>>(&mut self, description: T) -> &mut Self {
-        self.0.description = Some(description.into());
-        self
-    }
-
-    pub fn homepage_url(&mut self, url: Url) -> &mut Self {
-        self.0.homepage_url = Some(url);
-        self
-    }
-
-    pub fn stock(&mut self, stock: u32) -> &mut Self {
-        self.0.stock = Some(stock);
-        self
-    }
-
-    pub fn maturity_option(&mut self, options: u8) -> &mut Self {
-        self.0.maturity_option = Some(options);
-        self
-    }
-
-    pub fn metadata_blob<T: Into<String>>(&mut self, blob: T) -> &mut Self {
-        self.0.metadata_blob = Some(blob.into());
-        self
-    }
-
-    pub fn build(&self) -> EditModOptions {
-        EditModOptions {
-            status: self.0.status,
-            visible: self.0.visible,
-            name: self.0.name.clone(),
-            name_id: self.0.name_id.clone(),
-            summary: self.0.summary.clone(),
-            description: self.0.description.clone(),
-            homepage_url: self.0.homepage_url.clone(),
-            stock: self.0.stock,
-            maturity_option: self.0.maturity_option,
-            metadata_blob: self.0.metadata_blob.clone(),
-        }
     }
 }
 
@@ -784,6 +657,7 @@ impl QueryParams for EditTagsOptions {
     }
 }
 
+#[derive(Default)]
 pub struct AddMediaOptions {
     logo: Option<FileSource>,
     images_zip: Option<FileSource>,
@@ -793,8 +667,60 @@ pub struct AddMediaOptions {
 }
 
 impl AddMediaOptions {
-    pub fn builder() -> AddMediaOptionsBuilder {
-        AddMediaOptionsBuilder::new()
+    pub fn logo<P: AsRef<Path>>(&mut self, logo: P) -> &mut Self {
+        let logo = logo.as_ref();
+        let filename = logo
+            .file_name()
+            .and_then(|n| n.to_str())
+            .map_or_else(String::new, |n| n.to_string());
+
+        self.logo = Some(FileSource {
+            inner: FileStream::open(logo),
+            filename,
+            mime: IMAGE_STAR,
+        });
+        self
+    }
+
+    pub fn images_zip<P: AsRef<Path>>(&mut self, images: P) -> &mut Self {
+        self.images_zip = Some(FileSource {
+            inner: FileStream::open(images),
+            filename: "images.zip".into(),
+            mime: APPLICATION_OCTET_STREAM,
+        });
+        self
+    }
+
+    pub fn images<P: AsRef<Path>>(&mut self, images: &[P]) -> &mut Self {
+        self.images = Some(
+            images
+                .iter()
+                .map(|p| {
+                    let file = p.as_ref();
+                    let filename = file
+                        .file_name()
+                        .and_then(|n| n.to_str())
+                        .map_or_else(String::new, |n| n.to_string());
+
+                    FileSource {
+                        inner: FileStream::open(file),
+                        filename,
+                        mime: IMAGE_STAR,
+                    }
+                })
+                .collect::<Vec<_>>(),
+        );
+        self
+    }
+
+    pub fn youtube(&mut self, urls: &[String]) -> &mut Self {
+        self.youtube = Some(urls.to_vec());
+        self
+    }
+
+    pub fn sketchfab(&mut self, urls: &[String]) -> &mut Self {
+        self.sketchfab = Some(urls.to_vec());
+        self
     }
 }
 
@@ -827,86 +753,6 @@ impl From<AddMediaOptions> for Form {
     }
 }
 
-pub struct AddMediaOptionsBuilder(AddMediaOptions);
-
-impl AddMediaOptionsBuilder {
-    fn new() -> Self {
-        AddMediaOptionsBuilder(AddMediaOptions {
-            logo: None,
-            images_zip: None,
-            images: None,
-            youtube: None,
-            sketchfab: None,
-        })
-    }
-
-    pub fn logo<P: AsRef<Path>>(&mut self, logo: P) -> &mut Self {
-        let logo = logo.as_ref();
-        let filename = logo
-            .file_name()
-            .and_then(|n| n.to_str())
-            .map_or_else(String::new, |n| n.to_string());
-
-        self.0.logo = Some(FileSource {
-            inner: FileStream::open(logo),
-            filename,
-            mime: IMAGE_STAR,
-        });
-        self
-    }
-
-    pub fn images_zip<P: AsRef<Path>>(&mut self, images: P) -> &mut Self {
-        self.0.images_zip = Some(FileSource {
-            inner: FileStream::open(images),
-            filename: "images.zip".into(),
-            mime: APPLICATION_OCTET_STREAM,
-        });
-        self
-    }
-
-    pub fn images<P: AsRef<Path>>(&mut self, images: &[P]) -> &mut Self {
-        self.0.images = Some(
-            images
-                .iter()
-                .map(|p| {
-                    let file = p.as_ref();
-                    let filename = file
-                        .file_name()
-                        .and_then(|n| n.to_str())
-                        .map_or_else(String::new, |n| n.to_string());
-
-                    FileSource {
-                        inner: FileStream::open(file),
-                        filename,
-                        mime: IMAGE_STAR,
-                    }
-                })
-                .collect::<Vec<_>>(),
-        );
-        self
-    }
-
-    pub fn youtube(&mut self, urls: &[String]) -> &mut Self {
-        self.0.youtube = Some(urls.to_vec());
-        self
-    }
-
-    pub fn sketchfab(&mut self, urls: &[String]) -> &mut Self {
-        self.0.sketchfab = Some(urls.to_vec());
-        self
-    }
-
-    pub fn build(self) -> AddMediaOptions {
-        AddMediaOptions {
-            logo: self.0.logo,
-            images_zip: self.0.images_zip,
-            images: self.0.images,
-            youtube: self.0.youtube,
-            sketchfab: self.0.sketchfab,
-        }
-    }
-}
-
 #[derive(Default)]
 pub struct DeleteMediaOptions {
     images: Option<Vec<String>>,
@@ -915,8 +761,19 @@ pub struct DeleteMediaOptions {
 }
 
 impl DeleteMediaOptions {
-    pub fn builder() -> DeleteMediaOptionsBuilder {
-        DeleteMediaOptionsBuilder::new()
+    pub fn images(&mut self, images: &[String]) -> &mut Self {
+        self.images = Some(images.to_vec());
+        self
+    }
+
+    pub fn youtube(&mut self, urls: &[String]) -> &mut Self {
+        self.youtube = Some(urls.to_vec());
+        self
+    }
+
+    pub fn sketchfab(&mut self, urls: &[String]) -> &mut Self {
+        self.sketchfab = Some(urls.to_vec());
+        self
     }
 }
 
@@ -933,37 +790,5 @@ impl QueryParams for DeleteMediaOptions {
             ser.extend_pairs(urls.iter().map(|u| ("sketchfab[]", u)));
         }
         ser.finish()
-    }
-}
-
-#[derive(Default)]
-pub struct DeleteMediaOptionsBuilder(DeleteMediaOptions);
-
-impl DeleteMediaOptionsBuilder {
-    pub fn new() -> Self {
-        Default::default()
-    }
-
-    pub fn images(&mut self, images: &[String]) -> &mut Self {
-        self.0.images = Some(images.to_vec());
-        self
-    }
-
-    pub fn youtube(&mut self, urls: &[String]) -> &mut Self {
-        self.0.youtube = Some(urls.to_vec());
-        self
-    }
-
-    pub fn sketchfab(&mut self, urls: &[String]) -> &mut Self {
-        self.0.sketchfab = Some(urls.to_vec());
-        self
-    }
-
-    pub fn build(&self) -> DeleteMediaOptions {
-        DeleteMediaOptions {
-            images: self.0.images.clone(),
-            youtube: self.0.youtube.clone(),
-            sketchfab: self.0.sketchfab.clone(),
-        }
     }
 }

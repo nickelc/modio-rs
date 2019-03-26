@@ -298,6 +298,7 @@ impl QueryParams for DeleteTagsOptions {
     }
 }
 
+#[derive(Default)]
 pub struct GameMediaOptions {
     logo: Option<FileSource>,
     icon: Option<FileSource>,
@@ -305,8 +306,49 @@ pub struct GameMediaOptions {
 }
 
 impl GameMediaOptions {
-    pub fn builder() -> GameMediaOptionsBuilder {
-        GameMediaOptionsBuilder::new()
+    pub fn logo<P: AsRef<Path>>(&mut self, logo: P) -> &mut Self {
+        let logo = logo.as_ref();
+        let filename = logo
+            .file_name()
+            .and_then(|n| n.to_str())
+            .map_or_else(String::new, |n| n.to_string());
+
+        self.logo = Some(FileSource {
+            inner: FileStream::open(logo),
+            filename,
+            mime: IMAGE_STAR,
+        });
+        self
+    }
+
+    pub fn icon<P: AsRef<Path>>(&mut self, icon: P) -> &mut Self {
+        let icon = icon.as_ref();
+        let filename = icon
+            .file_name()
+            .and_then(|n| n.to_str())
+            .map_or_else(String::new, |n| n.to_string());
+
+        self.icon = Some(FileSource {
+            inner: FileStream::open(icon),
+            filename,
+            mime: IMAGE_STAR,
+        });
+        self
+    }
+
+    pub fn header<P: AsRef<Path>>(&mut self, header: P) -> &mut Self {
+        let header = header.as_ref();
+        let filename = header
+            .file_name()
+            .and_then(|n| n.to_str())
+            .map_or_else(String::new, |n| n.to_string());
+
+        self.header = Some(FileSource {
+            inner: FileStream::open(header),
+            filename,
+            mime: IMAGE_STAR,
+        });
+        self
     }
 }
 
@@ -324,70 +366,5 @@ impl From<GameMediaOptions> for Form {
             form = form.part("header", header.into());
         }
         form
-    }
-}
-
-pub struct GameMediaOptionsBuilder(GameMediaOptions);
-
-impl GameMediaOptionsBuilder {
-    fn new() -> Self {
-        GameMediaOptionsBuilder(GameMediaOptions {
-            logo: None,
-            icon: None,
-            header: None,
-        })
-    }
-
-    pub fn logo<P: AsRef<Path>>(&mut self, logo: P) -> &mut Self {
-        let logo = logo.as_ref();
-        let filename = logo
-            .file_name()
-            .and_then(|n| n.to_str())
-            .map_or_else(String::new, |n| n.to_string());
-
-        self.0.logo = Some(FileSource {
-            inner: FileStream::open(logo),
-            filename,
-            mime: IMAGE_STAR,
-        });
-        self
-    }
-
-    pub fn icon<P: AsRef<Path>>(&mut self, icon: P) -> &mut Self {
-        let icon = icon.as_ref();
-        let filename = icon
-            .file_name()
-            .and_then(|n| n.to_str())
-            .map_or_else(String::new, |n| n.to_string());
-
-        self.0.icon = Some(FileSource {
-            inner: FileStream::open(icon),
-            filename,
-            mime: IMAGE_STAR,
-        });
-        self
-    }
-
-    pub fn header<P: AsRef<Path>>(&mut self, header: P) -> &mut Self {
-        let header = header.as_ref();
-        let filename = header
-            .file_name()
-            .and_then(|n| n.to_str())
-            .map_or_else(String::new, |n| n.to_string());
-
-        self.0.header = Some(FileSource {
-            inner: FileStream::open(header),
-            filename,
-            mime: IMAGE_STAR,
-        });
-        self
-    }
-
-    pub fn build(self) -> GameMediaOptions {
-        GameMediaOptions {
-            logo: self.0.logo,
-            icon: self.0.icon,
-            header: self.0.header,
-        }
     }
 }

@@ -30,3 +30,44 @@ macro_rules! token_required {
         }
     };
 }
+
+macro_rules! option {
+    ($(#[$outer:meta])* $name:ident) => {
+        option!($(#[$outer])* $name: Into<String>);
+    };
+    ($(#[$outer:meta])* $name:ident: Into<$T:ty>) => {
+        $(#[$outer])*
+        pub fn $name<T: Into<$T>>(&mut self, value: T) -> &mut Self {
+            self.$name = Some(value.into());
+            self
+        }
+    };
+    ($(#[$outer:meta])* $name:ident: $T:ty) => {
+        $(#[$outer])*
+        pub fn $name(&mut self, value: $T) -> &mut Self {
+            self.$name = Some(value);
+            self
+        }
+    };
+    ($(#[$outer:meta])* $name:ident >> $param:expr) => {
+        $(#[$outer])*
+        pub fn $name<S: Into<String>>(&mut self, value: S) -> &mut Self {
+            self.params.insert($param, value.into());
+            self
+        }
+    };
+    ($(#[$outer:meta])* $name:ident: Into<$T:ty> >> $param:expr) => {
+        $(#[$outer])*
+        pub fn $name<T: Into<$T>>(self, value: T) -> Self {
+            self.params.insert($param, value.into().to_string());
+            self
+        }
+    };
+    ($(#[$outer:meta])* $name:ident: $T:ty >> $param:expr) => {
+        $(#[$outer])*
+        pub fn $name(&mut self, value: $T) -> &mut Self {
+            self.params.insert($param, value.to_string());
+            self
+        }
+    };
+}

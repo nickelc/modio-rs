@@ -212,19 +212,26 @@ pub struct AddFileOptions {
 }
 
 impl AddFileOptions {
-    pub fn with_read<R, S>(inner: R, filename: S) -> AddFileOptionsBuilder
+    pub fn with_read<R, S>(inner: R, filename: S) -> AddFileOptions
     where
         R: AsyncRead + 'static + Send + Sync,
         S: Into<String>,
     {
-        AddFileOptionsBuilder::new(FileSource {
-            inner: FileStream::new(inner),
-            filename: filename.into(),
-            mime: APPLICATION_OCTET_STREAM,
-        })
+        AddFileOptions {
+            source: FileSource {
+                inner: FileStream::new(inner),
+                filename: filename.into(),
+                mime: APPLICATION_OCTET_STREAM,
+            },
+            version: None,
+            changelog: None,
+            active: None,
+            filehash: None,
+            metadata_blob: None,
+        }
     }
 
-    pub fn with_file<P: AsRef<Path>>(file: P) -> AddFileOptionsBuilder {
+    pub fn with_file<P: AsRef<Path>>(file: P) -> AddFileOptions {
         let file = file.as_ref();
         let filename = file
             .file_name()
@@ -234,19 +241,32 @@ impl AddFileOptions {
         Self::with_file_name(file, filename)
     }
 
-    pub fn with_file_name<P, S>(file: P, filename: S) -> AddFileOptionsBuilder
+    pub fn with_file_name<P, S>(file: P, filename: S) -> AddFileOptions
     where
         P: AsRef<Path>,
         S: Into<String>,
     {
         let file = file.as_ref();
 
-        AddFileOptionsBuilder::new(FileSource {
-            inner: FileStream::open(file),
-            filename: filename.into(),
-            mime: APPLICATION_OCTET_STREAM,
-        })
+        AddFileOptions {
+            source: FileSource {
+                inner: FileStream::open(file),
+                filename: filename.into(),
+                mime: APPLICATION_OCTET_STREAM,
+            },
+            version: None,
+            changelog: None,
+            active: None,
+            filehash: None,
+            metadata_blob: None,
+        }
     }
+
+    option!(version);
+    option!(changelog);
+    option!(active: bool);
+    option!(filehash);
+    option!(metadata_blob);
 }
 
 #[doc(hidden)]
@@ -272,116 +292,22 @@ impl From<AddFileOptions> for Form {
     }
 }
 
-pub struct AddFileOptionsBuilder(AddFileOptions);
-
-impl AddFileOptionsBuilder {
-    fn new(source: FileSource) -> Self {
-        AddFileOptionsBuilder(AddFileOptions {
-            source,
-            version: None,
-            changelog: None,
-            active: None,
-            filehash: None,
-            metadata_blob: None,
-        })
-    }
-
-    pub fn version<S: Into<String>>(&mut self, value: S) -> &mut Self {
-        self.0.version = Some(value.into());
-        self
-    }
-
-    pub fn changelog<S: Into<String>>(&mut self, value: S) -> &mut Self {
-        self.0.changelog = Some(value.into());
-        self
-    }
-
-    pub fn active(&mut self, value: bool) -> &mut Self {
-        self.0.active = Some(value);
-        self
-    }
-
-    pub fn filehash<S: Into<String>>(&mut self, value: S) -> &mut Self {
-        self.0.filehash = Some(value.into());
-        self
-    }
-
-    pub fn metadata_blob<S: Into<String>>(&mut self, value: S) -> &mut Self {
-        self.0.metadata_blob = Some(value.into());
-        self
-    }
-
-    pub fn build(self) -> AddFileOptions {
-        AddFileOptions {
-            source: self.0.source,
-            version: self.0.version,
-            changelog: self.0.changelog,
-            active: self.0.active,
-            filehash: self.0.filehash,
-            metadata_blob: self.0.metadata_blob,
-        }
-    }
-}
-
 #[derive(Default)]
 pub struct EditFileOptions {
-    version: Option<String>,
-    changelog: Option<String>,
-    active: Option<bool>,
-    metadata_blob: Option<String>,
+    params: std::collections::BTreeMap<&'static str, String>,
 }
 
 impl EditFileOptions {
-    pub fn builder() -> EditFileOptionsBuilder {
-        EditFileOptionsBuilder::new()
-    }
+    option!(version >> "version");
+    option!(changelog >> "changelog");
+    option!(active: bool >> "active");
+    option!(metadata_blob >> "metadata_blob");
 }
 
 impl QueryParams for EditFileOptions {
     fn to_query_params(&self) -> String {
         form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(self.version.iter().map(|v| ("version", v)))
-            .extend_pairs(self.changelog.iter().map(|c| ("changelog", c)))
-            .extend_pairs(self.active.iter().map(|a| ("active", a.to_string())))
-            .extend_pairs(self.metadata_blob.iter().map(|m| ("metadata_blob", m)))
+            .extend_pairs(&self.params)
             .finish()
-    }
-}
-
-#[derive(Default)]
-pub struct EditFileOptionsBuilder(EditFileOptions);
-
-impl EditFileOptionsBuilder {
-    pub fn new() -> Self {
-        Default::default()
-    }
-
-    pub fn version<S: Into<String>>(&mut self, value: S) -> &mut Self {
-        self.0.version = Some(value.into());
-        self
-    }
-
-    pub fn changelog<S: Into<String>>(&mut self, value: S) -> &mut Self {
-        self.0.changelog = Some(value.into());
-        self
-    }
-
-    pub fn active(&mut self, value: bool) -> &mut Self {
-        self.0.active = Some(value);
-        self
-    }
-
-    pub fn metadata_blob<S: Into<String>>(&mut self, value: S) -> &mut Self {
-        self.0.metadata_blob = Some(value.into());
-        self
-    }
-
-    pub fn build(&self) -> EditFileOptions {
-        EditFileOptions {
-            version: self.0.version.clone(),
-            changelog: self.0.changelog.clone(),
-            active: self.0.active,
-            metadata_blob: self.0.metadata_blob.clone(),
-        }
     }
 }

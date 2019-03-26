@@ -124,98 +124,45 @@ pub mod filters {
 
 #[derive(Debug)]
 pub struct InviteTeamMemberOptions {
-    email: String,
-    level: TeamLevel,
-    position: Option<String>,
+    params: std::collections::BTreeMap<&'static str, String>,
 }
 
 impl InviteTeamMemberOptions {
-    pub fn builder<T>(email: T, level: TeamLevel) -> InviteTeamMemberOptionsBuilder
+    pub fn new<T>(email: T, level: TeamLevel) -> InviteTeamMemberOptions
     where
         T: Into<String>,
     {
-        InviteTeamMemberOptionsBuilder::new(email, level)
+        let mut params = std::collections::BTreeMap::new();
+        params.insert("email", email.into());
+        params.insert("level", level.to_string());
+        InviteTeamMemberOptions { params }
     }
+
+    option!(position >> "position");
 }
 
 impl QueryParams for InviteTeamMemberOptions {
     fn to_query_params(&self) -> String {
         form_urlencoded::Serializer::new(String::new())
-            .append_pair("email", &self.email)
-            .append_pair("level", &self.level.value().to_string())
-            .extend_pairs(self.position.iter().map(|p| ("position", p)))
+            .extend_pairs(&self.params)
             .finish()
-    }
-}
-
-pub struct InviteTeamMemberOptionsBuilder(InviteTeamMemberOptions);
-
-impl InviteTeamMemberOptionsBuilder {
-    pub fn new<T: Into<String>>(email: T, level: TeamLevel) -> Self {
-        InviteTeamMemberOptionsBuilder(InviteTeamMemberOptions {
-            email: email.into(),
-            level,
-            position: None,
-        })
-    }
-
-    pub fn position<T: Into<String>>(&mut self, position: T) -> &mut Self {
-        self.0.position = Some(position.into());
-        self
-    }
-
-    pub fn build(&self) -> InviteTeamMemberOptions {
-        InviteTeamMemberOptions {
-            email: self.0.email.clone(),
-            level: self.0.level,
-            position: self.0.position.clone(),
-        }
     }
 }
 
 #[derive(Debug, Default)]
 pub struct EditTeamMemberOptions {
-    level: Option<TeamLevel>,
-    position: Option<String>,
+    params: std::collections::BTreeMap<&'static str, String>,
 }
 
 impl EditTeamMemberOptions {
-    pub fn builder() -> EditTeamMemberOptionsBuilder {
-        EditTeamMemberOptionsBuilder::new()
-    }
+    option!(level: TeamLevel >> "level");
+    option!(position >> "position");
 }
 
 impl QueryParams for EditTeamMemberOptions {
     fn to_query_params(&self) -> String {
         form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(self.level.iter().map(|l| ("level", l.value().to_string())))
-            .extend_pairs(self.position.iter().map(|p| ("position", p)))
+            .extend_pairs(&self.params)
             .finish()
-    }
-}
-
-#[derive(Default)]
-pub struct EditTeamMemberOptionsBuilder(EditTeamMemberOptions);
-
-impl EditTeamMemberOptionsBuilder {
-    pub fn new() -> Self {
-        Default::default()
-    }
-
-    pub fn level(&mut self, level: TeamLevel) -> &mut Self {
-        self.0.level = Some(level);
-        self
-    }
-
-    pub fn position<T: Into<String>>(&mut self, position: T) -> &mut Self {
-        self.0.position = Some(position.into());
-        self
-    }
-
-    pub fn build(&self) -> EditTeamMemberOptions {
-        EditTeamMemberOptions {
-            level: self.0.level,
-            position: self.0.position.clone(),
-        }
     }
 }
