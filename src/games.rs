@@ -32,7 +32,7 @@ impl MyGames {
     pub fn list(&self, filter: &Filter) -> Future<List<Game>> {
         token_required!(self.modio);
         let mut uri = vec!["/me/games".to_owned()];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -46,7 +46,7 @@ impl MyGames {
     pub fn iter(&self, filter: &Filter) -> Stream<Game> {
         token_required!(s self.modio);
         let mut uri = vec!["/me/games".to_owned()];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -73,7 +73,7 @@ impl Games {
     /// See [Filters and sorting](filters/index.html).
     pub fn list(&self, filter: &Filter) -> Future<List<Game>> {
         let mut uri = vec![self.path("")];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -85,7 +85,7 @@ impl Games {
     /// See [Filters and sorting](filters/index.html).
     pub fn iter(&self, filter: &Filter) -> Stream<Game> {
         let mut uri = vec![self.path("")];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -136,7 +136,7 @@ impl GameRef {
     /// Edit details for a game. [required: token]
     pub fn edit(&self, options: &EditGameOptions) -> Future<Game> {
         token_required!(self.modio);
-        let params = options.to_query_params();
+        let params = options.to_query_string();
         self.modio.put(&self.path(""), params)
     }
 
@@ -248,8 +248,8 @@ impl EditGameOptions {
     option!(maturity_options: MaturityOptions >> "maturity_options");
 }
 
-impl crate::QueryParams for EditGameOptions {
-    fn to_query_params(&self) -> String {
+impl crate::QueryString for EditGameOptions {
+    fn to_query_string(&self) -> String {
         url::form_urlencoded::Serializer::new(String::new())
             .extend_pairs(&self.params)
             .finish()
@@ -285,8 +285,8 @@ impl AddTagsOptions {
 
 impl AddOptions for AddTagsOptions {}
 
-impl QueryParams for AddTagsOptions {
-    fn to_query_params(&self) -> String {
+impl QueryString for AddTagsOptions {
+    fn to_query_string(&self) -> String {
         form_urlencoded::Serializer::new(String::new())
             .append_pair("name", &self.name)
             .append_pair("type", &self.kind.to_string())
@@ -323,8 +323,8 @@ impl DeleteTagsOptions {
 
 impl DeleteOptions for DeleteTagsOptions {}
 
-impl QueryParams for DeleteTagsOptions {
-    fn to_query_params(&self) -> String {
+impl QueryString for DeleteTagsOptions {
+    fn to_query_string(&self) -> String {
         let mut ser = form_urlencoded::Serializer::new(String::new());
         ser.append_pair("name", &self.name);
         match &self.tags {

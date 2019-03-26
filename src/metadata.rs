@@ -50,7 +50,7 @@ impl Metadata {
         token_required!(self.modio);
         Box::new(
             self.modio
-                .post::<ModioMessage, _>(&self.path(), metadata.to_query_params())
+                .post::<ModioMessage, _>(&self.path(), metadata.to_query_string())
                 .map(|m| m.message),
         )
     }
@@ -58,12 +58,12 @@ impl Metadata {
     /// Delete metadata for a mod that this `Metadata` refers to.
     pub fn delete(&self, metadata: &MetadataMap) -> Future<()> {
         token_required!(self.modio);
-        self.modio.delete(&self.path(), metadata.to_query_params())
+        self.modio.delete(&self.path(), metadata.to_query_string())
     }
 }
 
-impl QueryParams for MetadataMap {
-    fn to_query_params(&self) -> String {
+impl QueryString for MetadataMap {
+    fn to_query_string(&self) -> String {
         let mut ser = form_urlencoded::Serializer::new(String::new());
         for (k, vals) in self.iter() {
             if vals.is_empty() {

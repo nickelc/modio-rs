@@ -35,7 +35,7 @@ impl MyMods {
     pub fn list(&self, filter: &Filter) -> Future<List<Mod>> {
         token_required!(self.modio);
         let mut uri = vec!["/me/mods".to_owned()];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -49,7 +49,7 @@ impl MyMods {
     pub fn iter(&self, filter: &Filter) -> Stream<Mod> {
         token_required!(s self.modio);
         let mut uri = vec!["/me/mods".to_owned()];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -82,7 +82,7 @@ impl Mods where {
     /// See [Filters and sorting](filters/index.html).
     pub fn list(&self, filter: &Filter) -> Future<List<Mod>> {
         let mut uri = vec![self.path("")];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -94,7 +94,7 @@ impl Mods where {
     /// See [Filters and sorting](filters/index.html).
     pub fn iter(&self, filter: &Filter) -> Stream<Mod> {
         let mut uri = vec![self.path("")];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -112,7 +112,7 @@ impl Mods where {
     /// See [Filters and sorting](filters/stats/index.html).
     pub fn statistics(&self, filter: &Filter) -> Stream<Statistics> {
         let mut uri = vec![self.path("/stats")];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -124,7 +124,7 @@ impl Mods where {
     /// See [Filters and sorting](filters/events/index.html).
     pub fn events(&self, filter: &Filter) -> Stream<Event> {
         let mut uri = vec![self.path("/events")];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -193,7 +193,7 @@ impl ModRef {
     /// See [Filters and sorting](filters/events/index.html).
     pub fn events(&self, filter: &Filter) -> Stream<Event> {
         let mut uri = vec![self.path("/events")];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -208,7 +208,7 @@ impl ModRef {
     /// Edit details for a mod. [required: token]
     pub fn edit(&self, options: &EditModOptions) -> Future<Mod> {
         token_required!(self.modio);
-        let params = options.to_query_params();
+        let params = options.to_query_string();
         self.modio.put(&self.path(""), params)
     }
 
@@ -226,13 +226,13 @@ impl ModRef {
     pub fn delete_media(&self, options: &DeleteMediaOptions) -> Future<()> {
         token_required!(self.modio);
         self.modio
-            .delete(&self.path("/media"), options.to_query_params())
+            .delete(&self.path("/media"), options.to_query_string())
     }
 
     /// Submit a positive or negative rating for a mod. [required: token]
     pub fn rate(&self, rating: Rating) -> Future<()> {
         token_required!(self.modio);
-        let params = rating.to_query_params();
+        let params = rating.to_query_string();
         Box::new(
             self.modio
                 .post::<ModioMessage, _>(&self.path("/ratings"), params)
@@ -447,8 +447,8 @@ pub enum Rating {
     Negative,
 }
 
-impl QueryParams for Rating {
-    fn to_query_params(&self) -> String {
+impl QueryString for Rating {
+    fn to_query_string(&self) -> String {
         format!(
             "rating={}",
             match *self {
@@ -598,8 +598,8 @@ impl EditModOptions {
     option!(metadata_blob >> "metadata_blob");
 }
 
-impl QueryParams for EditModOptions {
-    fn to_query_params(&self) -> String {
+impl QueryString for EditModOptions {
+    fn to_query_string(&self) -> String {
         form_urlencoded::Serializer::new(String::new())
             .extend_pairs(&self.params)
             .finish()
@@ -627,8 +627,8 @@ impl EditDepencenciesOptions {
 impl AddOptions for EditDepencenciesOptions {}
 impl DeleteOptions for EditDepencenciesOptions {}
 
-impl QueryParams for EditDepencenciesOptions {
-    fn to_query_params(&self) -> String {
+impl QueryString for EditDepencenciesOptions {
+    fn to_query_string(&self) -> String {
         form_urlencoded::Serializer::new(String::new())
             .extend_pairs(
                 self.dependencies
@@ -654,8 +654,8 @@ impl EditTagsOptions {
 impl AddOptions for EditTagsOptions {}
 impl DeleteOptions for EditTagsOptions {}
 
-impl QueryParams for EditTagsOptions {
-    fn to_query_params(&self) -> String {
+impl QueryString for EditTagsOptions {
+    fn to_query_string(&self) -> String {
         form_urlencoded::Serializer::new(String::new())
             .extend_pairs(self.tags.iter().map(|t| ("tags[]", t)))
             .finish()
@@ -798,8 +798,8 @@ impl DeleteMediaOptions {
     }
 }
 
-impl QueryParams for DeleteMediaOptions {
-    fn to_query_params(&self) -> String {
+impl QueryString for DeleteMediaOptions {
+    fn to_query_string(&self) -> String {
         let mut ser = form_urlencoded::Serializer::new(String::new());
         if let Some(ref images) = self.images {
             ser.extend_pairs(images.iter().map(|i| ("images[]", i)));

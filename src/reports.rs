@@ -17,7 +17,7 @@ impl Reports {
         token_required!(self.modio);
         Box::new(
             self.modio
-                .post::<ModioMessage, _>("/report", report.to_query_params())
+                .post::<ModioMessage, _>("/report", report.to_query_string())
                 .map(|m| m.message),
         )
     }
@@ -52,8 +52,8 @@ impl Report {
     }
 }
 
-impl QueryParams for Report {
-    fn to_query_params(&self) -> String {
+impl QueryString for Report {
+    fn to_query_string(&self) -> String {
         let (resource, id) = match self.resource {
             Resource::Game(id) => ("games", id),
             Resource::Mod(id) => ("mods", id),

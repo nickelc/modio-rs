@@ -50,7 +50,7 @@ impl Me {
     pub fn events(&self, filter: &Filter) -> Stream<Event> {
         token_required!(s self.modio);
         let mut uri = vec!["/me/events".to_owned()];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -63,7 +63,7 @@ impl Me {
     pub fn subscriptions(&self, filter: &Filter) -> Stream<Mod> {
         token_required!(s self.modio);
         let mut uri = vec!["/me/subscribed".to_owned()];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -77,7 +77,7 @@ impl Me {
     pub fn ratings(&self, filter: &Filter) -> Stream<Rating> {
         token_required!(s self.modio);
         let mut uri = vec!["/me/ratings".to_owned()];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }

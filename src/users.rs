@@ -20,7 +20,7 @@ impl Users {
     /// See [Filters and sorting](filters/index.html).
     pub fn list(&self, filter: &Filter) -> Future<List<User>> {
         let mut uri = vec!["/users".into()];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -32,7 +32,7 @@ impl Users {
     /// See [Filters and sorting](filters/index.html).
     pub fn iter(&self, filter: &Filter) -> Stream<User> {
         let mut uri = vec!["/users".into()];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -47,7 +47,7 @@ impl Users {
     /// Return the user that is the original submitter of a resource. [required: token]
     pub fn get_owner(&self, resource: Resource) -> Future<User> {
         token_required!(self.modio);
-        let params = resource.to_query_params();
+        let params = resource.to_query_string();
         self.modio.post("/general/ownership", params)
     }
 }
@@ -100,8 +100,8 @@ pub enum Resource {
     File(u32),
 }
 
-impl QueryParams for Resource {
-    fn to_query_params(&self) -> String {
+impl QueryString for Resource {
+    fn to_query_string(&self) -> String {
         let (_type, id) = match *self {
             Resource::Game(id) => ("games", id),
             Resource::Mod(id) => ("mods", id),

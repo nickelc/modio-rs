@@ -30,7 +30,7 @@ impl Members {
     /// See [Filters and sorting](filters/index.html).
     pub fn list(&self, filter: &Filter) -> Future<List<TeamMember>> {
         let mut uri = vec![self.path("")];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -42,7 +42,7 @@ impl Members {
     /// See [Filters and sorting](filters/index.html).
     pub fn iter(&self, filter: &Filter) -> Stream<TeamMember> {
         let mut uri = vec![self.path("")];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -52,7 +52,7 @@ impl Members {
     /// Add a team member by email. [required: token]
     pub fn add(&self, options: &InviteTeamMemberOptions) -> Future<String> {
         token_required!(self.modio);
-        let params = options.to_query_params();
+        let params = options.to_query_string();
         Box::new(
             self.modio
                 .post::<ModioMessage, _>(&self.path(""), params)
@@ -63,7 +63,7 @@ impl Members {
     /// Edit a team member by id. [required: token]
     pub fn edit(&self, id: u32, options: &EditTeamMemberOptions) -> Future<String> {
         token_required!(self.modio);
-        let params = options.to_query_params();
+        let params = options.to_query_string();
         Box::new(
             self.modio
                 .put::<ModioMessage, _>(&self.path(&format!("/{}", id)), params)
@@ -141,8 +141,8 @@ impl InviteTeamMemberOptions {
     option!(position >> "position");
 }
 
-impl QueryParams for InviteTeamMemberOptions {
-    fn to_query_params(&self) -> String {
+impl QueryString for InviteTeamMemberOptions {
+    fn to_query_string(&self) -> String {
         form_urlencoded::Serializer::new(String::new())
             .extend_pairs(&self.params)
             .finish()
@@ -159,8 +159,8 @@ impl EditTeamMemberOptions {
     option!(position >> "position");
 }
 
-impl QueryParams for EditTeamMemberOptions {
-    fn to_query_params(&self) -> String {
+impl QueryString for EditTeamMemberOptions {
+    fn to_query_string(&self) -> String {
         form_urlencoded::Serializer::new(String::new())
             .extend_pairs(&self.params)
             .finish()

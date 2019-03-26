@@ -7,7 +7,7 @@ use tokio::timer::Interval;
 
 use modio::error::Error;
 use modio::filter::prelude::*;
-use modio::QueryParams;
+use modio::QueryString;
 use modio::{auth::Credentials, Modio};
 
 fn current_timestamp() -> u64 {
@@ -50,7 +50,7 @@ fn main() -> Result<(), Error> {
                 .events(&filter)
                 .collect()
                 .and_then(move |list| {
-                    println!("event filter: {}", filter.to_query_params());
+                    println!("event filter: {}", filter.to_query_string());
                     println!("event count: {}", list.len());
                     println!("{:#?}", list);
                     Ok(())

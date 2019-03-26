@@ -204,7 +204,7 @@ mod prelude {
     pub use crate::List;
     pub use crate::Modio;
     pub(crate) use crate::ModioMessage;
-    pub use crate::QueryParams;
+    pub use crate::QueryString;
     pub(crate) use crate::RequestBody;
     pub use crate::{AddOptions, DeleteOptions, Endpoint};
     pub use crate::{Future, Stream};
@@ -906,9 +906,9 @@ where
     }
 
     /// [required: token]
-    pub fn add<T: AddOptions + QueryParams>(&self, options: &T) -> Future<String> {
+    pub fn add<T: AddOptions + QueryString>(&self, options: &T) -> Future<String> {
         token_required!(self.modio);
-        let params = options.to_query_params();
+        let params = options.to_query_string();
         Box::new(
             self.modio
                 .post::<ModioMessage, _>(&self.path, params)
@@ -917,9 +917,9 @@ where
     }
 
     /// [required: token]
-    pub fn delete<T: DeleteOptions + QueryParams>(&self, options: &T) -> Future<()> {
+    pub fn delete<T: DeleteOptions + QueryString>(&self, options: &T) -> Future<()> {
         token_required!(self.modio);
-        let params = options.to_query_params();
+        let params = options.to_query_string();
         self.modio.delete(&self.path, params)
     }
 }
@@ -927,6 +927,6 @@ where
 pub trait AddOptions {}
 pub trait DeleteOptions {}
 
-pub trait QueryParams {
-    fn to_query_params(&self) -> String;
+pub trait QueryString {
+    fn to_query_string(&self) -> String;
 }

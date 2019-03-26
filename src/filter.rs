@@ -438,8 +438,8 @@ impl Filter {
     }
 }
 
-impl crate::QueryParams for Filter {
-    fn to_query_params(&self) -> String {
+impl crate::QueryString for Filter {
+    fn to_query_string(&self) -> String {
         let map_filters = |f: &FilterEntry| {
             let value = match f.value {
                 OneOrMany::One(ref v) => v.to_string(),
@@ -604,7 +604,7 @@ mod test {
     #[allow(dead_code)]
     fn filters() {
         use super::prelude::*;
-        use crate::QueryParams;
+        use crate::QueryString;
 
         filter!(GameId, GAME_ID, "game_id", Eq, NotEq, Like, In, Cmp, OrderBy);
         filter!(NameId, NAME_ID, "name_id", Eq, NotEq, Like, In, Cmp, OrderBy);
@@ -614,52 +614,52 @@ mod test {
         assert_eq!(NAME_ID, "name_id");
 
         let f = GameId::eq(1);
-        assert_eq!(f.to_query_params(), "game_id=1");
+        assert_eq!(f.to_query_string(), "game_id=1");
 
         let f = GameId::_in(vec![1, 2]).and(NameId::like("foobar*"));
-        assert_eq!(f.to_query_params(), "game_id-in=1%2C2&name_id-lk=foobar*");
+        assert_eq!(f.to_query_string(), "game_id-in=1%2C2&name_id-lk=foobar*");
 
         let f = GameId::eq(1).and(GameId::eq(2)).and(GameId::ne(3));
-        assert_eq!(f.to_query_params(), "game_id=2&game_id-not=3");
+        assert_eq!(f.to_query_string(), "game_id=2&game_id-not=3");
 
         let f = GameId::eq(1).order_by(NameId::asc());
-        assert_eq!(f.to_query_params(), "game_id=1&_sort=name_id");
+        assert_eq!(f.to_query_string(), "game_id=1&_sort=name_id");
 
         let f = NameId::like("foo*").and(NameId::not_like("bar*"));
-        assert_eq!(f.to_query_params(), "name_id-lk=foo*&name_id-not-lk=bar*");
+        assert_eq!(f.to_query_string(), "name_id-lk=foo*&name_id-not-lk=bar*");
 
         let f = NameId::gt(1).and(NameId::lt(2));
-        assert_eq!(f.to_query_params(), "name_id-st=2&name_id-gt=1");
+        assert_eq!(f.to_query_string(), "name_id-st=2&name_id-gt=1");
 
         let f = NameId::ge(1).and(NameId::le(2));
-        assert_eq!(f.to_query_params(), "name_id-min=1&name_id-max=2");
+        assert_eq!(f.to_query_string(), "name_id-min=1&name_id-max=2");
 
         let f = BitOption::bit_and(1);
-        assert_eq!(f.to_query_params(), "bit_option-bitwise-and=1");
+        assert_eq!(f.to_query_string(), "bit_option-bitwise-and=1");
 
         let f = NameId::desc();
-        assert_eq!(f.to_query_params(), "_sort=-name_id");
+        assert_eq!(f.to_query_string(), "_sort=-name_id");
 
         let f = with_limit(10).and(with_limit(20));
-        assert_eq!(f.to_query_params(), "_limit=20");
+        assert_eq!(f.to_query_string(), "_limit=20");
 
         let f = with_offset(10).and(with_offset(20));
-        assert_eq!(f.to_query_params(), "_offset=20");
+        assert_eq!(f.to_query_string(), "_offset=20");
     }
 
     #[test]
     fn custom_filters() {
         use super::prelude::*;
         use super::*;
-        use crate::QueryParams;
+        use crate::QueryString;
 
         filter!(GameId, GAME_ID, "game_id", Eq);
 
         let f = GameId::eq(1).and(custom_filter("foo", Operator::Equals, "bar"));
-        assert_eq!(f.to_query_params(), "foo=bar&game_id=1");
+        assert_eq!(f.to_query_string(), "foo=bar&game_id=1");
 
         let f = custom_order_by_asc("foo");
-        assert_eq!(f.to_query_params(), "_sort=foo");
+        assert_eq!(f.to_query_string(), "_sort=foo");
     }
 }
 

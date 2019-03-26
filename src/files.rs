@@ -26,7 +26,7 @@ impl MyFiles {
     pub fn list(&self, filter: &Filter) -> Future<List<File>> {
         token_required!(self.modio);
         let mut uri = vec!["/me/files".to_owned()];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -39,7 +39,7 @@ impl MyFiles {
     pub fn iter(&self, filter: &Filter) -> Stream<File> {
         token_required!(s self.modio);
         let mut uri = vec!["/me/files".to_owned()];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -72,7 +72,7 @@ impl Files {
     /// See [Filters and sorting](filters/index.html).
     pub fn list(&self, filter: &Filter) -> Future<List<File>> {
         let mut uri = vec![self.path("")];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -84,7 +84,7 @@ impl Files {
     /// See [Filters and sorting](filters/index.html).
     pub fn iter(&self, filter: &Filter) -> Stream<File> {
         let mut uri = vec![self.path("")];
-        let query = filter.to_query_params();
+        let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
@@ -136,7 +136,7 @@ impl FileRef {
     /// Edit details of a modfile. [required: token]
     pub fn edit(&self, options: &EditFileOptions) -> Future<File> {
         token_required!(self.modio);
-        let params = options.to_query_params();
+        let params = options.to_query_string();
         self.modio.put(&self.path(), params)
     }
 
@@ -304,8 +304,8 @@ impl EditFileOptions {
     option!(metadata_blob >> "metadata_blob");
 }
 
-impl QueryParams for EditFileOptions {
-    fn to_query_params(&self) -> String {
+impl QueryString for EditFileOptions {
+    fn to_query_string(&self) -> String {
         form_urlencoded::Serializer::new(String::new())
             .extend_pairs(&self.params)
             .finish()
