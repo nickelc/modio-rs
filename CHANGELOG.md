@@ -94,6 +94,8 @@ let stats = game.mods().statistics(&Default::default()).for_each(|stats| {
   modio.mod_(34, 101).edit(&opts);
   ```
 
+* `GameRef::edit`, `ModRef::edit` and `FileRef::edit` are now returning `Future<modio::ModioResult<T>>`.
+
 * Switch from `hyper` to `reqwest`. Type parameter for `Modio` is no longer necessary.
 
 * Drop `failure` crate again and implement std error trait.

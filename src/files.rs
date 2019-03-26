@@ -134,7 +134,7 @@ impl FileRef {
     }
 
     /// Edit details of a modfile. [required: token]
-    pub fn edit(&self, options: &EditFileOptions) -> Future<File> {
+    pub fn edit(&self, options: &EditFileOptions) -> Future<ModioResult<File>> {
         token_required!(self.modio);
         let params = options.to_query_string();
         self.modio.put(&self.path(), params)

@@ -127,6 +127,23 @@ pub struct ModioMessage {
     pub message: String,
 }
 
+/// Result type for editing games, mods and files.
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+pub enum ModioResult<T> {
+    Entity(T),
+    /// The request was successful however no new data was submitted.
+    #[serde(deserialize_with = "deserialize_message")]
+    NoChanges,
+}
+
+fn deserialize_message<'de, D>(deserializer: D) -> Result<(), D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    ModioMessage::deserialize(deserializer).map(|_| ())
+}
+
 /// See the [Multiple Item Response](https://docs.mod.io/#response-formats) docs for more
 /// information.
 #[derive(Debug, Deserialize)]

@@ -134,7 +134,7 @@ impl GameRef {
     }
 
     /// Edit details for a game. [required: token]
-    pub fn edit(&self, options: &EditGameOptions) -> Future<Game> {
+    pub fn edit(&self, options: &EditGameOptions) -> Future<ModioResult<Game>> {
         token_required!(self.modio);
         let params = options.to_query_string();
         self.modio.put(&self.path(""), params)
