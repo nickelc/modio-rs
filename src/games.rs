@@ -133,6 +133,13 @@ impl GameRef {
         Endpoint::new(self.modio.clone(), self.path("/tags"))
     }
 
+    /// Edit details for a game. [required: token]
+    pub fn edit(&self, options: &EditGameOptions) -> Future<Game> {
+        token_required!(self.modio);
+        let params = options.to_query_params();
+        self.modio.put(&self.path(""), params)
+    }
+
     /// Add or edit new media to a game. [required: token]
     pub fn add_media(&self, media: GameMediaOptions) -> Future<String> {
         token_required!(self.modio);
@@ -217,6 +224,36 @@ pub mod filters {
     filter!(RevenueOptions, REVENUE_OPTIONS, "revenue_options", Eq, NotEq, In, Cmp, Bit);
     filter!(ApiAccessOptions, API_ACCESS_OPTIONS, "api_access_options", Eq, NotEq, In, Cmp, Bit);
     filter!(MaturityOptions, MATURITY_OPTIONS, "maturity_options", Eq, NotEq, In, Cmp, Bit);
+}
+
+#[derive(Default)]
+pub struct EditGameOptions {
+    params: std::collections::BTreeMap<&'static str, String>,
+}
+
+impl EditGameOptions {
+    option!(status: Status >> "status");
+    option!(name >> "name");
+    option!(name_id >> "name_id");
+    option!(summary >> "summary");
+    option!(instructions >> "instructions");
+    option!(instructions_url >> "instructions_url");
+    option!(ugc_name >> "ugc_name");
+    option!(presentation_option: PresentationOption >> "presentation_option");
+    option!(submission_option: SubmissionOption >> "submission_option");
+    option!(curation_option: CurationOption >> "curation_option");
+    option!(community_options: CommunityOptions >> "community_options");
+    option!(revenue_options: RevenueOptions >> "revenue_options");
+    option!(api_access_options: ApiAccessOptions >> "api_access_options");
+    option!(maturity_options: MaturityOptions >> "maturity_options");
+}
+
+impl crate::QueryParams for EditGameOptions {
+    fn to_query_params(&self) -> String {
+        url::form_urlencoded::Serializer::new(String::new())
+            .extend_pairs(&self.params)
+            .finish()
+    }
 }
 
 pub struct AddTagsOptions {
