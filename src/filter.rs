@@ -16,6 +16,8 @@ macro_rules! filter {
         $(
             __impl_filter!($x, $type, $name);
         )*
+
+        impl crate::private::Sealed for $type {}
     };
 }
 
@@ -251,37 +253,37 @@ pub mod prelude {
     }
 }
 
-pub trait Eq {
+pub trait Eq: crate::private::Sealed {
     /// Creates [`Equals`](enum.Operator.html#variant.Equals) filter.
     fn eq<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
-pub trait NotEq {
+pub trait NotEq: crate::private::Sealed {
     /// Creates [`Not`](enum.Operator.html#variant.Not) filter.
     fn ne<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
-pub trait Like {
+pub trait Like: crate::private::Sealed {
     /// Creates [`Like`](enum.Operator.html#variant.Like) filter.
     fn like<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
-pub trait NotLike {
+pub trait NotLike: crate::private::Sealed {
     /// Creates [`NotLike`](enum.Operator.html#variant.Like) filter.
     fn not_like<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
-pub trait In {
+pub trait In: crate::private::Sealed {
     /// Creates [`In`](enum.Operator.html#variant.In) filter.
     fn _in<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
-pub trait NotIn {
+pub trait NotIn: crate::private::Sealed {
     /// Creates [`NotIn`](enum.Operator.html#variant.NotIn) filter.
     fn not_in<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
-pub trait Cmp {
+pub trait Cmp: crate::private::Sealed {
     /// Creates [`Max`](enum.Operator.html#variant.Max) filter.
     fn le<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 
@@ -295,12 +297,12 @@ pub trait Cmp {
     fn gt<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
-pub trait BitwiseAnd {
+pub trait BitwiseAnd: crate::private::Sealed {
     /// Creates [`BitwiseAnd`](enum.Operator.html#variant.BitwiseAnd) filter.
     fn bit_and<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
-pub trait OrderBy {
+pub trait OrderBy: crate::private::Sealed {
     /// Creates sorting filter in ascending order.
     fn asc() -> Filter;
 

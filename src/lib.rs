@@ -924,9 +924,30 @@ where
     }
 }
 
-pub trait AddOptions {}
-pub trait DeleteOptions {}
+mod private {
+    pub trait Sealed {}
 
-pub trait QueryString {
+    impl Sealed for super::filter::Filter {}
+    impl Sealed for super::files::EditFileOptions {}
+    impl Sealed for super::games::AddTagsOptions {}
+    impl Sealed for super::games::EditGameOptions {}
+    impl Sealed for super::games::DeleteTagsOptions {}
+    impl Sealed for super::mods::DeleteMediaOptions {}
+    impl Sealed for super::mods::EditDepencenciesOptions {}
+    impl Sealed for super::mods::EditTagsOptions {}
+    impl Sealed for super::mods::EditModOptions {}
+    impl Sealed for super::mods::Rating {}
+    impl Sealed for super::reports::Report {}
+    impl Sealed for super::reports::Resource {}
+    impl Sealed for super::teams::EditTeamMemberOptions {}
+    impl Sealed for super::teams::InviteTeamMemberOptions {}
+    impl Sealed for super::types::mods::MetadataMap {}
+    impl Sealed for super::users::Resource {}
+}
+
+pub trait AddOptions: private::Sealed {}
+pub trait DeleteOptions: private::Sealed {}
+
+pub trait QueryString: private::Sealed {
     fn to_query_string(&self) -> String;
 }
