@@ -11,6 +11,8 @@
 //! - Manually create an [OAuth 2 Access Token (Read + Write)](https://mod.io/oauth)
 //! - [Email Authentication Flow](auth/struct.Auth.html#example) to create an OAuth 2 Access Token
 //! (Read + Write)
+//! - [Encrypted gog user auth ticket](auth/struct.Auth.html#method.gog_auth) to create an
+//! OAuth 2 Access Token (Read + Write)
 //! - [Encrypted steam user auth ticket](auth/struct.Auth.html#method.steam_auth) to create an
 //! OAuth 2 Access Token (Read + Write)
 //!
