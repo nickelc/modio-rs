@@ -50,24 +50,24 @@ impl Members {
     }
 
     /// Add a team member by email. [required: token]
-    pub fn add(&self, options: &InviteTeamMemberOptions) -> Future<String> {
+    pub fn add(&self, options: &InviteTeamMemberOptions) -> Future<()> {
         token_required!(self.modio);
         let params = options.to_query_string();
         Box::new(
             self.modio
                 .post::<ModioMessage, _>(&self.path(""), params)
-                .map(|m| m.message),
+                .map(|_| ()),
         )
     }
 
     /// Edit a team member by id. [required: token]
-    pub fn edit(&self, id: u32, options: &EditTeamMemberOptions) -> Future<String> {
+    pub fn edit(&self, id: u32, options: &EditTeamMemberOptions) -> Future<()> {
         token_required!(self.modio);
         let params = options.to_query_string();
         Box::new(
             self.modio
                 .put::<ModioMessage, _>(&self.path(&format!("/{}", id)), params)
-                .map(|m| m.message),
+                .map(|_| ()),
         )
     }
 

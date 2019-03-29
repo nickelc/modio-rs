@@ -25,7 +25,7 @@ fn main() -> Result<(), Error> {
     let mut rt = Runtime::new().expect("new rt");
     let modio = Modio::host(host, Credentials::ApiKey(api_key))?;
 
-    println!("{:#?}", rt.block_on(modio.auth().request_code(&email))?);
+    rt.block_on(modio.auth().request_code(&email))?;
 
     let code = prompt("Enter security code: ").expect("read code");
     let token = rt.block_on(modio.auth().security_code(&code))?;

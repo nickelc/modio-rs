@@ -13,12 +13,12 @@ impl Reports {
     }
 
     /// Submit a report for any resource on mod.io. [required: token]
-    pub fn submit(&self, report: &Report) -> Future<String> {
+    pub fn submit(&self, report: &Report) -> Future<()> {
         token_required!(self.modio);
         Box::new(
             self.modio
                 .post::<ModioMessage, _>("/report", report.to_query_string())
-                .map(|m| m.message),
+                .map(|_| ()),
         )
     }
 }

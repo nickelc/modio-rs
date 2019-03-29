@@ -909,13 +909,13 @@ where
     }
 
     /// [required: token]
-    pub fn add<T: AddOptions + QueryString>(&self, options: &T) -> Future<String> {
+    pub fn add<T: AddOptions + QueryString>(&self, options: &T) -> Future<()> {
         token_required!(self.modio);
         let params = options.to_query_string();
         Box::new(
             self.modio
                 .post::<ModioMessage, _>(&self.path, params)
-                .map(|m| m.message),
+                .map(|_| ()),
         )
     }
 

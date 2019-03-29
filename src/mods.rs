@@ -213,12 +213,12 @@ impl ModRef {
     }
 
     /// Add new media to a mod. [required: token]
-    pub fn add_media(&self, options: AddMediaOptions) -> Future<String> {
+    pub fn add_media(&self, options: AddMediaOptions) -> Future<()> {
         token_required!(self.modio);
         Box::new(
             self.modio
                 .post_form::<ModioMessage, _>(&self.path("/media"), options)
-                .map(|m| m.message),
+                .map(|_| ()),
         )
     }
 
