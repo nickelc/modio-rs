@@ -69,6 +69,13 @@ impl Error {
         }
     }
 
+    pub fn is_serialization(&self) -> bool {
+        match *self.inner {
+            ErrorKind::Json(_) => true,
+            _ => false,
+        }
+    }
+
     pub fn is_validation(&self) -> bool {
         match *self.inner {
             ErrorKind::Validation(_, _) => true,
