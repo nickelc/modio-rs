@@ -1,4 +1,5 @@
 //! Client errors
+use std::collections::HashMap;
 use std::error::Error as StdError;
 use std::fmt;
 use std::io::Error as IoError;
@@ -31,7 +32,10 @@ impl StdError for Error {
             ErrorKind::Json(ref e) => Some(e),
             ErrorKind::Io(ref e) => Some(e),
             ErrorKind::Url(ref e) => Some(e),
-            ErrorKind::Auth(_) | ErrorKind::RateLimit { .. } | ErrorKind::Message(_) => None,
+            ErrorKind::Auth(_)
+            | ErrorKind::RateLimit { .. }
+            | ErrorKind::Message(_)
+            | ErrorKind::Validation(_, _) => None,
         }
     }
 }
@@ -52,6 +56,7 @@ impl Error {
     pub fn is_client_error(&self) -> bool {
         match *self.inner {
             ErrorKind::Fault { .. } => true,
+            ErrorKind::Validation(_, _) => true,
             ErrorKind::Reqwest(ref e) => e.is_client_error(),
             _ => false,
         }
@@ -60,6 +65,13 @@ impl Error {
     pub fn is_server_error(&self) -> bool {
         match *self.inner {
             ErrorKind::Reqwest(ref e) => e.is_server_error(),
+            _ => false,
+        }
+    }
+
+    pub fn is_validation(&self) -> bool {
+        match *self.inner {
+            ErrorKind::Validation(_, _) => true,
             _ => false,
         }
     }
@@ -77,6 +89,7 @@ pub enum ErrorKind {
         code: StatusCode,
         error: ClientError,
     },
+    Validation(String, HashMap<String, String>),
     RateLimit {
         reset: Duration,
     },
@@ -94,6 +107,9 @@ impl fmt::Display for ErrorKind {
             ErrorKind::Message(msg) => msg.fmt(fmt),
             ErrorKind::Auth(e) => e.fmt(fmt),
             ErrorKind::Fault { code, error } => write!(fmt, "{}: {}", code, error),
+            ErrorKind::Validation(message, errors) => {
+                write!(fmt, "Validation failed: '{}' {:?}", message, errors)
+            }
             ErrorKind::RateLimit { reset } => {
                 write!(fmt, "API rate limit reached. Try again in {:?}.", reset)
             }
@@ -215,8 +231,15 @@ pub(crate) fn token_required() -> Error {
     Error::new(ErrorKind::Auth(AuthenticationError::TokenRequired))
 }
 
-pub(crate) fn fault(code: StatusCode, error: ClientError) -> Error {
-    Error::new(ErrorKind::Fault { code, error })
+pub(crate) fn client(code: StatusCode, error: ClientError) -> Error {
+    if code == 422 {
+        Error::new(ErrorKind::Validation(
+            error.message,
+            error.errors.unwrap_or_default(),
+        ))
+    } else {
+        Error::new(ErrorKind::Fault { code, error })
+    }
 }
 
 pub(crate) fn ratelimit(reset: u64) -> Error {
