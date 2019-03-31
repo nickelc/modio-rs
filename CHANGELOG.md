@@ -2,7 +2,7 @@
 
 #### Features
 
-* A `Builder` to create a `Modio` client with custom configuration.
+* A `Builder` to create a `Modio` client with custom configuration. ([45de8cc6][45de8cc6])
 
 ```rust
 let creds = Credentials::Token("<token>".to_string());
@@ -12,7 +12,7 @@ let modio = Modio::builder(creds)
     .build()?;
 ```
 
-* Proxy support
+* Proxy support ([2b12b40a][2b12b40a])
 
 ```rust
 let proxy = modio::Proxy::all("http://127.0.0.1:8888")?;
@@ -21,11 +21,11 @@ let modio = Modio::builder(creds)
     .build()?;
 ```
 
-* Add optional `rustls-tls` feature to use rustls instead of native-tls.
+* Add optional `rustls-tls` feature to use rustls instead of native-tls. ([a12b4aa8][a12b4aa8])
 
   if compiled with `default-tls` and `rustls-tls` features then it's possible to choose the backend with `Builder::use_default_tls()` and `Builder::use_rustls_tls()`.
 
-* Add methods to provide streams over entities.
+* Add methods to provide streams over entities. ([39bd3287][39bd3287], [2a47d67c][2a47d67c])
 
 ```rust
 use modio::filter::prelude::*;
@@ -41,11 +41,11 @@ let stats = game.mods().statistics(&Default::default()).for_each(|stats| {
 
 * Add type alias `List<T>` for `ModioListResponse<T>`.
 
-* Add Steam authentication `modio.auth().steam_auth("<auth-ticket>")`.
+* Add Steam authentication `modio.auth().steam_auth("<auth-ticket>")`. ([60072f86][60072f86])
 
-* Add GOG Galaxy authentication `modio.auth().gog_auth("<auth-ticket>")`.
+* Add GOG Galaxy authentication `modio.auth().gog_auth("<auth-ticket>")`. ([6e1b1e67][6e1b1e67])
 
-* Link external accounts `modio.auth().link("email", modio::auth::Service)`.
+* Link external accounts `modio.auth().link("email", modio::auth::Service)`. ([30b158ab][30b158ab])
 
 * `modio::me::Event` with new field `game_id`.
 
@@ -55,7 +55,7 @@ let stats = game.mods().statistics(&Default::default()).for_each(|stats| {
 
 #### Breaking Changes
 
-* Rewrite of filtering and sorting.
+* Rewrite of filtering and sorting. ([e94c4dcd][e94c4dcd])
 
   ```rust
   // Before
@@ -76,6 +76,7 @@ let stats = game.mods().statistics(&Default::default()).for_each(|stats| {
   ```
 
 * Removed builders of all \*Options types and changed the options to be by-value instead of by-ref.
+  ([7fe661b6][7fe661b6], [07c3ecb6][07c3ecb6])
 
   ```rust
   // Before
@@ -95,12 +96,13 @@ let stats = game.mods().statistics(&Default::default()).for_each(|stats| {
   ```
 
 * `GameRef::edit`, `ModRef::edit` and `FileRef::edit` are now returning `Future<modio::ModioResult<T>>`.
+  ([6b31ac4a][6b31ac4a])
 
 * Switch from `hyper` to `reqwest`. Type parameter for `Modio` is no longer necessary.
 
 * Drop `failure` crate again and implement std error trait.
 
-* Restrict conversion to `Error` to internal use only.
+* Restrict conversion to `Error` to internal use only. ([1ac2b471][1ac2b471])
 
 * `Modio::new` and `Modio::host` return `Result<Modio>`.
 
@@ -110,11 +112,34 @@ let stats = game.mods().statistics(&Default::default()).for_each(|stats| {
 
 * No longer expose `ModioMessage`.
 
-* Status & visibility mapped as enum.
+* New ErrorKind for validation errors. ([ca4fe09b][ca4fe09b])
+
+* Map status, visibility and other options as enums and bitfields as `bitflags`.
+  ([97a86e8a][97a86e8a], [f2f1acec][f2f1acec])
 
 * Break up event & event types to `modio::me::{Event, EventType}` and `modio::mods::{Event, EventType}`.
+  ([57fc4447][57fc4447])
 
 * Change `Me::{events, subscriptions, ratings}`, `Mods::{events, statistics}` and `Mod::events` to streams over entities.
+  ([2a47d67c][2a47d67c])
+
+[45de8cc6]: https://github.com/nickelc/modio-rs/commit/45de8cc6f13c15abacbf55d43c956efd2f781950
+[2b12b40a]: https://github.com/nickelc/modio-rs/commit/2b12b40afdf87e42460e3a37a3fd69dfc2e8db6b
+[a12b4aa8]: https://github.com/nickelc/modio-rs/commit/a12b4aa89c1126dc83100646d8d84dd789bc7f61
+[39bd3287]: https://github.com/nickelc/modio-rs/commit/39bd3287b65066c9bfe410f16165b0383d4fa444
+[2a47d67c]: https://github.com/nickelc/modio-rs/commit/2a47d67c2a272af8c4e03593e801cb455b121e0e
+[60072f86]: https://github.com/nickelc/modio-rs/commit/60072f8672f06f2cea815aa6f4f659d44be974a0
+[30b158ab]: https://github.com/nickelc/modio-rs/commit/30b158abedae6b9e71cae66fcdc440f89eafa413
+[6e1b1e67]: https://github.com/nickelc/modio-rs/commit/6e1b1e675187c4df6d51972b2bc938353dac7071
+[e94c4dcd]: https://github.com/nickelc/modio-rs/commit/e94c4dcdd0a8ef23df338b1945bade4bdb2896a1
+[7fe661b6]: https://github.com/nickelc/modio-rs/commit/7fe661b68f50794b40db475993e3cab8acc19dd3
+[07c3ecb6]: https://github.com/nickelc/modio-rs/commit/07c3ecb6c9946c64565d8c28c28ccc3a040aed53
+[ca4fe09b]: https://github.com/nickelc/modio-rs/commit/ca4fe09b506d9fc393ccf4084879a8e97068eb37
+[97a86e8a]: https://github.com/nickelc/modio-rs/commit/97a86e8ad50f3251d1b561fe75e997627fd8e19a
+[f2f1acec]: https://github.com/nickelc/modio-rs/commit/f2f1acec4f4c011e60de613d3c86547bc60c019a
+[6b31ac4a]: https://github.com/nickelc/modio-rs/commit/6b31ac4abee97521376803f150e1f9f0ce5c8781
+[1ac2b471]: https://github.com/nickelc/modio-rs/commit/1ac2b4710373c598c87a9b78e293b68329266c38
+[57fc4447]: https://github.com/nickelc/modio-rs/commit/57fc444761499a21ef58ffa6bb81e4ff6f99be1f
 
 ### v0.3 (2018-10-04)
 * builtin method `Modio::download` for downloading files
