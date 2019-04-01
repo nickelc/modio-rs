@@ -1,4 +1,4 @@
-### v0.4 (not released)
+### v0.4 (2019-04-01)
 
 #### Features
 
