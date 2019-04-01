@@ -149,7 +149,7 @@ use reqwest::header::{HeaderMap, HeaderValue};
 use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, USER_AGENT};
 use reqwest::r#async::multipart::Form;
 use reqwest::r#async::{Client, ClientBuilder};
-use reqwest::{Method, StatusCode};
+use reqwest::{Method, Proxy, StatusCode};
 use serde::de::DeserializeOwned;
 use url::Url;
 
@@ -186,7 +186,6 @@ pub use crate::auth::Credentials;
 pub use crate::download::DownloadAction;
 pub use crate::error::{Error, Result};
 pub use crate::types::{ModioErrorResponse, ModioListResponse, ModioResult};
-pub use reqwest::Proxy;
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 const TEST_HOST: &str = "https://api.test.mod.io/v1";
@@ -211,6 +210,16 @@ mod prelude {
     pub(crate) use crate::RequestBody;
     pub use crate::{AddOptions, DeleteOptions, Endpoint};
     pub use crate::{Future, Stream};
+}
+
+/// Re-exports of the used reqwest types.
+pub mod client {
+    pub use reqwest::header;
+    pub use reqwest::r#async::ClientBuilder;
+    pub use reqwest::RedirectPolicy;
+    #[cfg(feature = "tls")]
+    pub use reqwest::{Certificate, Identity};
+    pub use reqwest::{Proxy, Url};
 }
 
 #[allow(dead_code)]

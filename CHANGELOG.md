@@ -15,7 +15,7 @@ let modio = Modio::builder(creds)
 * Proxy support ([2b12b40a][2b12b40a])
 
 ```rust
-let proxy = modio::Proxy::all("http://127.0.0.1:8888")?;
+let proxy = modio::client::Proxy::all("http://127.0.0.1:8888")?;
 let modio = Modio::builder(creds)
     .proxy(proxy)
     .build()?;
