@@ -29,7 +29,7 @@ pub enum DownloadAction {
 pub enum ResolvePolicy {
     /// Download the latest file.
     Latest,
-    /// Return with `Error::Download(DownloadError::MultipleFilesFound)`.
+    /// Return with `ErrorKind::Download(DownloadError::MultipleFilesFound)`.
     Fail,
 }
 
