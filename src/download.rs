@@ -57,21 +57,18 @@ impl From<File> for DownloadAction {
 
 /// Convert `(u32, u32)` to [`DownloadAction::Primary`](enum.DownloadAction.html#variant.Primary)
 impl From<(u32, u32)> for DownloadAction {
-    fn from(val: (u32, u32)) -> DownloadAction {
-        DownloadAction::Primary {
-            game_id: val.0,
-            mod_id: val.1,
-        }
+    fn from((game_id, mod_id): (u32, u32)) -> DownloadAction {
+        DownloadAction::Primary { game_id, mod_id }
     }
 }
 
 /// Convert `(u32, u32, u32)` to [`DownloadAction::File`](enum.DownloadAction.html#variant.File)
 impl From<(u32, u32, u32)> for DownloadAction {
-    fn from(val: (u32, u32, u32)) -> DownloadAction {
+    fn from((game_id, mod_id, file_id): (u32, u32, u32)) -> DownloadAction {
         DownloadAction::File {
-            game_id: val.0,
-            mod_id: val.1,
-            file_id: val.2,
+            game_id,
+            mod_id,
+            file_id,
         }
     }
 }
@@ -79,11 +76,11 @@ impl From<(u32, u32, u32)> for DownloadAction {
 /// Convert `(u32, u32, String)` to [`DownloadAction::Version`](enum.DownloadAction.html#variant.Version)
 /// with resolve policy set to `ResolvePolicy::Latest`
 impl From<(u32, u32, String)> for DownloadAction {
-    fn from(val: (u32, u32, String)) -> DownloadAction {
+    fn from((game_id, mod_id, version): (u32, u32, String)) -> DownloadAction {
         DownloadAction::Version {
-            game_id: val.0,
-            mod_id: val.1,
-            version: val.2,
+            game_id,
+            mod_id,
+            version,
             policy: ResolvePolicy::Latest,
         }
     }
@@ -92,11 +89,11 @@ impl From<(u32, u32, String)> for DownloadAction {
 /// Convert `(u32, u32, &'a str)` to [`DownloadAction::Version`](enum.DownloadAction.html#variant.Version)
 /// with resolve policy set to `ResolvePolicy::Latest`
 impl<'a> From<(u32, u32, &'a str)> for DownloadAction {
-    fn from(val: (u32, u32, &'a str)) -> DownloadAction {
+    fn from((game_id, mod_id, version): (u32, u32, &'a str)) -> DownloadAction {
         DownloadAction::Version {
-            game_id: val.0,
-            mod_id: val.1,
-            version: val.2.to_string(),
+            game_id,
+            mod_id,
+            version: version.to_string(),
             policy: ResolvePolicy::Latest,
         }
     }
