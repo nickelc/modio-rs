@@ -11,6 +11,10 @@ keywords = ["modio", "hyper"]
 categories = ["api-bindings", "web-programming::http-client"]
 edition = "2018"
 
+[badges]
+travis-ci = { repository = "nickelc/modio-rs" }
+maintenance = { status = "actively-developed" }
+
 [dependencies]
 bitflags = "1"
 bytes = "0.4"
