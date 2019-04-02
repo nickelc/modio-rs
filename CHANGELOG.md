@@ -1,3 +1,7 @@
+### v0.4.1 (not released)
+
+* New `Error::is_authentication` accessor
+
 ### v0.4 (2019-04-01)
 
 #### Features

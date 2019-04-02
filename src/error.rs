@@ -76,6 +76,13 @@ impl Error {
         }
     }
 
+    pub fn is_authentication(&self) -> bool {
+        match *self.inner {
+            ErrorKind::Auth(_) => true,
+            _ => false,
+        }
+    }
+
     pub fn is_validation(&self) -> bool {
         match *self.inner {
             ErrorKind::Validation(_, _) => true,
