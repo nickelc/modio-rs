@@ -606,11 +606,15 @@ impl QueryString for EditModOptions {
     }
 }
 
-pub struct EditDepencenciesOptions {
+#[doc(hidden)]
+#[deprecated(since = "0.4.1", note = "Use `EditDependenciesOptions`")]
+pub type EditDepencenciesOptions = EditDependenciesOptions;
+
+pub struct EditDependenciesOptions {
     dependencies: Vec<u32>,
 }
 
-impl EditDepencenciesOptions {
+impl EditDependenciesOptions {
     pub fn new(dependencies: &[u32]) -> Self {
         Self {
             dependencies: dependencies.to_vec(),
@@ -624,10 +628,10 @@ impl EditDepencenciesOptions {
     }
 }
 
-impl AddOptions for EditDepencenciesOptions {}
-impl DeleteOptions for EditDepencenciesOptions {}
+impl AddOptions for EditDependenciesOptions {}
+impl DeleteOptions for EditDependenciesOptions {}
 
-impl QueryString for EditDepencenciesOptions {
+impl QueryString for EditDependenciesOptions {
     fn to_query_string(&self) -> String {
         form_urlencoded::Serializer::new(String::new())
             .extend_pairs(

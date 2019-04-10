@@ -2,6 +2,8 @@
 
 * New `Error::is_authentication` accessor
 
+* Fix typo `EditDependenciesOptions`
+
 ### v0.4 (2019-04-01)
 
 #### Features

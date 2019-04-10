@@ -945,7 +945,7 @@ mod private {
     impl Sealed for super::games::EditGameOptions {}
     impl Sealed for super::games::DeleteTagsOptions {}
     impl Sealed for super::mods::DeleteMediaOptions {}
-    impl Sealed for super::mods::EditDepencenciesOptions {}
+    impl Sealed for super::mods::EditDependenciesOptions {}
     impl Sealed for super::mods::EditTagsOptions {}
     impl Sealed for super::mods::EditModOptions {}
     impl Sealed for super::mods::Rating {}
