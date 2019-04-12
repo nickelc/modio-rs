@@ -776,7 +776,6 @@ pub mod mods {
         D: Deserializer<'de>,
     {
         use serde::de::{SeqAccess, Visitor};
-        use std::fmt;
 
         struct MetadataVisitor;
 
