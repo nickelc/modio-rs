@@ -509,9 +509,10 @@ impl AddModOptions {
 
     pub fn visible(self, v: bool) -> Self {
         Self {
-            visible: match v {
-                true => Some(Visibility::Public),
-                false => Some(Visibility::Hidden),
+            visible: if v {
+                Some(Visibility::Public)
+            } else {
+                Some(Visibility::Hidden)
             },
             ..self
         }
