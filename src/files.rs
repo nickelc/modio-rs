@@ -1,4 +1,5 @@
 //! Modfile interface
+use std::ffi::OsStr;
 use std::path::Path;
 
 use mime::APPLICATION_OCTET_STREAM;
@@ -235,8 +236,8 @@ impl AddFileOptions {
         let file = file.as_ref();
         let filename = file
             .file_name()
-            .and_then(|n| n.to_str())
-            .map_or_else(String::new, |n| n.to_string());
+            .and_then(OsStr::to_str)
+            .map_or_else(String::new, ToString::to_string);
 
         Self::with_file_name(file, filename)
     }

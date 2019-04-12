@@ -1,4 +1,5 @@
 //! Games interface
+use std::ffi::OsStr;
 use std::path::Path;
 
 use mime::IMAGE_STAR;
@@ -347,8 +348,8 @@ impl GameMediaOptions {
         let logo = logo.as_ref();
         let filename = logo
             .file_name()
-            .and_then(|n| n.to_str())
-            .map_or_else(String::new, |n| n.to_string());
+            .and_then(OsStr::to_str)
+            .map_or_else(String::new, ToString::to_string);
 
         Self {
             logo: Some(FileSource {
@@ -364,8 +365,8 @@ impl GameMediaOptions {
         let icon = icon.as_ref();
         let filename = icon
             .file_name()
-            .and_then(|n| n.to_str())
-            .map_or_else(String::new, |n| n.to_string());
+            .and_then(OsStr::to_str)
+            .map_or_else(String::new, ToString::to_string);
 
         Self {
             icon: Some(FileSource {
@@ -381,8 +382,8 @@ impl GameMediaOptions {
         let header = header.as_ref();
         let filename = header
             .file_name()
-            .and_then(|n| n.to_str())
-            .map_or_else(String::new, |n| n.to_string());
+            .and_then(OsStr::to_str)
+            .map_or_else(String::new, ToString::to_string);
 
         Self {
             header: Some(FileSource {

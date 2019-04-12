@@ -1,7 +1,7 @@
 use std::io::Error;
 use std::path::{Path, PathBuf};
 
-use bytes::Bytes;
+use bytes::{Bytes, BytesMut};
 use futures::{task, Async, Future, Poll, Stream};
 use mime::Mime;
 use reqwest::r#async::multipart::Part;
@@ -74,7 +74,7 @@ impl Stream for FileStream {
                 let ret = stream.poll();
                 self.state = Some(State::Read(stream));
                 if let Async::Ready(bytes) = ret? {
-                    Ok(Async::Ready(bytes.map(|b| b.freeze())))
+                    Ok(Async::Ready(bytes.map(BytesMut::freeze)))
                 } else {
                     Ok(Async::NotReady)
                 }
