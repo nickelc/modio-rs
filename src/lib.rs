@@ -185,7 +185,10 @@ use crate::users::Users;
 pub use crate::auth::Credentials;
 pub use crate::download::DownloadAction;
 pub use crate::error::{Error, Result};
-pub use crate::types::{ModioErrorResponse, ModioListResponse, ModioResult};
+#[doc(hidden)]
+#[allow(deprecated)]
+pub use crate::types::ModioResult;
+pub use crate::types::{EntityResult, ModioErrorResponse, ModioListResponse};
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 const TEST_HOST: &str = "https://api.test.mod.io/v1";
@@ -202,9 +205,11 @@ mod prelude {
     pub use reqwest::StatusCode;
 
     pub use crate::filter::Filter;
+    pub use crate::EntityResult;
     pub use crate::List;
     pub use crate::Modio;
     pub(crate) use crate::ModioMessage;
+    #[allow(deprecated)]
     pub use crate::ModioResult;
     pub use crate::QueryString;
     pub(crate) use crate::RequestBody;

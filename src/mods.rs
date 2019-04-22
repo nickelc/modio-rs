@@ -207,7 +207,7 @@ impl ModRef {
     }
 
     /// Edit details for a mod. [required: token]
-    pub fn edit(&self, options: &EditModOptions) -> Future<ModioResult<Mod>> {
+    pub fn edit(&self, options: &EditModOptions) -> Future<EntityResult<Mod>> {
         token_required!(self.modio);
         let params = options.to_query_string();
         self.modio.put(&self.path(""), params)

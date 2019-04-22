@@ -4,6 +4,8 @@
 
 * Fix typo `EditDependenciesOptions`
 
+* Replace `ModioResult` with deprecated type alias for `EntityResult`.
+
 ### v0.4 (2019-04-01)
 
 #### Features

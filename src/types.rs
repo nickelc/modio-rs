@@ -127,10 +127,14 @@ pub struct ModioMessage {
     pub message: String,
 }
 
+#[doc(hidden)]
+#[deprecated(since = "0.4.1", note = "Use `EntityResult`")]
+pub type ModioResult<T> = EntityResult<T>;
+
 /// Result type for editing games, mods and files.
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
-pub enum ModioResult<T> {
+pub enum EntityResult<T> {
     Entity(T),
     /// The request was successful however no new data was submitted.
     #[serde(deserialize_with = "deserialize_message")]
