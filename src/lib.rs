@@ -186,9 +186,11 @@ pub use crate::auth::Credentials;
 pub use crate::download::DownloadAction;
 pub use crate::error::{Error, Result};
 #[doc(hidden)]
+pub use crate::types::ModioErrorResponse;
+#[doc(hidden)]
 #[allow(deprecated)]
 pub use crate::types::ModioResult;
-pub use crate::types::{EntityResult, ModioErrorResponse, ModioListResponse};
+pub use crate::types::{EntityResult, ModioListResponse};
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 const TEST_HOST: &str = "https://api.test.mod.io/v1";
