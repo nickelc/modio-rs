@@ -151,7 +151,7 @@ where
 /// See the [Multiple Item Response](https://docs.mod.io/#response-formats) docs for more
 /// information.
 #[derive(Debug, Deserialize)]
-pub struct ModioListResponse<T> {
+pub struct List<T> {
     pub data: Vec<T>,
     #[serde(rename = "result_count")]
     pub count: u32,
@@ -163,7 +163,7 @@ pub struct ModioListResponse<T> {
     pub offset: u32,
 }
 
-impl<T> ModioListResponse<T> {
+impl<T> List<T> {
     pub fn first(&self) -> Option<&T> {
         self.data.get(0)
     }
@@ -177,7 +177,7 @@ impl<T> ModioListResponse<T> {
     }
 }
 
-impl<T> Index<usize> for ModioListResponse<T> {
+impl<T> Index<usize> for List<T> {
     type Output = T;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -185,7 +185,7 @@ impl<T> Index<usize> for ModioListResponse<T> {
     }
 }
 
-impl<T> IntoIterator for ModioListResponse<T> {
+impl<T> IntoIterator for List<T> {
     type Item = T;
     type IntoIter = ::std::vec::IntoIter<T>;
 
@@ -194,7 +194,7 @@ impl<T> IntoIterator for ModioListResponse<T> {
     }
 }
 
-impl<'a, T> IntoIterator for &'a ModioListResponse<T> {
+impl<'a, T> IntoIterator for &'a List<T> {
     type Item = &'a T;
     type IntoIter = ::std::slice::Iter<'a, T>;
 

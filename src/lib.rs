@@ -190,7 +190,7 @@ pub use crate::types::ModioErrorResponse;
 #[doc(hidden)]
 #[allow(deprecated)]
 pub use crate::types::ModioResult;
-pub use crate::types::{EntityResult, ModioListResponse};
+pub use crate::types::{EntityResult, List};
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 const TEST_HOST: &str = "https://api.test.mod.io/v1";
@@ -198,7 +198,9 @@ const DEFAULT_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), '/', env!("CARGO_PKG
 
 pub type Future<T> = Box<dyn StdFuture<Item = T, Error = Error> + Send>;
 pub type Stream<T> = Box<dyn StdStream<Item = T, Error = Error> + Send>;
-pub type List<T> = ModioListResponse<T>;
+#[doc(hidden)]
+#[deprecated(since = "0.4.1", note = "Use `List`")]
+pub type ModioListResponse<T> = List<T>;
 
 mod prelude {
     pub use futures::{Future as StdFuture, Stream as StdStream};

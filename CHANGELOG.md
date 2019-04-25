@@ -6,6 +6,8 @@
 
 * Replace `ModioResult` with deprecated type alias for `EntityResult`.
 
+* Replace `ModioListResponse` with deprecated type alias for `List`.
+
 ### v0.4 (2019-04-01)
 
 #### Features
