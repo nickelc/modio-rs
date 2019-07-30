@@ -620,7 +620,7 @@ impl Modio {
 
         let response = url.and_then(move |url| {
             debug!("request: {} {}", method, url);
-            let mut req = instance.client.request(method, url.clone());
+            let mut req = instance.client.request(method, url.as_str());
 
             if let Credentials::Token(ref token) = instance.credentials {
                 req = req.header(AUTHORIZATION, &*format!("Bearer {}", token));
@@ -710,7 +710,7 @@ impl Modio {
         let response = url.and_then(move |url| {
             instance
                 .client
-                .request(Method::GET, url)
+                .request(Method::GET, url.as_str())
                 .send()
                 .map_err(error::from)
         });

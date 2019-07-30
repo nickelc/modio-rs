@@ -6,7 +6,6 @@ use bitflags::bitflags;
 use serde::de::{Deserialize, Deserializer};
 use serde::ser::{Serialize, Serializer};
 use url::Url;
-use url_serde;
 
 // macro: enum_number {{{
 macro_rules! enum_number {
@@ -229,7 +228,6 @@ pub struct User {
     pub avatar: Option<Avatar>,
     pub timezone: String,
     pub language: String,
-    #[serde(with = "url_serde")]
     pub profile_url: Url,
 }
 
@@ -237,11 +235,8 @@ pub struct User {
 #[derive(Debug, Deserialize)]
 pub struct Avatar {
     pub filename: String,
-    #[serde(with = "url_serde")]
     pub original: Url,
-    #[serde(with = "url_serde")]
     pub thumb_50x50: Url,
-    #[serde(with = "url_serde")]
     pub thumb_100x100: Url,
 }
 
@@ -249,13 +244,9 @@ pub struct Avatar {
 #[derive(Debug, Deserialize)]
 pub struct Logo {
     pub filename: String,
-    #[serde(with = "url_serde")]
     pub original: Url,
-    #[serde(with = "url_serde")]
     pub thumb_320x180: Url,
-    #[serde(with = "url_serde")]
     pub thumb_640x360: Url,
-    #[serde(with = "url_serde")]
     pub thumb_1280x720: Url,
 }
 
@@ -357,9 +348,7 @@ pub mod game {
         pub name_id: String,
         pub summary: String,
         pub instructions: Option<String>,
-        #[serde(with = "url_serde")]
         pub instructions_url: Option<Url>,
-        #[serde(with = "url_serde")]
         pub profile_url: Url,
         pub tag_options: Vec<TagOption>,
     }
@@ -454,13 +443,9 @@ pub mod game {
     #[derive(Debug, Deserialize)]
     pub struct Icon {
         pub filename: String,
-        #[serde(with = "url_serde")]
         pub original: Url,
-        #[serde(with = "url_serde")]
         pub thumb_64x64: Url,
-        #[serde(with = "url_serde")]
         pub thumb_128x128: Url,
-        #[serde(with = "url_serde")]
         pub thumb_256x256: Url,
     }
 
@@ -469,7 +454,6 @@ pub mod game {
     #[derive(Debug, Deserialize)]
     pub struct HeaderImage {
         pub filename: String,
-        #[serde(with = "url_serde")]
         pub original: Url,
     }
 
@@ -518,7 +502,6 @@ pub mod mods {
         pub date_live: u64,
         pub maturity_option: MaturityOption,
         pub logo: Logo,
-        #[serde(with = "url_serde")]
         pub homepage_url: Option<Url>,
         pub name: String,
         pub name_id: String,
@@ -526,7 +509,6 @@ pub mod mods {
         pub description: Option<String>,
         pub description_plaintext: Option<String>,
         pub metadata_blob: Option<String>,
-        #[serde(with = "url_serde")]
         pub profile_url: Url,
         #[serde(deserialize_with = "deserialize_modfile")]
         pub modfile: Option<File>,
@@ -637,9 +619,7 @@ pub mod mods {
     #[derive(Debug, Deserialize)]
     pub struct Image {
         pub filename: String,
-        #[serde(with = "url_serde")]
         pub original: Url,
-        #[serde(with = "url_serde")]
         pub thumb_320x180: Url,
     }
 
@@ -851,7 +831,6 @@ pub mod mods {
     /// See the [Download Object](https://docs.mod.io/#download-object) docs for more information.
     #[derive(Debug, Deserialize)]
     pub struct Download {
-        #[serde(with = "url_serde")]
         pub binary_url: Url,
         pub date_expires: u64,
     }

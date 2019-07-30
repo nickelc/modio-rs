@@ -29,8 +29,7 @@ serde_json = "1.0"
 tokio-codec = "0.1"
 tokio-fs = "0.1"
 tokio-io = "0.1"
-url = "1.7"
-url_serde = "0.2"
+url = { version = "2", features = ["serde"] }
 
 [dev-dependencies]
 dotenv = "0.13"
