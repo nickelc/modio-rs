@@ -1,6 +1,7 @@
 //! Team members interface
 use url::form_urlencoded;
 
+use crate::error::Result;
 use crate::prelude::*;
 
 pub use crate::types::mods::{TeamLevel, TeamMember};
@@ -28,15 +29,17 @@ impl Members {
     /// List all team members.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn list(&self, filter: &Filter) -> Future<List<TeamMember>> {
+    pub async fn list(&self, filter: &Filter) -> Result<List<TeamMember>> {
         let mut uri = vec![self.path("")];
         let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get(&uri.join("?"))
+        let url = uri.join("?");
+        self.modio.get(&url).await
     }
 
+    /*
     /// Provids a stream over all team members.
     ///
     /// See [Filters and sorting](filters/index.html).
@@ -48,34 +51,33 @@ impl Members {
         }
         self.modio.stream(&uri.join("?"))
     }
+    */
 
     /// Add a team member by email. [required: token]
-    pub fn add(&self, options: &InviteTeamMemberOptions) -> Future<()> {
+    pub async fn add(&self, options: &InviteTeamMemberOptions) -> Result<()> {
         token_required!(self.modio);
         let params = options.to_query_string();
-        Box::new(
-            self.modio
-                .post::<ModioMessage, _>(&self.path(""), params)
-                .map(|_| ()),
-        )
+        let url = self.path("");
+        self.modio.post::<ModioMessage, _>(&url, params).await?;
+
+        Ok(())
     }
 
     /// Edit a team member by id. [required: token]
-    pub fn edit(&self, id: u32, options: &EditTeamMemberOptions) -> Future<()> {
+    pub async fn edit(&self, id: u32, options: &EditTeamMemberOptions) -> Result<()> {
         token_required!(self.modio);
         let params = options.to_query_string();
-        Box::new(
-            self.modio
-                .put::<ModioMessage, _>(&self.path(&format!("/{}", id)), params)
-                .map(|_| ()),
-        )
+        let url = self.path(&format!("/{}", id));
+        self.modio.put::<ModioMessage, _>(&url, params).await?;
+
+        Ok(())
     }
 
     /// Delete a team member by id. [required: token]
-    pub fn delete(&self, id: u32) -> Future<()> {
+    pub async fn delete(&self, id: u32) -> Result<()> {
         token_required!(self.modio);
-        self.modio
-            .delete(&self.path(&format!("/{}", id)), RequestBody::Empty)
+        let url = self.path(&format!("/{}", id));
+        self.modio.delete(&url, RequestBody::Empty).await
     }
 }
 

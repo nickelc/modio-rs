@@ -1,6 +1,7 @@
 //! Reports interface
 use url::form_urlencoded;
 
+use crate::error::Result;
 use crate::prelude::*;
 
 pub struct Reports {
@@ -13,13 +14,12 @@ impl Reports {
     }
 
     /// Submit a report for any resource on mod.io. [required: token]
-    pub fn submit(&self, report: &Report) -> Future<()> {
+    pub async fn submit(&self, report: &Report) -> Result<()> {
         token_required!(self.modio);
-        Box::new(
-            self.modio
-                .post::<ModioMessage, _>("/report", report.to_query_string())
-                .map(|_| ()),
-        )
+        self.modio
+            .post::<ModioMessage, _>("/report", report.to_query_string())
+            .await?;
+        Ok(())
     }
 }
 

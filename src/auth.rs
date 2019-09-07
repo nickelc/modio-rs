@@ -1,10 +1,9 @@
 //! Authentication Flow interface
 use std::fmt;
 
-use futures::Future as StdFuture;
 use url::form_urlencoded;
 
-use crate::Future;
+use crate::error::Result;
 use crate::Modio;
 use crate::ModioMessage;
 
@@ -82,36 +81,38 @@ impl Auth {
     }
 
     /// Request a security code be sent to the email of the user. [required: apikey]
-    pub fn request_code(&self, email: &str) -> Future<()> {
+    pub async fn request_code(&self, email: &str) -> Result<()> {
         apikey_required!(self.modio);
         let data = form_urlencoded::Serializer::new(String::new())
             .append_pair("email", email)
             .finish();
-        Box::new(
-            self.modio
-                .post::<ModioMessage, _>("/oauth/emailrequest", data)
-                .map(|_| ()),
-        )
+
+        self.modio
+            .post::<ModioMessage, _>("/oauth/emailrequest", data)
+            .await?;
+
+        Ok(())
     }
 
     /// Get the access token for a security code. [required: apikey]
-    pub fn security_code(&self, code: &str) -> Future<Credentials> {
+    pub async fn security_code(&self, code: &str) -> Result<Credentials> {
         apikey_required!(self.modio);
         let data = form_urlencoded::Serializer::new(String::new())
             .append_pair("security_code", code)
             .finish();
 
-        Box::new(
-            self.modio
-                .post::<AccessToken, _>("/oauth/emailexchange", data)
-                .map(|token| Credentials::Token(token.access_token)),
-        )
+        let token = self
+            .modio
+            .post::<AccessToken, _>("/oauth/emailexchange", data)
+            .await?;
+
+        Ok(Credentials::Token(token.access_token))
     }
 
     /// Link an external account. Requires an auth token from the external platform.
     ///
     /// See the [mod.io docs](https://docs.mod.io/#link-external-account) for more information.
-    pub fn link(&self, email: &str, service: Service) -> Future<()> {
+    pub async fn link(&self, email: &str, service: Service) -> Result<()> {
         token_required!(self.modio);
         let (service, id) = match service {
             Service::Steam(id) => ("steam", id.to_string()),
@@ -123,43 +124,45 @@ impl Auth {
             .append_pair("service_id", &id)
             .finish();
 
-        Box::new(
-            self.modio
-                .post::<ModioMessage, _>("/external/link", data)
-                .map(|_| ()),
-        )
+        self.modio
+            .post::<ModioMessage, _>("/external/link", data)
+            .await?;
+
+        Ok(())
     }
 
     /// Get the access token for an encrypted gog app ticket. [required: apikey]
     ///
     /// See the [mod.io docs](https://docs.mod.io/#authenticate-via-gog-galaxy) for more
     /// information.
-    pub fn gog_auth(&self, ticket: &str) -> Future<Credentials> {
+    pub async fn gog_auth(&self, ticket: &str) -> Result<Credentials> {
         apikey_required!(self.modio);
         let data = form_urlencoded::Serializer::new(String::new())
             .append_pair("appdata", ticket)
             .finish();
 
-        Box::new(
-            self.modio
-                .post::<AccessToken, _>("/external/galaxyauth", data)
-                .map(|token| Credentials::Token(token.access_token)),
-        )
+        let token = self
+            .modio
+            .post::<AccessToken, _>("/external/galaxyauth", data)
+            .await?;
+
+        Ok(Credentials::Token(token.access_token))
     }
 
     /// Get the access token for an encrypted steam app ticket. [required: apikey]
     ///
     /// See the [mod.io docs](https://docs.mod.io/#authenticate-via-steam) for more information.
-    pub fn steam_auth(&self, ticket: &str) -> Future<Credentials> {
+    pub async fn steam_auth(&self, ticket: &str) -> Result<Credentials> {
         apikey_required!(self.modio);
         let data = form_urlencoded::Serializer::new(String::new())
             .append_pair("appdata", ticket)
             .finish();
 
-        Box::new(
-            self.modio
-                .post::<AccessToken, _>("/external/steamauth", data)
-                .map(|token| Credentials::Token(token.access_token)),
-        )
+        let token = self
+            .modio
+            .post::<AccessToken, _>("/external/steamauth", data)
+            .await?;
+
+        Ok(Credentials::Token(token.access_token))
     }
 }

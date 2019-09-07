@@ -2,7 +2,7 @@
 use futures::future;
 use url::form_urlencoded;
 
-use crate::error::Error;
+use crate::error::{Error, Result};
 use crate::prelude::*;
 use crate::types::mods::MetadataMap;
 
@@ -25,6 +25,7 @@ impl Metadata {
         format!("/games/{}/mods/{}/metadatakvp", self.game, self.mod_id)
     }
 
+    /*
     /// Return the metadata key value pairs for a mod that this `Metadata` refers to.
     pub fn get(&self) -> Future<MetadataMap> {
         #[derive(Deserialize)]
@@ -44,21 +45,23 @@ impl Metadata {
                 }),
         )
     }
+    */
 
     /// Add metadata for a mod that this `Metadata` refers to.
-    pub fn add(&self, metadata: &MetadataMap) -> Future<()> {
+    pub async fn add(&self, metadata: &MetadataMap) -> Result<()> {
         token_required!(self.modio);
-        Box::new(
-            self.modio
-                .post::<ModioMessage, _>(&self.path(), metadata.to_query_string())
-                .map(|_| ()),
-        )
+        let url = self.path();
+        self.modio
+            .post::<ModioMessage, _>(&url, metadata.to_query_string())
+            .await?;
+        Ok(())
     }
 
     /// Delete metadata for a mod that this `Metadata` refers to.
-    pub fn delete(&self, metadata: &MetadataMap) -> Future<()> {
+    pub async fn delete(&self, metadata: &MetadataMap) -> Result<()> {
         token_required!(self.modio);
-        self.modio.delete(&self.path(), metadata.to_query_string())
+        let url = self.path();
+        self.modio.delete(&url, metadata.to_query_string()).await
     }
 }
 

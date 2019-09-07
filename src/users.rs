@@ -1,6 +1,7 @@
 //! Users interface
 use url::form_urlencoded;
 
+use crate::error::Result;
 use crate::prelude::*;
 
 pub use crate::types::{Avatar, User};
@@ -18,15 +19,17 @@ impl Users {
     /// List all users registered on [mod.io](https:://mod.io).
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn list(&self, filter: &Filter) -> Future<List<User>> {
+    pub async fn list(&self, filter: &Filter) -> Result<List<User>> {
         let mut uri = vec!["/users".into()];
         let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get(&uri.join("?"))
+        let url = uri.join("?");
+        self.modio.get(&url).await
     }
 
+    /*
     /// Provides a stream over all users registered on [mod.io](https:://mod.io).
     ///
     /// See [Filters and sorting](filters/index.html).
@@ -38,17 +41,19 @@ impl Users {
         }
         self.modio.stream(&uri.join("?"))
     }
+    */
 
     /// Return a user by id
-    pub fn get(&self, id: u32) -> Future<User> {
-        self.modio.get(&format!("/users/{}", id))
+    pub async fn get(&self, id: u32) -> Result<User> {
+        let url = format!("/users/{}", id);
+        self.modio.get(&url).await
     }
 
     /// Return the user that is the original submitter of a resource. [required: token]
-    pub fn get_owner(&self, resource: Resource) -> Future<User> {
+    pub async fn get_owner(&self, resource: Resource) -> Result<User> {
         token_required!(self.modio);
         let params = resource.to_query_string();
-        self.modio.post("/general/ownership", params)
+        self.modio.post("/general/ownership", params).await
     }
 }
 

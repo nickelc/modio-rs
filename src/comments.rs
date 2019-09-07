@@ -1,4 +1,5 @@
 //! Mod comments interface
+use crate::error::Result;
 use crate::prelude::*;
 pub use crate::types::mods::Comment;
 
@@ -24,15 +25,17 @@ impl Comments {
     /// List all comments.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn list(&self, filter: &Filter) -> Future<List<Comment>> {
+    pub async fn list(&self, filter: &Filter) -> Result<List<Comment>> {
         let mut uri = vec![self.path("")];
         let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get(&uri.join("?"))
+        let url = uri.join("?");
+        self.modio.get(&url).await
     }
 
+    /*
     /// Provides a stream over all comments of the mod.
     ///
     /// See [Filters and sorting](filters/index.html).
@@ -44,17 +47,19 @@ impl Comments {
         }
         self.modio.stream(&uri.join("?"))
     }
+    */
 
     /// Return comment by id.
-    pub fn get(&self, id: u32) -> Future<Comment> {
-        self.modio.get(&self.path(&format!("/{}", id)))
+    pub async fn get(&self, id: u32) -> Result<Comment> {
+        let url = self.path(&format!("/{}", id));
+        self.modio.get(&url).await
     }
 
     /// Delete a comment by id. [required: token]
-    pub fn delete(&self, id: u32) -> Future<()> {
+    pub async fn delete(&self, id: u32) -> Result<()> {
         token_required!(self.modio);
-        self.modio
-            .delete(&self.path(&format!("/{}", id)), RequestBody::Empty)
+        let url = self.path(&format!("/{}", id));
+        self.modio.delete(&url, RequestBody::Empty).await
     }
 }
 

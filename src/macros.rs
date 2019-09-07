@@ -13,7 +13,7 @@ macro_rules! stream_err {
 macro_rules! apikey_required {
     ($m:expr) => {
         if let crate::auth::Credentials::Token(_) = $m.credentials {
-            return future_err!(crate::error::apikey_required());
+            return Err(crate::error::apikey_required());
         }
     };
 }
@@ -21,7 +21,7 @@ macro_rules! apikey_required {
 macro_rules! token_required {
     ($m:expr) => {
         if let crate::auth::Credentials::ApiKey(_) = $m.credentials {
-            return future_err!(crate::error::token_required());
+            return Err(crate::error::token_required());
         }
     };
     (s $m:expr) => {

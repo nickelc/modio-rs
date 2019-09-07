@@ -142,7 +142,9 @@ use std::io;
 use std::io::prelude::*;
 use std::marker::PhantomData;
 
-use futures::{future, stream, Future as StdFuture, IntoFuture, Stream as StdStream};
+use futures::future::TryFutureExt;
+use futures::stream::TryStreamExt;
+use futures::{future, stream, Stream as StdStream};
 use log::{debug, log_enabled, trace};
 use mime::Mime;
 use reqwest::header::{HeaderMap, HeaderValue};
@@ -196,8 +198,7 @@ const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 const TEST_HOST: &str = "https://api.test.mod.io/v1";
 const DEFAULT_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), '/', env!("CARGO_PKG_VERSION"));
 
-pub type Future<T> = Box<dyn StdFuture<Item = T, Error = Error> + Send>;
-pub type Stream<T> = Box<dyn StdStream<Item = T, Error = Error> + Send>;
+pub type Stream<T> = Box<dyn StdStream<Item = T> + Send>;
 #[doc(hidden)]
 #[deprecated(since = "0.4.1", note = "Use `List`")]
 pub type ModioListResponse<T> = List<T>;
@@ -217,8 +218,8 @@ mod prelude {
     pub use crate::ModioResult;
     pub use crate::QueryString;
     pub(crate) use crate::RequestBody;
+    pub use crate::Stream;
     pub use crate::{AddOptions, DeleteOptions, Endpoint};
-    pub use crate::{Future, Stream};
 }
 
 /// Re-exports of the used reqwest types.
@@ -501,47 +502,47 @@ impl Modio {
     ///     Ok(())
     /// }
     /// ```
-    pub fn download<A, W>(&self, action: A, w: W) -> Future<(u64, W)>
+    pub async fn download<A, W>(&self, action: A, w: W) -> Result<(u64, W)>
     where
         A: Into<DownloadAction>,
         W: Write + 'static + Send,
     {
-        let instance = self.clone();
         match action.into() {
             DownloadAction::Primary { game_id, mod_id } => {
-                Box::new(self.mod_(game_id, mod_id).get().and_then(move |m| {
-                    if let Some(file) = m.modfile {
-                        instance.request_file(&file.download.binary_url.to_string(), w)
-                    } else {
-                        future_err!(error::download_no_primary(game_id, mod_id))
-                    }
-                }))
+                let modref = self.mod_(game_id, mod_id);
+                let m = modref.get().await?;
+                if let Some(file) = m.modfile {
+                    let url = file.download.binary_url.to_string();
+                    self.request_file(&url, w).await
+                } else {
+                    Err(error::download_no_primary(game_id, mod_id))
+                }
             }
             DownloadAction::File {
                 game_id,
                 mod_id,
                 file_id,
-            } => Box::new(
-                self.mod_(game_id, mod_id)
-                    .file(file_id)
-                    .get()
-                    .and_then(move |file| {
-                        instance.request_file(&file.download.binary_url.to_string(), w)
-                    })
+            } => {
+                let fileref = self.mod_(game_id, mod_id).file(file_id);
+                let file = fileref.get().await?;
+                let url = file.download.binary_url.to_string();
+                self.request_file(&url, w)
+                    .await
                     .map_err(move |e| match e.kind() {
                         error::ErrorKind::Fault {
                             code: StatusCode::NOT_FOUND,
                             ..
                         } => error::download_file_not_found(game_id, mod_id, file_id),
                         _ => e,
-                    }),
-            ),
+                    })
+            }
             DownloadAction::Version {
                 game_id,
                 mod_id,
                 version,
                 policy,
             } => {
+                use crate::download::ResolvePolicy::*;
                 use files::filters::{DateAdded, Version};
                 use filter::prelude::*;
 
@@ -549,37 +550,33 @@ impl Modio {
                     .order_by(DateAdded::desc())
                     .limit(2);
 
-                Box::new(
-                    self.mod_(game_id, mod_id)
-                        .files()
-                        .list(&filter)
-                        .and_then(move |list| {
-                            use crate::download::ResolvePolicy::*;
+                let files = self.mod_(game_id, mod_id).files();
+                let list = files.list(&filter).await?;
 
-                            let (file, error) = match (list.count, policy) {
-                                (0, _) => (
-                                    None,
-                                    Some(error::download_version_not_found(
-                                        game_id, mod_id, version,
-                                    )),
-                                ),
-                                (1, _) => (Some(&list[0]), None),
-                                (_, Latest) => (Some(&list[0]), None),
-                                (_, Fail) => (
-                                    None,
-                                    Some(error::download_multiple_files(game_id, mod_id, version)),
-                                ),
-                            };
+                let (file, error) = match (list.count, policy) {
+                    (0, _) => (
+                        None,
+                        Some(error::download_version_not_found(game_id, mod_id, version)),
+                    ),
+                    (1, _) => (Some(&list[0]), None),
+                    (_, Latest) => (Some(&list[0]), None),
+                    (_, Fail) => (
+                        None,
+                        Some(error::download_multiple_files(game_id, mod_id, version)),
+                    ),
+                };
 
-                            if let Some(file) = file {
-                                instance.request_file(&file.download.binary_url.to_string(), w)
-                            } else {
-                                future_err!(error.expect("bug in previous match!"))
-                            }
-                        }),
-                )
+                if let Some(file) = file {
+                    let url = file.download.binary_url.to_string();
+                    self.request_file(&url, w).await
+                } else {
+                    Err(error.expect("bug in previous match!"))
+                }
             }
-            DownloadAction::Url(url) => self.request_file(&url.to_string(), w),
+            DownloadAction::Url(url) => {
+                let url = url.to_string();
+                self.request_file(&url, w).await
+            }
         }
     }
 
@@ -599,135 +596,122 @@ impl Modio {
         Reports::new(self.clone())
     }
 
-    fn request<B, Out>(&self, method: Method, uri: &str, body: B) -> Future<(Url, Out)>
+    async fn request<B, Out>(&self, method: Method, uri: &str, body: B) -> Result<(Url, Out)>
     where
         B: Into<RequestBody> + 'static + Send,
         Out: DeserializeOwned + 'static + Send,
     {
         let url = if let Credentials::ApiKey(ref api_key) = self.credentials {
-            Url::parse(&uri)
-                .map(|mut url| {
-                    url.query_pairs_mut().append_pair("api_key", api_key);
-                    url
-                })
-                .map_err(error::from)
-                .into_future()
+            Url::parse_with_params(&uri, Some(("api_key", api_key))).map_err(error::from)?
         } else {
-            uri.parse().map_err(error::from).into_future()
+            uri.parse().map_err(error::from)?
         };
 
-        let instance = self.clone();
+        debug!("request: {} {}", method, url);
+        let mut req = self.client.request(method, url.clone());
 
-        let response = url.and_then(move |url| {
-            debug!("request: {} {}", method, url);
-            let mut req = instance.client.request(method, url.as_str());
+        if let Credentials::Token(ref token) = self.credentials {
+            req = req.header(AUTHORIZATION, &*format!("Bearer {}", token));
+        }
 
-            if let Credentials::Token(ref token) = instance.credentials {
-                req = req.header(AUTHORIZATION, &*format!("Bearer {}", token));
-            }
-
-            match body.into() {
-                RequestBody::Body(body, mime) => {
-                    trace!("body: {}", body);
-                    if let Some(mime) = mime {
-                        req = req.header(CONTENT_TYPE, &*mime.to_string());
-                    }
-                    req = req.body(body);
+        match body.into() {
+            RequestBody::Body(body, mime) => {
+                trace!("body: {}", body);
+                if let Some(mime) = mime {
+                    req = req.header(CONTENT_TYPE, &*mime.to_string());
                 }
-                RequestBody::Form(form) => {
-                    trace!("{:?}", form);
-                    req = req.multipart(form);
-                }
-                _ => {}
+                req = req.body(body);
             }
-            req.send()
+            RequestBody::Form(form) => {
+                trace!("{:?}", form);
+                req = req.multipart(form);
+            }
+            _ => {}
+        }
+
+        let response = req.send().map_err(error::from).await?;
+
+        let remaining = response
+            .headers()
+            .get(X_RATELIMIT_REMAINING)
+            .and_then(|v| v.to_str().ok())
+            .and_then(|v| v.parse::<u64>().ok());
+        let reset = response
+            .headers()
+            .get(X_RATELIMIT_RETRY_AFTER)
+            .and_then(|v| v.to_str().ok())
+            .and_then(|v| v.parse::<u64>().ok());
+
+        let status = response.status();
+
+        let body = response
+            .into_body()
+            .try_concat()
+            .map_err(error::from)
+            .await?;
+
+        if log_enabled!(log::Level::Trace) {
+            match std::str::from_utf8(&body) {
+                Ok(s) => trace!("response: {}", s),
+                Err(_) => trace!("response: {:?}", body),
+            }
+        }
+
+        if status.is_success() {
+            serde_json::from_slice::<Out>(&body)
+                .map(move |out| (url, out))
                 .map_err(error::from)
-                .and_then(|res| Ok((url, res)))
-        });
-
-        Box::new(response.and_then(move |(url, response)| {
-            let remaining = response
-                .headers()
-                .get(X_RATELIMIT_REMAINING)
-                .and_then(|v| v.to_str().ok())
-                .and_then(|v| v.parse::<u64>().ok());
-            let reset = response
-                .headers()
-                .get(X_RATELIMIT_RETRY_AFTER)
-                .and_then(|v| v.to_str().ok())
-                .and_then(|v| v.parse::<u64>().ok());
-
-            let status = response.status();
-            Box::new(
-                response
-                    .into_body()
-                    .concat2()
-                    .map_err(error::from)
-                    .and_then(move |response_body| {
-                        if log_enabled!(log::Level::Trace) {
-                            match std::str::from_utf8(&response_body) {
-                                Ok(s) => trace!("response: {}", s),
-                                Err(_) => trace!("response: {:?}", response_body),
-                            }
-                        }
-
-                        if status.is_success() {
-                            serde_json::from_slice::<Out>(&response_body)
-                                .map(|out| (url, out))
-                                .map_err(error::from)
-                        } else {
-                            match (remaining, reset) {
-                                (Some(remaining), Some(reset)) if remaining == 0 => {
-                                    debug!("ratelimit reached: reset in {} mins", reset);
-                                    Err(error::ratelimit(reset))
-                                }
-                                _ => serde_json::from_slice::<ModioErrorResponse>(&response_body)
-                                    .map(|mer| Err(error::client(status, mer.error)))
-                                    .map_err(error::from)?,
-                            }
-                        }
-                    }),
-            )
-        }))
+        } else {
+            match (remaining, reset) {
+                (Some(remaining), Some(reset)) if remaining == 0 => {
+                    debug!("ratelimit reached: reset in {} mins", reset);
+                    Err(error::ratelimit(reset))
+                }
+                _ => serde_json::from_slice::<ModioErrorResponse>(&body)
+                    .map(|mer| Err(error::client(status, mer.error)))
+                    .map_err(error::from)?,
+            }
+        }
     }
 
-    fn request_entity<B, D>(&self, method: Method, uri: &str, body: B) -> Future<D>
+    async fn request_entity<B, D>(&self, method: Method, uri: &str, body: B) -> Result<D>
     where
         B: Into<RequestBody> + 'static + Send,
         D: DeserializeOwned + 'static + Send,
     {
-        Box::new(self.request(method, uri, body).map(|(_, entity)| entity))
+        let (_, entity) = self.request(method, uri, body).await?;
+        Ok(entity)
     }
 
-    fn request_file<W>(&self, uri: &str, out: W) -> Future<(u64, W)>
+    async fn request_file<W>(&self, uri: &str, out: W) -> Result<(u64, W)>
     where
         W: Write + 'static + Send,
     {
         debug!("downloading file: {}", uri);
-        let url = Url::parse(uri).map_err(error::from).into_future();
+        let url = Url::parse(uri).map_err(error::from)?;
 
         let instance = self.clone();
-        let response = url.and_then(move |url| {
-            instance
-                .client
-                .request(Method::GET, url.as_str())
-                .send()
-                .map_err(error::from)
-        });
+        let response = instance
+            .client
+            .request(Method::GET, url)
+            .send()
+            .map_err(error::from)
+            .await?;
 
-        Box::new(response.and_then(move |response| {
-            Box::new(response.into_body().map_err(error::from).fold(
-                (0, out),
-                |(len, mut out), chunk| {
+        response
+            .into_body()
+            .map_err(error::from)
+            .try_fold((0, out), |(len, mut out), chunk| {
+                future::ready(
                     io::copy(&mut io::Cursor::new(&chunk), &mut out)
                         .map(|n| (n + len, out))
-                        .map_err(error::from)
-                        .into_future()
-                },
-            ))
-        }))
+                        .map_err(error::from),
+                )
+            })
+            .await
     }
 
+    /*
     fn stream<D>(&self, uri: &str) -> Stream<D>
     where
         D: DeserializeOwned + 'static + Send,
@@ -812,65 +796,70 @@ impl Modio {
                 .flatten(),
         )
     }
+    */
 
-    fn get<D>(&self, uri: &str) -> Future<D>
+    async fn get<D>(&self, uri: &str) -> Result<D>
     where
         D: DeserializeOwned + 'static + Send,
     {
-        self.request_entity(Method::GET, &(self.host.clone() + uri), RequestBody::Empty)
+        let url = self.host.clone() + uri;
+        self.request_entity(Method::GET, &url, RequestBody::Empty)
+            .await
     }
 
-    fn post<D, B>(&self, uri: &str, body: B) -> Future<D>
+    async fn post<D, B>(&self, uri: &str, body: B) -> Result<D>
     where
         D: DeserializeOwned + 'static + Send,
         B: Into<RequestBody>,
     {
+        let url = self.host.clone() + uri;
         self.request_entity(
             Method::POST,
-            &(self.host.clone() + uri),
+            &url,
             (body.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
         )
+        .await
     }
 
-    fn post_form<D, M>(&self, uri: &str, data: M) -> Future<D>
+    async fn post_form<D, M>(&self, uri: &str, data: M) -> Result<D>
     where
         D: DeserializeOwned + 'static + Send,
         M: Into<Form>,
     {
-        self.request_entity(
-            Method::POST,
-            &(self.host.clone() + uri),
-            RequestBody::Form(data.into()),
-        )
+        let url = self.host.clone() + uri;
+        self.request_entity(Method::POST, &url, RequestBody::Form(data.into()))
+            .await
     }
 
-    fn put<D, B>(&self, uri: &str, body: B) -> Future<D>
+    async fn put<D, B>(&self, uri: &str, body: B) -> Result<D>
     where
         D: DeserializeOwned + 'static + Send,
         B: Into<RequestBody>,
     {
+        let url = self.host.clone() + uri;
         self.request_entity(
             Method::PUT,
-            &(self.host.clone() + uri),
+            &url,
             (body.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
         )
+        .await
     }
 
-    fn delete<B>(&self, uri: &str, body: B) -> Future<()>
+    async fn delete<B>(&self, uri: &str, body: B) -> Result<()>
     where
         B: Into<RequestBody>,
     {
-        Box::new(
-            self.request_entity(
-                Method::DELETE,
-                &(self.host.clone() + uri),
-                (body.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
-            )
-            .or_else(|err| match err.kind() {
-                error::ErrorKind::Json(_) => Ok(()),
-                _ => Err(err),
-            }),
+        let url = self.host.clone() + uri;
+        self.request_entity(
+            Method::DELETE,
+            &url,
+            (body.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
         )
+        .await
+        .or_else(|err| match err.kind() {
+            error::ErrorKind::Json(_) => Ok(()),
+            _ => Err(err),
+        })
     }
 }
 
@@ -918,30 +907,31 @@ where
         }
     }
 
-    pub fn list(&self) -> Future<List<Out>> {
-        self.modio.get(&self.path)
+    pub async fn list(&self) -> Result<List<Out>> {
+        self.modio.get(&self.path).await
     }
 
+    /*
     pub fn iter(&self) -> Stream<Out> {
         self.modio.stream(&self.path)
     }
+    */
 
     /// [required: token]
-    pub fn add<T: AddOptions + QueryString>(&self, options: &T) -> Future<()> {
+    pub async fn add<T: AddOptions + QueryString>(&self, options: &T) -> Result<()> {
         token_required!(self.modio);
         let params = options.to_query_string();
-        Box::new(
-            self.modio
-                .post::<ModioMessage, _>(&self.path, params)
-                .map(|_| ()),
-        )
+        self.modio
+            .post::<ModioMessage, _>(&self.path, params)
+            .await?;
+        Ok(())
     }
 
     /// [required: token]
-    pub fn delete<T: DeleteOptions + QueryString>(&self, options: &T) -> Future<()> {
+    pub async fn delete<T: DeleteOptions + QueryString>(&self, options: &T) -> Result<()> {
         token_required!(self.modio);
         let params = options.to_query_string();
-        self.modio.delete(&self.path, params)
+        self.modio.delete(&self.path, params).await
     }
 }
 

@@ -5,7 +5,8 @@ use std::path::Path;
 use mime::IMAGE_STAR;
 use url::form_urlencoded;
 
-use crate::multipart::{FileSource, FileStream};
+use crate::error::Result;
+use crate::multipart::FileSource;
 use crate::prelude::*;
 use crate::ModRef;
 use crate::Mods;
@@ -30,16 +31,18 @@ impl MyGames {
     /// List all games the authenticated user added or is team member of. [required: token]
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn list(&self, filter: &Filter) -> Future<List<Game>> {
+    pub async fn list(&self, filter: &Filter) -> Result<List<Game>> {
         token_required!(self.modio);
         let mut uri = vec!["/me/games".to_owned()];
         let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get(&uri.join("?"))
+        let url = uri.join("?");
+        self.modio.get(&url).await
     }
 
+    /*
     /// Provides a stream over all games the authenticated user added or is team member of.
     /// [required: token]
     ///
@@ -53,6 +56,7 @@ impl MyGames {
         }
         self.modio.stream(&uri.join("?"))
     }
+    */
 }
 
 /// Interface for games.
@@ -72,15 +76,17 @@ impl Games {
     /// List all games.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn list(&self, filter: &Filter) -> Future<List<Game>> {
+    pub async fn list(&self, filter: &Filter) -> Result<List<Game>> {
         let mut uri = vec![self.path("")];
         let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get(&uri.join("?"))
+        let url = uri.join("?");
+        self.modio.get(&url).await
     }
 
+    /*
     /// Provides a stream over all games.
     ///
     /// See [Filters and sorting](filters/index.html).
@@ -92,6 +98,7 @@ impl Games {
         }
         self.modio.stream(&uri.join("?"))
     }
+    */
 
     /// Return a reference to a game.
     pub fn get(&self, id: u32) -> GameRef {
@@ -115,8 +122,9 @@ impl GameRef {
     }
 
     /// Get a reference to the Modio game object that this `GameRef` refers to.
-    pub fn get(&self) -> Future<Game> {
-        self.modio.get::<Game>(&format!("/games/{}", self.id))
+    pub async fn get(&self) -> Result<Game> {
+        let url = format!("/games/{}", self.id);
+        self.modio.get::<Game>(&url).await
     }
 
     /// Return a reference to a mod of a game.
@@ -135,20 +143,20 @@ impl GameRef {
     }
 
     /// Edit details for a game. [required: token]
-    pub fn edit(&self, options: &EditGameOptions) -> Future<EntityResult<Game>> {
+    pub async fn edit(&self, options: &EditGameOptions) -> Result<EntityResult<Game>> {
         token_required!(self.modio);
         let params = options.to_query_string();
-        self.modio.put(&self.path(""), params)
+        let url = self.path("");
+        self.modio.put(&url, params).await
     }
 
     /// Add or edit new media to a game. [required: token]
-    pub fn add_media(&self, media: GameMediaOptions) -> Future<()> {
+    pub async fn add_media(&self, media: GameMediaOptions) -> Result<()> {
         token_required!(self.modio);
-        Box::new(
-            self.modio
-                .post_form::<ModioMessage, _>(&self.path("/media"), media)
-                .map(|_| ()),
-        )
+        let url = self.path("/media");
+        self.modio.post_form::<ModioMessage, _>(&url, media).await?;
+
+        Ok(())
     }
 }
 
@@ -352,11 +360,7 @@ impl GameMediaOptions {
             .map_or_else(String::new, ToString::to_string);
 
         Self {
-            logo: Some(FileSource {
-                inner: FileStream::open(logo),
-                filename,
-                mime: IMAGE_STAR,
-            }),
+            logo: Some(FileSource::new_from_file(logo, filename, IMAGE_STAR)),
             ..self
         }
     }
@@ -369,11 +373,7 @@ impl GameMediaOptions {
             .map_or_else(String::new, ToString::to_string);
 
         Self {
-            icon: Some(FileSource {
-                inner: FileStream::open(icon),
-                filename,
-                mime: IMAGE_STAR,
-            }),
+            icon: Some(FileSource::new_from_file(icon, filename, IMAGE_STAR)),
             ..self
         }
     }
@@ -386,11 +386,7 @@ impl GameMediaOptions {
             .map_or_else(String::new, ToString::to_string);
 
         Self {
-            header: Some(FileSource {
-                inner: FileStream::open(header),
-                filename,
-                mime: IMAGE_STAR,
-            }),
+            header: Some(FileSource::new_from_file(header, filename, IMAGE_STAR)),
             ..self
         }
     }

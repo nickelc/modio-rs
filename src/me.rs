@@ -1,4 +1,5 @@
 //! Me interface
+use crate::error::Result;
 use crate::files::MyFiles;
 use crate::games::MyGames;
 use crate::mods::MyMods;
@@ -20,9 +21,9 @@ impl Me {
     }
 
     /// Return the authenticated user. [required: token]
-    pub fn authenticated_user(&self) -> Future<User> {
+    pub async fn authenticated_user(&self) -> Result<User> {
         token_required!(self.modio);
-        self.modio.get("/me")
+        self.modio.get("/me").await
     }
 
     /// Return a reference to an interface that provides access to games the authenticated user
@@ -43,6 +44,7 @@ impl Me {
         MyFiles::new(self.modio.clone())
     }
 
+    /*
     /// Provides a stream the events that have been fired specific to the authenticated user.
     /// [required: token]
     ///
@@ -83,6 +85,7 @@ impl Me {
         }
         self.modio.stream(&uri.join("?"))
     }
+    */
 }
 
 /// Filters for events, subscriptions and ratings.

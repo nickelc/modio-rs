@@ -1,12 +1,14 @@
 //! Modfile interface
 use std::ffi::OsStr;
+use std::marker::Unpin;
 use std::path::Path;
 
 use mime::APPLICATION_OCTET_STREAM;
 use tokio_io::AsyncRead;
 use url::form_urlencoded;
 
-use crate::multipart::{FileSource, FileStream};
+use crate::error::Result;
+use crate::multipart::FileSource;
 use crate::prelude::*;
 
 pub use crate::types::mods::{Download, File, FileHash};
@@ -24,16 +26,18 @@ impl MyFiles {
     /// Return all modfiles the authenticated user uploaded. [required: token]
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn list(&self, filter: &Filter) -> Future<List<File>> {
+    pub async fn list(&self, filter: &Filter) -> Result<List<File>> {
         token_required!(self.modio);
         let mut uri = vec!["/me/files".to_owned()];
         let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get(&uri.join("?"))
+        let url = uri.join("?");
+        self.modio.get(&url).await
     }
 
+    /*
     /// Provides a stream over all modfiles the authenticated user uploaded. [required: token]
     ///
     /// See [Filters and sorting](filters/index.html).
@@ -46,6 +50,7 @@ impl MyFiles {
         }
         self.modio.stream(&uri.join("?"))
     }
+    */
 }
 
 /// Interface for the modfiles of a mod.
@@ -71,15 +76,17 @@ impl Files {
     /// Return all files that are published for a mod this `Files` refers to.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn list(&self, filter: &Filter) -> Future<List<File>> {
+    pub async fn list(&self, filter: &Filter) -> Result<List<File>> {
         let mut uri = vec![self.path("")];
         let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get(&uri.join("?"))
+        let url = uri.join("?");
+        self.modio.get(&url).await
     }
 
+    /*
     /// Provides a stream over all files that are published for a mod this `Files` refers to.
     ///
     /// See [Filters and sorting](filters/index.html).
@@ -91,6 +98,7 @@ impl Files {
         }
         self.modio.stream(&uri.join("?"))
     }
+    */
 
     /// Return a reference to a file.
     pub fn get(&self, id: u32) -> FileRef {
@@ -98,9 +106,10 @@ impl Files {
     }
 
     /// Add a file for a mod that this `Files` refers to. [required: token]
-    pub fn add(&self, options: AddFileOptions) -> Future<File> {
+    pub async fn add(&self, options: AddFileOptions) -> Result<File> {
         token_required!(self.modio);
-        self.modio.post_form(&self.path(""), options)
+        let url = self.path("");
+        self.modio.post_form(&url, options).await
     }
 }
 
@@ -130,21 +139,24 @@ impl FileRef {
     }
 
     /// Get a reference to the Modio modfile object that this `FileRef` refers to.
-    pub fn get(&self) -> Future<File> {
-        self.modio.get(&self.path())
+    pub async fn get(&self) -> Result<File> {
+        let url = self.path();
+        self.modio.get(&url).await
     }
 
     /// Edit details of a modfile. [required: token]
-    pub fn edit(&self, options: &EditFileOptions) -> Future<EntityResult<File>> {
+    pub async fn edit(&self, options: &EditFileOptions) -> Result<EntityResult<File>> {
         token_required!(self.modio);
         let params = options.to_query_string();
-        self.modio.put(&self.path(), params)
+        let url = self.path();
+        self.modio.put(&url, params).await
     }
 
     /// Delete a modfile. [required: token]
-    pub fn delete(&self) -> Future<()> {
+    pub async fn delete(&self) -> Result<()> {
         token_required!(self.modio);
-        self.modio.delete(&self.path(), RequestBody::Empty)
+        let url = self.path();
+        self.modio.delete(&url, RequestBody::Empty).await
     }
 }
 
@@ -215,15 +227,11 @@ pub struct AddFileOptions {
 impl AddFileOptions {
     pub fn with_read<R, S>(inner: R, filename: S) -> AddFileOptions
     where
-        R: AsyncRead + 'static + Send + Sync,
+        R: AsyncRead + Send + Sync + Unpin + 'static,
         S: Into<String>,
     {
         AddFileOptions {
-            source: FileSource {
-                inner: FileStream::new(inner),
-                filename: filename.into(),
-                mime: APPLICATION_OCTET_STREAM,
-            },
+            source: FileSource::new_from_read(inner, filename.into(), APPLICATION_OCTET_STREAM),
             version: None,
             changelog: None,
             active: None,
@@ -250,11 +258,7 @@ impl AddFileOptions {
         let file = file.as_ref();
 
         AddFileOptions {
-            source: FileSource {
-                inner: FileStream::open(file),
-                filename: filename.into(),
-                mime: APPLICATION_OCTET_STREAM,
-            },
+            source: FileSource::new_from_file(file, filename.into(), APPLICATION_OCTET_STREAM),
             version: None,
             changelog: None,
             active: None,

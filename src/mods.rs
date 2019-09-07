@@ -5,10 +5,10 @@ use std::path::Path;
 use mime::{APPLICATION_OCTET_STREAM, IMAGE_STAR};
 use url::{form_urlencoded, Url};
 
-use crate::error::ErrorKind;
+use crate::error::{ErrorKind, Result};
 use crate::files::{FileRef, Files};
 use crate::metadata::Metadata;
-use crate::multipart::{FileSource, FileStream};
+use crate::multipart::FileSource;
 use crate::prelude::*;
 use crate::teams::Members;
 use crate::Comments;
@@ -33,16 +33,18 @@ impl MyMods {
     /// List all mods the authenticated user added or is team member of. [required: token]
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn list(&self, filter: &Filter) -> Future<List<Mod>> {
+    pub async fn list(&self, filter: &Filter) -> Result<List<Mod>> {
         token_required!(self.modio);
         let mut uri = vec!["/me/mods".to_owned()];
         let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get(&uri.join("?"))
+        let url = uri.join("?");
+        self.modio.get(&url).await
     }
 
+    /*
     /// Provides a stream over mods the authenticated user added or is team member of. [required:
     /// token]
     ///
@@ -56,6 +58,7 @@ impl MyMods {
         }
         self.modio.stream(&uri.join("?"))
     }
+    */
 }
 
 /// Interface for mods of a game.
@@ -81,15 +84,17 @@ impl Mods where {
     /// List all mods.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn list(&self, filter: &Filter) -> Future<List<Mod>> {
+    pub async fn list(&self, filter: &Filter) -> Result<List<Mod>> {
         let mut uri = vec![self.path("")];
         let query = filter.to_query_string();
         if !query.is_empty() {
             uri.push(query);
         }
-        self.modio.get(&uri.join("?"))
+        let url = uri.join("?");
+        self.modio.get(&url).await
     }
 
+    /*
     /// Provides a stream over all mods of the game.
     ///
     /// See [Filters and sorting](filters/index.html).
@@ -101,13 +106,16 @@ impl Mods where {
         }
         self.modio.stream(&uri.join("?"))
     }
+    */
 
     /// Add a mod and return the newly created Modio mod object. [required: token]
-    pub fn add(&self, options: AddModOptions) -> Future<Mod> {
+    pub async fn add(&self, options: AddModOptions) -> Result<Mod> {
         token_required!(self.modio);
-        self.modio.post_form(&self.path(""), options)
+        let url = self.path("");
+        self.modio.post_form(&url, options).await
     }
 
+    /*
     /// Provides a stream over the statistics for all mods of a game.
     ///
     /// See [Filters and sorting](filters/stats/index.html).
@@ -131,6 +139,7 @@ impl Mods where {
         }
         self.modio.stream(&uri.join("?"))
     }
+    */
 }
 
 /// Reference interface of a mod.
@@ -150,8 +159,9 @@ impl ModRef {
     }
 
     /// Get a reference to the Modio mod object that this `ModRef` refers to.
-    pub fn get(&self) -> Future<Mod> {
-        self.modio.get(&self.path(""))
+    pub async fn get(&self) -> Result<Mod> {
+        let url = self.path("");
+        self.modio.get(&url).await
     }
 
     /// Return a reference to an interface that provides access to the files of a mod.
@@ -185,10 +195,12 @@ impl ModRef {
     }
 
     /// Return the statistics for a mod.
-    pub fn statistics(&self) -> Future<Statistics> {
-        self.modio.get(&self.path("/stats"))
+    pub async fn statistics(&self) -> Result<Statistics> {
+        let url = self.path("/stats");
+        self.modio.get(&url).await
     }
 
+    /*
     /// Provides a stream over the event log for a mod sorted by latest event first.
     ///
     /// See [Filters and sorting](filters/events/index.html).
@@ -200,6 +212,7 @@ impl ModRef {
         }
         self.modio.stream(&uri.join("?"))
     }
+    */
 
     /// Return a reference to an interface to manage team members of a mod.
     pub fn members(&self) -> Members {
@@ -207,78 +220,83 @@ impl ModRef {
     }
 
     /// Edit details for a mod. [required: token]
-    pub fn edit(&self, options: &EditModOptions) -> Future<EntityResult<Mod>> {
+    pub async fn edit(&self, options: &EditModOptions) -> Result<EntityResult<Mod>> {
         token_required!(self.modio);
         let params = options.to_query_string();
-        self.modio.put(&self.path(""), params)
+        let url = self.path("");
+        self.modio.put(&url, params).await
     }
 
     /// Add new media to a mod. [required: token]
-    pub fn add_media(&self, options: AddMediaOptions) -> Future<()> {
+    pub async fn add_media(&self, options: AddMediaOptions) -> Result<()> {
         token_required!(self.modio);
-        Box::new(
-            self.modio
-                .post_form::<ModioMessage, _>(&self.path("/media"), options)
-                .map(|_| ()),
-        )
+        let url = self.path("/media");
+        self.modio
+            .post_form::<ModioMessage, _>(&url, options)
+            .await?;
+
+        Ok(())
     }
 
     /// Delete media from a mod. [required: token]
-    pub fn delete_media(&self, options: &DeleteMediaOptions) -> Future<()> {
+    pub async fn delete_media(&self, options: &DeleteMediaOptions) -> Result<()> {
         token_required!(self.modio);
-        self.modio
-            .delete(&self.path("/media"), options.to_query_string())
+        let url = self.path("/media");
+        self.modio.delete(&url, options.to_query_string()).await?;
+
+        Ok(())
     }
 
     /// Submit a positive or negative rating for a mod. [required: token]
-    pub fn rate(&self, rating: Rating) -> Future<()> {
+    pub async fn rate(&self, rating: Rating) -> Result<()> {
         token_required!(self.modio);
         let params = rating.to_query_string();
-        Box::new(
-            self.modio
-                .post::<ModioMessage, _>(&self.path("/ratings"), params)
-                .map(|_| ())
-                .or_else(|err| match err.kind() {
-                    ErrorKind::Fault {
-                        code: StatusCode::BAD_REQUEST,
-                        ..
-                    } => Ok(()),
-                    _ => Err(err),
-                }),
-        )
+        let url = self.path("/ratings");
+
+        self.modio
+            .post::<ModioMessage, _>(&url, params)
+            .await
+            .map(|_| ())
+            .or_else(|err| match err.kind() {
+                ErrorKind::Fault {
+                    code: StatusCode::BAD_REQUEST,
+                    ..
+                } => Ok(()),
+                _ => Err(err),
+            })
     }
 
     /// Subscribe the authenticated user to a mod. [required: token]
-    pub fn subscribe(&self) -> Future<()> {
+    pub async fn subscribe(&self) -> Result<()> {
         token_required!(self.modio);
-        Box::new(
-            self.modio
-                .post::<Mod, _>(&self.path("/subscribe"), RequestBody::Empty)
-                .map(|_| ())
-                .or_else(|err| match err.kind() {
-                    ErrorKind::Fault {
-                        code: StatusCode::BAD_REQUEST,
-                        ..
-                    } => Ok(()),
-                    _ => Err(err),
-                }),
-        )
+        let url = self.path("/subscribe");
+        self.modio
+            .post::<Mod, _>(&url, RequestBody::Empty)
+            .await
+            .map(|_| ())
+            .or_else(|err| match err.kind() {
+                ErrorKind::Fault {
+                    code: StatusCode::BAD_REQUEST,
+                    ..
+                } => Ok(()),
+                _ => Err(err),
+            })
     }
 
     /// Unsubscribe the authenticated user from a mod. [required: token]
-    pub fn unsubscribe(&self) -> Future<()> {
+    pub async fn unsubscribe(&self) -> Result<()> {
         token_required!(self.modio);
-        Box::new(
-            self.modio
-                .delete(&self.path("/subscribe"), RequestBody::Empty)
-                .or_else(|err| match err.kind() {
-                    ErrorKind::Fault {
-                        code: StatusCode::BAD_REQUEST,
-                        ..
-                    } => Ok(()),
-                    _ => Err(err),
-                }),
-        )
+        let url = self.path("/subscribe");
+        self.modio
+            .delete(&url, RequestBody::Empty)
+            .await
+            .or_else(|err| match err.kind() {
+                ErrorKind::Fault {
+                    code: StatusCode::BAD_REQUEST,
+                    ..
+                } => Ok(()),
+                _ => Err(err),
+            })
     }
 }
 
@@ -486,11 +504,7 @@ impl AddModOptions {
             .and_then(OsStr::to_str)
             .map_or_else(String::new, ToString::to_string);
 
-        let logo = FileSource {
-            inner: FileStream::open(logo),
-            filename,
-            mime: IMAGE_STAR,
-        };
+        let logo = FileSource::new_from_file(logo, filename, IMAGE_STAR);
 
         AddModOptions {
             name: name.into(),
@@ -686,22 +700,18 @@ impl AddMediaOptions {
             .map_or_else(String::new, ToString::to_string);
 
         Self {
-            logo: Some(FileSource {
-                inner: FileStream::open(logo),
-                filename,
-                mime: IMAGE_STAR,
-            }),
+            logo: Some(FileSource::new_from_file(logo, filename, IMAGE_STAR)),
             ..self
         }
     }
 
     pub fn images_zip<P: AsRef<Path>>(self, images: P) -> Self {
         Self {
-            images_zip: Some(FileSource {
-                inner: FileStream::open(images),
-                filename: "images.zip".into(),
-                mime: APPLICATION_OCTET_STREAM,
-            }),
+            images_zip: Some(FileSource::new_from_file(
+                images,
+                "images.zip".into(),
+                APPLICATION_OCTET_STREAM,
+            )),
             ..self
         }
     }
@@ -718,11 +728,7 @@ impl AddMediaOptions {
                             .and_then(OsStr::to_str)
                             .map_or_else(String::new, ToString::to_string);
 
-                        FileSource {
-                            inner: FileStream::open(file),
-                            filename,
-                            mime: IMAGE_STAR,
-                        }
+                        FileSource::new_from_file(file, filename, IMAGE_STAR)
                     })
                     .collect::<Vec<_>>(),
             ),
