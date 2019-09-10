@@ -149,9 +149,8 @@ use log::{debug, log_enabled, trace};
 use mime::Mime;
 use reqwest::header::{HeaderMap, HeaderValue};
 use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, USER_AGENT};
-use reqwest::r#async::multipart::Form;
-use reqwest::r#async::{Client, ClientBuilder};
-use reqwest::{Method, Proxy, StatusCode};
+use reqwest::multipart::Form;
+use reqwest::{Client, ClientBuilder, Method, Proxy, StatusCode};
 use serde::de::DeserializeOwned;
 use url::Url;
 
@@ -205,8 +204,8 @@ pub type ModioListResponse<T> = List<T>;
 
 mod prelude {
     pub use futures::{Future as StdFuture, Stream as StdStream};
-    pub use reqwest::r#async::multipart::{Form, Part};
-    pub use reqwest::r#async::Body;
+    pub use reqwest::multipart::{Form, Part};
+    pub use reqwest::Body;
     pub use reqwest::StatusCode;
 
     pub use crate::filter::Filter;
@@ -225,7 +224,7 @@ mod prelude {
 /// Re-exports of the used reqwest types.
 pub mod client {
     pub use reqwest::header;
-    pub use reqwest::r#async::ClientBuilder;
+    pub use reqwest::ClientBuilder;
     pub use reqwest::RedirectPolicy;
     #[cfg(feature = "tls")]
     pub use reqwest::{Certificate, Identity};
@@ -644,11 +643,7 @@ impl Modio {
 
         let status = response.status();
 
-        let body = response
-            .into_body()
-            .try_concat()
-            .map_err(error::from)
-            .await?;
+        let body = response.bytes().map_err(error::from).await?;
 
         if log_enabled!(log::Level::Trace) {
             match std::str::from_utf8(&body) {
@@ -683,7 +678,7 @@ impl Modio {
         Ok(entity)
     }
 
-    async fn request_file<W>(&self, uri: &str, out: W) -> Result<(u64, W)>
+    async fn request_file<W>(&self, uri: &str, mut out: W) -> Result<(u64, W)>
     where
         W: Write + Send,
     {
@@ -691,24 +686,18 @@ impl Modio {
         let url = Url::parse(uri).map_err(error::from)?;
 
         let instance = self.clone();
-        let response = instance
+        let mut response = instance
             .client
             .request(Method::GET, url)
             .send()
             .map_err(error::from)
             .await?;
 
-        response
-            .into_body()
-            .map_err(error::from)
-            .try_fold((0, out), |(len, mut out), chunk| {
-                future::ready(
-                    io::copy(&mut io::Cursor::new(&chunk), &mut out)
-                        .map(|n| (n + len, out))
-                        .map_err(error::from),
-                )
-            })
-            .await
+        let mut n = 0;
+        while let Some(chunk) = response.chunk().map_err(error::from).await? {
+            n += io::copy(&mut io::Cursor::new(&chunk), &mut out).map_err(error::from)?;
+        }
+        Ok((n, out))
     }
 
     /*

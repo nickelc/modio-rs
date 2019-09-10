@@ -67,7 +67,7 @@ pub struct Mods {
     game: u32,
 }
 
-impl Mods where {
+impl Mods {
     pub(crate) fn new(modio: Modio, game: u32) -> Self {
         Self { modio, game }
     }

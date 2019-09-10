@@ -19,6 +19,8 @@ maintenance = { status = "actively-developed" }
 bitflags = "1"
 bytes = "0.4"
 futures-preview = "=0.3.0-alpha.18"
+futures-core-preview = "=0.3.0-alpha.18"
+futures-util-preview = "=0.3.0-alpha.18"
 http = "0.1"
 log = "0.4"
 mime = "0.3"
@@ -33,8 +35,6 @@ url = { version = "2", features = ["serde"] }
 
 [dev-dependencies]
 dotenv = "0.14"
-futures-core-preview = "=0.3.0-alpha.18"
-futures-util-preview = "=0.3.0-alpha.18"
 env_logger = { version = "0.6", default-features = false }
 md5 = "0.6"
 tokio = "=0.2.0-alpha.4"
@@ -43,7 +43,7 @@ tokio = "=0.2.0-alpha.4"
 default = ["default-tls"]
 tls = []
 default-tls = ["reqwest/default-tls", "tls"]
-# rustls-tls = ["reqwest/rustls-tls", "tls"]
+rustls-tls = ["reqwest/rustls-tls", "tls"]
 
 [package.metadata.docs.rs]
 all-features = true

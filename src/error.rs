@@ -57,14 +57,20 @@ impl Error {
         match *self.inner {
             ErrorKind::Fault { .. } => true,
             ErrorKind::Validation(_, _) => true,
-            ErrorKind::Reqwest(ref e) => e.is_client_error(),
+            ErrorKind::Reqwest(ref e) => match e.status() {
+                Some(code) => code.is_client_error(),
+                None => false,
+            },
             _ => false,
         }
     }
 
     pub fn is_server_error(&self) -> bool {
         match *self.inner {
-            ErrorKind::Reqwest(ref e) => e.is_server_error(),
+            ErrorKind::Reqwest(ref e) => match e.status() {
+                Some(code) => code.is_server_error(),
+                None => false,
+            },
             _ => false,
         }
     }
