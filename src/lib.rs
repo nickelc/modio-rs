@@ -505,7 +505,7 @@ impl Modio {
     pub async fn download<A, W>(&self, action: A, w: W) -> Result<(u64, W)>
     where
         A: Into<DownloadAction>,
-        W: Write + 'static + Send,
+        W: Write + Send,
     {
         match action.into() {
             DownloadAction::Primary { game_id, mod_id } => {
@@ -598,8 +598,8 @@ impl Modio {
 
     async fn request<B, Out>(&self, method: Method, uri: &str, body: B) -> Result<(Url, Out)>
     where
-        B: Into<RequestBody> + 'static + Send,
-        Out: DeserializeOwned + 'static + Send,
+        B: Into<RequestBody> + Send,
+        Out: DeserializeOwned + Send,
     {
         let url = if let Credentials::ApiKey(ref api_key) = self.credentials {
             Url::parse_with_params(&uri, Some(("api_key", api_key))).map_err(error::from)?
@@ -676,8 +676,8 @@ impl Modio {
 
     async fn request_entity<B, D>(&self, method: Method, uri: &str, body: B) -> Result<D>
     where
-        B: Into<RequestBody> + 'static + Send,
-        D: DeserializeOwned + 'static + Send,
+        B: Into<RequestBody> + Send,
+        D: DeserializeOwned + Send,
     {
         let (_, entity) = self.request(method, uri, body).await?;
         Ok(entity)
@@ -685,7 +685,7 @@ impl Modio {
 
     async fn request_file<W>(&self, uri: &str, out: W) -> Result<(u64, W)>
     where
-        W: Write + 'static + Send,
+        W: Write + Send,
     {
         debug!("downloading file: {}", uri);
         let url = Url::parse(uri).map_err(error::from)?;
@@ -714,11 +714,11 @@ impl Modio {
     /*
     fn stream<D>(&self, uri: &str) -> Stream<D>
     where
-        D: DeserializeOwned + 'static + Send,
+        D: DeserializeOwned + Send,
     {
         struct State<D>
         where
-            D: DeserializeOwned + 'static + Send,
+            D: DeserializeOwned + Send,
         {
             url: Url,
             items: Vec<D>,
@@ -800,7 +800,7 @@ impl Modio {
 
     async fn get<D>(&self, uri: &str) -> Result<D>
     where
-        D: DeserializeOwned + 'static + Send,
+        D: DeserializeOwned + Send,
     {
         let url = self.host.clone() + uri;
         self.request_entity(Method::GET, &url, RequestBody::Empty)
@@ -809,7 +809,7 @@ impl Modio {
 
     async fn post<D, B>(&self, uri: &str, body: B) -> Result<D>
     where
-        D: DeserializeOwned + 'static + Send,
+        D: DeserializeOwned + Send,
         B: Into<RequestBody>,
     {
         let url = self.host.clone() + uri;
@@ -823,7 +823,7 @@ impl Modio {
 
     async fn post_form<D, M>(&self, uri: &str, data: M) -> Result<D>
     where
-        D: DeserializeOwned + 'static + Send,
+        D: DeserializeOwned + Send,
         M: Into<Form>,
     {
         let url = self.host.clone() + uri;
@@ -833,7 +833,7 @@ impl Modio {
 
     async fn put<D, B>(&self, uri: &str, body: B) -> Result<D>
     where
-        D: DeserializeOwned + 'static + Send,
+        D: DeserializeOwned + Send,
         B: Into<RequestBody>,
     {
         let url = self.host.clone() + uri;
@@ -888,7 +888,7 @@ impl From<(RequestBody, Mime)> for RequestBody {
 /// Generic endpoint for sub-resources
 pub struct Endpoint<Out>
 where
-    Out: DeserializeOwned + 'static,
+    Out: DeserializeOwned,
 {
     modio: Modio,
     path: String,
@@ -897,7 +897,7 @@ where
 
 impl<Out> Endpoint<Out>
 where
-    Out: DeserializeOwned + 'static + Send,
+    Out: DeserializeOwned + Send,
 {
     pub(crate) fn new(modio: Modio, path: String) -> Endpoint<Out> {
         Self {
