@@ -137,14 +137,11 @@
 #[macro_use]
 extern crate serde_derive;
 
-use std::collections::BTreeMap;
 use std::io;
 use std::io::prelude::*;
 use std::marker::PhantomData;
 
 use futures::future::TryFutureExt;
-use futures::stream::TryStreamExt;
-use futures::{future, stream, Stream as StdStream};
 use log::{debug, log_enabled, trace};
 use mime::Mime;
 use reqwest::header::{HeaderMap, HeaderValue};
@@ -165,11 +162,14 @@ pub mod download;
 pub mod error;
 pub mod files;
 pub mod games;
+mod iter;
 pub mod me;
 pub mod metadata;
 pub mod mods;
 mod multipart;
 pub mod reports;
+mod request;
+mod routing;
 pub mod teams;
 mod types;
 pub mod users;
@@ -177,9 +177,11 @@ pub mod users;
 use crate::auth::Auth;
 use crate::comments::Comments;
 use crate::games::{GameRef, Games};
+use crate::iter::Iter;
 use crate::me::Me;
 use crate::mods::{ModRef, Mods};
 use crate::reports::Reports;
+use crate::request::RequestBuilder;
 use crate::types::ModioMessage;
 use crate::users::Users;
 
@@ -197,7 +199,8 @@ const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 const TEST_HOST: &str = "https://api.test.mod.io/v1";
 const DEFAULT_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), '/', env!("CARGO_PKG_VERSION"));
 
-pub type Stream<T> = Box<dyn StdStream<Item = T> + Send>;
+pub type Stream<'a, T> = futures_core::stream::BoxStream<'a, Result<T>>;
+
 #[doc(hidden)]
 #[deprecated(since = "0.4.1", note = "Use `List`")]
 pub type ModioListResponse<T> = List<T>;
@@ -700,92 +703,17 @@ impl Modio {
         Ok((n, out))
     }
 
-    /*
-    fn stream<D>(&self, uri: &str) -> Stream<D>
-    where
-        D: DeserializeOwned + Send,
-    {
-        struct State<D>
-        where
-            D: DeserializeOwned + Send,
-        {
-            url: Url,
-            items: Vec<D>,
-            offset: u32,
-            limit: u32,
-            count: u32,
-        }
-
-        let instance = self.clone();
-
-        Box::new(
-            self.request::<_, List<D>>(Method::GET, &(self.host.clone() + uri), RequestBody::Empty)
-                .map(move |(url, list)| {
-                    debug!("streaming result: {}", url);
-
-                    let mut state = State {
-                        url,
-                        items: list.data,
-                        offset: list.offset,
-                        limit: list.limit,
-                        count: list.total,
-                    };
-                    state.items.reverse();
-
-                    stream::unfold::<_, _, Future<(D, State<D>)>, _>(state, move |mut state| {
-                        match state.items.pop() {
-                            Some(item) => {
-                                state.count -= 1;
-                                Some(Box::new(future::ok((item, state))))
-                            }
-                            _ => {
-                                if state.count == 0 {
-                                    return None;
-                                }
-                                let mut map = BTreeMap::new();
-                                for (key, value) in state.url.query_pairs().into_owned() {
-                                    map.insert(key, value);
-                                }
-                                map.insert(
-                                    "_offset".to_string(),
-                                    (state.offset + state.limit).to_string(),
-                                );
-                                state.url.query_pairs_mut().clear();
-                                state.url.query_pairs_mut().extend_pairs(map.iter());
-
-                                debug!("loading next page: {}", state.url);
-
-                                let next = Box::new(
-                                    instance
-                                        .request::<_, List<D>>(
-                                            Method::GET,
-                                            &state.url.to_string(),
-                                            RequestBody::Empty,
-                                        )
-                                        .map(move |(url, list)| {
-                                            let mut state = State {
-                                                url,
-                                                items: list.data,
-                                                limit: state.limit,
-                                                offset: state.offset + state.limit,
-                                                count: state.count - 1,
-                                            };
-                                            let item = state.items.remove(0);
-                                            state.items.reverse();
-                                            (item, state)
-                                        }),
-                                )
-                                    as Future<(D, State<D>)>;
-                                Some(next)
-                            }
-                        }
-                    })
-                })
-                .into_stream()
-                .flatten(),
-        )
+    fn request2(&self, route: routing::Route) -> RequestBuilder {
+        RequestBuilder::new(self.clone(), route)
     }
-    */
+
+    fn stream<'a, T>(self, route: routing::Route, filter: filter::Filter) -> Stream<'a, T>
+    where
+        T: DeserializeOwned + Send + 'a,
+    {
+        use futures_util::StreamExt;
+        Iter::new(self, route, filter).boxed()
+    }
 
     async fn get<D>(&self, uri: &str) -> Result<D>
     where

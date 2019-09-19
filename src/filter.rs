@@ -350,7 +350,7 @@ pub fn custom_order_by_desc<S: Into<String>>(name: S) -> Filter {
     Filter::new_order_by_desc(name)
 }
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct Filter {
     filters: BTreeSet<FilterEntry>,
     order_by: Option<Sorting>,
@@ -463,6 +463,7 @@ impl crate::QueryString for Filter {
     }
 }
 
+#[derive(Clone)]
 struct FilterEntry {
     name: String,
     op: Operator,
@@ -500,6 +501,7 @@ impl PartialOrd for FilterEntry {
 }
 // }}}
 
+#[derive(Clone)]
 enum Sorting {
     Asc(String),
     Desc(String),
@@ -522,7 +524,7 @@ impl fmt::Display for Sorting {
 /// Filter operators of mod.io.
 ///
 /// See [mod.io docs](https://docs.mod.io/#filtering) for more information.
-#[derive(Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Operator {
     /// Equal to (`id=1`)
     Equals,
@@ -568,7 +570,7 @@ impl fmt::Display for Operator {
 }
 
 /// Represents a value or a list of values of a filter.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum OneOrMany<T>
 where
     T: fmt::Display,
