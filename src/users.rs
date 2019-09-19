@@ -16,6 +16,7 @@ impl Users {
         Self { modio }
     }
 
+    /*
     /// List all users registered on [mod.io](https:://mod.io).
     ///
     /// See [Filters and sorting](filters/index.html).
@@ -29,7 +30,6 @@ impl Users {
         self.modio.get(&url).await
     }
 
-    /*
     /// Provides a stream over all users registered on [mod.io](https:://mod.io).
     ///
     /// See [Filters and sorting](filters/index.html).
@@ -41,19 +41,21 @@ impl Users {
         }
         self.modio.stream(&uri.join("?"))
     }
-    */
 
     /// Return a user by id
     pub async fn get(&self, id: u32) -> Result<User> {
         let url = format!("/users/{}", id);
         self.modio.get(&url).await
     }
+    */
 
     /// Return the user that is the original submitter of a resource. [required: token]
-    pub async fn get_owner(&self, resource: Resource) -> Result<User> {
-        token_required!(self.modio);
-        let params = resource.to_query_string();
-        self.modio.post("/general/ownership", params).await
+    pub async fn get_owner(self, resource: Resource) -> Result<User> {
+        self.modio
+            .request(Route::GetResourceOwner)
+            .body(resource.to_query_string())
+            .send()
+            .await
     }
 }
 

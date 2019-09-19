@@ -14,10 +14,11 @@ impl Reports {
     }
 
     /// Submit a report for any resource on mod.io. [required: token]
-    pub async fn submit(&self, report: &Report) -> Result<()> {
-        token_required!(self.modio);
+    pub async fn submit(self, report: Report) -> Result<()> {
         self.modio
-            .post::<ModioMessage, _>("/report", report.to_query_string())
+            .request(Route::SubmitReport)
+            .body(report.to_query_string())
+            .send::<ModioMessage>()
             .await?;
         Ok(())
     }

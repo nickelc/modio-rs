@@ -24,7 +24,7 @@ pub struct Iter<'a, T> {
 impl<'a, T: DeserializeOwned + Send + 'a> Iter<'a, T> {
     pub fn new(modio: Modio, route: Route, filter: Filter) -> Self {
         let req = modio
-            .request2(route.clone())
+            .request(route.clone())
             .query(filter.to_query_string())
             .send()
             .boxed();
@@ -80,7 +80,7 @@ impl<'a, T: 'a + DeserializeOwned + Send> Stream for Iter<'a, T> {
                         let filter = filter.offset((state.offset + state.limit) as usize);
                         Inner::Request(
                             modio
-                                .request2(route)
+                                .request(route)
                                 .query(filter.to_query_string())
                                 .send()
                                 .boxed(),

@@ -21,9 +21,8 @@ impl Me {
     }
 
     /// Return the authenticated user. [required: token]
-    pub async fn authenticated_user(&self) -> Result<User> {
-        token_required!(self.modio);
-        self.modio.get("/me").await
+    pub async fn authenticated_user(self) -> Result<User> {
+        self.modio.request(Route::AuthorizedUser).send().await
     }
 
     /// Return a reference to an interface that provides access to games the authenticated user
@@ -44,48 +43,28 @@ impl Me {
         MyFiles::new(self.modio.clone())
     }
 
-    /*
     /// Provides a stream the events that have been fired specific to the authenticated user.
     /// [required: token]
     ///
     /// See [Filters and sorting](filters/events/index.html).
-    pub fn events(&self, filter: &Filter) -> Stream<Event> {
-        token_required!(s self.modio);
-        let mut uri = vec!["/me/events".to_owned()];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        self.modio.stream(&uri.join("?"))
+    pub fn events<'a>(self, filter: Filter) -> Stream<'a, Event> {
+        self.modio.stream(Route::UserEvents, filter)
     }
 
     /// Provides a stream over all mod's the authenticated user is subscribed to. [required: token]
     ///
     /// See [Filters and sorting](filters/subscriptions/index.html).
-    pub fn subscriptions(&self, filter: &Filter) -> Stream<Mod> {
-        token_required!(s self.modio);
-        let mut uri = vec!["/me/subscribed".to_owned()];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        self.modio.stream(&uri.join("?"))
+    pub fn subscriptions<'a>(self, filter: Filter) -> Stream<'a, Mod> {
+        self.modio.stream(Route::UserSubscriptions, filter)
     }
 
     /// Provides a stream over all mod rating's submitted by the authenticated user. [required:
     /// token]
     ///
     /// See [Filters and sorting](filters/ratings/index.html).
-    pub fn ratings(&self, filter: &Filter) -> Stream<Rating> {
-        token_required!(s self.modio);
-        let mut uri = vec!["/me/ratings".to_owned()];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        self.modio.stream(&uri.join("?"))
+    pub fn ratings<'a>(self, filter: Filter) -> Stream<'a, Rating> {
+        self.modio.stream(Route::UserRatings, filter)
     }
-    */
 }
 
 /// Filters for events, subscriptions and ratings.

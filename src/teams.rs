@@ -22,62 +22,72 @@ impl Members {
         }
     }
 
-    fn path(&self, more: &str) -> String {
-        format!("/games/{}/mods/{}/team{}", self.game, self.mod_id, more)
-    }
-
     /// List all team members.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub async fn list(&self, filter: &Filter) -> Result<List<TeamMember>> {
-        let mut uri = vec![self.path("")];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        let url = uri.join("?");
-        self.modio.get(&url).await
+    pub async fn list(self, filter: Filter) -> Result<List<TeamMember>> {
+        let route = Route::GetTeamMembers {
+            game_id: self.game,
+            mod_id: self.mod_id,
+        };
+        self.modio
+            .request(route)
+            .query(filter.to_query_string())
+            .send()
+            .await
     }
 
-    /*
     /// Provids a stream over all team members.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn iter(&self, filter: &Filter) -> Stream<TeamMember> {
-        let mut uri = vec![self.path("")];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        self.modio.stream(&uri.join("?"))
+    pub fn iter<'a>(self, filter: Filter) -> Stream<'a, TeamMember> {
+        let route = Route::GetTeamMembers {
+            game_id: self.game,
+            mod_id: self.mod_id,
+        };
+        self.modio.stream(route, filter)
     }
-    */
 
     /// Add a team member by email. [required: token]
-    pub async fn add(&self, options: &InviteTeamMemberOptions) -> Result<()> {
-        token_required!(self.modio);
-        let params = options.to_query_string();
-        let url = self.path("");
-        self.modio.post::<ModioMessage, _>(&url, params).await?;
+    pub async fn add(self, options: InviteTeamMemberOptions) -> Result<()> {
+        let route = Route::AddTeamMember {
+            game_id: self.game,
+            mod_id: self.mod_id,
+        };
+        self.modio
+            .request(route)
+            .body(options.to_query_string())
+            .send::<ModioMessage>()
+            .await?;
 
         Ok(())
     }
 
     /// Edit a team member by id. [required: token]
-    pub async fn edit(&self, id: u32, options: &EditTeamMemberOptions) -> Result<()> {
-        token_required!(self.modio);
-        let params = options.to_query_string();
-        let url = self.path(&format!("/{}", id));
-        self.modio.put::<ModioMessage, _>(&url, params).await?;
+    pub async fn edit(self, id: u32, options: EditTeamMemberOptions) -> Result<()> {
+        let route = Route::EditTeamMember {
+            game_id: self.game,
+            mod_id: self.mod_id,
+            member_id: id,
+        };
+        self.modio
+            .request(route)
+            .body(options.to_query_string())
+            .send::<ModioMessage>()
+            .await?;
 
         Ok(())
     }
 
     /// Delete a team member by id. [required: token]
-    pub async fn delete(&self, id: u32) -> Result<()> {
-        token_required!(self.modio);
-        let url = self.path(&format!("/{}", id));
-        self.modio.delete(&url, RequestBody::Empty).await
+    pub async fn delete(self, id: u32) -> Result<()> {
+        let route = Route::DeleteTeamMember {
+            game_id: self.game,
+            mod_id: self.mod_id,
+            member_id: id,
+        };
+        self.modio.request(route).send().await?;
+        Ok(())
     }
 }
 

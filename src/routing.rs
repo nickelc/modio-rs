@@ -2,7 +2,6 @@ use std::borrow::Cow;
 
 use reqwest::Method;
 
-#[allow(dead_code)]
 #[derive(Clone, Debug)]
 pub enum Route {
     AuthEmailRequest,
@@ -173,7 +172,7 @@ pub enum Route {
         mod_id: u32,
         file_id: u32,
     },
-    User,
+    AuthorizedUser,
     UserSubscriptions,
     UserEvents,
     UserGames,
@@ -319,7 +318,7 @@ impl Route {
                 mod_id,
                 file_id,
             } => route!(DELETE, Route::mod_file(game_id, mod_id, file_id), Token),
-            User => route!(GET, Route::user(), Token),
+            AuthorizedUser => route!(GET, Route::user(), Token),
             UserSubscriptions => route!(GET, Route::user_subscriptions(), Token),
             UserEvents => route!(GET, Route::user_events(), Token),
             UserGames => route!(GET, Route::user_games(), Token),

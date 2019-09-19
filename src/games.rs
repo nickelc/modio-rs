@@ -31,32 +31,21 @@ impl MyGames {
     /// List all games the authenticated user added or is team member of. [required: token]
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub async fn list(&self, filter: &Filter) -> Result<List<Game>> {
-        token_required!(self.modio);
-        let mut uri = vec!["/me/games".to_owned()];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        let url = uri.join("?");
-        self.modio.get(&url).await
+    pub async fn list(self, filter: Filter) -> Result<List<Game>> {
+        self.modio
+            .request(Route::UserGames)
+            .query(filter.to_query_string())
+            .send()
+            .await
     }
 
-    /*
     /// Provides a stream over all games the authenticated user added or is team member of.
     /// [required: token]
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn iter(&self, filter: &Filter) -> Stream<Game> {
-        token_required!(s self.modio);
-        let mut uri = vec!["/me/games".to_owned()];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        self.modio.stream(&uri.join("?"))
+    pub fn iter<'a>(self, filter: Filter) -> Stream<'a, Game> {
+        self.modio.stream(Route::UserGames, filter)
     }
-    */
 }
 
 /// Interface for games.
@@ -69,36 +58,23 @@ impl Games {
         Self { modio }
     }
 
-    fn path(&self, more: &str) -> String {
-        format!("/games{}", more)
-    }
-
     /// List all games.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub async fn list(&self, filter: &Filter) -> Result<List<Game>> {
-        let mut uri = vec![self.path("")];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        let url = uri.join("?");
-        self.modio.get(&url).await
+    pub async fn list(self, filter: Filter) -> Result<List<Game>> {
+        self.modio
+            .request(Route::GetGames)
+            .query(filter.to_query_string())
+            .send()
+            .await
     }
 
-    /*
     /// Provides a stream over all games.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn iter(&self, filter: &Filter) -> Stream<Game> {
-        let mut uri = vec![self.path("")];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        self.modio.stream(&uri.join("?"))
+    pub fn iter<'a>(self, filter: Filter) -> Stream<'a, Game> {
+        self.modio.stream(Route::GetGames, filter)
     }
-    */
 
     /// Return a reference to a game.
     pub fn get(&self, id: u32) -> GameRef {
@@ -117,14 +93,10 @@ impl GameRef {
         Self { modio, id }
     }
 
-    fn path(&self, more: &str) -> String {
-        format!("/games/{}{}", self.id, more)
-    }
-
     /// Get a reference to the Modio game object that this `GameRef` refers to.
-    pub async fn get(&self) -> Result<Game> {
-        let url = format!("/games/{}", self.id);
-        self.modio.get::<Game>(&url).await
+    pub async fn get(self) -> Result<Game> {
+        let route = Route::GetGame { game_id: self.id };
+        self.modio.request(route).send().await
     }
 
     /// Return a reference to a mod of a game.
@@ -139,23 +111,30 @@ impl GameRef {
 
     /// Return a reference to an interface that provides access to the tags of a game.
     pub fn tags(&self) -> Endpoint<TagOption> {
-        Endpoint::new(self.modio.clone(), self.path("/tags"))
+        let list = Route::GetGameTags { game_id: self.id };
+        let add = Route::AddGameTags { game_id: self.id };
+        let delete = Route::DeleteGameTags { game_id: self.id };
+        Endpoint::new(self.modio.clone(), list, add, delete)
     }
 
     /// Edit details for a game. [required: token]
-    pub async fn edit(&self, options: &EditGameOptions) -> Result<EntityResult<Game>> {
-        token_required!(self.modio);
-        let params = options.to_query_string();
-        let url = self.path("");
-        self.modio.put(&url, params).await
+    pub async fn edit(self, options: EditGameOptions) -> Result<EntityResult<Game>> {
+        let route = Route::EditGame { game_id: self.id };
+        self.modio
+            .request(route)
+            .body(options.to_query_string())
+            .send()
+            .await
     }
 
     /// Add or edit new media to a game. [required: token]
-    pub async fn add_media(&self, media: GameMediaOptions) -> Result<()> {
-        token_required!(self.modio);
-        let url = self.path("/media");
-        self.modio.post_form::<ModioMessage, _>(&url, media).await?;
-
+    pub async fn add_media(self, media: GameMediaOptions) -> Result<()> {
+        let route = Route::AddGameMedia { game_id: self.id };
+        self.modio
+            .request(route)
+            .body(Form::from(media))
+            .send::<ModioMessage>()
+            .await?;
         Ok(())
     }
 }

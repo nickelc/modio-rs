@@ -142,11 +142,9 @@ use std::io::prelude::*;
 use std::marker::PhantomData;
 
 use futures::future::TryFutureExt;
-use log::{debug, log_enabled, trace};
-use mime::Mime;
+use log::debug;
+use reqwest::header::USER_AGENT;
 use reqwest::header::{HeaderMap, HeaderValue};
-use reqwest::header::{AUTHORIZATION, CONTENT_TYPE, USER_AGENT};
-use reqwest::multipart::Form;
 use reqwest::{Client, ClientBuilder, Method, Proxy, StatusCode};
 use serde::de::DeserializeOwned;
 use url::Url;
@@ -182,6 +180,7 @@ use crate::me::Me;
 use crate::mods::{ModRef, Mods};
 use crate::reports::Reports;
 use crate::request::RequestBuilder;
+use crate::routing::Route;
 use crate::types::ModioMessage;
 use crate::users::Users;
 
@@ -212,6 +211,7 @@ mod prelude {
     pub use reqwest::StatusCode;
 
     pub use crate::filter::Filter;
+    pub use crate::routing::Route;
     pub use crate::EntityResult;
     pub use crate::List;
     pub use crate::Modio;
@@ -219,7 +219,6 @@ mod prelude {
     #[allow(deprecated)]
     pub use crate::ModioResult;
     pub use crate::QueryString;
-    pub(crate) use crate::RequestBody;
     pub use crate::Stream;
     pub use crate::{AddOptions, DeleteOptions, Endpoint};
 }
@@ -553,7 +552,7 @@ impl Modio {
                     .limit(2);
 
                 let files = self.mod_(game_id, mod_id).files();
-                let list = files.list(&filter).await?;
+                let list = files.list(filter).await?;
 
                 let (file, error) = match (list.count, policy) {
                     (0, _) => (
@@ -598,89 +597,6 @@ impl Modio {
         Reports::new(self.clone())
     }
 
-    async fn request<B, Out>(&self, method: Method, uri: &str, body: B) -> Result<(Url, Out)>
-    where
-        B: Into<RequestBody> + Send,
-        Out: DeserializeOwned + Send,
-    {
-        let url = if let Credentials::ApiKey(ref api_key) = self.credentials {
-            Url::parse_with_params(&uri, Some(("api_key", api_key))).map_err(error::from)?
-        } else {
-            uri.parse().map_err(error::from)?
-        };
-
-        debug!("request: {} {}", method, url);
-        let mut req = self.client.request(method, url.clone());
-
-        if let Credentials::Token(ref token) = self.credentials {
-            req = req.header(AUTHORIZATION, &*format!("Bearer {}", token));
-        }
-
-        match body.into() {
-            RequestBody::Body(body, mime) => {
-                trace!("body: {}", body);
-                if let Some(mime) = mime {
-                    req = req.header(CONTENT_TYPE, &*mime.to_string());
-                }
-                req = req.body(body);
-            }
-            RequestBody::Form(form) => {
-                trace!("{:?}", form);
-                req = req.multipart(form);
-            }
-            _ => {}
-        }
-
-        let response = req.send().map_err(error::from).await?;
-
-        let remaining = response
-            .headers()
-            .get(X_RATELIMIT_REMAINING)
-            .and_then(|v| v.to_str().ok())
-            .and_then(|v| v.parse::<u64>().ok());
-        let reset = response
-            .headers()
-            .get(X_RATELIMIT_RETRY_AFTER)
-            .and_then(|v| v.to_str().ok())
-            .and_then(|v| v.parse::<u64>().ok());
-
-        let status = response.status();
-
-        let body = response.bytes().map_err(error::from).await?;
-
-        if log_enabled!(log::Level::Trace) {
-            match std::str::from_utf8(&body) {
-                Ok(s) => trace!("response: {}", s),
-                Err(_) => trace!("response: {:?}", body),
-            }
-        }
-
-        if status.is_success() {
-            serde_json::from_slice::<Out>(&body)
-                .map(move |out| (url, out))
-                .map_err(error::from)
-        } else {
-            match (remaining, reset) {
-                (Some(remaining), Some(reset)) if remaining == 0 => {
-                    debug!("ratelimit reached: reset in {} mins", reset);
-                    Err(error::ratelimit(reset))
-                }
-                _ => serde_json::from_slice::<ModioErrorResponse>(&body)
-                    .map(|mer| Err(error::client(status, mer.error)))
-                    .map_err(error::from)?,
-            }
-        }
-    }
-
-    async fn request_entity<B, D>(&self, method: Method, uri: &str, body: B) -> Result<D>
-    where
-        B: Into<RequestBody> + Send,
-        D: DeserializeOwned + Send,
-    {
-        let (_, entity) = self.request(method, uri, body).await?;
-        Ok(entity)
-    }
-
     async fn request_file<W>(&self, uri: &str, mut out: W) -> Result<(u64, W)>
     where
         W: Write + Send,
@@ -703,7 +619,7 @@ impl Modio {
         Ok((n, out))
     }
 
-    fn request2(&self, route: routing::Route) -> RequestBuilder {
+    fn request(&self, route: routing::Route) -> RequestBuilder {
         RequestBuilder::new(self.clone(), route)
     }
 
@@ -714,92 +630,6 @@ impl Modio {
         use futures_util::StreamExt;
         Iter::new(self, route, filter).boxed()
     }
-
-    async fn get<D>(&self, uri: &str) -> Result<D>
-    where
-        D: DeserializeOwned + Send,
-    {
-        let url = self.host.clone() + uri;
-        self.request_entity(Method::GET, &url, RequestBody::Empty)
-            .await
-    }
-
-    async fn post<D, B>(&self, uri: &str, body: B) -> Result<D>
-    where
-        D: DeserializeOwned + Send,
-        B: Into<RequestBody>,
-    {
-        let url = self.host.clone() + uri;
-        self.request_entity(
-            Method::POST,
-            &url,
-            (body.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
-        )
-        .await
-    }
-
-    async fn post_form<D, M>(&self, uri: &str, data: M) -> Result<D>
-    where
-        D: DeserializeOwned + Send,
-        M: Into<Form>,
-    {
-        let url = self.host.clone() + uri;
-        self.request_entity(Method::POST, &url, RequestBody::Form(data.into()))
-            .await
-    }
-
-    async fn put<D, B>(&self, uri: &str, body: B) -> Result<D>
-    where
-        D: DeserializeOwned + Send,
-        B: Into<RequestBody>,
-    {
-        let url = self.host.clone() + uri;
-        self.request_entity(
-            Method::PUT,
-            &url,
-            (body.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
-        )
-        .await
-    }
-
-    async fn delete<B>(&self, uri: &str, body: B) -> Result<()>
-    where
-        B: Into<RequestBody>,
-    {
-        let url = self.host.clone() + uri;
-        self.request_entity(
-            Method::DELETE,
-            &url,
-            (body.into(), mime::APPLICATION_WWW_FORM_URLENCODED),
-        )
-        .await
-        .or_else(|err| match err.kind() {
-            error::ErrorKind::Json(_) => Ok(()),
-            _ => Err(err),
-        })
-    }
-}
-
-pub(crate) enum RequestBody {
-    Empty,
-    Body(String, Option<Mime>),
-    Form(Form),
-}
-
-impl From<String> for RequestBody {
-    fn from(s: String) -> RequestBody {
-        RequestBody::Body(s, None)
-    }
-}
-
-impl From<(RequestBody, Mime)> for RequestBody {
-    fn from(body: (RequestBody, Mime)) -> RequestBody {
-        match body {
-            (RequestBody::Body(body, _), mime) => RequestBody::Body(body, Some(mime)),
-            (RequestBody::Empty, _) => RequestBody::Empty,
-            _ => body.0,
-        }
-    }
 }
 
 /// Generic endpoint for sub-resources
@@ -808,47 +638,51 @@ where
     Out: DeserializeOwned,
 {
     modio: Modio,
-    path: String,
+    list: Route,
+    add: Route,
+    delete: Route,
     phantom: PhantomData<Out>,
 }
 
-impl<Out> Endpoint<Out>
+impl<'a, Out> Endpoint<Out>
 where
-    Out: DeserializeOwned + Send,
+    Out: DeserializeOwned + Send + 'a,
 {
-    pub(crate) fn new(modio: Modio, path: String) -> Endpoint<Out> {
+    pub(crate) fn new(modio: Modio, list: Route, add: Route, delete: Route) -> Endpoint<Out> {
         Self {
             modio,
-            path,
+            list,
+            add,
+            delete,
             phantom: PhantomData,
         }
     }
 
-    pub async fn list(&self) -> Result<List<Out>> {
-        self.modio.get(&self.path).await
+    pub async fn list(self) -> Result<List<Out>> {
+        self.modio.request(self.list).send().await
     }
 
-    /*
-    pub fn iter(&self) -> Stream<Out> {
-        self.modio.stream(&self.path)
+    pub fn iter(self) -> Stream<'a, Out> {
+        self.modio.stream(self.list, Default::default())
     }
-    */
 
     /// [required: token]
-    pub async fn add<T: AddOptions + QueryString>(&self, options: &T) -> Result<()> {
-        token_required!(self.modio);
-        let params = options.to_query_string();
+    pub async fn add<T: AddOptions + QueryString>(self, options: T) -> Result<()> {
         self.modio
-            .post::<ModioMessage, _>(&self.path, params)
+            .request(self.add)
+            .body(options.to_query_string())
+            .send::<ModioMessage>()
             .await?;
         Ok(())
     }
 
     /// [required: token]
-    pub async fn delete<T: DeleteOptions + QueryString>(&self, options: &T) -> Result<()> {
-        token_required!(self.modio);
-        let params = options.to_query_string();
-        self.modio.delete(&self.path, params).await
+    pub async fn delete<T: DeleteOptions + QueryString>(self, options: T) -> Result<()> {
+        self.modio
+            .request(self.delete)
+            .body(options.to_query_string())
+            .send()
+            .await
     }
 }
 

@@ -18,48 +18,50 @@ impl Comments {
         }
     }
 
-    fn path(&self, more: &str) -> String {
-        format!("/games/{}/mods/{}/comments{}", self.game, self.mod_id, more)
-    }
-
     /// List all comments.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub async fn list(&self, filter: &Filter) -> Result<List<Comment>> {
-        let mut uri = vec![self.path("")];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        let url = uri.join("?");
-        self.modio.get(&url).await
+    pub async fn list(self, filter: Filter) -> Result<List<Comment>> {
+        let route = Route::GetModComments {
+            game_id: self.game,
+            mod_id: self.mod_id,
+        };
+        self.modio
+            .request(route)
+            .query(filter.to_query_string())
+            .send()
+            .await
     }
 
-    /*
     /// Provides a stream over all comments of the mod.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn iter(&self, filter: &Filter) -> Stream<Comment> {
-        let mut uri = vec![self.path("")];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        self.modio.stream(&uri.join("?"))
+    pub fn iter<'a>(self, filter: Filter) -> Stream<'a, Comment> {
+        let route = Route::GetModComments {
+            game_id: self.game,
+            mod_id: self.mod_id,
+        };
+        self.modio.stream(route, filter)
     }
-    */
 
     /// Return comment by id.
-    pub async fn get(&self, id: u32) -> Result<Comment> {
-        let url = self.path(&format!("/{}", id));
-        self.modio.get(&url).await
+    pub async fn get(self, id: u32) -> Result<Comment> {
+        let route = Route::GetModComment {
+            game_id: self.game,
+            mod_id: self.mod_id,
+            comment_id: id,
+        };
+        self.modio.request(route).send().await
     }
 
     /// Delete a comment by id. [required: token]
-    pub async fn delete(&self, id: u32) -> Result<()> {
-        token_required!(self.modio);
-        let url = self.path(&format!("/{}", id));
-        self.modio.delete(&url, RequestBody::Empty).await
+    pub async fn delete(self, id: u32) -> Result<()> {
+        let route = Route::DeleteModComment {
+            game_id: self.game,
+            mod_id: self.mod_id,
+            comment_id: id,
+        };
+        self.modio.request(route).send().await
     }
 }
 

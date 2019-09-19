@@ -26,31 +26,20 @@ impl MyFiles {
     /// Return all modfiles the authenticated user uploaded. [required: token]
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub async fn list(&self, filter: &Filter) -> Result<List<File>> {
-        token_required!(self.modio);
-        let mut uri = vec!["/me/files".to_owned()];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        let url = uri.join("?");
-        self.modio.get(&url).await
+    pub async fn list(self, filter: Filter) -> Result<List<File>> {
+        self.modio
+            .request(Route::UserFiles)
+            .query(filter.to_query_string())
+            .send()
+            .await
     }
 
-    /*
     /// Provides a stream over all modfiles the authenticated user uploaded. [required: token]
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn iter(&self, filter: &Filter) -> Stream<File> {
-        token_required!(s self.modio);
-        let mut uri = vec!["/me/files".to_owned()];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        self.modio.stream(&uri.join("?"))
+    pub fn iter<'a>(self, filter: Filter) -> Stream<'a, File> {
+        self.modio.stream(Route::UserFiles, filter)
     }
-    */
 }
 
 /// Interface for the modfiles of a mod.
@@ -69,36 +58,31 @@ impl Files {
         }
     }
 
-    fn path(&self, more: &str) -> String {
-        format!("/games/{}/mods/{}/files{}", self.game, self.mod_id, more)
-    }
-
     /// Return all files that are published for a mod this `Files` refers to.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub async fn list(&self, filter: &Filter) -> Result<List<File>> {
-        let mut uri = vec![self.path("")];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        let url = uri.join("?");
-        self.modio.get(&url).await
+    pub async fn list(self, filter: Filter) -> Result<List<File>> {
+        let route = Route::GetFiles {
+            game_id: self.game,
+            mod_id: self.mod_id,
+        };
+        self.modio
+            .request(route)
+            .query(filter.to_query_string())
+            .send()
+            .await
     }
 
-    /*
     /// Provides a stream over all files that are published for a mod this `Files` refers to.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn iter(&self, filter: &Filter) -> Stream<File> {
-        let mut uri = vec![self.path("")];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        self.modio.stream(&uri.join("?"))
+    pub fn iter<'a>(self, filter: Filter) -> Stream<'a, File> {
+        let route = Route::GetFiles {
+            game_id: self.game,
+            mod_id: self.mod_id,
+        };
+        self.modio.stream(route, filter)
     }
-    */
 
     /// Return a reference to a file.
     pub fn get(&self, id: u32) -> FileRef {
@@ -106,10 +90,16 @@ impl Files {
     }
 
     /// Add a file for a mod that this `Files` refers to. [required: token]
-    pub async fn add(&self, options: AddFileOptions) -> Result<File> {
-        token_required!(self.modio);
-        let url = self.path("");
-        self.modio.post_form(&url, options).await
+    pub async fn add(self, options: AddFileOptions) -> Result<File> {
+        let route = Route::AddFile {
+            game_id: self.game,
+            mod_id: self.mod_id,
+        };
+        self.modio
+            .request(route)
+            .body(Form::from(options))
+            .send()
+            .await
     }
 }
 
@@ -131,32 +121,38 @@ impl FileRef {
         }
     }
 
-    fn path(&self) -> String {
-        format!(
-            "/games/{}/mods/{}/files/{}",
-            self.game, self.mod_id, self.id
-        )
-    }
-
     /// Get a reference to the Modio modfile object that this `FileRef` refers to.
-    pub async fn get(&self) -> Result<File> {
-        let url = self.path();
-        self.modio.get(&url).await
+    pub async fn get(self) -> Result<File> {
+        let route = Route::GetFile {
+            game_id: self.game,
+            mod_id: self.mod_id,
+            file_id: self.id,
+        };
+        self.modio.request(route).send().await
     }
 
     /// Edit details of a modfile. [required: token]
-    pub async fn edit(&self, options: &EditFileOptions) -> Result<EntityResult<File>> {
-        token_required!(self.modio);
-        let params = options.to_query_string();
-        let url = self.path();
-        self.modio.put(&url, params).await
+    pub async fn edit(self, options: EditFileOptions) -> Result<EntityResult<File>> {
+        let route = Route::EditFile {
+            game_id: self.game,
+            mod_id: self.mod_id,
+            file_id: self.id,
+        };
+        self.modio
+            .request(route)
+            .body(options.to_query_string())
+            .send()
+            .await
     }
 
     /// Delete a modfile. [required: token]
-    pub async fn delete(&self) -> Result<()> {
-        token_required!(self.modio);
-        let url = self.path();
-        self.modio.delete(&url, RequestBody::Empty).await
+    pub async fn delete(self) -> Result<()> {
+        let route = Route::DeleteFile {
+            game_id: self.game,
+            mod_id: self.mod_id,
+            file_id: self.id,
+        };
+        self.modio.request(route).send().await
     }
 }
 

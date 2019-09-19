@@ -33,32 +33,21 @@ impl MyMods {
     /// List all mods the authenticated user added or is team member of. [required: token]
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub async fn list(&self, filter: &Filter) -> Result<List<Mod>> {
-        token_required!(self.modio);
-        let mut uri = vec!["/me/mods".to_owned()];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        let url = uri.join("?");
-        self.modio.get(&url).await
+    pub async fn list(self, filter: Filter) -> Result<List<Mod>> {
+        self.modio
+            .request(Route::UserMods)
+            .query(filter.to_query_string())
+            .send()
+            .await
     }
 
-    /*
     /// Provides a stream over mods the authenticated user added or is team member of. [required:
     /// token]
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn iter(&self, filter: &Filter) -> Stream<Mod> {
-        token_required!(s self.modio);
-        let mut uri = vec!["/me/mods".to_owned()];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        self.modio.stream(&uri.join("?"))
+    pub fn iter<'a>(self, filter: Filter) -> Stream<'a, Mod> {
+        self.modio.stream(Route::UserMods, filter)
     }
-    */
 }
 
 /// Interface for mods of a game.
@@ -72,10 +61,6 @@ impl Mods {
         Self { modio, game }
     }
 
-    fn path(&self, more: &str) -> String {
-        format!("/games/{}/mods{}", self.game, more)
-    }
-
     /// Return a reference to a mod.
     pub fn get(&self, id: u32) -> ModRef {
         ModRef::new(self.modio.clone(), self.game, id)
@@ -84,62 +69,48 @@ impl Mods {
     /// List all mods.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub async fn list(&self, filter: &Filter) -> Result<List<Mod>> {
-        let mut uri = vec![self.path("")];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        let url = uri.join("?");
-        self.modio.get(&url).await
+    pub async fn list(self, filter: Filter) -> Result<List<Mod>> {
+        let route = Route::GetMods { game_id: self.game };
+        self.modio
+            .request(route)
+            .query(filter.to_query_string())
+            .send()
+            .await
     }
 
-    /*
     /// Provides a stream over all mods of the game.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn iter(&self, filter: &Filter) -> Stream<Mod> {
-        let mut uri = vec![self.path("")];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        self.modio.stream(&uri.join("?"))
+    pub fn iter<'a>(self, filter: Filter) -> Stream<'a, Mod> {
+        let route = Route::GetMods { game_id: self.game };
+        self.modio.stream(route, filter)
     }
-    */
 
     /// Add a mod and return the newly created Modio mod object. [required: token]
-    pub async fn add(&self, options: AddModOptions) -> Result<Mod> {
-        token_required!(self.modio);
-        let url = self.path("");
-        self.modio.post_form(&url, options).await
+    pub async fn add(self, options: AddModOptions) -> Result<Mod> {
+        let route = Route::AddMod { game_id: self.game };
+        self.modio
+            .request(route)
+            .body(Form::from(options))
+            .send()
+            .await
     }
 
-    /*
     /// Provides a stream over the statistics for all mods of a game.
     ///
     /// See [Filters and sorting](filters/stats/index.html).
-    pub fn statistics(&self, filter: &Filter) -> Stream<Statistics> {
-        let mut uri = vec![self.path("/stats")];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        self.modio.stream(&uri.join("?"))
+    pub fn statistics<'a>(self, filter: Filter) -> Stream<'a, Statistics> {
+        let route = Route::GetAllModStats { game_id: self.game };
+        self.modio.stream(route, filter)
     }
 
     /// Provides a stream over the event log for all mods of a game sorted by latest event first.
     ///
     /// See [Filters and sorting](filters/events/index.html).
-    pub fn events(&self, filter: &Filter) -> Stream<Event> {
-        let mut uri = vec![self.path("/events")];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        self.modio.stream(&uri.join("?"))
+    pub fn events<'a>(self, filter: Filter) -> Stream<'a, Event> {
+        let route = Route::GetAllModEvents { game_id: self.game };
+        self.modio.stream(route, filter)
     }
-    */
 }
 
 /// Reference interface of a mod.
@@ -154,14 +125,13 @@ impl ModRef {
         Self { modio, game, id }
     }
 
-    fn path(&self, more: &str) -> String {
-        format!("/games/{}/mods/{}{}", self.game, self.id, more)
-    }
-
     /// Get a reference to the Modio mod object that this `ModRef` refers to.
-    pub async fn get(&self) -> Result<Mod> {
-        let url = self.path("");
-        self.modio.get(&url).await
+    pub async fn get(self) -> Result<Mod> {
+        let route = Route::GetMod {
+            game_id: self.game,
+            mod_id: self.id,
+        };
+        self.modio.request(route).send().await
     }
 
     /// Return a reference to an interface that provides access to the files of a mod.
@@ -181,7 +151,19 @@ impl ModRef {
 
     /// Return a reference to an interface to manage the tags of a mod.
     pub fn tags(&self) -> Endpoint<Tag> {
-        Endpoint::new(self.modio.clone(), self.path("/tags"))
+        let list = Route::GetModTags {
+            game_id: self.game,
+            mod_id: self.id,
+        };
+        let add = Route::AddModTags {
+            game_id: self.game,
+            mod_id: self.id,
+        };
+        let delete = Route::DeleteModTags {
+            game_id: self.game,
+            mod_id: self.id,
+        };
+        Endpoint::new(self.modio.clone(), list, add, delete)
     }
 
     /// Return a reference to an interface that provides access to the comments of a mod.
@@ -191,28 +173,40 @@ impl ModRef {
 
     /// Return a reference to an interface to manage the dependencies of a mod.
     pub fn dependencies(&self) -> Endpoint<Dependency> {
-        Endpoint::new(self.modio.clone(), self.path("/dependencies"))
+        let list = Route::GetModDependencies {
+            game_id: self.game,
+            mod_id: self.id,
+        };
+        let add = Route::AddModDepencencies {
+            game_id: self.game,
+            mod_id: self.id,
+        };
+        let delete = Route::DeleteModDependencies {
+            game_id: self.game,
+            mod_id: self.id,
+        };
+        Endpoint::new(self.modio.clone(), list, add, delete)
     }
 
     /// Return the statistics for a mod.
-    pub async fn statistics(&self) -> Result<Statistics> {
-        let url = self.path("/stats");
-        self.modio.get(&url).await
+    pub async fn statistics(self) -> Result<Statistics> {
+        let route = Route::GetModStats {
+            game_id: self.game,
+            mod_id: self.id,
+        };
+        self.modio.request(route).send().await
     }
 
-    /*
     /// Provides a stream over the event log for a mod sorted by latest event first.
     ///
     /// See [Filters and sorting](filters/events/index.html).
-    pub fn events(&self, filter: &Filter) -> Stream<Event> {
-        let mut uri = vec![self.path("/events")];
-        let query = filter.to_query_string();
-        if !query.is_empty() {
-            uri.push(query);
-        }
-        self.modio.stream(&uri.join("?"))
+    pub fn events<'a>(self, filter: Filter) -> Stream<'a, Event> {
+        let route = Route::GetModEvents {
+            game_id: self.game,
+            mod_id: self.id,
+        };
+        self.modio.stream(route, filter)
     }
-    */
 
     /// Return a reference to an interface to manage team members of a mod.
     pub fn members(&self) -> Members {
@@ -220,41 +214,67 @@ impl ModRef {
     }
 
     /// Edit details for a mod. [required: token]
-    pub async fn edit(&self, options: &EditModOptions) -> Result<EntityResult<Mod>> {
-        token_required!(self.modio);
-        let params = options.to_query_string();
-        let url = self.path("");
-        self.modio.put(&url, params).await
+    pub async fn edit(self, options: EditModOptions) -> Result<EntityResult<Mod>> {
+        let route = Route::EditMod {
+            game_id: self.game,
+            mod_id: self.id,
+        };
+        self.modio
+            .request(route)
+            .body(options.to_query_string())
+            .send()
+            .await
+    }
+
+    /// Delete a mod. [required: token]
+    pub async fn delete(self) -> Result<()> {
+        let route = Route::DeleteMod {
+            game_id: self.game,
+            mod_id: self.id,
+        };
+        self.modio.request(route).send().await
     }
 
     /// Add new media to a mod. [required: token]
-    pub async fn add_media(&self, options: AddMediaOptions) -> Result<()> {
-        token_required!(self.modio);
-        let url = self.path("/media");
+    pub async fn add_media(self, options: AddMediaOptions) -> Result<()> {
+        let route = Route::AddModMedia {
+            game_id: self.game,
+            mod_id: self.id,
+        };
         self.modio
-            .post_form::<ModioMessage, _>(&url, options)
+            .request(route)
+            .body(Form::from(options))
+            .send::<ModioMessage>()
             .await?;
 
         Ok(())
     }
 
     /// Delete media from a mod. [required: token]
-    pub async fn delete_media(&self, options: &DeleteMediaOptions) -> Result<()> {
-        token_required!(self.modio);
-        let url = self.path("/media");
-        self.modio.delete(&url, options.to_query_string()).await?;
+    pub async fn delete_media(self, options: DeleteMediaOptions) -> Result<()> {
+        let route = Route::DeleteModMedia {
+            game_id: self.game,
+            mod_id: self.id,
+        };
+        self.modio
+            .request(route)
+            .body(options.to_query_string())
+            .send()
+            .await?;
 
         Ok(())
     }
 
     /// Submit a positive or negative rating for a mod. [required: token]
-    pub async fn rate(&self, rating: Rating) -> Result<()> {
-        token_required!(self.modio);
-        let params = rating.to_query_string();
-        let url = self.path("/ratings");
-
+    pub async fn rate(self, rating: Rating) -> Result<()> {
+        let route = Route::RateMod {
+            game_id: self.game,
+            mod_id: self.id,
+        };
         self.modio
-            .post::<ModioMessage, _>(&url, params)
+            .request(route)
+            .body(rating.to_query_string())
+            .send::<ModioMessage>()
             .await
             .map(|_| ())
             .or_else(|err| match err.kind() {
@@ -267,11 +287,14 @@ impl ModRef {
     }
 
     /// Subscribe the authenticated user to a mod. [required: token]
-    pub async fn subscribe(&self) -> Result<()> {
-        token_required!(self.modio);
-        let url = self.path("/subscribe");
+    pub async fn subscribe(self) -> Result<()> {
+        let route = Route::Subscribe {
+            game_id: self.game,
+            mod_id: self.id,
+        };
         self.modio
-            .post::<Mod, _>(&url, RequestBody::Empty)
+            .request(route)
+            .send::<Mod>()
             .await
             .map(|_| ())
             .or_else(|err| match err.kind() {
@@ -284,11 +307,14 @@ impl ModRef {
     }
 
     /// Unsubscribe the authenticated user from a mod. [required: token]
-    pub async fn unsubscribe(&self) -> Result<()> {
-        token_required!(self.modio);
-        let url = self.path("/subscribe");
+    pub async fn unsubscribe(self) -> Result<()> {
+        let route = Route::Unsubscribe {
+            game_id: self.game,
+            mod_id: self.id,
+        };
         self.modio
-            .delete(&url, RequestBody::Empty)
+            .request(route)
+            .send()
             .await
             .or_else(|err| match err.kind() {
                 ErrorKind::Fault {

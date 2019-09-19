@@ -2,7 +2,7 @@
 use futures::future;
 use url::form_urlencoded;
 
-use crate::error::{Error, Result};
+use crate::error::Result;
 use crate::prelude::*;
 use crate::types::mods::MetadataMap;
 
@@ -21,47 +21,57 @@ impl Metadata {
         }
     }
 
-    fn path(&self) -> String {
-        format!("/games/{}/mods/{}/metadatakvp", self.game, self.mod_id)
-    }
-
-    /*
     /// Return the metadata key value pairs for a mod that this `Metadata` refers to.
-    pub fn get(&self) -> Future<MetadataMap> {
+    pub async fn get(self) -> Result<MetadataMap> {
+        use futures::stream::TryStreamExt;
+
         #[derive(Deserialize)]
         struct KV {
             metakey: String,
             metavalue: String,
         }
 
-        Box::new(
-            self.modio
-                .stream::<KV>(&self.path())
-                .fold(MetadataMap::new(), |mut map, kv| {
-                    map.entry(kv.metakey)
-                        .or_insert_with(Vec::new)
-                        .push(kv.metavalue);
-                    future::ok::<_, Error>(map)
-                }),
-        )
+        let route = Route::GetModMetadata {
+            game_id: self.game,
+            mod_id: self.mod_id,
+        };
+        self.modio
+            .stream(route, Default::default())
+            .try_fold(MetadataMap::new(), |mut map, kv: KV| {
+                map.entry(kv.metakey)
+                    .or_insert_with(Vec::new)
+                    .push(kv.metavalue);
+                future::ok(map)
+            })
+            .await
     }
-    */
 
     /// Add metadata for a mod that this `Metadata` refers to.
-    pub async fn add(&self, metadata: &MetadataMap) -> Result<()> {
-        token_required!(self.modio);
-        let url = self.path();
+    pub async fn add(self, metadata: MetadataMap) -> Result<()> {
+        let route = Route::AddModMetadata {
+            game_id: self.game,
+            mod_id: self.mod_id,
+        };
         self.modio
-            .post::<ModioMessage, _>(&url, metadata.to_query_string())
+            .request(route)
+            .body(metadata.to_query_string())
+            .send()
             .await?;
         Ok(())
     }
 
     /// Delete metadata for a mod that this `Metadata` refers to.
-    pub async fn delete(&self, metadata: &MetadataMap) -> Result<()> {
-        token_required!(self.modio);
-        let url = self.path();
-        self.modio.delete(&url, metadata.to_query_string()).await
+    pub async fn delete(self, metadata: MetadataMap) -> Result<()> {
+        let route = Route::DeleteModMetadata {
+            game_id: self.game,
+            mod_id: self.mod_id,
+        };
+        self.modio
+            .request(route)
+            .body(metadata.to_query_string())
+            .send()
+            .await?;
+        Ok(())
     }
 }
 

@@ -4,6 +4,7 @@ use std::fmt;
 use url::form_urlencoded;
 
 use crate::error::Result;
+use crate::routing::Route;
 use crate::Modio;
 use crate::ModioMessage;
 
@@ -81,29 +82,31 @@ impl Auth {
     }
 
     /// Request a security code be sent to the email of the user. [required: apikey]
-    pub async fn request_code(&self, email: &str) -> Result<()> {
-        apikey_required!(self.modio);
+    pub async fn request_code(self, email: &str) -> Result<()> {
         let data = form_urlencoded::Serializer::new(String::new())
             .append_pair("email", email)
             .finish();
 
         self.modio
-            .post::<ModioMessage, _>("/oauth/emailrequest", data)
+            .request(Route::AuthEmailRequest)
+            .body(data)
+            .send::<ModioMessage>()
             .await?;
 
         Ok(())
     }
 
     /// Get the access token for a security code. [required: apikey]
-    pub async fn security_code(&self, code: &str) -> Result<Credentials> {
-        apikey_required!(self.modio);
+    pub async fn security_code(self, code: &str) -> Result<Credentials> {
         let data = form_urlencoded::Serializer::new(String::new())
             .append_pair("security_code", code)
             .finish();
 
         let token = self
             .modio
-            .post::<AccessToken, _>("/oauth/emailexchange", data)
+            .request(Route::AuthEmailExchange)
+            .body(data)
+            .send::<AccessToken>()
             .await?;
 
         Ok(Credentials::Token(token.access_token))
@@ -112,8 +115,7 @@ impl Auth {
     /// Link an external account. Requires an auth token from the external platform.
     ///
     /// See the [mod.io docs](https://docs.mod.io/#link-external-account) for more information.
-    pub async fn link(&self, email: &str, service: Service) -> Result<()> {
-        token_required!(self.modio);
+    pub async fn link(self, email: &str, service: Service) -> Result<()> {
         let (service, id) = match service {
             Service::Steam(id) => ("steam", id.to_string()),
             Service::Gog(id) => ("gog", id.to_string()),
@@ -125,7 +127,9 @@ impl Auth {
             .finish();
 
         self.modio
-            .post::<ModioMessage, _>("/external/link", data)
+            .request(Route::LinkAccount)
+            .body(data)
+            .send::<ModioMessage>()
             .await?;
 
         Ok(())
@@ -135,15 +139,16 @@ impl Auth {
     ///
     /// See the [mod.io docs](https://docs.mod.io/#authenticate-via-gog-galaxy) for more
     /// information.
-    pub async fn gog_auth(&self, ticket: &str) -> Result<Credentials> {
-        apikey_required!(self.modio);
+    pub async fn gog_auth(self, ticket: &str) -> Result<Credentials> {
         let data = form_urlencoded::Serializer::new(String::new())
             .append_pair("appdata", ticket)
             .finish();
 
         let token = self
             .modio
-            .post::<AccessToken, _>("/external/galaxyauth", data)
+            .request(Route::AuthGog)
+            .body(data)
+            .send::<AccessToken>()
             .await?;
 
         Ok(Credentials::Token(token.access_token))
@@ -152,15 +157,16 @@ impl Auth {
     /// Get the access token for an encrypted steam app ticket. [required: apikey]
     ///
     /// See the [mod.io docs](https://docs.mod.io/#authenticate-via-steam) for more information.
-    pub async fn steam_auth(&self, ticket: &str) -> Result<Credentials> {
-        apikey_required!(self.modio);
+    pub async fn steam_auth(self, ticket: &str) -> Result<Credentials> {
         let data = form_urlencoded::Serializer::new(String::new())
             .append_pair("appdata", ticket)
             .finish();
 
         let token = self
             .modio
-            .post::<AccessToken, _>("/external/steamauth", data)
+            .request(Route::AuthSteam)
+            .body(data)
+            .send::<AccessToken>()
             .await?;
 
         Ok(Credentials::Token(token.access_token))
