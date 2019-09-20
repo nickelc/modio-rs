@@ -1,8 +1,10 @@
 use std::env;
 use std::process;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
+
+use futures::future::{self, FutureExt, TryFutureExt};
+use futures::stream::TryStreamExt;
 use tokio::prelude::*;
-use tokio::runtime::Runtime;
 use tokio::timer::Interval;
 
 use modio::error::Error;
@@ -17,7 +19,8 @@ fn current_timestamp() -> u64 {
         .as_secs()
 }
 
-fn main() -> Result<(), Error> {
+#[tokio::main]
+async fn main() -> Result<(), Error> {
     dotenv::dotenv().ok();
     env_logger::init();
 
@@ -32,39 +35,36 @@ fn main() -> Result<(), Error> {
     };
     let host = env::var("MODIO_HOST").unwrap_or_else(|_| "https://api.test.mod.io/v1".to_string());
 
-    // tokio runtime to execute the modio futures.
-    let mut rt = Runtime::new().expect("new rt");
-
     // Creates a `Modio` endpoint for the test environment.
     let modio = Modio::host(host, creds)?;
 
     // Creates an `Interval` task that yields every 10 seconds starting now.
-    let task = Interval::new_interval(Duration::from_secs(10))
+    Interval::new_interval(Duration::from_secs(10))
         .fold(current_timestamp(), move |tstamp, _| {
             // Create an event filter for `date_added` > time.
             let filter = DateAdded::gt(tstamp);
+            let qs = filter.to_query_string();
 
             // Create the call for `/me/events` and wait for the result.
             let print = modio
                 .me()
-                .events(&filter)
-                .collect()
-                .and_then(move |list| {
-                    println!("event filter: {}", filter.to_query_string());
+                .events(filter)
+                .try_collect()
+                .and_then(move |list: Vec<_>| {
+                    println!("event filter: {}", qs);
                     println!("event count: {}", list.len());
                     println!("{:#?}", list);
-                    Ok(())
+                    future::ok(())
                 })
-                .map_err(|e| println!("{:?}", e));
+                .map_err(|e| println!("{:?}", e))
+                .map(|_| ());
 
-            rt.spawn(print);
+            tokio::spawn(print);
 
             // timestamp for the next run.
-            Ok(current_timestamp())
+            future::ready(current_timestamp())
         })
-        .map(|_| ())
-        .map_err(|e| panic!("interval errored; err={:?}", e));
+        .await;
 
-    tokio::run(task);
     Ok(())
 }

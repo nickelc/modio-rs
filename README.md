@@ -35,17 +35,17 @@ modio = "0.4"
 
 ### Basic Setup
 ```rust
-use modio::{Credentials, Error, Modio};
-use tokio::runtime::Runtime;
+use modio::{Credentials, Modio, Result};
 
-fn main() -> Result<(), Error> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let mut rt = Runtime::new()?;
     let modio = Modio::new(
         Credentials::ApiKey(String::from("user-or-game-apikey")),
     )?;
 
     // create some tasks and execute them
-    // let result = rt.block_on(task)?;
+    // let result = task.await?;
     Ok(())
 }
 ```
@@ -53,13 +53,13 @@ fn main() -> Result<(), Error> {
 ### Authentication
 ```rust
 // Request a security code be sent to the email address.
-rt.block_on(modio.auth().request_code("john@example.com"))?;
+modio.auth().request_code("john@example.com").await?;
 
 // Wait for the 5-digit security code
-let token = rt.block_on(modio.auth().security_code("QWERT"))?;
+let token = modio.auth().security_code("QWERT").await?;
 
 // Create an endpoint with the new credentials
-let modio = modio.with_credentials(Credentials::Token(token));
+let modio = modio.with_credentials(token);
 ```
 See [full example](examples/auth.rs).
 
@@ -68,18 +68,16 @@ See [full example](examples/auth.rs).
 use modio::filter::prelude::*;
 
 // List games with filter `name_id = "0ad"`
-let task = modio.games().list(&NameId::eq("0ad"));
-
-let games = rt.block_on(task)?;
+let games = modio.games().list(NameId::eq("0ad")).await?;
 ```
 
 ### Mods
 ```rust
 // List all mods for 0 A.D.
-let mods = rt.block_on(modio.game(5).mods().list(&Default::default))?;
+let mods = modio.game(5).mods().list(Default::default).await?;
 
 // Get the details of the `balancing-mod` mod
-let balancing_mod = rt.block_on(modio.mod_(5, 110).get())?;
+let balancing_mod = modio.mod_(5, 110).get().await?;
 ```
 
 ### Download
@@ -91,15 +89,15 @@ let action = DownloadAction::Primary {
     game_id: 5,
     mod_id: 19,
 };
-let (len, out) = rt.block_on(modio.download(action, out))?;
+let (len, out) = modio.download(action, out).await?;
 
 // Download the specific file of a mod.
-let action = DownloadAction::File {
+let action = DownloadAction::FileRef {
     game_id: 5,
     mod_id: 19,
     file_id: 101,
 };
-let (len, out) = rt.block_on(modio.download(action, out))?;
+let (len, out) = modio.download(action, out).await?;
 
 // Download the specific version of a mod.
 // if multiple files are found then the latest file is downloaded.
@@ -110,7 +108,7 @@ let action = DownloadAction::Version {
     version: "0.1".to_string(),
     policy: ResolvePolicy::Latest,
 };
-let (len, out) = rt.block_on(modio.download(action, out))?;
+let (len, out) = modio.download(action, out).await?;
 ```
 
 ### Examples

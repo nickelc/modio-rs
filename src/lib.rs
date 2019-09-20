@@ -28,17 +28,16 @@
 //! # Example: Basic setup
 //!
 //! ```no_run
-//! use modio::{Credentials, Error, Modio};
-//! use tokio::runtime::Runtime;
+//! use modio::{Credentials, Modio, Result};
 //!
-//! fn main() -> Result<(), Error> {
-//!     let mut rt = Runtime::new().expect("new rt");
+//! #[tokio::main]
+//! async fn main() -> Result<()> {
 //!     let modio = Modio::new(
 //!         Credentials::ApiKey(String::from("user-or-game-api-key")),
 //!     )?;
 //!
 //!     // create some tasks and execute them
-//!     // let result = rt.block_on(task)?;
+//!     // let result = task.await?;
 //!     Ok(())
 //! }
 //! ```
@@ -49,12 +48,11 @@
 //! # Example: Chaining api requests
 //!
 //! ```no_run
-//! use modio::{Credentials, Error, Modio};
-//! use tokio::prelude::*;
-//! use tokio::runtime::Runtime;
+//! use futures_util::try_future::try_join3;
+//! use modio::{Credentials, Modio, Result};
 //!
-//! fn main() -> Result<(), Error> {
-//!     let mut rt = Runtime::new().expect("new rt");
+//! #[tokio::main]
+//! async fn main() -> Result<()> {
 //!     let modio = Modio::new(
 //!         Credentials::ApiKey(String::from("user-or-game-api-key")),
 //!     )?;
@@ -63,25 +61,20 @@
 //!     let modref = modio.mod_(51, 158);
 //!
 //!     // Get mod with its dependencies and all files
-//!     let mod_ = modref.get();
 //!     let deps = modref.dependencies().list();
-//!     let files = modref.files().list(&Default::default());
+//!     let files = modref.files().list(Default::default());
+//!     let mod_ = modref.get();
 //!
-//!     let task = mod_.join(deps).join(files);
+//!     let (m, deps, files) = try_join3(mod_, deps, files).await?;
 //!
-//!     match rt.block_on(task) {
-//!         Ok(((m, deps), files)) => {
-//!             println!("{}", m.name);
-//!             println!(
-//!                 "deps: {:?}",
-//!                 deps.into_iter().map(|d| d.mod_id).collect::<Vec<_>>()
-//!             );
-//!             for file in files {
-//!                 println!("file id: {} version: {:?}", file.id, file.version);
-//!             }
-//!         }
-//!         Err(e) => println!("{}", e),
-//!     };
+//!     println!("{}", m.name);
+//!     println!(
+//!         "deps: {:?}",
+//!         deps.into_iter().map(|d| d.mod_id).collect::<Vec<_>>()
+//!     );
+//!     for file in files {
+//!         println!("file id: {} version: {:?}", file.id, file.version);
+//!     }
 //!     Ok(())
 //! }
 //! ```
@@ -92,11 +85,10 @@
 //! use std::fs::File;
 //!
 //! use modio::download::ResolvePolicy;
-//! use modio::{Credentials, DownloadAction, Error, Modio};
-//! use tokio::runtime::Runtime;
+//! use modio::{Credentials, DownloadAction, Modio, Result};
 //!
-//! fn main() -> Result<(), Error> {
-//!     let mut rt = Runtime::new().expect("new rt");
+//! #[tokio::main]
+//! async fn main() -> Result<()> {
 //!     let modio = Modio::new(
 //!         Credentials::ApiKey(String::from("user-or-game-api-key")),
 //!     )?;
@@ -107,7 +99,7 @@
 //!         game_id: 5,
 //!         mod_id: 19,
 //!     };
-//!     let (len, out) = rt.block_on(modio.download(action, out))?;
+//!     let (len, out) = modio.download(action, out).await?;
 //!
 //!     // Download the specific file of a mod.
 //!     let action = DownloadAction::File {
@@ -115,7 +107,7 @@
 //!         mod_id: 19,
 //!         file_id: 101,
 //!     };
-//!     let (len, out) = rt.block_on(modio.download(action, out))?;
+//!     let (len, out) = modio.download(action, out).await?;
 //!
 //!     // Download the specific version of a mod.
 //!     // if multiple files are found then the latest file is downloaded.
@@ -127,7 +119,7 @@
 //!         version: "0.1".to_string(),
 //!         policy: ResolvePolicy::Latest,
 //!     };
-//!     let (len, out) = rt.block_on(modio.download(action, out))?;
+//!     let (len, out) = modio.download(action, out).await?;
 //!     Ok(())
 //! }
 //! ```
@@ -464,11 +456,10 @@ impl Modio {
     /// use std::fs::File;
     ///
     /// use modio::download::ResolvePolicy;
-    /// use modio::{Credentials, DownloadAction, Error, Modio};
-    /// use tokio::runtime::Runtime;
+    /// use modio::{Credentials, DownloadAction, Modio, Result};
     ///
-    /// fn main() -> Result<(), Error> {
-    ///     let mut rt = Runtime::new().expect("new rt");
+    /// #[tokio::main]
+    /// async fn main() -> Result<()> {
     ///     let modio = Modio::new(
     ///         Credentials::ApiKey(String::from("user-or-game-api-key")),
     ///     )?;
@@ -479,7 +470,7 @@ impl Modio {
     ///         game_id: 5,
     ///         mod_id: 19,
     ///     };
-    ///     let (len, out) = rt.block_on(modio.download(action, out))?;
+    ///     let (len, out) = modio.download(action, out).await?;
     ///
     ///     // Download the specific file of a mod.
     ///     let action = DownloadAction::File {
@@ -487,7 +478,7 @@ impl Modio {
     ///         mod_id: 19,
     ///         file_id: 101,
     ///     };
-    ///     let (len, out) = rt.block_on(modio.download(action, out))?;
+    ///     let (len, out) = modio.download(action, out).await?;
     ///
     ///     // Download the specific version of a mod.
     ///     // if multiple files are found then the latest file is downloaded.
@@ -499,7 +490,7 @@ impl Modio {
     ///         version: "0.1".to_string(),
     ///         policy: ResolvePolicy::Latest,
     ///     };
-    ///     let (len, out) = rt.block_on(modio.download(action, out))?;
+    ///     let (len, out) = modio.download(action, out).await?;
     ///     Ok(())
     /// }
     /// ```

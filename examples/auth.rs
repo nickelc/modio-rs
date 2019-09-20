@@ -1,6 +1,5 @@
 use std::env;
 use std::io::{self, Write};
-use tokio::runtime::Runtime;
 
 use modio::error::Error;
 use modio::{auth::Credentials, Modio};
@@ -13,7 +12,8 @@ fn prompt(prompt: &str) -> io::Result<String> {
     Ok(buffer.trim().to_string())
 }
 
-fn main() -> Result<(), Error> {
+#[tokio::main]
+async fn main() -> Result<(), Error> {
     dotenv::dotenv().ok();
     env_logger::init();
 
@@ -22,19 +22,17 @@ fn main() -> Result<(), Error> {
     let api_key = prompt("Enter api key: ").expect("read api key");
     let email = prompt("Enter email: ").expect("read email");
 
-    let mut rt = Runtime::new().expect("new rt");
     let modio = Modio::host(host, Credentials::ApiKey(api_key))?;
 
-    rt.block_on(modio.auth().request_code(&email))?;
+    modio.auth().request_code(&email).await?;
 
     let code = prompt("Enter security code: ").expect("read code");
-    let token = rt.block_on(modio.auth().security_code(&code))?;
+    let token = modio.auth().security_code(&code).await?;
     println!("Access token:\n{}", token);
 
     // Consume the endpoint and create an endpoint with new credentials.
     let modio = modio.with_credentials(token);
-
-    let user = rt.block_on(modio.me().authenticated_user())?;
+    let user = modio.me().authenticated_user().await?;
     println!("Authenticated user:\n{:#?}", user);
 
     Ok(())

@@ -36,10 +36,8 @@ pub enum Service {
 /// # Example
 /// ```no_run
 /// use std::io::{self, Write};
-/// use tokio::runtime::Runtime;
 ///
-/// use modio::error::Error;
-/// use modio::{Credentials, Modio};
+/// use modio::{Credentials, Modio, Result};
 ///
 /// fn prompt(prompt: &str) -> io::Result<String> {
 ///     print!("{}", prompt);
@@ -49,17 +47,17 @@ pub enum Service {
 ///     Ok(buffer.trim().to_string())
 /// }
 ///
-/// fn main() -> Result<(), Error> {
-///     let mut rt = Runtime::new().expect("new rt");
+/// #[tokio::main]
+/// async fn main() -> Result<()> {
 ///     let modio = Modio::new(
 ///         Credentials::ApiKey(String::from("api-key")),
 ///     )?;
 ///
 ///     let email = prompt("Enter email: ").expect("read email");
-///     rt.block_on(modio.auth().request_code(&email))?;
+///     modio.auth().request_code(&email).await?;
 ///
 ///     let code = prompt("Enter security code: ").expect("read code");
-///     let token = rt.block_on(modio.auth().security_code(&code))?;
+///     let token = modio.auth().security_code(&code).await?;
 ///
 ///     // Consume the endpoint and create an endpoint with new credentials.
 ///     let _modio = modio.with_credentials(token);

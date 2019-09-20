@@ -3,7 +3,6 @@ use std::io::{self, Write};
 use std::process;
 
 use md5;
-use tokio::runtime::Runtime;
 
 use modio::error::Error;
 use modio::{auth::Credentials, Modio};
@@ -16,7 +15,8 @@ fn prompt(prompt: &str) -> io::Result<u32> {
     Ok(buffer.trim().parse().expect("Invalid value"))
 }
 
-fn main() -> Result<(), Error> {
+#[tokio::main]
+async fn main() -> Result<(), Error> {
     dotenv::dotenv().ok();
     env_logger::init();
 
@@ -31,9 +31,6 @@ fn main() -> Result<(), Error> {
     };
     let host = env::var("MODIO_HOST").unwrap_or_else(|_| "https://api.test.mod.io/v1".to_string());
 
-    // tokio runtime to execute the modio futures.
-    let mut rt = Runtime::new().expect("new rt");
-
     // Creates a `Modio` endpoint for the test environment.
     let modio = Modio::host(host, creds)?;
 
@@ -41,7 +38,7 @@ fn main() -> Result<(), Error> {
     let mod_id = prompt("Enter mod id: ").expect("read mod id");
 
     // Create the call for `/games/{game_id}/mods/{mod_id}` and wait for the result.
-    let m = rt.block_on(modio.mod_(game_id, mod_id).get())?;
+    let m = modio.mod_(game_id, mod_id).get().await?;
     if let Some(file) = m.modfile {
         // Download the file and calculate its md5 digest.
         let ctx = md5::Context::new();
@@ -52,7 +49,7 @@ fn main() -> Result<(), Error> {
         println!("filesize: {}", file.filesize);
         println!("reported md5: {}", file.filehash.md5);
 
-        let (size, ctx) = rt.block_on(modio.download(file, ctx))?;
+        let (size, ctx) = modio.download(file, ctx).await?;
         println!("computed md5: {:x}", ctx.compute());
         println!("downloaded size: {}", size);
     } else {

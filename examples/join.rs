@@ -1,12 +1,12 @@
 use std::env;
 use std::process;
 
-use modio::error::Error;
-use modio::filter::prelude::*;
+use futures_util::try_future::try_join3;
+use modio::Result;
 use modio::{auth::Credentials, Modio};
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() -> Result<()> {
     dotenv::dotenv().ok();
     env_logger::init();
 
@@ -24,17 +24,23 @@ async fn main() -> Result<(), Error> {
     // Creates a `Modio` endpoint for the test environment.
     let modio = Modio::host(host, creds)?;
 
-    // Create a mod filter for `id` in (1043, 1041), limited to 30 results
-    // and ordered by `id` desc.
-    let filter = Id::_in(vec![1043, 1041])
-        .limit(30)
-        .offset(0)
-        .order_by(Id::desc());
+    // OpenXcom: The X-Com Files
+    let modref = modio.mod_(51, 158);
 
-    // Create the call for `/me/mods` and wait for the `ModioListResponse<Mod>`
-    // result
-    for mod_ in modio.me().mods().list(filter).await? {
-        println!("{:#?}", mod_);
+    // Get mod with its dependencies and all files
+    let deps = modref.dependencies().list();
+    let files = modref.files().list(Default::default());
+    let mod_ = modref.get();
+
+    let (m, deps, files) = try_join3(mod_, deps, files).await?;
+
+    println!("{}", m.name);
+    println!(
+        "deps: {:?}",
+        deps.into_iter().map(|d| d.mod_id).collect::<Vec<_>>()
+    );
+    for file in files {
+        println!("file id: {} version: {:?}", file.id, file.version);
     }
     Ok(())
 }

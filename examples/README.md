@@ -10,4 +10,6 @@ Run examples with `cargo run --example example_name`
 
 * [`events`](events.rs) - Poll the user events from [`/me/events`](https://docs.mod.io/#get-user-events) every 10 seconds.
 
+* [`join`](join.rs) - Join multiple requests together.
+
 * [`mymods`](mymods.rs) - List all mods the *authenticated user* added or is team member of. See [`/me/mods`](https://docs.mod.io/#get-user-mods).
