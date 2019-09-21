@@ -8,8 +8,8 @@ use url::Url;
 use crate::auth::Credentials;
 use crate::error::{self, Result};
 use crate::routing::{AuthMethod, Route};
+use crate::types::ModioErrorResponse;
 use crate::Modio;
-use crate::ModioErrorResponse;
 
 pub struct RequestBuilder {
     modio: Modio,

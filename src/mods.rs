@@ -648,10 +648,6 @@ impl QueryString for EditModOptions {
     }
 }
 
-#[doc(hidden)]
-#[deprecated(since = "0.4.1", note = "Use `EditDependenciesOptions`")]
-pub type EditDepencenciesOptions = EditDependenciesOptions;
-
 pub struct EditDependenciesOptions {
     dependencies: Vec<u32>,
 }

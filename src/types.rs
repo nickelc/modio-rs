@@ -126,10 +126,6 @@ pub struct ModioMessage {
     pub message: String,
 }
 
-#[doc(hidden)]
-#[deprecated(since = "0.4.1", note = "Use `EntityResult`")]
-pub type ModioResult<T> = EntityResult<T>;
-
 /// Result type for editing games, mods and files.
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]

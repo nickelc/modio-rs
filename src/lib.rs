@@ -179,11 +179,6 @@ use crate::users::Users;
 pub use crate::auth::Credentials;
 pub use crate::download::DownloadAction;
 pub use crate::error::{Error, Result};
-#[doc(hidden)]
-pub use crate::types::ModioErrorResponse;
-#[doc(hidden)]
-#[allow(deprecated)]
-pub use crate::types::ModioResult;
 pub use crate::types::{EntityResult, List};
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
@@ -191,10 +186,6 @@ const TEST_HOST: &str = "https://api.test.mod.io/v1";
 const DEFAULT_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), '/', env!("CARGO_PKG_VERSION"));
 
 pub type Stream<'a, T> = futures_core::stream::BoxStream<'a, Result<T>>;
-
-#[doc(hidden)]
-#[deprecated(since = "0.4.1", note = "Use `List`")]
-pub type ModioListResponse<T> = List<T>;
 
 mod prelude {
     pub use futures::{Future as StdFuture, Stream as StdStream};
@@ -208,8 +199,6 @@ mod prelude {
     pub use crate::List;
     pub use crate::Modio;
     pub(crate) use crate::ModioMessage;
-    #[allow(deprecated)]
-    pub use crate::ModioResult;
     pub use crate::QueryString;
     pub use crate::Stream;
     pub use crate::{AddOptions, DeleteOptions, Endpoint};

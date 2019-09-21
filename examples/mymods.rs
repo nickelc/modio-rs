@@ -31,8 +31,7 @@ async fn main() -> Result<(), Error> {
         .offset(0)
         .order_by(Id::desc());
 
-    // Create the call for `/me/mods` and wait for the `ModioListResponse<Mod>`
-    // result
+    // Create the call for `/me/mods` and wait for the result.
     for mod_ in modio.me().mods().list(filter).await? {
         println!("{:#?}", mod_);
     }
