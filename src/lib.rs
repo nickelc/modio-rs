@@ -129,17 +129,13 @@
 #[macro_use]
 extern crate serde_derive;
 
-use std::io;
 use std::io::prelude::*;
 use std::marker::PhantomData;
 
-use futures::future::TryFutureExt;
-use log::debug;
 use reqwest::header::USER_AGENT;
 use reqwest::header::{HeaderMap, HeaderValue};
-use reqwest::{Client, ClientBuilder, Method, Proxy, StatusCode};
+use reqwest::{Client, ClientBuilder, Proxy};
 use serde::de::DeserializeOwned;
-use url::Url;
 
 #[macro_use]
 mod macros;
@@ -488,77 +484,7 @@ impl Modio {
         A: Into<DownloadAction>,
         W: Write + Send,
     {
-        match action.into() {
-            DownloadAction::Primary { game_id, mod_id } => {
-                let modref = self.mod_(game_id, mod_id);
-                let m = modref.get().await?;
-                if let Some(file) = m.modfile {
-                    let url = file.download.binary_url.to_string();
-                    self.request_file(&url, w).await
-                } else {
-                    Err(error::download_no_primary(game_id, mod_id))
-                }
-            }
-            DownloadAction::File {
-                game_id,
-                mod_id,
-                file_id,
-            } => {
-                let fileref = self.mod_(game_id, mod_id).file(file_id);
-                let file = fileref.get().await?;
-                let url = file.download.binary_url.to_string();
-                self.request_file(&url, w)
-                    .await
-                    .map_err(move |e| match e.kind() {
-                        error::ErrorKind::Fault {
-                            code: StatusCode::NOT_FOUND,
-                            ..
-                        } => error::download_file_not_found(game_id, mod_id, file_id),
-                        _ => e,
-                    })
-            }
-            DownloadAction::Version {
-                game_id,
-                mod_id,
-                version,
-                policy,
-            } => {
-                use crate::download::ResolvePolicy::*;
-                use files::filters::{DateAdded, Version};
-                use filter::prelude::*;
-
-                let filter = Version::eq(version.clone())
-                    .order_by(DateAdded::desc())
-                    .limit(2);
-
-                let files = self.mod_(game_id, mod_id).files();
-                let list = files.list(filter).await?;
-
-                let (file, error) = match (list.count, policy) {
-                    (0, _) => (
-                        None,
-                        Some(error::download_version_not_found(game_id, mod_id, version)),
-                    ),
-                    (1, _) => (Some(&list[0]), None),
-                    (_, Latest) => (Some(&list[0]), None),
-                    (_, Fail) => (
-                        None,
-                        Some(error::download_multiple_files(game_id, mod_id, version)),
-                    ),
-                };
-
-                if let Some(file) = file {
-                    let url = file.download.binary_url.to_string();
-                    self.request_file(&url, w).await
-                } else {
-                    Err(error.expect("bug in previous match!"))
-                }
-            }
-            DownloadAction::Url(url) => {
-                let url = url.to_string();
-                self.request_file(&url, w).await
-            }
-        }
+        request::download(&self, action, w).await
     }
 
     /// Return a reference to an interface that provides access to resources owned by the user
@@ -575,28 +501,6 @@ impl Modio {
     /// Return a reference to an interface to report games, mods and users.
     pub fn reports(&self) -> Reports {
         Reports::new(self.clone())
-    }
-
-    async fn request_file<W>(&self, uri: &str, mut out: W) -> Result<(u64, W)>
-    where
-        W: Write + Send,
-    {
-        debug!("downloading file: {}", uri);
-        let url = Url::parse(uri).map_err(error::from)?;
-
-        let instance = self.clone();
-        let mut response = instance
-            .client
-            .request(Method::GET, url)
-            .send()
-            .map_err(error::from)
-            .await?;
-
-        let mut n = 0;
-        while let Some(chunk) = response.chunk().map_err(error::from).await? {
-            n += io::copy(&mut io::Cursor::new(&chunk), &mut out).map_err(error::from)?;
-        }
-        Ok((n, out))
     }
 
     fn request(&self, route: routing::Route) -> RequestBuilder {
