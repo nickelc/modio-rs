@@ -15,6 +15,8 @@
 //! OAuth 2 Access Token (Read + Write)
 //! - [Encrypted steam user auth ticket](auth/struct.Auth.html#method.steam_auth) to create an
 //! OAuth 2 Access Token (Read + Write)
+//! - [Oculus user data](auth/struct.Auth.html#method.oculus_auth) to create an
+//! OAuth 2 Access Token (Read + Write)
 //!
 //! # Rate Limiting
 //!
@@ -568,6 +570,7 @@ where
 mod private {
     pub trait Sealed {}
 
+    impl Sealed for super::auth::OculusOptions {}
     impl Sealed for super::filter::Filter {}
     impl Sealed for super::files::EditFileOptions {}
     impl Sealed for super::games::AddTagsOptions {}

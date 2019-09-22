@@ -7,6 +7,7 @@ use crate::error::Result;
 use crate::routing::Route;
 use crate::Modio;
 use crate::ModioMessage;
+use crate::QueryString;
 
 /// Various forms of authentication credentials supported by [mod.io](https://mod.io).
 #[derive(Clone, Debug, PartialEq)]
@@ -28,6 +29,34 @@ impl fmt::Display for Credentials {
 pub enum Service {
     Steam(u64),
     Gog(u64),
+}
+
+#[derive(Debug)]
+pub struct OculusOptions {
+    params: std::collections::BTreeMap<&'static str, String>,
+}
+
+impl OculusOptions {
+    pub fn new<T>(nonce: T, user_id: u64, auth_token: T) -> Self
+    where
+        T: Into<String>,
+    {
+        let mut params = std::collections::BTreeMap::new();
+        params.insert("nonce", nonce.into());
+        params.insert("user_id", user_id.to_string());
+        params.insert("auth_token", auth_token.into());
+        Self { params }
+    }
+
+    option!(email >> "email");
+}
+
+impl QueryString for OculusOptions {
+    fn to_query_string(&self) -> String {
+        form_urlencoded::Serializer::new(String::new())
+            .extend_pairs(&self.params)
+            .finish()
+    }
 }
 
 /// Authentication Flow interface to retrieve access tokens. See the [mod.io Authentication
@@ -164,6 +193,20 @@ impl Auth {
             .modio
             .request(Route::AuthSteam)
             .body(data)
+            .send::<AccessToken>()
+            .await?;
+
+        Ok(Credentials::Token(token.access_token))
+    }
+
+    /// Get the access token for an Oculus user. [required: apikey]
+    ///
+    /// See the [mod.io docs](https://docs.mod.io/#authenticate-via-oculus) for more information.
+    pub async fn oculus_auth(self, options: OculusOptions) -> Result<Credentials> {
+        let token = self
+            .modio
+            .request(Route::AuthOculus)
+            .body(options.to_query_string())
             .send::<AccessToken>()
             .await?;
 
