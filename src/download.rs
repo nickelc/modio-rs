@@ -1,5 +1,3 @@
-use url::Url;
-
 use crate::types::mods::{File, Mod};
 
 /// Defines the action that is performed for [`Modio::download`](struct.Modio.html#method.download).
@@ -8,11 +6,13 @@ pub enum DownloadAction {
     /// Download the primary modfile of a mod.
     Primary { game_id: u32, mod_id: u32 },
     /// Download a specific modfile of a mod.
-    File {
+    FileRef {
         game_id: u32,
         mod_id: u32,
         file_id: u32,
     },
+    /// Download a specific modfile.
+    File(Box<File>),
     /// Download a specific version of a mod.
     Version {
         game_id: u32,
@@ -20,8 +20,6 @@ pub enum DownloadAction {
         version: String,
         policy: ResolvePolicy,
     },
-    /// Url to download.
-    Url(Url),
 }
 
 /// Defines the policy for `DownloadAction::Version` when multiple files are found.
@@ -33,12 +31,12 @@ pub enum ResolvePolicy {
     Fail,
 }
 
-/// Convert `Mod` to [`DownloadAction::Url`](enum.DownloadAction.html#variant.Url) or
+/// Convert `Mod` to [`DownloadAction::File`](enum.DownloadAction.html#variant.File) or
 /// [`DownloadAction::Primary`](enum.DownloadAction.html#variant.Primary) if `Mod::modfile` is `None`
 impl From<Mod> for DownloadAction {
     fn from(m: Mod) -> DownloadAction {
         if let Some(file) = m.modfile {
-            DownloadAction::Url(file.download.binary_url)
+            DownloadAction::from(file)
         } else {
             DownloadAction::Primary {
                 game_id: m.game_id,
@@ -48,10 +46,10 @@ impl From<Mod> for DownloadAction {
     }
 }
 
-/// Convert `File` to [`DownloadAction::Url`](enum.DownloadAction.html#variant.Url)
+/// Convert `File` to [`DownloadAction::File`](enum.DownloadAction.html#variant.File)
 impl From<File> for DownloadAction {
     fn from(file: File) -> DownloadAction {
-        DownloadAction::Url(file.download.binary_url)
+        DownloadAction::File(Box::new(file))
     }
 }
 
@@ -62,10 +60,11 @@ impl From<(u32, u32)> for DownloadAction {
     }
 }
 
-/// Convert `(u32, u32, u32)` to [`DownloadAction::File`](enum.DownloadAction.html#variant.File)
+/// Convert `(u32, u32, u32)` to
+/// [`DownloadAction::FileRef`](enum.DownloadAction.html#variant.FileRef)
 impl From<(u32, u32, u32)> for DownloadAction {
     fn from((game_id, mod_id, file_id): (u32, u32, u32)) -> DownloadAction {
-        DownloadAction::File {
+        DownloadAction::FileRef {
             game_id,
             mod_id,
             file_id,
@@ -96,11 +95,5 @@ impl<'a> From<(u32, u32, &'a str)> for DownloadAction {
             version: version.to_string(),
             policy: ResolvePolicy::Latest,
         }
-    }
-}
-
-impl From<Url> for DownloadAction {
-    fn from(url: Url) -> DownloadAction {
-        DownloadAction::Url(url)
     }
 }

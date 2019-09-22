@@ -161,7 +161,11 @@ where
                 Err(error::download_no_primary(game_id, mod_id))
             }
         }
-        DownloadAction::File {
+        DownloadAction::File(file) => {
+            let url = file.download.binary_url;
+            request_file(&modio.client, url, w).await
+        }
+        DownloadAction::FileRef {
             game_id,
             mod_id,
             file_id,
@@ -216,7 +220,6 @@ where
                 Err(error.expect("bug in previous match!"))
             }
         }
-        DownloadAction::Url(url) => request_file(&modio.client, url, w).await,
     }
 }
 

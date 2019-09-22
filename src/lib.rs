@@ -102,7 +102,7 @@
 //!     let (len, out) = modio.download(action, out).await?;
 //!
 //!     // Download the specific file of a mod.
-//!     let action = DownloadAction::File {
+//!     let action = DownloadAction::FileRef {
 //!         game_id: 5,
 //!         mod_id: 19,
 //!         file_id: 101,
@@ -456,7 +456,7 @@ impl Modio {
     ///     let (len, out) = modio.download(action, out).await?;
     ///
     ///     // Download the specific file of a mod.
-    ///     let action = DownloadAction::File {
+    ///     let action = DownloadAction::FileRef {
     ///         game_id: 5,
     ///         mod_id: 19,
     ///         file_id: 101,
