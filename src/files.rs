@@ -37,7 +37,7 @@ impl MyFiles {
     /// Provides a stream over all modfiles the authenticated user uploaded. [required: token]
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn iter<'a>(self, filter: Filter) -> Stream<'a, File> {
+    pub fn iter<'a>(self, filter: Filter) -> Iter<'a, File> {
         self.modio.stream(Route::UserFiles, filter)
     }
 }
@@ -76,7 +76,7 @@ impl Files {
     /// Provides a stream over all files that are published for a mod this `Files` refers to.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn iter<'a>(self, filter: Filter) -> Stream<'a, File> {
+    pub fn iter<'a>(self, filter: Filter) -> Iter<'a, File> {
         let route = Route::GetFiles {
             game_id: self.game,
             mod_id: self.mod_id,

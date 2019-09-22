@@ -43,7 +43,7 @@ impl MyGames {
     /// [required: token]
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn iter<'a>(self, filter: Filter) -> Stream<'a, Game> {
+    pub fn iter<'a>(self, filter: Filter) -> Iter<'a, Game> {
         self.modio.stream(Route::UserGames, filter)
     }
 }
@@ -72,7 +72,7 @@ impl Games {
     /// Provides a stream over all games.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn iter<'a>(self, filter: Filter) -> Stream<'a, Game> {
+    pub fn iter<'a>(self, filter: Filter) -> Iter<'a, Game> {
         self.modio.stream(Route::GetGames, filter)
     }
 

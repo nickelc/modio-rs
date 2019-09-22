@@ -36,7 +36,7 @@ impl Comments {
     /// Provides a stream over all comments of the mod.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn iter<'a>(self, filter: Filter) -> Stream<'a, Comment> {
+    pub fn iter<'a>(self, filter: Filter) -> Iter<'a, Comment> {
         let route = Route::GetModComments {
             game_id: self.game,
             mod_id: self.mod_id,

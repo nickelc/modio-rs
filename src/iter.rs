@@ -14,6 +14,7 @@ use crate::filter::Filter;
 use crate::routing::Route;
 use crate::{List, Modio, QueryString};
 
+/// A stream over a result list of `T`.
 pub struct Iter<'a, T> {
     modio: Modio,
     route: Route,
@@ -22,7 +23,7 @@ pub struct Iter<'a, T> {
 }
 
 impl<'a, T: DeserializeOwned + Send + 'a> Iter<'a, T> {
-    pub fn new(modio: Modio, route: Route, filter: Filter) -> Self {
+    pub(crate) fn new(modio: Modio, route: Route, filter: Filter) -> Self {
         let req = modio
             .request(route.clone())
             .query(filter.to_query_string())
@@ -49,7 +50,7 @@ struct State {
     remaining: u32,
 }
 
-impl<'a, T: 'a + DeserializeOwned + Send> Stream for Iter<'a, T> {
+impl<'a, T: DeserializeOwned + Send + 'a> Stream for Iter<'a, T> {
     type Item = Result<T>;
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {

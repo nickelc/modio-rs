@@ -163,7 +163,6 @@ pub mod users;
 use crate::auth::Auth;
 use crate::comments::Comments;
 use crate::games::{GameRef, Games};
-use crate::iter::Iter;
 use crate::me::Me;
 use crate::mods::{ModRef, Mods};
 use crate::reports::Reports;
@@ -175,26 +174,25 @@ use crate::users::Users;
 pub use crate::auth::Credentials;
 pub use crate::download::DownloadAction;
 pub use crate::error::{Error, Result};
+pub use crate::iter::Iter;
 pub use crate::types::{EntityResult, List};
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 const TEST_HOST: &str = "https://api.test.mod.io/v1";
 const DEFAULT_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), '/', env!("CARGO_PKG_VERSION"));
 
-pub type Stream<'a, T> = futures_core::stream::BoxStream<'a, Result<T>>;
-
 mod prelude {
     pub use reqwest::multipart::{Form, Part};
     pub use reqwest::StatusCode;
 
     pub use crate::filter::Filter;
+    pub use crate::iter::Iter;
     pub use crate::routing::Route;
     pub use crate::EntityResult;
     pub use crate::List;
     pub use crate::Modio;
     pub(crate) use crate::ModioMessage;
     pub use crate::QueryString;
-    pub use crate::Stream;
     pub use crate::{AddOptions, DeleteOptions, Endpoint};
 }
 
@@ -505,12 +503,11 @@ impl Modio {
         RequestBuilder::new(self.clone(), route)
     }
 
-    fn stream<'a, T>(self, route: routing::Route, filter: filter::Filter) -> Stream<'a, T>
+    fn stream<'a, T>(self, route: routing::Route, filter: filter::Filter) -> Iter<'a, T>
     where
         T: DeserializeOwned + Send + 'a,
     {
-        use futures_util::StreamExt;
-        Iter::new(self, route, filter).boxed()
+        Iter::new(self, route, filter)
     }
 }
 
@@ -544,7 +541,7 @@ where
         self.modio.request(self.list).send().await
     }
 
-    pub fn iter(self) -> Stream<'a, Out> {
+    pub fn iter(self) -> Iter<'a, Out> {
         self.modio.stream(self.list, Default::default())
     }
 

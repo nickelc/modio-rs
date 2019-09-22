@@ -45,7 +45,7 @@ impl MyMods {
     /// token]
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn iter<'a>(self, filter: Filter) -> Stream<'a, Mod> {
+    pub fn iter<'a>(self, filter: Filter) -> Iter<'a, Mod> {
         self.modio.stream(Route::UserMods, filter)
     }
 }
@@ -81,7 +81,7 @@ impl Mods {
     /// Provides a stream over all mods of the game.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn iter<'a>(self, filter: Filter) -> Stream<'a, Mod> {
+    pub fn iter<'a>(self, filter: Filter) -> Iter<'a, Mod> {
         let route = Route::GetMods { game_id: self.game };
         self.modio.stream(route, filter)
     }
@@ -99,7 +99,7 @@ impl Mods {
     /// Provides a stream over the statistics for all mods of a game.
     ///
     /// See [Filters and sorting](filters/stats/index.html).
-    pub fn statistics<'a>(self, filter: Filter) -> Stream<'a, Statistics> {
+    pub fn statistics<'a>(self, filter: Filter) -> Iter<'a, Statistics> {
         let route = Route::GetAllModStats { game_id: self.game };
         self.modio.stream(route, filter)
     }
@@ -107,7 +107,7 @@ impl Mods {
     /// Provides a stream over the event log for all mods of a game sorted by latest event first.
     ///
     /// See [Filters and sorting](filters/events/index.html).
-    pub fn events<'a>(self, filter: Filter) -> Stream<'a, Event> {
+    pub fn events<'a>(self, filter: Filter) -> Iter<'a, Event> {
         let route = Route::GetAllModEvents { game_id: self.game };
         self.modio.stream(route, filter)
     }
@@ -200,7 +200,7 @@ impl ModRef {
     /// Provides a stream over the event log for a mod sorted by latest event first.
     ///
     /// See [Filters and sorting](filters/events/index.html).
-    pub fn events<'a>(self, filter: Filter) -> Stream<'a, Event> {
+    pub fn events<'a>(self, filter: Filter) -> Iter<'a, Event> {
         let route = Route::GetModEvents {
             game_id: self.game,
             mod_id: self.id,
