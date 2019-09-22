@@ -184,9 +184,7 @@ const DEFAULT_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), '/', env!("CARGO_PKG
 pub type Stream<'a, T> = futures_core::stream::BoxStream<'a, Result<T>>;
 
 mod prelude {
-    pub use futures::{Future as StdFuture, Stream as StdStream};
     pub use reqwest::multipart::{Form, Part};
-    pub use reqwest::Body;
     pub use reqwest::StatusCode;
 
     pub use crate::filter::Filter;
