@@ -63,7 +63,7 @@ impl RequestBuilder {
         let (method, auth_method, path) = self.request.route.pieces();
 
         match (auth_method, &self.modio.credentials) {
-            (AuthMethod::ApiKey, Credentials::Token(_)) => return Err(error::apikey_required()),
+            (AuthMethod::ApiKey, Credentials::Token(_, _)) => return Err(error::apikey_required()),
             (AuthMethod::Token, Credentials::ApiKey(_)) => return Err(error::token_required()),
             _ => {}
         }
@@ -81,7 +81,7 @@ impl RequestBuilder {
         debug!("request: {} {}", method, url);
         let mut req = self.modio.client.request(method, url);
 
-        if let Credentials::Token(ref token) = self.modio.credentials {
+        if let Credentials::Token(ref token, _) = self.modio.credentials {
             req = req.bearer_auth(token);
         }
 

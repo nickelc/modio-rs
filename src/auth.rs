@@ -13,14 +13,15 @@ use crate::QueryString;
 #[derive(Clone, Debug, PartialEq)]
 pub enum Credentials {
     ApiKey(String),
-    Token(String),
+    /// Access token and Unix timestamp of the date this token will expire.
+    Token(String, Option<u64>),
 }
 
 impl fmt::Display for Credentials {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Credentials::ApiKey(key) => f.write_str(&key),
-            Credentials::Token(token) => f.write_str(&token),
+            Credentials::Token(token, _) => f.write_str(&token),
         }
     }
 }
@@ -101,6 +102,7 @@ pub struct Auth {
 #[derive(Deserialize)]
 struct AccessToken {
     access_token: String,
+    date_expires: u64,
 }
 
 impl Auth {
@@ -129,14 +131,14 @@ impl Auth {
             .append_pair("security_code", code)
             .finish();
 
-        let token = self
+        let t = self
             .modio
             .request(Route::AuthEmailExchange)
             .body(data)
             .send::<AccessToken>()
             .await?;
 
-        Ok(Credentials::Token(token.access_token))
+        Ok(Credentials::Token(t.access_token, Some(t.date_expires)))
     }
 
     /// Link an external account. Requires an auth token from the external platform.
@@ -171,14 +173,14 @@ impl Auth {
             .append_pair("appdata", ticket)
             .finish();
 
-        let token = self
+        let t = self
             .modio
             .request(Route::AuthGog)
             .body(data)
             .send::<AccessToken>()
             .await?;
 
-        Ok(Credentials::Token(token.access_token))
+        Ok(Credentials::Token(t.access_token, Some(t.date_expires)))
     }
 
     /// Get the access token for an encrypted steam app ticket. [required: apikey]
@@ -189,27 +191,27 @@ impl Auth {
             .append_pair("appdata", ticket)
             .finish();
 
-        let token = self
+        let t = self
             .modio
             .request(Route::AuthSteam)
             .body(data)
             .send::<AccessToken>()
             .await?;
 
-        Ok(Credentials::Token(token.access_token))
+        Ok(Credentials::Token(t.access_token, Some(t.date_expires)))
     }
 
     /// Get the access token for an Oculus user. [required: apikey]
     ///
     /// See the [mod.io docs](https://docs.mod.io/#authenticate-via-oculus) for more information.
     pub async fn oculus_auth(self, options: OculusOptions) -> Result<Credentials> {
-        let token = self
+        let t = self
             .modio
             .request(Route::AuthOculus)
             .body(options.to_query_string())
             .send::<AccessToken>()
             .await?;
 
-        Ok(Credentials::Token(token.access_token))
+        Ok(Credentials::Token(t.access_token, Some(t.date_expires)))
     }
 }

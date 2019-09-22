@@ -26,7 +26,7 @@ async fn main() -> Result<(), Error> {
 
     // Fetch the access token / api key from the environment of the current process.
     let creds = match (env::var("MODIO_TOKEN"), env::var("MODIO_API_KEY")) {
-        (Ok(token), _) => Credentials::Token(token),
+        (Ok(token), _) => Credentials::Token(token, None),
         (_, Ok(apikey)) => Credentials::ApiKey(apikey),
         _ => {
             eprintln!("missing MODIO_TOKEN or MODIO_API_KEY environment variable");
