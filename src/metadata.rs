@@ -2,7 +2,6 @@
 use futures::future;
 use url::form_urlencoded;
 
-use crate::error::Result;
 use crate::prelude::*;
 use crate::types::mods::MetadataMap;
 

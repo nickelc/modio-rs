@@ -1,8 +1,7 @@
 use std::env;
 use std::io::{self, Write};
 
-use modio::error::Error;
-use modio::{auth::Credentials, Modio};
+use modio::{auth::Credentials, Modio, Result};
 
 fn prompt(prompt: &str) -> io::Result<String> {
     print!("{}", prompt);
@@ -13,7 +12,7 @@ fn prompt(prompt: &str) -> io::Result<String> {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() -> Result<()> {
     dotenv::dotenv().ok();
     env_logger::init();
 

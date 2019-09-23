@@ -5,7 +5,7 @@ use std::path::Path;
 use mime::{APPLICATION_OCTET_STREAM, IMAGE_STAR};
 use url::{form_urlencoded, Url};
 
-use crate::error::{ErrorKind, Result};
+use crate::error::Kind;
 use crate::files::{FileRef, Files};
 use crate::metadata::Metadata;
 use crate::multipart::FileSource;
@@ -278,10 +278,7 @@ impl ModRef {
             .await
             .map(|_| ())
             .or_else(|err| match err.kind() {
-                ErrorKind::Fault {
-                    code: StatusCode::BAD_REQUEST,
-                    ..
-                } => Ok(()),
+                Kind::Status(StatusCode::BAD_REQUEST) => Ok(()),
                 _ => Err(err),
             })
     }
@@ -298,10 +295,7 @@ impl ModRef {
             .await
             .map(|_| ())
             .or_else(|err| match err.kind() {
-                ErrorKind::Fault {
-                    code: StatusCode::BAD_REQUEST,
-                    ..
-                } => Ok(()),
+                Kind::Status(StatusCode::BAD_REQUEST) => Ok(()),
                 _ => Err(err),
             })
     }
@@ -317,10 +311,7 @@ impl ModRef {
             .send()
             .await
             .or_else(|err| match err.kind() {
-                ErrorKind::Fault {
-                    code: StatusCode::BAD_REQUEST,
-                    ..
-                } => Ok(()),
+                Kind::Status(StatusCode::BAD_REQUEST) => Ok(()),
                 _ => Err(err),
             })
     }

@@ -1,12 +1,11 @@
 use std::env;
 use std::process;
 
-use modio::error::Error;
 use modio::filter::prelude::*;
-use modio::{auth::Credentials, Modio};
+use modio::{auth::Credentials, Modio, Result};
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() -> Result<()> {
     dotenv::dotenv().ok();
     env_logger::init();
 

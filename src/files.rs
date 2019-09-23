@@ -7,7 +7,6 @@ use mime::APPLICATION_OCTET_STREAM;
 use tokio_io::AsyncRead;
 use url::form_urlencoded;
 
-use crate::error::Result;
 use crate::multipart::FileSource;
 use crate::prelude::*;
 

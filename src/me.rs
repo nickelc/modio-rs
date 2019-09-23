@@ -1,5 +1,4 @@
 //! Me interface
-use crate::error::Result;
 use crate::files::MyFiles;
 use crate::games::MyGames;
 use crate::mods::MyMods;

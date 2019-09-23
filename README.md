@@ -101,7 +101,7 @@ let (len, out) = modio.download(action, out).await?;
 
 // Download the specific version of a mod.
 // if multiple files are found then the latest file is downloaded.
-// Set policy to `ResolvePolicy::Fail` to return with `ErrorKind::Download(DownloadError::MultipleFilesFound)`.
+// Set policy to `ResolvePolicy::Fail` to return with `modio::download::Error::MultipleFilesFound` as source error.
 let action = DownloadAction::Version {
     game_id: 5,
     mod_id: 19,

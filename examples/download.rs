@@ -4,8 +4,7 @@ use std::process;
 
 use md5;
 
-use modio::error::Error;
-use modio::{auth::Credentials, Modio};
+use modio::{auth::Credentials, Modio, Result};
 
 fn prompt(prompt: &str) -> io::Result<u32> {
     print!("{}", prompt);
@@ -16,7 +15,7 @@ fn prompt(prompt: &str) -> io::Result<u32> {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() -> Result<()> {
     dotenv::dotenv().ok();
     env_logger::init();
 

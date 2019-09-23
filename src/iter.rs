@@ -9,9 +9,9 @@ use futures_util::stream;
 use futures_util::FutureExt;
 use serde::de::DeserializeOwned;
 
-use crate::error::Result;
 use crate::filter::Filter;
 use crate::routing::Route;
+use crate::Result;
 use crate::{List, Modio, QueryString};
 
 /// A stream over a result list of `T`.

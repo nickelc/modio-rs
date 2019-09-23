@@ -23,9 +23,8 @@
 //! For API requests using API key authentication are **unlimited** and for OAuth 2 authentication
 //! requests are limited to **120 requests per hour**.
 //!
-//! A special error [ErrorKind::RateLimit](error/enum.ErrorKind.html#variant.RateLimit) will
-//! be return from api operations when the rate limit associated with credentials has been
-//! exhausted.
+//! [`Error::is_ratelimited`](struct.Error.html#method.is_ratelimited) will return true
+//! if the rate limit associated with credentials has been exhausted.
 //!
 //! # Example: Basic setup
 //!
@@ -114,7 +113,7 @@
 //!     // Download the specific version of a mod.
 //!     // if multiple files are found then the latest file is downloaded.
 //!     // Set policy to `ResolvePolicy::Fail` to return with
-//!     // `ErrorKind::Download(DownloadError::MultipleFilesFound)`.
+//!     // `modio::download::Error::MultipleFilesFound` as source error.
 //!     let action = DownloadAction::Version {
 //!         game_id: 5,
 //!         mod_id: 19,
@@ -147,7 +146,7 @@ pub mod auth;
 pub mod filter;
 pub mod comments;
 pub mod download;
-pub mod error;
+mod error;
 pub mod files;
 pub mod games;
 mod iter;
@@ -195,6 +194,7 @@ mod prelude {
     pub use crate::Modio;
     pub(crate) use crate::ModioMessage;
     pub use crate::QueryString;
+    pub use crate::Result;
     pub use crate::{AddOptions, DeleteOptions, Endpoint};
 }
 
@@ -291,7 +291,7 @@ impl Builder {
 
             let mut headers = HeaderMap::new();
             let agent = match config.agent {
-                Some(agent) => HeaderValue::from_str(&agent).map_err(error::from)?,
+                Some(agent) => HeaderValue::from_str(&agent).map_err(error::builder)?,
                 None => HeaderValue::from_static(DEFAULT_AGENT),
             };
             headers.insert(USER_AGENT, agent);
@@ -303,7 +303,7 @@ impl Builder {
             builder
                 .default_headers(headers)
                 .build()
-                .map_err(error::from)?
+                .map_err(error::builder)?
         };
 
         Ok(Modio {
@@ -432,7 +432,7 @@ impl Modio {
 
     /// Performs a download into a writer.
     ///
-    /// Fails with [`ErrorKind::Download`](error/enum.ErrorKind.html#variant.Download) if a primary file,
+    /// Fails with [`modio::download::Error`](download/enum.Error.html) as source if a primary file,
     /// a specific file or a specific version is not found.
     /// # Example
     /// ```no_run
@@ -466,7 +466,7 @@ impl Modio {
     ///     // Download the specific version of a mod.
     ///     // if multiple files are found then the latest file is downloaded.
     ///     // Set policy to `ResolvePolicy::Fail` to return with
-    ///     // `ErrorKind::Download(DownloadError::MultipleFilesFound)`.
+    ///     // `modio::download::Error::MultipleFilesFound` as source error.
     ///     let action = DownloadAction::Version {
     ///         game_id: 5,
     ///         mod_id: 19,

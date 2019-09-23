@@ -73,9 +73,9 @@ impl RequestBuilder {
         };
 
         let url = if let Credentials::ApiKey(ref api_key) = self.modio.credentials {
-            Url::parse_with_params(&url, Some(("api_key", api_key))).map_err(error::from)?
+            Url::parse_with_params(&url, Some(("api_key", api_key))).map_err(error::builder)?
         } else {
-            url.parse().map_err(error::from)?
+            url.parse().map_err(error::builder)?
         };
 
         debug!("request: {} {}", method, url);
@@ -101,7 +101,7 @@ impl RequestBuilder {
             None => {}
         }
 
-        let response = req.send().map_err(error::from).await?;
+        let response = req.send().map_err(error::builder_or_request).await?;
 
         let status = response.status();
 
@@ -121,7 +121,8 @@ impl RequestBuilder {
             (remaining, reset)
         };
 
-        let body = response.bytes().map_err(error::from).await?;
+        let body = response.bytes().map_err(error::request).await?;
+
         if log_enabled!(log::Level::Trace) {
             match std::str::from_utf8(&body) {
                 Ok(s) => trace!("status: {}, response: {}", status, s),
@@ -130,7 +131,7 @@ impl RequestBuilder {
         }
 
         if status.is_success() {
-            serde_json::from_slice::<Out>(&body).map_err(error::from)
+            serde_json::from_slice::<Out>(&body).map_err(error::decode)
         } else {
             match (remaining, reset) {
                 (Some(remaining), Some(reset)) if remaining == 0 => {
@@ -138,8 +139,8 @@ impl RequestBuilder {
                     Err(error::ratelimit(reset))
                 }
                 _ => serde_json::from_slice::<ModioErrorResponse>(&body)
-                    .map(|mer| Err(error::client(status, mer.error)))
-                    .map_err(error::from)?,
+                    .map(|mer| Err(error::error_for_status(status, mer.error)))
+                    .map_err(error::decode)?,
             }
         }
     }
@@ -176,10 +177,9 @@ where
             request_file(&modio.client, url, w)
                 .await
                 .map_err(move |e| match e.kind() {
-                    error::ErrorKind::Fault {
-                        code: StatusCode::NOT_FOUND,
-                        ..
-                    } => error::download_file_not_found(game_id, mod_id, file_id),
+                    error::Kind::Status(StatusCode::NOT_FOUND) => {
+                        error::download_file_not_found(game_id, mod_id, file_id)
+                    }
                     _ => e,
                 })
         }
@@ -232,12 +232,14 @@ where
     let mut response = client
         .request(Method::GET, url)
         .send()
-        .map_err(error::from)
-        .await?;
+        .map_err(error::builder_or_request)
+        .await?
+        .error_for_status()
+        .map_err(error::request)?;
 
     let mut n = 0;
-    while let Some(chunk) = response.chunk().map_err(error::from).await? {
-        n += io::copy(&mut io::Cursor::new(&chunk), &mut out).map_err(error::from)?;
+    while let Some(chunk) = response.chunk().map_err(error::request).await? {
+        n += io::copy(&mut io::Cursor::new(&chunk), &mut out).map_err(error::decode)?;
     }
     Ok((n, out))
 }

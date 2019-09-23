@@ -1,5 +1,4 @@
 //! Mod comments interface
-use crate::error::Result;
 use crate::prelude::*;
 pub use crate::types::mods::Comment;
 

@@ -1,7 +1,6 @@
 //! Reports interface
 use url::form_urlencoded;
 
-use crate::error::Result;
 use crate::prelude::*;
 
 pub struct Reports {

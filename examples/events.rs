@@ -2,15 +2,14 @@ use std::env;
 use std::process;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use futures::future::{self, FutureExt, TryFutureExt};
+use futures::future::{self, TryFutureExt};
 use futures::stream::TryStreamExt;
 use tokio::prelude::*;
 use tokio::timer::Interval;
 
-use modio::error::Error;
 use modio::filter::prelude::*;
 use modio::QueryString;
-use modio::{auth::Credentials, Modio};
+use modio::{auth::Credentials, Modio, Result};
 
 fn current_timestamp() -> u64 {
     SystemTime::now()
@@ -20,7 +19,7 @@ fn current_timestamp() -> u64 {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Error> {
+async fn main() -> Result<()> {
     dotenv::dotenv().ok();
     env_logger::init();
 

@@ -1,13 +1,14 @@
 //! Authentication Flow interface
+use std::error::Error as StdError;
 use std::fmt;
 
 use url::form_urlencoded;
 
-use crate::error::Result;
 use crate::routing::Route;
 use crate::Modio;
 use crate::ModioMessage;
 use crate::QueryString;
+use crate::Result;
 
 /// Various forms of authentication credentials supported by [mod.io](https://mod.io).
 #[derive(Clone, Debug, PartialEq)]
@@ -22,6 +23,29 @@ impl fmt::Display for Credentials {
         match self {
             Credentials::ApiKey(key) => f.write_str(&key),
             Credentials::Token(token, _) => f.write_str(&token),
+        }
+    }
+}
+
+/// Authentication error
+#[derive(Debug)]
+pub enum Error {
+    /// API key/access token is incorrect, revoked or expired.
+    Unauthorized,
+    /// API key is required to perform the action.
+    ApiKeyRequired,
+    /// Access token is required to perform the action.
+    TokenRequired,
+}
+
+impl StdError for Error {}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Error::Unauthorized => f.write_str("Unauthorized"),
+            Error::ApiKeyRequired => f.write_str("API key is required"),
+            Error::TokenRequired => f.write_str("Access token is required"),
         }
     }
 }

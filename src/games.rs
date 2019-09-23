@@ -5,7 +5,6 @@ use std::path::Path;
 use mime::IMAGE_STAR;
 use url::form_urlencoded;
 
-use crate::error::Result;
 use crate::multipart::FileSource;
 use crate::prelude::*;
 use crate::ModRef;
