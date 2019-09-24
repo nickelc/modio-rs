@@ -98,7 +98,12 @@ impl RequestBuilder {
                 trace!("{:?}", mp);
                 req = req.multipart(mp);
             }
-            None => {}
+            None => {
+                req = req.header(
+                    CONTENT_TYPE,
+                    HeaderValue::from_static("application/x-www-form-urlencoded"),
+                );
+            }
         }
 
         let response = req.send().map_err(error::builder_or_request).await?;
