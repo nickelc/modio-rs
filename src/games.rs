@@ -235,6 +235,8 @@ impl EditGameOptions {
     option!(maturity_options: MaturityOptions >> "maturity_options");
 }
 
+impl crate::private::Sealed for EditGameOptions {}
+
 impl crate::QueryString for EditGameOptions {
     fn to_query_string(&self) -> String {
         url::form_urlencoded::Serializer::new(String::new())
@@ -271,6 +273,8 @@ impl AddTagsOptions {
 }
 
 impl AddOptions for AddTagsOptions {}
+
+impl crate::private::Sealed for AddTagsOptions {}
 
 impl QueryString for AddTagsOptions {
     fn to_query_string(&self) -> String {
@@ -309,6 +313,8 @@ impl DeleteTagsOptions {
 }
 
 impl DeleteOptions for DeleteTagsOptions {}
+
+impl crate::private::Sealed for DeleteTagsOptions {}
 
 impl QueryString for DeleteTagsOptions {
     fn to_query_string(&self) -> String {

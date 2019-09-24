@@ -440,6 +440,8 @@ impl Filter {
     }
 }
 
+impl crate::private::Sealed for super::filter::Filter {}
+
 impl crate::QueryString for Filter {
     fn to_query_string(&self) -> String {
         let map_filters = |f: &FilterEntry| {

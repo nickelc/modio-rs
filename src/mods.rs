@@ -483,6 +483,8 @@ pub enum Rating {
     Negative,
 }
 
+impl crate::private::Sealed for Rating {}
+
 impl QueryString for Rating {
     fn to_query_string(&self) -> String {
         format!(
@@ -631,6 +633,8 @@ impl EditModOptions {
     option!(metadata_blob >> "metadata_blob");
 }
 
+impl crate::private::Sealed for EditModOptions {}
+
 impl QueryString for EditModOptions {
     fn to_query_string(&self) -> String {
         form_urlencoded::Serializer::new(String::new())
@@ -660,6 +664,8 @@ impl EditDependenciesOptions {
 impl AddOptions for EditDependenciesOptions {}
 impl DeleteOptions for EditDependenciesOptions {}
 
+impl crate::private::Sealed for EditDependenciesOptions {}
+
 impl QueryString for EditDependenciesOptions {
     fn to_query_string(&self) -> String {
         form_urlencoded::Serializer::new(String::new())
@@ -686,6 +692,8 @@ impl EditTagsOptions {
 
 impl AddOptions for EditTagsOptions {}
 impl DeleteOptions for EditTagsOptions {}
+
+impl crate::private::Sealed for EditTagsOptions {}
 
 impl QueryString for EditTagsOptions {
     fn to_query_string(&self) -> String {
@@ -822,6 +830,8 @@ impl DeleteMediaOptions {
         }
     }
 }
+
+impl crate::private::Sealed for DeleteMediaOptions {}
 
 impl QueryString for DeleteMediaOptions {
     fn to_query_string(&self) -> String {

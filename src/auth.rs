@@ -76,6 +76,8 @@ impl OculusOptions {
     option!(email >> "email");
 }
 
+impl crate::private::Sealed for OculusOptions {}
+
 impl QueryString for OculusOptions {
     fn to_query_string(&self) -> String {
         form_urlencoded::Serializer::new(String::new())

@@ -304,6 +304,8 @@ impl EditFileOptions {
     option!(metadata_blob >> "metadata_blob");
 }
 
+impl crate::private::Sealed for EditFileOptions {}
+
 impl QueryString for EditFileOptions {
     fn to_query_string(&self) -> String {
         form_urlencoded::Serializer::new(String::new())

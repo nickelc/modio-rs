@@ -32,6 +32,8 @@ pub enum Resource {
     File(u32),
 }
 
+impl crate::private::Sealed for Resource {}
+
 impl QueryString for Resource {
     fn to_query_string(&self) -> String {
         let (_type, id) = match *self {
