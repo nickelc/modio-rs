@@ -2,7 +2,7 @@ use std::marker::Unpin;
 use std::path::Path;
 
 use bytes::BytesMut;
-use futures::{TryFutureExt, TryStreamExt};
+use futures_util::{TryFutureExt, TryStreamExt};
 use mime::Mime;
 use reqwest::multipart::Part;
 use reqwest::Body;

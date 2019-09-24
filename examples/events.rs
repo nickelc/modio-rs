@@ -2,8 +2,7 @@ use std::env;
 use std::process;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use futures::future::{self, TryFutureExt};
-use futures::stream::TryStreamExt;
+use futures_util::{future, TryFutureExt, TryStreamExt};
 use tokio::prelude::*;
 use tokio::timer::Interval;
 

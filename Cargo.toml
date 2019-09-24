@@ -18,7 +18,6 @@ maintenance = { status = "actively-developed" }
 [dependencies]
 bitflags = "1"
 bytes = "0.4"
-futures-preview = "=0.3.0-alpha.18"
 futures-core-preview = "=0.3.0-alpha.18"
 futures-util-preview = "=0.3.0-alpha.18"
 http = "0.1"

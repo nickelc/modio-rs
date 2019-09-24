@@ -1,5 +1,5 @@
 //! Mod metadata KVP interface
-use futures::future;
+use futures_util::future;
 use url::form_urlencoded;
 
 use crate::prelude::*;
@@ -22,8 +22,6 @@ impl Metadata {
 
     /// Return the metadata key value pairs for a mod that this `Metadata` refers to.
     pub async fn get(self) -> Result<MetadataMap> {
-        use futures::stream::TryStreamExt;
-
         #[derive(Deserialize)]
         struct KV {
             metakey: String,

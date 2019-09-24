@@ -183,6 +183,7 @@ const TEST_HOST: &str = "https://api.test.mod.io/v1";
 const DEFAULT_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), '/', env!("CARGO_PKG_VERSION"));
 
 mod prelude {
+    pub use futures_util::{TryFutureExt, TryStreamExt};
     pub use reqwest::multipart::{Form, Part};
     pub use reqwest::StatusCode;
 
