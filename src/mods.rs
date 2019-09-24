@@ -308,7 +308,7 @@ impl ModRef {
         };
         self.modio
             .request(route)
-            .send()
+            .delete()
             .await
             .or_else(|err| match err.kind() {
                 Kind::Status(StatusCode::BAD_REQUEST) => Ok(()),
