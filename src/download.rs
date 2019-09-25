@@ -102,8 +102,8 @@ async fn request_file(modio: Modio, action: DownloadAction) -> Result<Response> 
                 return Err(error::download_no_primary(game_id, mod_id));
             }
         }
-        DownloadAction::File(file) => file.download.binary_url,
-        DownloadAction::FileRef {
+        DownloadAction::FileObj(file) => file.download.binary_url,
+        DownloadAction::File {
             game_id,
             mod_id,
             file_id,
@@ -175,13 +175,13 @@ pub enum DownloadAction {
     /// Download the primary modfile of a mod.
     Primary { game_id: u32, mod_id: u32 },
     /// Download a specific modfile of a mod.
-    FileRef {
+    File {
         game_id: u32,
         mod_id: u32,
         file_id: u32,
     },
     /// Download a specific modfile.
-    File(Box<File>),
+    FileObj(Box<File>),
     /// Download a specific version of a mod.
     Version {
         game_id: u32,
@@ -282,10 +282,10 @@ impl From<Mod> for DownloadAction {
     }
 }
 
-/// Convert `File` to [`DownloadAction::File`](enum.DownloadAction.html#variant.File)
+/// Convert `File` to [`DownloadAction::FileObj`](enum.DownloadAction.html#variant.FileObj)
 impl From<File> for DownloadAction {
     fn from(file: File) -> DownloadAction {
-        DownloadAction::File(Box::new(file))
+        DownloadAction::FileObj(Box::new(file))
     }
 }
 
@@ -297,10 +297,10 @@ impl From<(u32, u32)> for DownloadAction {
 }
 
 /// Convert `(u32, u32, u32)` to
-/// [`DownloadAction::FileRef`](enum.DownloadAction.html#variant.FileRef)
+/// [`DownloadAction::File`](enum.DownloadAction.html#variant.File)
 impl From<(u32, u32, u32)> for DownloadAction {
     fn from((game_id, mod_id, file_id): (u32, u32, u32)) -> DownloadAction {
-        DownloadAction::FileRef {
+        DownloadAction::File {
             game_id,
             mod_id,
             file_id,

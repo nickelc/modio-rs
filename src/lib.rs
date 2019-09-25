@@ -100,7 +100,7 @@
 //!     modio.download(action).save_to_file("mod.zip").await?;
 //!
 //!     // Download the specific file of a mod.
-//!     let action = DownloadAction::FileRef {
+//!     let action = DownloadAction::File {
 //!         game_id: 5,
 //!         mod_id: 19,
 //!         file_id: 101,
@@ -452,7 +452,7 @@ impl Modio {
     /// modio.download(action).save_to_file("mod.zip").await?;
     ///
     /// // Download the specific file of a mod.
-    /// let action = DownloadAction::FileRef {
+    /// let action = DownloadAction::File {
     ///     game_id: 5,
     ///     mod_id: 19,
     ///     file_id: 101,
