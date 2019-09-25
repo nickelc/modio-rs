@@ -83,8 +83,6 @@
 //! # Example: Downloading mods
 //!
 //! ```no_run
-//! use std::fs::File;
-//!
 //! use modio::download::ResolvePolicy;
 //! use modio::{Credentials, DownloadAction, Modio, Result};
 //!
@@ -93,14 +91,13 @@
 //!     let modio = Modio::new(
 //!         Credentials::ApiKey(String::from("user-or-game-api-key")),
 //!     )?;
-//!     let out = File::create("mod.zip").expect("new file");
 //!
 //!     // Download the primary file of a mod.
 //!     let action = DownloadAction::Primary {
 //!         game_id: 5,
 //!         mod_id: 19,
 //!     };
-//!     let (len, out) = modio.download(action, out).await?;
+//!     modio.download(action).save_to_file("mod.zip").await?;
 //!
 //!     // Download the specific file of a mod.
 //!     let action = DownloadAction::FileRef {
@@ -108,7 +105,7 @@
 //!         mod_id: 19,
 //!         file_id: 101,
 //!     };
-//!     let (len, out) = modio.download(action, out).await?;
+//!     modio.download(action).save_to_file("mod.zip").await?;
 //!
 //!     // Download the specific version of a mod.
 //!     // if multiple files are found then the latest file is downloaded.
@@ -120,7 +117,7 @@
 //!         version: "0.1".to_string(),
 //!         policy: ResolvePolicy::Latest,
 //!     };
-//!     let (len, out) = modio.download(action, out).await?;
+//!     modio.download(action).save_to_file("mod.zip").await?;
 //!     Ok(())
 //! }
 //! ```
@@ -130,7 +127,6 @@
 #[macro_use]
 extern crate serde_derive;
 
-use std::io::prelude::*;
 use std::marker::PhantomData;
 
 use reqwest::header::USER_AGENT;
@@ -163,6 +159,7 @@ pub mod users;
 
 use crate::auth::Auth;
 use crate::comments::Comments;
+use crate::download::Downloader;
 use crate::games::{GameRef, Games};
 use crate::me::Me;
 use crate::mods::{ModRef, Mods};
@@ -431,59 +428,62 @@ impl Modio {
         ModRef::new(self.clone(), game_id, mod_id)
     }
 
-    /// Performs a download into a writer.
+    /// Returns [`Downloader`](download/struct.Downloader.html) for saving to file or retrieving
+    /// the data via [`Stream`](futures_core::Stream).
     ///
-    /// Fails with [`modio::download::Error`](download/enum.Error.html) as source if a primary file,
-    /// a specific file or a specific version is not found.
+    /// The download fails with [`modio::download::Error`](download/enum.Error.html) as source
+    /// if a primary file, a specific file or a specific version is not found.
+    ///
     /// # Example
     /// ```no_run
-    /// use std::fs::File;
+    /// use futures_util::{future, TryStreamExt};
+    /// use modio::download::{DownloadAction, ResolvePolicy};
+    /// # use modio::{Credentials, Modio};
+    /// # async fn run() -> Result<(), Box<dyn std::error::Error>> {
+    /// #    let modio = modio::Modio::new(
+    /// #        modio::Credentials::ApiKey(String::from("user-or-game-api-key")),
+    /// #    )?;
     ///
-    /// use modio::download::ResolvePolicy;
-    /// use modio::{Credentials, DownloadAction, Modio, Result};
+    /// // Download the primary file of a mod.
+    /// let action = DownloadAction::Primary {
+    ///     game_id: 5,
+    ///     mod_id: 19,
+    /// };
+    /// modio.download(action).save_to_file("mod.zip").await?;
     ///
-    /// #[tokio::main]
-    /// async fn main() -> Result<()> {
-    ///     let modio = Modio::new(
-    ///         Credentials::ApiKey(String::from("user-or-game-api-key")),
-    ///     )?;
-    ///     let out = File::create("mod.zip").expect("new file");
+    /// // Download the specific file of a mod.
+    /// let action = DownloadAction::FileRef {
+    ///     game_id: 5,
+    ///     mod_id: 19,
+    ///     file_id: 101,
+    /// };
+    /// modio.download(action).save_to_file("mod.zip").await?;
     ///
-    ///     // Download the primary file of a mod.
-    ///     let action = DownloadAction::Primary {
-    ///         game_id: 5,
-    ///         mod_id: 19,
-    ///     };
-    ///     let (len, out) = modio.download(action, out).await?;
-    ///
-    ///     // Download the specific file of a mod.
-    ///     let action = DownloadAction::FileRef {
-    ///         game_id: 5,
-    ///         mod_id: 19,
-    ///         file_id: 101,
-    ///     };
-    ///     let (len, out) = modio.download(action, out).await?;
-    ///
-    ///     // Download the specific version of a mod.
-    ///     // if multiple files are found then the latest file is downloaded.
-    ///     // Set policy to `ResolvePolicy::Fail` to return with
-    ///     // `modio::download::Error::MultipleFilesFound` as source error.
-    ///     let action = DownloadAction::Version {
-    ///         game_id: 5,
-    ///         mod_id: 19,
-    ///         version: "0.1".to_string(),
-    ///         policy: ResolvePolicy::Latest,
-    ///     };
-    ///     let (len, out) = modio.download(action, out).await?;
-    ///     Ok(())
-    /// }
+    /// // Download the specific version of a mod.
+    /// // if multiple files are found then the latest file is downloaded.
+    /// // Set policy to `ResolvePolicy::Fail` to return with
+    /// // `modio::download::Error::MultipleFilesFound` as source error.
+    /// let action = DownloadAction::Version {
+    ///     game_id: 5,
+    ///     mod_id: 19,
+    ///     version: "0.1".to_string(),
+    ///     policy: ResolvePolicy::Latest,
+    /// };
+    /// modio.download(action)
+    ///     .stream()
+    ///     .try_for_each(|bytes| {
+    ///         println!("Bytes: {:?}", bytes);
+    ///         future::ok(())
+    ///     })
+    ///     .await?;
+    /// #    Ok(())
+    /// # }
     /// ```
-    pub async fn download<A, W>(&self, action: A, w: W) -> Result<(u64, W)>
+    pub fn download<A>(&self, action: A) -> Downloader
     where
-        A: Into<DownloadAction>,
-        W: Write + Send,
+        DownloadAction: From<A>,
     {
-        request::download(&self, action, w).await
+        Downloader::new(self.clone(), action.into())
     }
 
     /// Return a reference to an interface that provides access to resources owned by the user

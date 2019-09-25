@@ -82,6 +82,7 @@ let balancing_mod = modio.mod_(5, 110).get().await?;
 
 ### Download
 ```rust
+use future_util::{future, TryStreamExt};
 use modio::download::{ResolvePolicy, DownloadAction};
 
 // Download the primary file of a mod.
@@ -89,7 +90,7 @@ let action = DownloadAction::Primary {
     game_id: 5,
     mod_id: 19,
 };
-let (len, out) = modio.download(action, out).await?;
+modio.download(action).save_to_file("mod.zip").await?;
 
 // Download the specific file of a mod.
 let action = DownloadAction::FileRef {
@@ -97,7 +98,7 @@ let action = DownloadAction::FileRef {
     mod_id: 19,
     file_id: 101,
 };
-let (len, out) = modio.download(action, out).await?;
+modio.download(action).save_to_file("mod.zip").await?;
 
 // Download the specific version of a mod.
 // if multiple files are found then the latest file is downloaded.
@@ -108,7 +109,13 @@ let action = DownloadAction::Version {
     version: "0.1".to_string(),
     policy: ResolvePolicy::Latest,
 };
-let (len, out) = modio.download(action, out).await?;
+modio.download(action)
+    .stream()
+    .try_for_each(|bytes| {
+        println!("bytes: {:?}")
+        future::ok(())
+    })
+    .await?;
 ```
 
 ### Examples

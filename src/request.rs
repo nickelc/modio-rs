@@ -1,16 +1,12 @@
-use std::io::{self, Write};
-
 use futures_util::future;
 use futures_util::TryFutureExt;
 use log::{debug, log_enabled, trace};
 use reqwest::header::{HeaderValue, CONTENT_TYPE};
 use reqwest::multipart::Form;
-use reqwest::{Client, Method, StatusCode};
 use serde::de::DeserializeOwned;
 use url::Url;
 
 use crate::auth::Credentials;
-use crate::download::DownloadAction;
 use crate::error::{self, Kind, Result};
 use crate::routing::{AuthMethod, Route};
 use crate::types::ModioErrorResponse;
@@ -159,104 +155,6 @@ impl RequestBuilder {
             })
             .await
     }
-}
-
-pub async fn download<A, W>(modio: &Modio, action: A, w: W) -> Result<(u64, W)>
-where
-    A: Into<DownloadAction>,
-    W: Write + Send,
-{
-    match action.into() {
-        DownloadAction::Primary { game_id, mod_id } => {
-            let modref = modio.mod_(game_id, mod_id);
-            let m = modref.get().await?;
-            if let Some(file) = m.modfile {
-                let url = file.download.binary_url;
-                request_file(&modio.client, url, w).await
-            } else {
-                Err(error::download_no_primary(game_id, mod_id))
-            }
-        }
-        DownloadAction::File(file) => {
-            let url = file.download.binary_url;
-            request_file(&modio.client, url, w).await
-        }
-        DownloadAction::FileRef {
-            game_id,
-            mod_id,
-            file_id,
-        } => {
-            let fileref = modio.mod_(game_id, mod_id).file(file_id);
-            let file = fileref.get().await?;
-            let url = file.download.binary_url;
-            request_file(&modio.client, url, w)
-                .await
-                .map_err(move |e| match e.kind() {
-                    error::Kind::Status(StatusCode::NOT_FOUND) => {
-                        error::download_file_not_found(game_id, mod_id, file_id)
-                    }
-                    _ => e,
-                })
-        }
-        DownloadAction::Version {
-            game_id,
-            mod_id,
-            version,
-            policy,
-        } => {
-            use crate::download::ResolvePolicy::*;
-            use crate::files::filters::{DateAdded, Version};
-            use crate::filter::prelude::*;
-
-            let filter = Version::eq(version.clone())
-                .order_by(DateAdded::desc())
-                .limit(2);
-
-            let files = modio.mod_(game_id, mod_id).files();
-            let mut list = files.list(filter).await?;
-
-            let (file, error) = match (list.count, policy) {
-                (0, _) => (
-                    None,
-                    Some(error::download_version_not_found(game_id, mod_id, version)),
-                ),
-                (1, _) => (list.shift(), None),
-                (_, Latest) => (list.shift(), None),
-                (_, Fail) => (
-                    None,
-                    Some(error::download_multiple_files(game_id, mod_id, version)),
-                ),
-            };
-
-            if let Some(file) = file {
-                let url = file.download.binary_url;
-                request_file(&modio.client, url, w).await
-            } else {
-                Err(error.expect("bug in previous match!"))
-            }
-        }
-    }
-}
-
-async fn request_file<W>(client: &Client, url: Url, mut out: W) -> Result<(u64, W)>
-where
-    W: Write + Send,
-{
-    debug!("downloading file: {}", url);
-
-    let mut response = client
-        .request(Method::GET, url)
-        .send()
-        .map_err(error::builder_or_request)
-        .await?
-        .error_for_status()
-        .map_err(error::request)?;
-
-    let mut n = 0;
-    while let Some(chunk) = response.chunk().map_err(error::request).await? {
-        n += io::copy(&mut io::Cursor::new(&chunk), &mut out).map_err(error::decode)?;
-    }
-    Ok((n, out))
 }
 
 impl From<String> for Body {

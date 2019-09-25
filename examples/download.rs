@@ -2,6 +2,7 @@ use std::env;
 use std::io::{self, Write};
 use std::process;
 
+use futures_util::{future, TryStreamExt};
 use md5;
 
 use modio::{auth::Credentials, Modio, Result};
@@ -48,7 +49,15 @@ async fn main() -> Result<()> {
         println!("filesize: {}", file.filesize);
         println!("reported md5: {}", file.filehash.md5);
 
-        let (size, ctx) = modio.download(file, ctx).await?;
+        let size: usize = 0;
+        let (size, ctx) = modio
+            .download(file)
+            .stream()
+            .try_fold((size, ctx), |(size, mut ctx), bytes| {
+                ctx.write(&bytes).expect("ctx.write failed");
+                future::ok((size + bytes.len(), ctx))
+            })
+            .await?;
         println!("computed md5: {:x}", ctx.compute());
         println!("downloaded size: {}", size);
     } else {
