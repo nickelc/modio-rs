@@ -69,11 +69,15 @@ impl RequestBuilder {
             None => format!("{}{}", self.modio.host, path),
         };
 
-        let url = if let Credentials::ApiKey(ref api_key) = self.modio.credentials {
+        let mut url = if let Credentials::ApiKey(ref api_key) = self.modio.credentials {
             Url::parse_with_params(&url, Some(("api_key", api_key))).map_err(error::builder)?
         } else {
             url.parse().map_err(error::builder)?
         };
+
+        if let Some("") = url.query() {
+            url.set_query(None);
+        }
 
         debug!("request: {} {}", method, url);
         let mut req = self.modio.client.request(method, url);
