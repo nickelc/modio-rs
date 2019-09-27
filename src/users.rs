@@ -3,6 +3,8 @@ use url::form_urlencoded;
 
 use crate::prelude::*;
 
+use crate::types::game::Game;
+use crate::types::mods::{File, Mod};
 pub use crate::types::{Avatar, User};
 
 /// Interface for users.
@@ -16,10 +18,13 @@ impl Users {
     }
 
     /// Return the user that is the original submitter of a resource. [required: token]
-    pub async fn get_owner(self, resource: Resource) -> Result<User> {
+    pub async fn get_owner<T>(self, resource: T) -> Result<User>
+    where
+        Resource: From<T>,
+    {
         self.modio
             .request(Route::GetResourceOwner)
-            .body(resource.to_query_string())
+            .body(Resource::from(resource).to_query_string())
             .send()
             .await
     }
@@ -45,5 +50,41 @@ impl QueryString for Resource {
             .append_pair("resource_type", _type)
             .append_pair("resource_id", &id.to_string())
             .finish()
+    }
+}
+
+impl From<Game> for Resource {
+    fn from(game: Game) -> Resource {
+        Resource::Game(game.id)
+    }
+}
+
+impl From<&Game> for Resource {
+    fn from(game: &Game) -> Resource {
+        Resource::Game(game.id)
+    }
+}
+
+impl From<Mod> for Resource {
+    fn from(m: Mod) -> Resource {
+        Resource::Mod(m.id)
+    }
+}
+
+impl From<&Mod> for Resource {
+    fn from(m: &Mod) -> Resource {
+        Resource::Mod(m.id)
+    }
+}
+
+impl From<File> for Resource {
+    fn from(file: File) -> Resource {
+        Resource::File(file.id)
+    }
+}
+
+impl From<&File> for Resource {
+    fn from(file: &File) -> Resource {
+        Resource::File(file.id)
     }
 }
