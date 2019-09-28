@@ -109,11 +109,8 @@ impl GameRef {
     }
 
     /// Return a reference to an interface that provides access to the tags of a game.
-    pub fn tags(&self) -> Endpoint<TagOption> {
-        let list = Route::GetGameTags { game_id: self.id };
-        let add = Route::AddGameTags { game_id: self.id };
-        let delete = Route::DeleteGameTags { game_id: self.id };
-        Endpoint::new(self.modio.clone(), list, add, delete)
+    pub fn tags(&self) -> Tags {
+        Tags::new(self.modio.clone(), self.id)
     }
 
     /// Edit details for a game. [required: token]
@@ -135,6 +132,59 @@ impl GameRef {
             .send::<ModioMessage>()
             .await?;
         Ok(())
+    }
+}
+
+/// Interface for tag options.
+pub struct Tags {
+    modio: Modio,
+    game_id: u32,
+}
+
+impl Tags {
+    fn new(modio: Modio, game_id: u32) -> Self {
+        Self { modio, game_id }
+    }
+
+    /// List tag options.
+    pub async fn list(self) -> Result<List<TagOption>> {
+        let route = Route::GetGameTags {
+            game_id: self.game_id,
+        };
+        self.modio.request(route).send().await
+    }
+
+    /// Provides a stream over all tag options.
+    pub fn iter<'a>(self) -> Iter<'a, TagOption> {
+        let route = Route::GetGameTags {
+            game_id: self.game_id,
+        };
+        self.modio.stream(route, Default::default())
+    }
+
+    /// Add tag options. [required: token]
+    pub async fn add(self, options: AddTagsOptions) -> Result<()> {
+        let route = Route::AddGameTags {
+            game_id: self.game_id,
+        };
+        self.modio
+            .request(route)
+            .body(options.to_query_string())
+            .send::<ModioMessage>()
+            .await?;
+        Ok(())
+    }
+
+    /// Delete tag options. [required: token]
+    pub async fn delete(self, options: DeleteTagsOptions) -> Result<()> {
+        let route = Route::DeleteGameTags {
+            game_id: self.game_id,
+        };
+        self.modio
+            .request(route)
+            .body(options.to_query_string())
+            .delete()
+            .await
     }
 }
 
@@ -272,8 +322,6 @@ impl AddTagsOptions {
     }
 }
 
-impl AddOptions for AddTagsOptions {}
-
 impl crate::private::Sealed for AddTagsOptions {}
 
 impl QueryString for AddTagsOptions {
@@ -311,8 +359,6 @@ impl DeleteTagsOptions {
         }
     }
 }
-
-impl DeleteOptions for DeleteTagsOptions {}
 
 impl crate::private::Sealed for DeleteTagsOptions {}
 

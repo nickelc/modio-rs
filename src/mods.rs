@@ -150,20 +150,8 @@ impl ModRef {
     }
 
     /// Return a reference to an interface to manage the tags of a mod.
-    pub fn tags(&self) -> Endpoint<Tag> {
-        let list = Route::GetModTags {
-            game_id: self.game,
-            mod_id: self.id,
-        };
-        let add = Route::AddModTags {
-            game_id: self.game,
-            mod_id: self.id,
-        };
-        let delete = Route::DeleteModTags {
-            game_id: self.game,
-            mod_id: self.id,
-        };
-        Endpoint::new(self.modio.clone(), list, add, delete)
+    pub fn tags(&self) -> Tags {
+        Tags::new(self.modio.clone(), self.game, self.id)
     }
 
     /// Return a reference to an interface that provides access to the comments of a mod.
@@ -172,20 +160,8 @@ impl ModRef {
     }
 
     /// Return a reference to an interface to manage the dependencies of a mod.
-    pub fn dependencies(&self) -> Endpoint<Dependency> {
-        let list = Route::GetModDependencies {
-            game_id: self.game,
-            mod_id: self.id,
-        };
-        let add = Route::AddModDepencencies {
-            game_id: self.game,
-            mod_id: self.id,
-        };
-        let delete = Route::DeleteModDependencies {
-            game_id: self.game,
-            mod_id: self.id,
-        };
-        Endpoint::new(self.modio.clone(), list, add, delete)
+    pub fn dependencies(&self) -> Dependencies {
+        Dependencies::new(self.modio.clone(), self.game, self.id)
     }
 
     /// Return the statistics for a mod.
@@ -314,6 +290,130 @@ impl ModRef {
                 Kind::Status(StatusCode::BAD_REQUEST) => Ok(()),
                 _ => Err(err),
             })
+    }
+}
+
+/// Interface for dependencies.
+pub struct Dependencies {
+    modio: Modio,
+    game_id: u32,
+    mod_id: u32,
+}
+
+impl Dependencies {
+    fn new(modio: Modio, game_id: u32, mod_id: u32) -> Self {
+        Self {
+            modio,
+            game_id,
+            mod_id,
+        }
+    }
+
+    /// List mod dependencies.
+    pub async fn list(self) -> Result<List<Dependency>> {
+        let route = Route::GetModDependencies {
+            game_id: self.game_id,
+            mod_id: self.mod_id,
+        };
+        self.modio.request(route).send().await
+    }
+
+    /// Provides a stream over all mod dependencies.
+    pub fn iter<'a>(self) -> Iter<'a, Dependency> {
+        let route = Route::GetModDependencies {
+            game_id: self.game_id,
+            mod_id: self.mod_id,
+        };
+        self.modio.stream(route, Default::default())
+    }
+
+    /// Add mod dependencies. [required: token]
+    pub async fn add(self, options: EditDependenciesOptions) -> Result<()> {
+        let route = Route::AddModDepencencies {
+            game_id: self.game_id,
+            mod_id: self.mod_id,
+        };
+        self.modio
+            .request(route)
+            .body(options.to_query_string())
+            .send::<ModioMessage>()
+            .await?;
+        Ok(())
+    }
+
+    /// Delete mod dependencies. [required: token]
+    pub async fn delete(self, options: EditDependenciesOptions) -> Result<()> {
+        let route = Route::DeleteModDependencies {
+            game_id: self.game_id,
+            mod_id: self.mod_id,
+        };
+        self.modio
+            .request(route)
+            .body(options.to_query_string())
+            .delete()
+            .await
+    }
+}
+
+/// Interface for tags.
+pub struct Tags {
+    modio: Modio,
+    game_id: u32,
+    mod_id: u32,
+}
+
+impl Tags {
+    fn new(modio: Modio, game_id: u32, mod_id: u32) -> Self {
+        Self {
+            modio,
+            game_id,
+            mod_id,
+        }
+    }
+
+    /// List all mod tags.
+    pub async fn list(self) -> Result<List<Tag>> {
+        let route = Route::GetModTags {
+            game_id: self.game_id,
+            mod_id: self.mod_id,
+        };
+        self.modio.request(route).send().await
+    }
+
+    /// Provides a stream over all mod tags.
+    pub fn iter<'a>(self) -> Iter<'a, Tag> {
+        let route = Route::GetModTags {
+            game_id: self.game_id,
+            mod_id: self.mod_id,
+        };
+        self.modio.stream(route, Default::default())
+    }
+
+    /// Add mod tags. [required: token]
+    pub async fn add(self, options: EditTagsOptions) -> Result<()> {
+        let route = Route::AddModTags {
+            game_id: self.game_id,
+            mod_id: self.mod_id,
+        };
+        self.modio
+            .request(route)
+            .body(options.to_query_string())
+            .send::<ModioMessage>()
+            .await?;
+        Ok(())
+    }
+
+    /// Delete mod tags. [required: token]
+    pub async fn delete(self, options: EditTagsOptions) -> Result<()> {
+        let route = Route::DeleteModTags {
+            game_id: self.game_id,
+            mod_id: self.mod_id,
+        };
+        self.modio
+            .request(route)
+            .body(options.to_query_string())
+            .delete()
+            .await
     }
 }
 
@@ -661,9 +761,6 @@ impl EditDependenciesOptions {
     }
 }
 
-impl AddOptions for EditDependenciesOptions {}
-impl DeleteOptions for EditDependenciesOptions {}
-
 impl crate::private::Sealed for EditDependenciesOptions {}
 
 impl QueryString for EditDependenciesOptions {
@@ -689,9 +786,6 @@ impl EditTagsOptions {
         }
     }
 }
-
-impl AddOptions for EditTagsOptions {}
-impl DeleteOptions for EditTagsOptions {}
 
 impl crate::private::Sealed for EditTagsOptions {}
 

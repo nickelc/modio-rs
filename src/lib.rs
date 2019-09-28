@@ -127,8 +127,6 @@
 #[macro_use]
 extern crate serde_derive;
 
-use std::marker::PhantomData;
-
 use reqwest::header::USER_AGENT;
 use reqwest::header::{HeaderMap, HeaderValue};
 use reqwest::{Client, ClientBuilder, Proxy};
@@ -165,7 +163,6 @@ use crate::me::Me;
 use crate::mods::{ModRef, Mods};
 use crate::reports::Reports;
 use crate::request::RequestBuilder;
-use crate::routing::Route;
 use crate::types::ModioMessage;
 use crate::users::Users;
 
@@ -193,7 +190,6 @@ mod prelude {
     pub(crate) use crate::ModioMessage;
     pub use crate::QueryString;
     pub use crate::Result;
-    pub use crate::{AddOptions, DeleteOptions, Endpoint};
 }
 
 /// Re-exports of the used reqwest types.
@@ -513,63 +509,6 @@ impl Modio {
         Iter::new(self, route, filter)
     }
 }
-
-/// Generic endpoint for sub-resources
-pub struct Endpoint<Out>
-where
-    Out: DeserializeOwned,
-{
-    modio: Modio,
-    list: Route,
-    add: Route,
-    delete: Route,
-    phantom: PhantomData<Out>,
-}
-
-impl<'a, Out> Endpoint<Out>
-where
-    Out: DeserializeOwned + Send + 'a,
-{
-    pub(crate) fn new(modio: Modio, list: Route, add: Route, delete: Route) -> Endpoint<Out> {
-        Self {
-            modio,
-            list,
-            add,
-            delete,
-            phantom: PhantomData,
-        }
-    }
-
-    pub async fn list(self) -> Result<List<Out>> {
-        self.modio.request(self.list).send().await
-    }
-
-    pub fn iter(self) -> Iter<'a, Out> {
-        self.modio.stream(self.list, Default::default())
-    }
-
-    /// [required: token]
-    pub async fn add<T: AddOptions + QueryString>(self, options: T) -> Result<()> {
-        self.modio
-            .request(self.add)
-            .body(options.to_query_string())
-            .send::<ModioMessage>()
-            .await?;
-        Ok(())
-    }
-
-    /// [required: token]
-    pub async fn delete<T: DeleteOptions + QueryString>(self, options: T) -> Result<()> {
-        self.modio
-            .request(self.delete)
-            .body(options.to_query_string())
-            .send()
-            .await
-    }
-}
-
-pub trait AddOptions: private::Sealed {}
-pub trait DeleteOptions: private::Sealed {}
 
 pub trait QueryString: private::Sealed {
     fn to_query_string(&self) -> String;
