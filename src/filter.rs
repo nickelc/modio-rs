@@ -440,6 +440,13 @@ impl Filter {
     }
 }
 
+impl fmt::Display for Filter {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        use crate::QueryString;
+        f.write_str(&self.to_query_string())
+    }
+}
+
 impl crate::private::Sealed for super::filter::Filter {}
 
 impl crate::QueryString for Filter {

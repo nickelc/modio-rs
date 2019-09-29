@@ -7,7 +7,6 @@ use tokio::prelude::*;
 use tokio::timer::Interval;
 
 use modio::filter::prelude::*;
-use modio::QueryString;
 use modio::{auth::Credentials, Modio, Result};
 
 fn current_timestamp() -> u64 {
@@ -41,7 +40,7 @@ async fn main() -> Result<()> {
         .fold(current_timestamp(), move |tstamp, _| {
             // Create an event filter for `date_added` > time.
             let filter = DateAdded::gt(tstamp);
-            let qs = filter.to_query_string();
+            let qs = format!("{}", filter);
 
             // Create the call for `/me/events` and wait for the result.
             let print = modio
