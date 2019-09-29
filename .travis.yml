@@ -10,25 +10,28 @@ matrix:
     - rust: nightly
   include:
     - os: osx
-      rust: stable
+      # rust: stable
+      rust: beta
 
-    - rust: stable
+    # - rust: stable
     - rust: beta
     - rust: nightly
 
     # Disable default-tls
-    - rust: stable
+    # - rust: stable
+    - rust: beta
       env: FEATURES="--no-default-features"
 
     # rustls-tls
-    - rust: stable
-      env: FEATURES="--no-default-features --features rustls-tls"
+    # - rust: stable
+    #   env: FEATURES="--no-default-features --features rustls-tls"
 
     # default-tls and rustls-tls
-    - rust: stable
+    # - rust: stable
+    - rust: beta
       env:
         - DEPLOY_DOCS=1
-        - FEATURES="--features rustls-tls"
+        # - FEATURES="--features rustls-tls"
 
 
 script:
@@ -45,14 +48,12 @@ deploy:
     on:
       condition: $DEPLOY_DOCS = 1
       branch: master
-      rust: stable
   - provider: script
     skip_cleanup: true
     script: bash .travis/docs.sh
     on:
       condition: $DEPLOY_DOCS = 1
       tags: true
-      rust: stable
 
 env:
   global:
