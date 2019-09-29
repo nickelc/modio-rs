@@ -39,7 +39,7 @@ impl Members {
     /// Provides a stream over all team members.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn iter<'a>(self, filter: Filter) -> Iter<'a, TeamMember> {
+    pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<TeamMember>> {
         let route = Route::GetTeamMembers {
             game_id: self.game,
             mod_id: self.mod_id,

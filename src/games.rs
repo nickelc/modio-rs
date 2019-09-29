@@ -42,7 +42,7 @@ impl MyGames {
     /// [required: token]
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn iter<'a>(self, filter: Filter) -> Iter<'a, Game> {
+    pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<Game>> {
         self.modio.stream(Route::UserGames, filter)
     }
 }
@@ -71,7 +71,7 @@ impl Games {
     /// Provides a stream over all games.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub fn iter<'a>(self, filter: Filter) -> Iter<'a, Game> {
+    pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<Game>> {
         self.modio.stream(Route::GetGames, filter)
     }
 
@@ -155,7 +155,7 @@ impl Tags {
     }
 
     /// Provides a stream over all tag options.
-    pub fn iter<'a>(self) -> Iter<'a, TagOption> {
+    pub fn iter(self) -> impl Stream<Item = Result<TagOption>> {
         let route = Route::GetGameTags {
             game_id: self.game_id,
         };

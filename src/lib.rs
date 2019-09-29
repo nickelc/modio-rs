@@ -159,6 +159,7 @@ use crate::auth::Auth;
 use crate::comments::Comments;
 use crate::download::Downloader;
 use crate::games::{GameRef, Games};
+use crate::iter::Iter;
 use crate::me::Me;
 use crate::mods::{ModRef, Mods};
 use crate::reports::Reports;
@@ -169,7 +170,6 @@ use crate::users::Users;
 pub use crate::auth::Credentials;
 pub use crate::download::DownloadAction;
 pub use crate::error::{Error, Result};
-pub use crate::iter::Iter;
 pub use crate::types::{EntityResult, List};
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
@@ -177,6 +177,7 @@ const TEST_HOST: &str = "https://api.test.mod.io/v1";
 const DEFAULT_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), '/', env!("CARGO_PKG_VERSION"));
 
 mod prelude {
+    pub use futures_core::Stream;
     pub use futures_util::{TryFutureExt, TryStreamExt};
     pub use reqwest::multipart::{Form, Part};
     pub use reqwest::StatusCode;
