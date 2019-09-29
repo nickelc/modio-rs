@@ -513,7 +513,3 @@ impl Modio {
 trait QueryString {
     fn to_query_string(&self) -> String;
 }
-
-pub(crate) mod private {
-    pub trait Sealed {}
-}

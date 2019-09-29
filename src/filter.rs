@@ -17,7 +17,7 @@ macro_rules! filter {
             __impl_filter!($x, $type, $name);
         )*
 
-        impl crate::private::Sealed for $type {}
+        impl crate::filter::sealed::FilterPriv for $type {}
     };
 }
 
@@ -253,37 +253,41 @@ pub mod prelude {
     }
 }
 
-pub trait Eq: crate::private::Sealed {
+pub(crate) mod sealed {
+    pub trait FilterPriv {}
+}
+
+pub trait Eq: sealed::FilterPriv {
     /// Creates [`Equals`](enum.Operator.html#variant.Equals) filter.
     fn eq<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
-pub trait NotEq: crate::private::Sealed {
+pub trait NotEq: sealed::FilterPriv {
     /// Creates [`Not`](enum.Operator.html#variant.Not) filter.
     fn ne<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
-pub trait Like: crate::private::Sealed {
+pub trait Like: sealed::FilterPriv {
     /// Creates [`Like`](enum.Operator.html#variant.Like) filter.
     fn like<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
-pub trait NotLike: crate::private::Sealed {
+pub trait NotLike: sealed::FilterPriv {
     /// Creates [`NotLike`](enum.Operator.html#variant.Like) filter.
     fn not_like<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
-pub trait In: crate::private::Sealed {
+pub trait In: sealed::FilterPriv {
     /// Creates [`In`](enum.Operator.html#variant.In) filter.
     fn _in<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
-pub trait NotIn: crate::private::Sealed {
+pub trait NotIn: sealed::FilterPriv {
     /// Creates [`NotIn`](enum.Operator.html#variant.NotIn) filter.
     fn not_in<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
-pub trait Cmp: crate::private::Sealed {
+pub trait Cmp: sealed::FilterPriv {
     /// Creates [`Max`](enum.Operator.html#variant.Max) filter.
     fn le<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 
@@ -297,12 +301,12 @@ pub trait Cmp: crate::private::Sealed {
     fn gt<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
-pub trait BitwiseAnd: crate::private::Sealed {
+pub trait BitwiseAnd: sealed::FilterPriv {
     /// Creates [`BitwiseAnd`](enum.Operator.html#variant.BitwiseAnd) filter.
     fn bit_and<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
-pub trait OrderBy: crate::private::Sealed {
+pub trait OrderBy: sealed::FilterPriv {
     /// Creates sorting filter in ascending order.
     fn asc() -> Filter;
 
@@ -447,7 +451,7 @@ impl fmt::Display for Filter {
     }
 }
 
-impl crate::private::Sealed for super::filter::Filter {}
+impl sealed::FilterPriv for Filter {}
 
 impl crate::QueryString for Filter {
     fn to_query_string(&self) -> String {
