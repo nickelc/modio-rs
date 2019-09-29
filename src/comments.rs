@@ -9,7 +9,7 @@ pub struct Comments {
 }
 
 impl Comments {
-    pub fn new(modio: Modio, game: u32, mod_id: u32) -> Self {
+    pub(crate) fn new(modio: Modio, game: u32, mod_id: u32) -> Self {
         Self {
             modio,
             game,
