@@ -52,8 +52,6 @@ impl Report {
     }
 }
 
-impl crate::private::Sealed for Report {}
-
 impl QueryString for Report {
     fn to_query_string(&self) -> String {
         let (resource, id) = match self.resource {

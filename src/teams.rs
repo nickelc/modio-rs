@@ -152,8 +152,6 @@ impl InviteTeamMemberOptions {
     option!(position >> "position");
 }
 
-impl crate::private::Sealed for InviteTeamMemberOptions {}
-
 impl QueryString for InviteTeamMemberOptions {
     fn to_query_string(&self) -> String {
         form_urlencoded::Serializer::new(String::new())
@@ -171,8 +169,6 @@ impl EditTeamMemberOptions {
     option!(level: TeamLevel >> "level");
     option!(position >> "position");
 }
-
-impl crate::private::Sealed for EditTeamMemberOptions {}
 
 impl QueryString for EditTeamMemberOptions {
     fn to_query_string(&self) -> String {

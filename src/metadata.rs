@@ -72,8 +72,6 @@ impl Metadata {
     }
 }
 
-impl crate::private::Sealed for MetadataMap {}
-
 impl QueryString for MetadataMap {
     fn to_query_string(&self) -> String {
         let mut ser = form_urlencoded::Serializer::new(String::new());

@@ -188,7 +188,7 @@ mod prelude {
     pub use crate::List;
     pub use crate::Modio;
     pub(crate) use crate::ModioMessage;
-    pub use crate::QueryString;
+    pub(crate) use crate::QueryString;
     pub use crate::Result;
 }
 
@@ -510,7 +510,7 @@ impl Modio {
     }
 }
 
-pub trait QueryString: private::Sealed {
+trait QueryString {
     fn to_query_string(&self) -> String;
 }
 
