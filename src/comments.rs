@@ -2,6 +2,7 @@
 use crate::prelude::*;
 pub use crate::types::mods::Comment;
 
+/// Interface for comments of a mod.
 pub struct Comments {
     modio: Modio,
     game: u32,

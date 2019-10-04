@@ -20,6 +20,8 @@ use crate::Modio;
 
 /// A `Downloader` can be used to stream a mod file or save the file to a local file.
 /// Constructed with [`Modio::download`].
+///
+/// [`Modio::download`]: ../struct.Modio.html#method.download
 pub struct Downloader {
     modio: Modio,
     action: DownloadAction,
@@ -75,6 +77,7 @@ impl Downloader {
     ///     .await?;
     /// #     Ok(())
     /// # }
+    /// ```
     pub fn stream(self) -> impl Stream<Item = Result<Bytes>> {
         request_file(self.modio, self.action)
             .and_then(|mut res| {
@@ -170,6 +173,8 @@ async fn request_file(modio: Modio, action: DownloadAction) -> Result<Response> 
 }
 
 /// Defines the action that is performed for [`Modio::download`].
+///
+/// [`Modio::download`]: ../struct.Modio.html#method.download
 #[derive(Debug)]
 pub enum DownloadAction {
     /// Download the primary modfile of a mod.
@@ -197,6 +202,8 @@ pub enum ResolvePolicy {
     /// Download the latest file.
     Latest,
     /// Return with [`Error::MultipleFilesFound`] as source error.
+    ///
+    /// [`Error::MultipleFilesFound`]: enum.Error.html#variant.MultipleFilesFound
     Fail,
 }
 
@@ -212,7 +219,7 @@ pub enum Error {
         file_id: u32,
     },
     /// Multiple files for a given version were found and the policy was set to
-    /// [`ResolvePolicy::Fail`](../download/enum.ResolvePolicy.html#variant.Fail).
+    /// [`ResolvePolicy::Fail`](enum.ResolvePolicy.html#variant.Fail).
     MultipleFilesFound {
         game_id: u32,
         mod_id: u32,
