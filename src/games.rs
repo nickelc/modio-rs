@@ -4,6 +4,7 @@ use std::path::Path;
 
 use mime::IMAGE_STAR;
 use url::form_urlencoded;
+use url::Url;
 
 use crate::multipart::FileSource;
 use crate::prelude::*;
@@ -274,7 +275,7 @@ impl EditGameOptions {
     option!(name_id >> "name_id");
     option!(summary >> "summary");
     option!(instructions >> "instructions");
-    option!(instructions_url >> "instructions_url");
+    option!(instructions_url: Url >> "instructions_url");
     option!(ugc_name >> "ugc_name");
     option!(presentation_option: PresentationOption >> "presentation_option");
     option!(submission_option: SubmissionOption >> "submission_option");
