@@ -123,8 +123,8 @@ impl GameRef {
             .await
     }
 
-    /// Add or edit new media to a game. [required: token]
-    pub async fn add_media(self, media: GameMediaOptions) -> Result<()> {
+    /// Add new media to a game. [required: token]
+    pub async fn edit_media(self, media: EditMediaOptions) -> Result<()> {
         let route = Route::AddGameMedia { game_id: self.id };
         self.modio
             .request(route)
@@ -369,13 +369,13 @@ impl QueryString for DeleteTagsOptions {
 }
 
 #[derive(Default)]
-pub struct GameMediaOptions {
+pub struct EditMediaOptions {
     logo: Option<FileSource>,
     icon: Option<FileSource>,
     header: Option<FileSource>,
 }
 
-impl GameMediaOptions {
+impl EditMediaOptions {
     pub fn logo<P: AsRef<Path>>(self, logo: P) -> Self {
         let logo = logo.as_ref();
         let filename = logo
@@ -417,8 +417,8 @@ impl GameMediaOptions {
 }
 
 #[doc(hidden)]
-impl From<GameMediaOptions> for Form {
-    fn from(opts: GameMediaOptions) -> Form {
+impl From<EditMediaOptions> for Form {
+    fn from(opts: EditMediaOptions) -> Form {
         let mut form = Form::new();
         if let Some(logo) = opts.logo {
             form = form.part("logo", logo.into());
