@@ -7,7 +7,7 @@ use tokio::prelude::*;
 use tokio::timer::Interval;
 
 use modio::filter::prelude::*;
-use modio::{auth::Credentials, Modio, Result};
+use modio::{auth::Credentials, Modio};
 
 fn current_timestamp() -> u64 {
     SystemTime::now()
@@ -17,7 +17,7 @@ fn current_timestamp() -> u64 {
 }
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv().ok();
     env_logger::init();
 

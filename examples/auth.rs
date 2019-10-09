@@ -1,7 +1,7 @@
 use std::env;
 use std::io::{self, Write};
 
-use modio::{auth::Credentials, Modio, Result};
+use modio::{auth::Credentials, Modio};
 
 fn prompt(prompt: &str) -> io::Result<String> {
     print!("{}", prompt);
@@ -12,14 +12,14 @@ fn prompt(prompt: &str) -> io::Result<String> {
 }
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv().ok();
     env_logger::init();
 
     let host = env::var("MODIO_HOST").unwrap_or_else(|_| "https://api.test.mod.io/v1".to_string());
 
-    let api_key = prompt("Enter api key: ").expect("read api key");
-    let email = prompt("Enter email: ").expect("read email");
+    let api_key = prompt("Enter api key: ")?;
+    let email = prompt("Enter email: ")?;
 
     let modio = Modio::host(host, Credentials::ApiKey(api_key))?;
 

@@ -2,11 +2,10 @@ use std::env;
 use std::process;
 
 use futures_util::try_future::try_join3;
-use modio::Result;
 use modio::{auth::Credentials, Modio};
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv().ok();
     env_logger::init();
 

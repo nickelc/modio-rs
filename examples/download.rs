@@ -5,7 +5,7 @@ use std::process;
 use futures_util::{future, TryStreamExt};
 use md5;
 
-use modio::{auth::Credentials, Modio, Result};
+use modio::{auth::Credentials, Modio};
 
 fn prompt(prompt: &str) -> io::Result<u32> {
     print!("{}", prompt);
@@ -16,7 +16,7 @@ fn prompt(prompt: &str) -> io::Result<u32> {
 }
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv().ok();
     env_logger::init();
 
@@ -34,8 +34,8 @@ async fn main() -> Result<()> {
     // Creates a `Modio` endpoint for the test environment.
     let modio = Modio::host(host, creds)?;
 
-    let game_id = prompt("Enter game id: ").expect("read game id");
-    let mod_id = prompt("Enter mod id: ").expect("read mod id");
+    let game_id = prompt("Enter game id: ")?;
+    let mod_id = prompt("Enter mod id: ")?;
 
     // Create the call for `/games/{game_id}/mods/{mod_id}` and wait for the result.
     let m = modio.mod_(game_id, mod_id).get().await?;
@@ -49,13 +49,15 @@ async fn main() -> Result<()> {
         println!("filesize: {}", file.filesize);
         println!("reported md5: {}", file.filehash.md5);
 
-        let size: usize = 0;
         let (size, ctx) = modio
             .download(file)
             .stream()
-            .try_fold((size, ctx), |(size, mut ctx), bytes| {
-                ctx.write(&bytes).expect("ctx.write failed");
-                future::ok((size + bytes.len(), ctx))
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+            .try_fold((0, ctx), |(size, mut ctx), bytes| {
+                match ctx.write_all(&bytes) {
+                    Ok(()) => future::ok((size + bytes.len(), ctx)),
+                    Err(e) => future::err(e),
+                }
             })
             .await?;
         println!("computed md5: {:x}", ctx.compute());
