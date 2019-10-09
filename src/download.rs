@@ -98,7 +98,15 @@ async fn request_file(modio: Modio, action: DownloadAction) -> Result<Response> 
     let url = match action {
         DownloadAction::Primary { game_id, mod_id } => {
             let modref = modio.mod_(game_id, mod_id);
-            let m = modref.get().await?;
+            let m = modref
+                .get()
+                .map_err(|e| match e.kind() {
+                    Kind::Status(StatusCode::NOT_FOUND) => {
+                        error::download_mod_not_found(game_id, mod_id)
+                    }
+                    _ => e,
+                })
+                .await?;
             if let Some(file) = m.modfile {
                 file.download.binary_url
             } else {
@@ -138,7 +146,15 @@ async fn request_file(modio: Modio, action: DownloadAction) -> Result<Response> 
                 .limit(2);
 
             let files = modio.mod_(game_id, mod_id).files();
-            let mut list = files.list(filter).await?;
+            let mut list = files
+                .list(filter)
+                .map_err(|e| match e.kind() {
+                    Kind::Status(StatusCode::NOT_FOUND) => {
+                        error::download_mod_not_found(game_id, mod_id)
+                    }
+                    _ => e,
+                })
+                .await?;
 
             let (file, error) = match (list.count, policy) {
                 (0, _) => (
@@ -210,6 +226,8 @@ pub enum ResolvePolicy {
 /// The Errors that may occur when using [`Modio::download`](../struct.Modio.html#method.download).
 #[derive(Debug)]
 pub enum Error {
+    /// The mod has not found.
+    ModNotFound { game_id: u32, mod_id: u32 },
     /// The mod has no primary file.
     NoPrimaryFile { game_id: u32, mod_id: u32 },
     /// The specific file of a mod was not found.
@@ -238,6 +256,11 @@ impl StdError for Error {}
 impl fmt::Display for Error {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Error::ModNotFound { game_id, mod_id } => write!(
+                fmt,
+                "Mod {{id: {1}, game_id: {0}}} not found.",
+                game_id, mod_id,
+            ),
             Error::FileNotFound {
                 game_id,
                 mod_id,

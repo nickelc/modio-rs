@@ -250,6 +250,13 @@ pub(crate) fn ratelimit(reset: u64) -> Error {
     )
 }
 
+pub(crate) fn download_mod_not_found(game_id: u32, mod_id: u32) -> Error {
+    Error::new(
+        Kind::Download,
+        Some(DownloadError::ModNotFound { game_id, mod_id }),
+    )
+}
+
 pub(crate) fn download_no_primary(game_id: u32, mod_id: u32) -> Error {
     Error::new(
         Kind::Download,
