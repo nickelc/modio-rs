@@ -5,7 +5,7 @@
 //!
 //! # Authentication
 //!
-//! To access the API authentication is required and can be done via 4 ways:
+//! To access the API authentication is required and can be done via several ways:
 //!
 //! - Request an [API key (Read-only)](https://mod.io/apikey)
 //! - Manually create an [OAuth 2 Access Token (Read + Write)](https://mod.io/oauth)
@@ -29,10 +29,10 @@
 //! # Example: Basic setup
 //!
 //! ```no_run
-//! use modio::{Credentials, Modio, Result};
+//! use modio::{Credentials, Modio};
 //!
 //! #[tokio::main]
-//! async fn main() -> Result<()> {
+//! async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!     let modio = Modio::new(
 //!         Credentials::ApiKey(String::from("user-or-game-api-key")),
 //!     )?;
@@ -50,76 +50,76 @@
 //!
 //! ```no_run
 //! use futures_util::try_future::try_join3;
-//! use modio::{Credentials, Modio, Result};
+//! # use modio::{Credentials, Modio};
+//! #
+//! # #[tokio::main]
+//! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! #    let modio = Modio::new(
+//! #        Credentials::ApiKey(String::from("user-or-game-api-key")),
+//! #    )?;
 //!
-//! #[tokio::main]
-//! async fn main() -> Result<()> {
-//!     let modio = Modio::new(
-//!         Credentials::ApiKey(String::from("user-or-game-api-key")),
-//!     )?;
+//! // OpenXcom: The X-Com Files
+//! let modref = modio.mod_(51, 158);
 //!
-//!     // OpenXcom: The X-Com Files
-//!     let modref = modio.mod_(51, 158);
+//! // Get mod with its dependencies and all files
+//! let deps = modref.dependencies().list();
+//! let files = modref.files().list(Default::default());
+//! let mod_ = modref.get();
 //!
-//!     // Get mod with its dependencies and all files
-//!     let deps = modref.dependencies().list();
-//!     let files = modref.files().list(Default::default());
-//!     let mod_ = modref.get();
+//! let (m, deps, files) = try_join3(mod_, deps, files).await?;
 //!
-//!     let (m, deps, files) = try_join3(mod_, deps, files).await?;
-//!
-//!     println!("{}", m.name);
-//!     println!(
-//!         "deps: {:?}",
-//!         deps.into_iter().map(|d| d.mod_id).collect::<Vec<_>>()
-//!     );
-//!     for file in files {
-//!         println!("file id: {} version: {:?}", file.id, file.version);
-//!     }
-//!     Ok(())
+//! println!("{}", m.name);
+//! println!(
+//!     "deps: {:?}",
+//!     deps.into_iter().map(|d| d.mod_id).collect::<Vec<_>>()
+//! );
+//! for file in files {
+//!     println!("file id: {} version: {:?}", file.id, file.version);
 //! }
+//! #    Ok(())
+//! # }
 //! ```
 //!
 //! # Example: Downloading mods
 //!
 //! ```no_run
-//! use modio::download::ResolvePolicy;
-//! use modio::{Credentials, DownloadAction, Modio, Result};
+//! use modio::download::{DownloadAction, ResolvePolicy};
+//! # use modio::{Credentials, Modio};
+//! #
+//! # #[tokio::main]
+//! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! #    let modio = Modio::new(
+//! #        Credentials::ApiKey(String::from("user-or-game-api-key")),
+//! #    )?;
 //!
-//! #[tokio::main]
-//! async fn main() -> Result<()> {
-//!     let modio = Modio::new(
-//!         Credentials::ApiKey(String::from("user-or-game-api-key")),
-//!     )?;
+//! // Download the primary file of a mod.
+//! let action = DownloadAction::Primary {
+//!     game_id: 5,
+//!     mod_id: 19,
+//! };
+//! modio.download(action).save_to_file("mod.zip").await?;
 //!
-//!     // Download the primary file of a mod.
-//!     let action = DownloadAction::Primary {
-//!         game_id: 5,
-//!         mod_id: 19,
-//!     };
-//!     modio.download(action).save_to_file("mod.zip").await?;
+//! // Download the specific file of a mod.
+//! let action = DownloadAction::File {
+//!     game_id: 5,
+//!     mod_id: 19,
+//!     file_id: 101,
+//! };
+//! modio.download(action).save_to_file("mod.zip").await?;
 //!
-//!     // Download the specific file of a mod.
-//!     let action = DownloadAction::File {
-//!         game_id: 5,
-//!         mod_id: 19,
-//!         file_id: 101,
-//!     };
-//!     modio.download(action).save_to_file("mod.zip").await?;
-//!
-//!     // Download the specific version of a mod.
-//!     // if multiple files are found then the latest file is downloaded.
-//!     // Set policy to `ResolvePolicy::Fail` to return with
-//!     // `modio::download::Error::MultipleFilesFound` as source error.
-//!     let action = DownloadAction::Version {
-//!         game_id: 5,
-//!         mod_id: 19,
-//!         version: "0.1".to_string(),
-//!         policy: ResolvePolicy::Latest,
-//!     };
-//!     modio.download(action).save_to_file("mod.zip").await?;
-//!     Ok(())
-//! }
+//! // Download the specific version of a mod.
+//! // if multiple files are found then the latest file is downloaded.
+//! // Set policy to `ResolvePolicy::Fail` to return with
+//! // `modio::download::Error::MultipleFilesFound` as source error.
+//! let action = DownloadAction::Version {
+//!     game_id: 5,
+//!     mod_id: 19,
+//!     version: "0.1".to_string(),
+//!     policy: ResolvePolicy::Latest,
+//! };
+//! modio.download(action).save_to_file("mod.zip").await?;
+//! #    Ok(())
+//! # }
 //! ```
 #![doc(html_root_url = "https://docs.rs/modio/0.4.0")]
 #![deny(rust_2018_idioms)]
@@ -308,7 +308,7 @@ impl Builder {
         })
     }
 
-    /// Configure the underlying `reqwest` client using `reqwest::async::ClientBuilder`.
+    /// Configure the underlying `reqwest` client using `reqwest::ClientBuilder`.
     pub fn client<F>(mut self, f: F) -> Builder
     where
         F: FnOnce(ClientBuilder) -> ClientBuilder,
