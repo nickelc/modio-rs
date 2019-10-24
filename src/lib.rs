@@ -140,20 +140,21 @@ pub mod auth;
 pub mod filter;
 pub mod comments;
 pub mod download;
-mod error;
 pub mod files;
 pub mod games;
-mod iter;
 pub mod me;
 pub mod metadata;
 pub mod mods;
-mod multipart;
 pub mod reports;
+pub mod teams;
+pub mod users;
+
+mod error;
+mod iter;
+mod multipart;
 mod request;
 mod routing;
-pub mod teams;
 mod types;
-pub mod users;
 
 use crate::auth::Auth;
 use crate::comments::Comments;
