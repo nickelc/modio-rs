@@ -2,6 +2,7 @@
 use std::error::Error as StdError;
 use std::fmt;
 
+use serde::Deserialize;
 use url::form_urlencoded;
 
 use crate::routing::Route;

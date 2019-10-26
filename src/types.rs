@@ -3,8 +3,9 @@ use std::fmt;
 use std::ops::Index;
 
 use bitflags::bitflags;
-use serde::de::{Deserialize, Deserializer};
-use serde::ser::{Serialize, Serializer};
+use serde::de::Deserializer;
+use serde::ser::Serializer;
+use serde::{Deserialize, Serialize};
 use url::Url;
 
 // macro: enum_number {{{

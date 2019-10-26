@@ -124,9 +124,6 @@
 #![doc(html_root_url = "https://docs.rs/modio/0.4.0")]
 #![deny(rust_2018_idioms)]
 
-#[macro_use]
-extern crate serde_derive;
-
 use reqwest::header::USER_AGENT;
 use reqwest::header::{HeaderMap, HeaderValue};
 use reqwest::{Client, ClientBuilder, Proxy};

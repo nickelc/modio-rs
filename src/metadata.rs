@@ -1,5 +1,6 @@
 //! Mod metadata KVP interface
 use futures_util::future;
+use serde::Deserialize;
 use url::form_urlencoded;
 
 use crate::prelude::*;
