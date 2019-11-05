@@ -4,7 +4,7 @@ use std::marker::Unpin;
 use std::path::Path;
 
 use mime::APPLICATION_OCTET_STREAM;
-use tokio_io::AsyncRead;
+use tokio::io::AsyncRead;
 use url::form_urlencoded;
 
 use crate::multipart::FileSource;

@@ -6,9 +6,9 @@ use futures_util::{TryFutureExt, TryStreamExt};
 use mime::Mime;
 use reqwest::multipart::Part;
 use reqwest::Body;
-use tokio_codec::{BytesCodec, FramedRead};
-use tokio_fs::File;
-use tokio_io::AsyncRead;
+use tokio::codec::{BytesCodec, FramedRead};
+use tokio::fs::File;
+use tokio::io::AsyncRead;
 
 pub struct FileSource {
     pub body: Body,
