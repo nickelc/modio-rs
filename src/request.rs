@@ -3,6 +3,7 @@ use futures_util::TryFutureExt;
 use log::{debug, log_enabled, trace};
 use reqwest::header::{HeaderValue, CONTENT_TYPE};
 use reqwest::multipart::Form;
+use reqwest::StatusCode;
 use serde::de::DeserializeOwned;
 use url::Url;
 
@@ -136,8 +137,10 @@ impl RequestBuilder {
             }
         }
 
-        if status.is_success() {
-            serde_json::from_slice::<Out>(&body).map_err(error::decode)
+        if status == StatusCode::NO_CONTENT {
+            serde_json::from_str("null").map_err(error::decode)
+        } else if status.is_success() {
+            serde_json::from_slice(&body).map_err(error::decode)
         } else {
             match (remaining, reset) {
                 (Some(remaining), Some(reset)) if remaining == 0 => {
