@@ -190,7 +190,7 @@ impl ModRef {
     }
 
     /// Edit details for a mod. [required: token]
-    pub async fn edit(self, options: EditModOptions) -> Result<EntityResult<Mod>> {
+    pub async fn edit(self, options: EditModOptions) -> Result<Editing<Mod>> {
         let route = Route::EditMod {
             game_id: self.game,
             mod_id: self.id,
@@ -227,7 +227,7 @@ impl ModRef {
     }
 
     /// Delete media from a mod. [required: token]
-    pub async fn delete_media(self, options: DeleteMediaOptions) -> Result<()> {
+    pub async fn delete_media(self, options: DeleteMediaOptions) -> Result<Deletion> {
         let route = Route::DeleteModMedia {
             game_id: self.game,
             mod_id: self.id,
@@ -236,9 +236,7 @@ impl ModRef {
             .request(route)
             .body(options.to_query_string())
             .send()
-            .await?;
-
-        Ok(())
+            .await
     }
 
     /// Submit a positive or negative rating for a mod. [required: token]
@@ -284,7 +282,7 @@ impl ModRef {
         };
         self.modio
             .request(route)
-            .delete()
+            .send()
             .await
             .or_else(|err| match err.kind() {
                 Kind::Status(StatusCode::BAD_REQUEST) => Ok(()),
@@ -342,7 +340,7 @@ impl Dependencies {
     }
 
     /// Delete mod dependencies. [required: token]
-    pub async fn delete(self, options: EditDependenciesOptions) -> Result<()> {
+    pub async fn delete(self, options: EditDependenciesOptions) -> Result<Deletion> {
         let route = Route::DeleteModDependencies {
             game_id: self.game_id,
             mod_id: self.mod_id,
@@ -350,7 +348,7 @@ impl Dependencies {
         self.modio
             .request(route)
             .body(options.to_query_string())
-            .delete()
+            .send()
             .await
     }
 }
@@ -404,7 +402,7 @@ impl Tags {
     }
 
     /// Delete mod tags. [required: token]
-    pub async fn delete(self, options: EditTagsOptions) -> Result<()> {
+    pub async fn delete(self, options: EditTagsOptions) -> Result<Deletion> {
         let route = Route::DeleteModTags {
             game_id: self.game_id,
             mod_id: self.mod_id,
@@ -412,7 +410,7 @@ impl Tags {
         self.modio
             .request(route)
             .body(options.to_query_string())
-            .delete()
+            .send()
             .await
     }
 }

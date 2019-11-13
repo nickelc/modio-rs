@@ -1,4 +1,3 @@
-use futures_util::future;
 use futures_util::TryFutureExt;
 use log::{debug, log_enabled, trace};
 use reqwest::header::{HeaderValue, CONTENT_TYPE};
@@ -8,7 +7,7 @@ use serde::de::DeserializeOwned;
 use url::Url;
 
 use crate::auth::Credentials;
-use crate::error::{self, Kind, Result};
+use crate::error::{self, Result};
 use crate::routing::{AuthMethod, Route};
 use crate::types::ModioErrorResponse;
 use crate::Modio;
@@ -152,15 +151,6 @@ impl RequestBuilder {
                     .map_err(error::decode)?,
             }
         }
-    }
-
-    pub async fn delete(self) -> Result<()> {
-        self.send()
-            .or_else(|e| match e.kind() {
-                Kind::Decode => future::ok(()),
-                _ => future::err(e),
-            })
-            .await
     }
 }
 

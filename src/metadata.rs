@@ -59,7 +59,7 @@ impl Metadata {
     }
 
     /// Delete metadata for a mod that this `Metadata` refers to.
-    pub async fn delete(self, metadata: MetadataMap) -> Result<()> {
+    pub async fn delete(self, metadata: MetadataMap) -> Result<Deletion> {
         let route = Route::DeleteModMetadata {
             game_id: self.game,
             mod_id: self.mod_id,
@@ -67,9 +67,8 @@ impl Metadata {
         self.modio
             .request(route)
             .body(metadata.to_query_string())
-            .delete()
-            .await?;
-        Ok(())
+            .send()
+            .await
     }
 }
 

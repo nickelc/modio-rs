@@ -131,7 +131,7 @@ impl FileRef {
     }
 
     /// Edit details of a modfile. [required: token]
-    pub async fn edit(self, options: EditFileOptions) -> Result<EntityResult<File>> {
+    pub async fn edit(self, options: EditFileOptions) -> Result<Editing<File>> {
         let route = Route::EditFile {
             game_id: self.game,
             mod_id: self.mod_id,

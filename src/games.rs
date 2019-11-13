@@ -115,7 +115,7 @@ impl GameRef {
     }
 
     /// Edit details for a game. [required: token]
-    pub async fn edit(self, options: EditGameOptions) -> Result<EntityResult<Game>> {
+    pub async fn edit(self, options: EditGameOptions) -> Result<Editing<Game>> {
         let route = Route::EditGame { game_id: self.id };
         self.modio
             .request(route)
@@ -177,14 +177,14 @@ impl Tags {
     }
 
     /// Delete tag options. [required: token]
-    pub async fn delete(self, options: DeleteTagsOptions) -> Result<()> {
+    pub async fn delete(self, options: DeleteTagsOptions) -> Result<Deletion> {
         let route = Route::DeleteGameTags {
             game_id: self.game_id,
         };
         self.modio
             .request(route)
             .body(options.to_query_string())
-            .delete()
+            .send()
             .await
     }
 }

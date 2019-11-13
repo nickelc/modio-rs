@@ -130,8 +130,18 @@ pub struct ModioMessage {
 /// Result type for editing games, mods and files.
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
-pub enum EntityResult<T> {
+pub enum Editing<T> {
     Entity(T),
+    /// The request was successful however no new data was submitted.
+    #[serde(deserialize_with = "deserialize_message")]
+    NoChanges,
+}
+
+/// Result type for deleting game tag options, mod media, mod tags and mod dependencies.
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+pub enum Deletion {
+    Success,
     /// The request was successful however no new data was submitted.
     #[serde(deserialize_with = "deserialize_message")]
     NoChanges,

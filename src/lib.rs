@@ -168,7 +168,7 @@ use crate::users::Users;
 pub use crate::auth::Credentials;
 pub use crate::download::DownloadAction;
 pub use crate::error::{Error, Result};
-pub use crate::types::{EntityResult, List};
+pub use crate::types::{Deletion, Editing, List};
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 const TEST_HOST: &str = "https://api.test.mod.io/v1";
@@ -183,7 +183,8 @@ mod prelude {
     pub use crate::filter::Filter;
     pub use crate::iter::Iter;
     pub use crate::routing::Route;
-    pub use crate::EntityResult;
+    pub use crate::Deletion;
+    pub use crate::Editing;
     pub use crate::List;
     pub use crate::Modio;
     pub(crate) use crate::ModioMessage;
