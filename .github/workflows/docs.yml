@@ -1,0 +1,49 @@
+name: docs
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - v*
+
+jobs:
+  docs:
+    name: Deploy docs to gh-pages
+    runs-on: [ubuntu-latest]
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v1
+
+      - name: Install rust (stable)
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Generate docs
+        uses: actions-rs/cargo@v1
+        with:
+          command: doc
+          args: --no-deps --all-features
+
+      - name: Prepare docs
+        shell: bash -e -O extglob {0}
+        run: |
+          DIR=${GITHUB_REF/refs\/+(heads|tags)\//}
+          mkdir -p ./docs/$DIR
+          touch ./docs/.nojekyll
+          echo '<meta http-equiv="refresh" content="0;url=modio/index.html">' > ./docs/$DIR/index.html
+          mv ./target/doc/* ./docs/$DIR/
+
+      - name: Deploy docs
+        uses: peaceiris/actions-gh-pages@v2.5.1
+        with:
+          emptyCommits: false
+          keepFiles: true
+        env:
+          ACTIONS_DEPLOY_KEY: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          PUBLISH_BRANCH: gh-pages
+          PUBLISH_DIR: ./docs

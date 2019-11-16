@@ -1,0 +1,81 @@
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+  lints:
+    name: Rustfmt and clippy
+    runs-on: [ubuntu-latest]
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v1
+
+      - name: Install rust (stable)
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: clippy, rustfmt
+
+      - name: Run clippy
+        uses: actions-rs/clippy-check@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features -- -D warnings
+
+      - name: Run rustfmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+  build_and_test:
+    name: Build and test
+    runs-on: [ubuntu-latest]
+
+    strategy:
+      matrix:
+        rust: [stable, beta, nightly]
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v1
+
+      - name: Install rust (${{ matrix.rust }})
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+
+      - name: Check default features
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --all --examples --tests
+
+      - name: Check no default features
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --all --examples --tests --no-default-features
+
+      # - name: Check `rustls-tls` feature
+      #   uses: actions-rs/cargo@v1
+      #   with:
+      #     command: check
+      #     args: --all --examples --tests --no-default-features --features rustls-tls
+      #
+      # - name: Check `default-tls` and `rustls-tls` feature
+      #   uses: actions-rs/cargo@v1
+      #   with:
+      #     command: check
+      #     args: --all --examples --tests --features rustls-tls
+
+      - name: Tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all --all-features
