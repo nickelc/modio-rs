@@ -164,6 +164,7 @@ impl Tags {
     }
 
     /// Add tag options. [required: token]
+    #[allow(clippy::should_implement_trait)]
     pub async fn add(self, options: AddTagsOptions) -> Result<()> {
         let route = Route::AddGameTags {
             game_id: self.game_id,

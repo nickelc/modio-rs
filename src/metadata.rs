@@ -45,6 +45,7 @@ impl Metadata {
     }
 
     /// Add metadata for a mod that this `Metadata` refers to.
+    #[allow(clippy::should_implement_trait)]
     pub async fn add(self, metadata: MetadataMap) -> Result<()> {
         let route = Route::AddModMetadata {
             game_id: self.game,

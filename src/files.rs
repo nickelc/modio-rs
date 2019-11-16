@@ -89,6 +89,7 @@ impl Files {
     }
 
     /// Add a file for a mod that this `Files` refers to. [required: token]
+    #[allow(clippy::should_implement_trait)]
     pub async fn add(self, options: AddFileOptions) -> Result<File> {
         let route = Route::AddFile {
             game_id: self.game,

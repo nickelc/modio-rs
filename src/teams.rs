@@ -48,6 +48,7 @@ impl Members {
     }
 
     /// Add a team member by email. [required: token]
+    #[allow(clippy::should_implement_trait)]
     pub async fn add(self, options: InviteTeamMemberOptions) -> Result<()> {
         let route = Route::AddTeamMember {
             game_id: self.game,

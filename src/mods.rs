@@ -87,6 +87,7 @@ impl Mods {
     }
 
     /// Add a mod and return the newly created Modio mod object. [required: token]
+    #[allow(clippy::should_implement_trait)]
     pub async fn add(self, options: AddModOptions) -> Result<Mod> {
         let route = Route::AddMod { game_id: self.game };
         self.modio
@@ -326,6 +327,7 @@ impl Dependencies {
     }
 
     /// Add mod dependencies. [required: token]
+    #[allow(clippy::should_implement_trait)]
     pub async fn add(self, options: EditDependenciesOptions) -> Result<()> {
         let route = Route::AddModDepencencies {
             game_id: self.game_id,
@@ -388,6 +390,7 @@ impl Tags {
     }
 
     /// Add mod tags. [required: token]
+    #[allow(clippy::should_implement_trait)]
     pub async fn add(self, options: EditTagsOptions) -> Result<()> {
         let route = Route::AddModTags {
             game_id: self.game_id,
