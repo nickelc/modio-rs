@@ -5,7 +5,7 @@
 ![License][license-badge]
 [![Released API docs][docs-badge]][docs-url]
 [![Master API docs][master-docs-badge]][master-docs-url]
-[![Travis Build Status][travis-badge]][travis-url]
+[![Workflow Status][workflow-badge]][actions-url]
 
 [crates-badge]: https://img.shields.io/crates/v/modio.svg
 [crates-url]: https://crates.io/crates/modio
@@ -14,8 +14,8 @@
 [license-badge]: https://img.shields.io/crates/l/modio.svg
 [master-docs-badge]: https://img.shields.io/badge/docs-master-green.svg
 [master-docs-url]: https://nickelc.github.io/modio-rs/master/
-[travis-badge]: https://travis-ci.org/nickelc/modio-rs.svg?branch=master
-[travis-url]: https://travis-ci.org/nickelc/modio-rs
+[workflow-badge]: https://github.com/nickelc/modio-rs/workflows/ci/badge.yml
+[actions-url]: https://github.com/nickelc/modio-rs/actions
 
 `modio` provides a set of building blocks for interacting with the [mod.io](https://mod.io) API.
 
