@@ -1,7 +1,7 @@
 use std::env;
 use std::process;
 
-use futures_util::try_future::try_join3;
+use futures_util::future::try_join3;
 use modio::{auth::Credentials, Modio};
 
 #[tokio::main]

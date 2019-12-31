@@ -10,9 +10,9 @@ use futures_util::stream::poll_fn;
 use futures_util::{future, FutureExt, SinkExt, StreamExt, TryFutureExt};
 use log::debug;
 use reqwest::{Method, Response, StatusCode};
-use tokio::codec::{BytesCodec, FramedWrite};
 use tokio::fs::File as AsyncFile;
 use tokio::io::BufWriter;
+use tokio_util::codec::{BytesCodec, FramedWrite};
 
 use crate::error::{self, Kind, Result};
 use crate::types::mods::{File, Mod};

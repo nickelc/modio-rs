@@ -49,7 +49,7 @@
 //! # Example: Chaining api requests
 //!
 //! ```no_run
-//! use futures_util::try_future::try_join3;
+//! use futures_util::future::try_join3;
 //! # use modio::{Credentials, Modio};
 //! #
 //! # #[tokio::main]
@@ -195,8 +195,8 @@ mod prelude {
 /// Re-exports of the used reqwest types.
 pub mod client {
     pub use reqwest::header;
+    pub use reqwest::redirect::Policy;
     pub use reqwest::ClientBuilder;
-    pub use reqwest::RedirectPolicy;
     #[cfg(feature = "tls")]
     pub use reqwest::{Certificate, Identity};
     pub use reqwest::{Proxy, Url};
@@ -274,7 +274,7 @@ impl Builder {
                 #[cfg(feature = "tls")]
                 match config.tls {
                     #[cfg(feature = "default-tls")]
-                    TlsBackend::Default => builder.use_default_tls(),
+                    TlsBackend::Default => builder.use_native_tls(),
                     #[cfg(feature = "rustls-tls")]
                     TlsBackend::Rustls => builder.use_rustls_tls(),
                 }

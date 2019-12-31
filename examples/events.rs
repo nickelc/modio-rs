@@ -2,9 +2,7 @@ use std::env;
 use std::process;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use futures_util::{future, TryFutureExt, TryStreamExt};
-use tokio::prelude::*;
-use tokio::timer::Interval;
+use futures_util::{future, StreamExt, TryFutureExt, TryStreamExt};
 
 use modio::filter::prelude::*;
 use modio::{auth::Credentials, Modio};
@@ -36,7 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let modio = Modio::host(host, creds)?;
 
     // Creates an `Interval` task that yields every 10 seconds starting now.
-    Interval::new_interval(Duration::from_secs(10))
+    tokio::time::interval(Duration::from_secs(10))
         .fold(current_timestamp(), move |tstamp, _| {
             // Create an event filter for `date_added` > time.
             let filter = DateAdded::gt(tstamp);
@@ -53,8 +51,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     println!("{:#?}", list);
                     future::ok(())
                 })
-                .map_err(|e| println!("{:?}", e))
-                .map(|_| ());
+                .map_err(|e| println!("{:?}", e));
 
             tokio::spawn(print);
 

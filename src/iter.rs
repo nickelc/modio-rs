@@ -30,7 +30,7 @@ impl<'a, T: DeserializeOwned + Send + 'a> Iter<'a, T> {
             .send()
             .boxed();
         Iter {
-            modio: modio.clone(),
+            modio,
             route,
             filter,
             inner: Inner::Request(req, None),

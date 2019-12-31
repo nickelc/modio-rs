@@ -462,8 +462,7 @@ impl crate::QueryString for Filter {
                     .iter()
                     .map(ToString::to_string)
                     .collect::<Vec<_>>()
-                    .join(",")
-                    .to_owned(),
+                    .join(","),
             };
             (format!("{}{}", f.name, f.op), value)
         };
