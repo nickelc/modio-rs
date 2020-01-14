@@ -21,16 +21,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let api_key = prompt("Enter api key: ")?;
     let email = prompt("Enter email: ")?;
 
-    let modio = Modio::host(host, Credentials::ApiKey(api_key))?;
+    let modio = Modio::host(host, Credentials::new(api_key))?;
 
     modio.auth().request_code(&email).await?;
 
     let code = prompt("Enter security code: ").expect("read code");
-    let token = modio.auth().security_code(&code).await?;
-    println!("Access token:\n{}", token);
+    let new_creds = modio.auth().security_code(&code).await?;
+    if let Some(token) = &new_creds.token {
+        println!("Access token:\n{}", token.value);
+    }
 
     // Consume the endpoint and create an endpoint with new credentials.
-    let modio = modio.with_credentials(token);
+    let modio = modio.with_credentials(new_creds);
     let user = modio.me().authenticated_user().await?;
     println!("Authenticated user:\n{:#?}", user);
 

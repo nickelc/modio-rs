@@ -198,10 +198,6 @@ impl fmt::Display for ClientError {
     }
 }
 
-pub(crate) fn apikey_required() -> Error {
-    Error::new(Kind::Auth, Some(AuthError::ApiKeyRequired))
-}
-
 pub(crate) fn token_required() -> Error {
     Error::new(Kind::Auth, Some(AuthError::TokenRequired))
 }

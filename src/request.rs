@@ -6,7 +6,7 @@ use reqwest::StatusCode;
 use serde::de::DeserializeOwned;
 use url::Url;
 
-use crate::auth::Credentials;
+use crate::auth::Token;
 use crate::error::{self, Result};
 use crate::routing::{AuthMethod, Route};
 use crate::types::ModioErrorResponse;
@@ -59,9 +59,8 @@ impl RequestBuilder {
     {
         let (method, auth_method, path) = self.request.route.pieces();
 
-        match (auth_method, &self.modio.credentials) {
-            (AuthMethod::ApiKey, Credentials::Token(_, _)) => return Err(error::apikey_required()),
-            (AuthMethod::Token, Credentials::ApiKey(_)) => return Err(error::token_required()),
+        match (&auth_method, &self.modio.credentials.token) {
+            (AuthMethod::Token, None) => return Err(error::token_required()),
             _ => {}
         }
         let url = match self.request.query {
@@ -69,11 +68,8 @@ impl RequestBuilder {
             None => format!("{}{}", self.modio.host, path),
         };
 
-        let mut url = if let Credentials::ApiKey(ref api_key) = self.modio.credentials {
-            Url::parse_with_params(&url, Some(("api_key", api_key))).map_err(error::builder)?
-        } else {
-            url.parse().map_err(error::builder)?
-        };
+        let params = Some(("api_key", self.modio.credentials.api_key));
+        let mut url = Url::parse_with_params(&url, params).map_err(error::builder)?;
 
         if let Some("") = url.query() {
             url.set_query(None);
@@ -82,8 +78,11 @@ impl RequestBuilder {
         debug!("request: {} {}", method, url);
         let mut req = self.modio.client.request(method, url);
 
-        if let Credentials::Token(ref token, _) = self.modio.credentials {
-            req = req.bearer_auth(token);
+        match (auth_method, &self.modio.credentials.token) {
+            (AuthMethod::Token, Some(Token { value, .. })) => {
+                req = req.bearer_auth(value);
+            }
+            _ => {}
         }
 
         match self.request.body {

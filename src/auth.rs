@@ -13,18 +13,46 @@ use crate::Result;
 
 /// Various forms of authentication credentials supported by [mod.io](https://mod.io).
 #[derive(Clone, Debug, PartialEq)]
-pub enum Credentials {
-    ApiKey(String),
-    /// Access token and Unix timestamp of the date this token will expire.
-    Token(String, Option<u64>),
+pub struct Credentials {
+    pub api_key: String,
+    pub token: Option<Token>,
 }
 
-impl fmt::Display for Credentials {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Credentials::ApiKey(key) => f.write_str(&key),
-            Credentials::Token(token, _) => f.write_str(&token),
+/// Access token and optional Unix timestamp of the date this token will expire.
+#[derive(Clone, Debug, PartialEq)]
+pub struct Token {
+    pub value: String,
+    pub expired_at: Option<u64>,
+}
+
+impl Credentials {
+    pub fn new(api_key: String) -> Credentials {
+        Credentials {
+            api_key,
+            token: None,
         }
+    }
+
+    pub fn with_token(api_key: String, token: String) -> Credentials {
+        Credentials {
+            api_key,
+            token: Some(Token {
+                value: token,
+                expired_at: None,
+            }),
+        }
+    }
+}
+
+impl From<String> for Credentials {
+    fn from(api_key: String) -> Credentials {
+        Credentials::new(api_key)
+    }
+}
+
+impl From<(String, String)> for Credentials {
+    fn from((api_key, token): (String, String)) -> Credentials {
+        Credentials::with_token(api_key, token)
     }
 }
 
@@ -33,8 +61,6 @@ impl fmt::Display for Credentials {
 pub enum Error {
     /// API key/access token is incorrect, revoked or expired.
     Unauthorized,
-    /// API key is required to perform the action.
-    ApiKeyRequired,
     /// Access token is required to perform the action.
     TokenRequired,
 }
@@ -45,7 +71,6 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Error::Unauthorized => f.write_str("Unauthorized"),
-            Error::ApiKeyRequired => f.write_str("API key is required"),
             Error::TokenRequired => f.write_str("Access token is required"),
         }
     }
@@ -104,9 +129,7 @@ impl QueryString for OculusOptions {
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<()> {
-///     let modio = Modio::new(
-///         Credentials::ApiKey(String::from("api-key")),
-///     )?;
+///     let modio = Modio::new(Credentials::new(String::from("api-key")))?;
 ///
 ///     let email = prompt("Enter email: ").expect("read email");
 ///     modio.auth().request_code(&email).await?;
@@ -126,8 +149,10 @@ pub struct Auth {
 
 #[derive(Deserialize)]
 struct AccessToken {
-    access_token: String,
-    date_expires: u64,
+    #[serde(rename = "access_token")]
+    value: String,
+    #[serde(rename = "date_expires")]
+    expired_at: Option<u64>,
 }
 
 impl Auth {
@@ -163,7 +188,14 @@ impl Auth {
             .send::<AccessToken>()
             .await?;
 
-        Ok(Credentials::Token(t.access_token, Some(t.date_expires)))
+        let token = Token {
+            value: t.value,
+            expired_at: t.expired_at,
+        };
+        Ok(Credentials {
+            api_key: self.modio.credentials.api_key,
+            token: Some(token),
+        })
     }
 
     /// Link an external account. Requires an auth token from the external platform.
@@ -205,7 +237,14 @@ impl Auth {
             .send::<AccessToken>()
             .await?;
 
-        Ok(Credentials::Token(t.access_token, Some(t.date_expires)))
+        let token = Token {
+            value: t.value,
+            expired_at: t.expired_at,
+        };
+        Ok(Credentials {
+            api_key: self.modio.credentials.api_key,
+            token: Some(token),
+        })
     }
 
     /// Get the access token for an encrypted steam app ticket. [required: apikey]
@@ -223,7 +262,14 @@ impl Auth {
             .send::<AccessToken>()
             .await?;
 
-        Ok(Credentials::Token(t.access_token, Some(t.date_expires)))
+        let token = Token {
+            value: t.value,
+            expired_at: t.expired_at,
+        };
+        Ok(Credentials {
+            api_key: self.modio.credentials.api_key,
+            token: Some(token),
+        })
     }
 
     /// Get the access token for an Oculus user. [required: apikey]
@@ -237,6 +283,13 @@ impl Auth {
             .send::<AccessToken>()
             .await?;
 
-        Ok(Credentials::Token(t.access_token, Some(t.date_expires)))
+        let token = Token {
+            value: t.value,
+            expired_at: t.expired_at,
+        };
+        Ok(Credentials {
+            api_key: self.modio.credentials.api_key,
+            token: Some(token),
+        })
     }
 }
