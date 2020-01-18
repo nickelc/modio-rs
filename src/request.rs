@@ -59,9 +59,8 @@ impl RequestBuilder {
     {
         let (method, auth_method, path) = self.request.route.pieces();
 
-        match (&auth_method, &self.modio.credentials.token) {
-            (AuthMethod::Token, None) => return Err(error::token_required()),
-            _ => {}
+        if let (AuthMethod::Token, None) = (&auth_method, &self.modio.credentials.token) {
+            return Err(error::token_required());
         }
         let url = match self.request.query {
             Some(query) => format!("{}{}?{}", self.modio.host, path, query),
@@ -78,11 +77,10 @@ impl RequestBuilder {
         debug!("request: {} {}", method, url);
         let mut req = self.modio.client.request(method, url);
 
-        match (auth_method, &self.modio.credentials.token) {
-            (AuthMethod::Token, Some(Token { value, .. })) => {
-                req = req.bearer_auth(value);
-            }
-            _ => {}
+        if let (AuthMethod::Token, Some(Token { value, .. })) =
+            (&auth_method, &self.modio.credentials.token)
+        {
+            req = req.bearer_auth(value);
         }
 
         match self.request.body {
