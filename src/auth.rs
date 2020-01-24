@@ -12,17 +12,27 @@ use crate::QueryString;
 use crate::Result;
 
 /// Various forms of authentication credentials supported by [mod.io](https://mod.io).
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Credentials {
     pub api_key: String,
     pub token: Option<Token>,
 }
 
 /// Access token and optional Unix timestamp of the date this token will expire.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Token {
     pub value: String,
     pub expired_at: Option<u64>,
+}
+
+impl fmt::Debug for Credentials {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if self.token.is_some() {
+            f.write_str("Credentials(apikey+token)")
+        } else {
+            f.write_str("Credentials(apikey)")
+        }
+    }
 }
 
 impl Credentials {
