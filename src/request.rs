@@ -68,11 +68,7 @@ impl RequestBuilder {
         };
 
         let params = Some(("api_key", self.modio.credentials.api_key));
-        let mut url = Url::parse_with_params(&url, params).map_err(error::builder)?;
-
-        if let Some("") = url.query() {
-            url.set_query(None);
-        }
+        let url = Url::parse_with_params(&url, params).map_err(error::builder)?;
 
         debug!("request: {} {}", method, url);
         let mut req = self.modio.client.request(method, url);
