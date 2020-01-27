@@ -14,7 +14,7 @@
 [license-badge]: https://img.shields.io/crates/l/modio.svg
 [master-docs-badge]: https://img.shields.io/badge/docs-master-green.svg
 [master-docs-url]: https://nickelc.github.io/modio-rs/master/
-[workflow-badge]: https://github.com/nickelc/modio-rs/workflows/ci/badge.yml
+[workflow-badge]: https://github.com/nickelc/modio-rs/workflows/ci/badge.svg
 [actions-url]: https://github.com/nickelc/modio-rs/actions
 
 `modio` provides a set of building blocks for interacting with the [mod.io](https://mod.io) API.
