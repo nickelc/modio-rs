@@ -2,10 +2,13 @@ use std::env;
 use std::process;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use futures_util::{future, StreamExt, TryFutureExt, TryStreamExt};
+use futures_util::TryStreamExt;
+use tokio::time::{self, Instant};
 
 use modio::filter::prelude::*;
 use modio::{auth::Credentials, Modio};
+
+const TEN_SECS: Duration = Duration::from_secs(10);
 
 fn current_timestamp() -> u64 {
     SystemTime::now()
@@ -19,7 +22,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv().ok();
     env_logger::init();
 
-    // Fetch the access token / api key from the environment of the current process.
+    // Fetch the access token & api key from the environment of the current process.
     let creds = match (env::var("MODIO_TOKEN"), env::var("MODIO_API_KEY")) {
         (Ok(token), Ok(apikey)) => Credentials::with_token(apikey, token),
         _ => {
@@ -32,32 +35,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Creates a `Modio` endpoint for the test environment.
     let modio = Modio::host(host, creds)?;
 
-    // Creates an `Interval` task that yields every 10 seconds starting now.
-    tokio::time::interval(Duration::from_secs(10))
-        .fold(current_timestamp(), move |tstamp, _| {
-            // Create an event filter for `date_added` > time.
-            let filter = DateAdded::gt(tstamp);
-            let qs = format!("{}", filter);
+    // Creates an `Interval` that yields every 10 seconds starting in 10 seconds.
+    let mut interval = time::interval_at(Instant::now() + TEN_SECS, TEN_SECS);
 
-            // Create the call for `/me/events` and wait for the result.
-            let print = modio
-                .me()
-                .events(filter)
-                .try_collect()
-                .and_then(move |list: Vec<_>| {
-                    println!("event filter: {}", qs);
-                    println!("event count: {}", list.len());
-                    println!("{:#?}", list);
-                    future::ok(())
-                })
-                .map_err(|e| println!("{:?}", e));
+    loop {
+        let tstamp = current_timestamp();
+        interval.tick().await;
 
-            tokio::spawn(print);
+        // Create an event filter for `date_added` > time.
+        let filter = DateAdded::gt(tstamp);
+        println!("event filter: {}", filter);
 
-            // timestamp for the next run.
-            future::ready(current_timestamp())
-        })
-        .await;
+        let list: Vec<_> = modio.me().events(filter).try_collect().await?;
 
-    Ok(())
+        println!("event count: {}", list.len());
+        println!("{:#?}", list);
+    }
 }
