@@ -36,21 +36,33 @@ impl fmt::Debug for Credentials {
 }
 
 impl Credentials {
-    pub fn new(api_key: String) -> Credentials {
+    pub fn new<S: Into<String>>(api_key: S) -> Credentials {
         Credentials {
-            api_key,
+            api_key: api_key.into(),
             token: None,
         }
     }
 
-    pub fn with_token(api_key: String, token: String) -> Credentials {
+    pub fn with_token<S: Into<String>, T: Into<String>>(api_key: S, token: T) -> Credentials {
         Credentials {
-            api_key,
+            api_key: api_key.into(),
             token: Some(Token {
-                value: token,
+                value: token.into(),
                 expired_at: None,
             }),
         }
+    }
+}
+
+impl From<&str> for Credentials {
+    fn from(api_key: &str) -> Credentials {
+        Credentials::new(api_key)
+    }
+}
+
+impl From<(&str, &str)> for Credentials {
+    fn from((api_key, token): (&str, &str)) -> Credentials {
+        Credentials::with_token(api_key, token)
     }
 }
 
@@ -139,7 +151,7 @@ impl QueryString for OculusOptions {
 ///
 /// #[tokio::main]
 /// async fn main() -> Result<()> {
-///     let modio = Modio::new(Credentials::new(String::from("api-key")))?;
+///     let modio = Modio::new(Credentials::new("api-key"))?;
 ///
 ///     let email = prompt("Enter email: ").expect("read email");
 ///     modio.auth().request_code(&email).await?;

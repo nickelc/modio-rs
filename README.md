@@ -41,7 +41,7 @@ use modio::{Credentials, Modio, Result};
 async fn main() -> Result<()> {
     let mut rt = Runtime::new()?;
     let modio = Modio::new(
-        Credentials::ApiKey(String::from("user-or-game-apikey")),
+        Credentials::new("user-or-game-apikey"),
     )?;
 
     // create some tasks and execute them

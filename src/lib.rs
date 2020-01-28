@@ -34,7 +34,7 @@
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!     let modio = Modio::new(
-//!         Credentials::new(String::from("user-or-game-api-key")),
+//!         Credentials::new("user-or-game-api-key"),
 //!     )?;
 //!
 //!     // create some tasks and execute them
@@ -50,11 +50,9 @@
 //!
 //! ```no_run
 //! use futures_util::future::try_join3;
-//! # use modio::{Credentials, Modio};
-//! #
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! #    let modio = Modio::new(Credentials::new(String::from("user-or-game-api-key")))?;
+//! #    let modio = modio::Modio::new("user-or-game-api-key")?;
 //!
 //! // OpenXcom: The X-Com Files
 //! let modref = modio.mod_(51, 158);
@@ -82,11 +80,9 @@
 //!
 //! ```no_run
 //! use modio::download::{DownloadAction, ResolvePolicy};
-//! # use modio::{Credentials, Modio};
-//! #
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! #    let modio = Modio::new(Credentials::new(String::from("user-or-game-api-key")))?;
+//! #    let modio = modio::Modio::new("user-or-game-api-key")?;
 //!
 //! // Download the primary file of a mod.
 //! let action = DownloadAction::Primary {
@@ -430,11 +426,8 @@ impl Modio {
     /// ```no_run
     /// use futures_util::{future, TryStreamExt};
     /// use modio::download::{DownloadAction, ResolvePolicy};
-    /// # use modio::{Credentials, Modio};
     /// # async fn run() -> Result<(), Box<dyn std::error::Error>> {
-    /// #    let modio = modio::Modio::new(
-    /// #        modio::Credentials::new(String::from("user-or-game-api-key")),
-    /// #    )?;
+    /// #    let modio = modio::Modio::new("user-or-game-api-key")?;
     ///
     /// // Download the primary file of a mod.
     /// let action = DownloadAction::Primary {

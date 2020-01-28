@@ -37,7 +37,7 @@ impl Downloader {
     /// # Example
     /// ```no_run
     /// # async fn run() -> Result<(), Box<dyn std::error::Error>> {
-    /// #     let modio = modio::Modio::new(modio::Credentials::new("api-key".to_string()))?;
+    /// #     let modio = modio::Modio::new("api-key")?;
     /// let action = modio::DownloadAction::Primary {
     ///     game_id: 5,
     ///     mod_id: 19,
@@ -62,7 +62,7 @@ impl Downloader {
     /// use futures_util::{future, TryStreamExt};
     ///
     /// # async fn run() -> Result<(), Box<dyn std::error::Error>> {
-    /// #     let modio = modio::Modio::new(modio::Credentials::new("api-key".to_string()))?;
+    /// #     let modio = modio::Modio::new("api-key")?;
     /// let action = modio::DownloadAction::Primary {
     ///     game_id: 5,
     ///     mod_id: 19,
