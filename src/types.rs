@@ -279,7 +279,7 @@ pub struct Event {
     pub event_type: EventType,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Hash, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum EventType {
     /// User has joined a team.
@@ -559,7 +559,7 @@ pub mod mods {
         pub event_type: EventType,
     }
 
-    #[derive(Debug, Deserialize)]
+    #[derive(Debug, PartialEq, Eq, Hash, Deserialize)]
     #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
     pub enum EventType {
         /// Primary file changed, the mod should be updated.
