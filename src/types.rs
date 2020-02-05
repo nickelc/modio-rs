@@ -102,7 +102,7 @@ macro_rules! bitflags_serde {
                         E: serde::de::Error,
                     {
                         $name::from_bits(value as $type).ok_or_else(|| {
-                            E::custom(format!("invalid {} bits {}", stringify!($name), value))
+                            E::custom(format!("invalid {} value: {}", stringify!($name), value))
                         })
                     }
                 }
@@ -410,10 +410,12 @@ pub mod game {
         /// Community features enabled on the mod.io website.
         pub struct CommunityOptions: u8 {
             /// Discussion board enabled.
-            const DISCUSSIONS   = 0b0001;
+            const DISCUSSIONS       = 0b0001;
             /// Guides & News enabled.
-            const GUIDES_NEWS   = 0b0010;
-            const ALL = Self::DISCUSSIONS.bits | Self::GUIDES_NEWS.bits;
+            const GUIDES_NEWS       = 0b0010;
+            /// "Subscribe to install" button disabled.
+            const DISABLE_SUBSCRIBE = 0b0100;
+            const ALL = Self::DISCUSSIONS.bits | Self::GUIDES_NEWS.bits | Self::DISABLE_SUBSCRIBE.bits;
         }
     }
     bitflags_serde!(CommunityOptions, u8);

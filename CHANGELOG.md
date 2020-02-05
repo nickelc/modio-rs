@@ -1,4 +1,4 @@
-### v0.4.1 (not released)
+### v0.4.2 (not released)
 
 * New `Error::is_authentication` accessor
 
@@ -7,6 +7,12 @@
 * Replace `ModioResult` with deprecated type alias for `EntityResult`.
 
 * Replace `ModioListResponse` with deprecated type alias for `List`.
+
+### v0.4.1 (2020-02-05)
+
+* Add new `modio::games::CommunityOptions::DISABLE_SUBSCRIBE` flag. ([bde909fd][bde909fd])
+
+[bde909fd]: https://github.com/nickelc/modio-rs/commit/bde909fdd095210122f095a1d83c3436d381a349
 
 ### v0.4 (2019-04-01)
 
