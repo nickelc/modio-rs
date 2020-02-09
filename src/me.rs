@@ -47,14 +47,14 @@ impl Me {
     ///
     /// See [Filters and sorting](filters/events/index.html).
     pub fn events(self, filter: Filter) -> impl Stream<Item = Result<Event>> {
-        self.modio.stream(Route::UserEvents, filter)
+        Query::new(self.modio, Route::UserEvents, filter).iter()
     }
 
     /// Provides a stream over all mod's the authenticated user is subscribed to. [required: token]
     ///
     /// See [Filters and sorting](filters/subscriptions/index.html).
     pub fn subscriptions(self, filter: Filter) -> impl Stream<Item = Result<Mod>> {
-        self.modio.stream(Route::UserSubscriptions, filter)
+        Query::new(self.modio, Route::UserSubscriptions, filter).iter()
     }
 
     /// Provides a stream over all mod rating's submitted by the authenticated user. [required:
@@ -62,7 +62,7 @@ impl Me {
     ///
     /// See [Filters and sorting](filters/ratings/index.html).
     pub fn ratings(self, filter: Filter) -> impl Stream<Item = Result<Rating>> {
-        self.modio.stream(Route::UserRatings, filter)
+        Query::new(self.modio, Route::UserRatings, filter).iter()
     }
 }
 

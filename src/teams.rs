@@ -24,16 +24,12 @@ impl Members {
     /// List all team members.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub async fn list(self, filter: Filter) -> Result<List<TeamMember>> {
+    pub async fn list(self, filter: Filter) -> Result<Vec<TeamMember>> {
         let route = Route::GetTeamMembers {
             game_id: self.game,
             mod_id: self.mod_id,
         };
-        self.modio
-            .request(route)
-            .query(filter.to_query_string())
-            .send()
-            .await
+        Query::new(self.modio, route, filter).first().await
     }
 
     /// Provides a stream over all team members.
@@ -44,7 +40,7 @@ impl Members {
             game_id: self.game,
             mod_id: self.mod_id,
         };
-        self.modio.stream(route, filter)
+        Query::new(self.modio, route, filter).iter()
     }
 
     /// Add a team member by email. [required: token]

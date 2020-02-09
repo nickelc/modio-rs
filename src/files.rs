@@ -25,11 +25,9 @@ impl MyFiles {
     /// Return all modfiles the authenticated user uploaded. [required: token]
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub async fn list(self, filter: Filter) -> Result<List<File>> {
-        self.modio
-            .request(Route::UserFiles)
-            .query(filter.to_query_string())
-            .send()
+    pub async fn list(self, filter: Filter) -> Result<Vec<File>> {
+        Query::new(self.modio, Route::UserFiles, filter)
+            .first()
             .await
     }
 
@@ -37,7 +35,7 @@ impl MyFiles {
     ///
     /// See [Filters and sorting](filters/index.html).
     pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<File>> {
-        self.modio.stream(Route::UserFiles, filter)
+        Query::new(self.modio, Route::UserFiles, filter).iter()
     }
 }
 
@@ -60,16 +58,12 @@ impl Files {
     /// Return all files that are published for a mod this `Files` refers to.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub async fn list(self, filter: Filter) -> Result<List<File>> {
+    pub async fn list(self, filter: Filter) -> Result<Vec<File>> {
         let route = Route::GetFiles {
             game_id: self.game,
             mod_id: self.mod_id,
         };
-        self.modio
-            .request(route)
-            .query(filter.to_query_string())
-            .send()
-            .await
+        Query::new(self.modio, route, filter).first().await
     }
 
     /// Provides a stream over all files that are published for a mod this `Files` refers to.
@@ -80,7 +74,7 @@ impl Files {
             game_id: self.game,
             mod_id: self.mod_id,
         };
-        self.modio.stream(route, filter)
+        Query::new(self.modio, route, filter).iter()
     }
 
     /// Return a reference to a file.

@@ -33,11 +33,9 @@ impl MyMods {
     /// List all mods the authenticated user added or is team member of. [required: token]
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub async fn list(self, filter: Filter) -> Result<List<Mod>> {
-        self.modio
-            .request(Route::UserMods)
-            .query(filter.to_query_string())
-            .send()
+    pub async fn list(self, filter: Filter) -> Result<Vec<Mod>> {
+        Query::new(self.modio, Route::UserMods, filter)
+            .first()
             .await
     }
 
@@ -46,7 +44,7 @@ impl MyMods {
     ///
     /// See [Filters and sorting](filters/index.html).
     pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<Mod>> {
-        self.modio.stream(Route::UserMods, filter)
+        Query::new(self.modio, Route::UserMods, filter).iter()
     }
 }
 
@@ -69,13 +67,9 @@ impl Mods {
     /// List all mods.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub async fn list(self, filter: Filter) -> Result<List<Mod>> {
+    pub async fn list(self, filter: Filter) -> Result<Vec<Mod>> {
         let route = Route::GetMods { game_id: self.game };
-        self.modio
-            .request(route)
-            .query(filter.to_query_string())
-            .send()
-            .await
+        Query::new(self.modio, route, filter).first().await
     }
 
     /// Provides a stream over all mods of the game.
@@ -83,7 +77,7 @@ impl Mods {
     /// See [Filters and sorting](filters/index.html).
     pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<Mod>> {
         let route = Route::GetMods { game_id: self.game };
-        self.modio.stream(route, filter)
+        Query::new(self.modio, route, filter).iter()
     }
 
     /// Add a mod and return the newly created Modio mod object. [required: token]
@@ -102,7 +96,7 @@ impl Mods {
     /// See [Filters and sorting](filters/stats/index.html).
     pub fn statistics(self, filter: Filter) -> impl Stream<Item = Result<Statistics>> {
         let route = Route::GetAllModStats { game_id: self.game };
-        self.modio.stream(route, filter)
+        Query::new(self.modio, route, filter).iter()
     }
 
     /// Provides a stream over the event log for all mods of a game sorted by latest event first.
@@ -110,7 +104,7 @@ impl Mods {
     /// See [Filters and sorting](filters/events/index.html).
     pub fn events(self, filter: Filter) -> impl Stream<Item = Result<Event>> {
         let route = Route::GetAllModEvents { game_id: self.game };
-        self.modio.stream(route, filter)
+        Query::new(self.modio, route, filter).iter()
     }
 }
 
@@ -182,7 +176,7 @@ impl ModRef {
             game_id: self.game,
             mod_id: self.id,
         };
-        self.modio.stream(route, filter)
+        Query::new(self.modio, route, filter).iter()
     }
 
     /// Return a reference to an interface to manage team members of a mod.
@@ -309,12 +303,14 @@ impl Dependencies {
     }
 
     /// List mod dependencies.
-    pub async fn list(self) -> Result<List<Dependency>> {
+    pub async fn list(self) -> Result<Vec<Dependency>> {
         let route = Route::GetModDependencies {
             game_id: self.game_id,
             mod_id: self.mod_id,
         };
-        self.modio.request(route).send().await
+        Query::new(self.modio, route, Default::default())
+            .first()
+            .await
     }
 
     /// Provides a stream over all mod dependencies.
@@ -323,7 +319,7 @@ impl Dependencies {
             game_id: self.game_id,
             mod_id: self.mod_id,
         };
-        self.modio.stream(route, Default::default())
+        Query::new(self.modio, route, Default::default()).iter()
     }
 
     /// Add mod dependencies. [required: token]
@@ -372,12 +368,14 @@ impl Tags {
     }
 
     /// List all mod tags.
-    pub async fn list(self) -> Result<List<Tag>> {
+    pub async fn list(self) -> Result<Vec<Tag>> {
         let route = Route::GetModTags {
             game_id: self.game_id,
             mod_id: self.mod_id,
         };
-        self.modio.request(route).send().await
+        Query::new(self.modio, route, Default::default())
+            .first()
+            .await
     }
 
     /// Provides a stream over all mod tags.
@@ -386,7 +384,7 @@ impl Tags {
             game_id: self.game_id,
             mod_id: self.mod_id,
         };
-        self.modio.stream(route, Default::default())
+        Query::new(self.modio, route, Default::default()).iter()
     }
 
     /// Add mod tags. [required: token]

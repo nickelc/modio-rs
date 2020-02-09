@@ -119,7 +119,6 @@
 use reqwest::header::USER_AGENT;
 use reqwest::header::{HeaderMap, HeaderValue};
 use reqwest::{Client, ClientBuilder, Proxy};
-use serde::de::DeserializeOwned;
 
 #[macro_use]
 mod macros;
@@ -139,7 +138,7 @@ pub mod teams;
 pub mod users;
 
 mod error;
-mod iter;
+mod loader;
 mod multipart;
 mod request;
 mod routing;
@@ -149,7 +148,6 @@ use crate::auth::Auth;
 use crate::comments::Comments;
 use crate::download::Downloader;
 use crate::games::{GameRef, Games};
-use crate::iter::Iter;
 use crate::me::Me;
 use crate::mods::{ModRef, Mods};
 use crate::reports::Reports;
@@ -160,7 +158,7 @@ use crate::users::Users;
 pub use crate::auth::Credentials;
 pub use crate::download::DownloadAction;
 pub use crate::error::{Error, Result};
-pub use crate::types::{Deletion, Editing, List};
+pub use crate::types::{Deletion, Editing};
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 const TEST_HOST: &str = "https://api.test.mod.io/v1";
@@ -173,11 +171,10 @@ mod prelude {
     pub use reqwest::StatusCode;
 
     pub use crate::filter::Filter;
-    pub use crate::iter::Iter;
+    pub(crate) use crate::loader::Query;
     pub use crate::routing::Route;
     pub use crate::Deletion;
     pub use crate::Editing;
-    pub use crate::List;
     pub use crate::Modio;
     pub(crate) use crate::ModioMessage;
     pub(crate) use crate::QueryString;
@@ -489,13 +486,6 @@ impl Modio {
 
     fn request(&self, route: routing::Route) -> RequestBuilder {
         RequestBuilder::new(self.clone(), route)
-    }
-
-    fn stream<'a, T>(self, route: routing::Route, filter: filter::Filter) -> Iter<'a, T>
-    where
-        T: DeserializeOwned + Send + 'a,
-    {
-        Iter::new(self, route, filter)
     }
 }
 

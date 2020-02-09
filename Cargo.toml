@@ -18,8 +18,8 @@ maintenance = { status = "actively-developed" }
 [dependencies]
 bitflags = "1"
 bytes = "0.5"
-futures-core = "0.3"
-futures-util = { version = "0.3", features = ["sink"] }
+futures-core = "0.3.4"
+futures-util = { version = "0.3.4", features = ["sink"] }
 http = "0.2"
 log = "0.4"
 mime = "0.3"

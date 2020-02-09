@@ -33,8 +33,8 @@ impl Metadata {
             game_id: self.game,
             mod_id: self.mod_id,
         };
-        self.modio
-            .stream(route, Default::default())
+        Query::new(self.modio, route, Default::default())
+            .iter()
             .try_fold(MetadataMap::new(), |mut map, kv: KV| {
                 map.entry(kv.metakey)
                     .or_insert_with(Vec::new)

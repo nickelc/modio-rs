@@ -31,11 +31,9 @@ impl MyGames {
     /// List all games the authenticated user added or is team member of. [required: token]
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub async fn list(self, filter: Filter) -> Result<List<Game>> {
-        self.modio
-            .request(Route::UserGames)
-            .query(filter.to_query_string())
-            .send()
+    pub async fn list(self, filter: Filter) -> Result<Vec<Game>> {
+        Query::new(self.modio, Route::UserGames, filter)
+            .first()
             .await
     }
 
@@ -44,7 +42,7 @@ impl MyGames {
     ///
     /// See [Filters and sorting](filters/index.html).
     pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<Game>> {
-        self.modio.stream(Route::UserGames, filter)
+        Query::new(self.modio, Route::UserGames, filter).iter()
     }
 }
 
@@ -61,11 +59,9 @@ impl Games {
     /// List all games.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub async fn list(self, filter: Filter) -> Result<List<Game>> {
-        self.modio
-            .request(Route::GetGames)
-            .query(filter.to_query_string())
-            .send()
+    pub async fn list(self, filter: Filter) -> Result<Vec<Game>> {
+        Query::new(self.modio, Route::GetGames, filter)
+            .first()
             .await
     }
 
@@ -73,7 +69,7 @@ impl Games {
     ///
     /// See [Filters and sorting](filters/index.html).
     pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<Game>> {
-        self.modio.stream(Route::GetGames, filter)
+        Query::new(self.modio, Route::GetGames, filter).iter()
     }
 
     /// Return a reference to a game.
@@ -148,11 +144,13 @@ impl Tags {
     }
 
     /// List tag options.
-    pub async fn list(self) -> Result<List<TagOption>> {
+    pub async fn list(self) -> Result<Vec<TagOption>> {
         let route = Route::GetGameTags {
             game_id: self.game_id,
         };
-        self.modio.request(route).send().await
+        Query::new(self.modio, route, Default::default())
+            .first()
+            .await
     }
 
     /// Provides a stream over all tag options.
@@ -160,7 +158,7 @@ impl Tags {
         let route = Route::GetGameTags {
             game_id: self.game_id,
         };
-        self.modio.stream(route, Default::default())
+        Query::new(self.modio, route, Default::default()).iter()
     }
 
     /// Add tag options. [required: token]

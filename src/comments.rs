@@ -21,16 +21,12 @@ impl Comments {
     /// List all comments.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub async fn list(self, filter: Filter) -> Result<List<Comment>> {
+    pub async fn list(self, filter: Filter) -> Result<Vec<Comment>> {
         let route = Route::GetModComments {
             game_id: self.game,
             mod_id: self.mod_id,
         };
-        self.modio
-            .request(route)
-            .query(filter.to_query_string())
-            .send()
-            .await
+        Query::new(self.modio, route, filter).first().await
     }
 
     /// Provides a stream over all comments of the mod.
@@ -41,7 +37,7 @@ impl Comments {
             game_id: self.game,
             mod_id: self.mod_id,
         };
-        self.modio.stream(route, filter)
+        Query::new(self.modio, route, filter).iter()
     }
 
     /// Return comment by id.

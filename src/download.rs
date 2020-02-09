@@ -156,13 +156,13 @@ async fn request_file(modio: Modio, action: DownloadAction) -> Result<Response> 
                 })
                 .await?;
 
-            let (file, error) = match (list.count, policy) {
+            let (file, error) = match (list.len(), policy) {
                 (0, _) => (
                     None,
                     Some(error::download_version_not_found(game_id, mod_id, version)),
                 ),
-                (1, _) => (list.shift(), None),
-                (_, Latest) => (list.shift(), None),
+                (1, _) => (Some(list.remove(0)), None),
+                (_, Latest) => (Some(list.remove(0)), None),
                 (_, Fail) => (
                     None,
                     Some(error::download_multiple_files(game_id, mod_id, version)),
