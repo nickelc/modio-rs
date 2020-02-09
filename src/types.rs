@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::fmt;
-use std::ops::Index;
 
 use bitflags::bitflags;
 use serde::de::Deserializer;
@@ -167,46 +166,6 @@ pub struct List<T> {
     pub limit: u32,
     #[serde(rename = "result_offset")]
     pub offset: u32,
-}
-
-impl<T> List<T> {
-    pub fn first(&self) -> Option<&T> {
-        self.data.get(0)
-    }
-
-    pub fn shift(&mut self) -> Option<T> {
-        if self.data.is_empty() {
-            None
-        } else {
-            Some(self.data.remove(0))
-        }
-    }
-}
-
-impl<T> Index<usize> for List<T> {
-    type Output = T;
-
-    fn index(&self, index: usize) -> &Self::Output {
-        &self.data[index]
-    }
-}
-
-impl<T> IntoIterator for List<T> {
-    type Item = T;
-    type IntoIter = ::std::vec::IntoIter<T>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.data.into_iter()
-    }
-}
-
-impl<'a, T> IntoIterator for &'a List<T> {
-    type Item = &'a T;
-    type IntoIter = ::std::slice::Iter<'a, T>;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.data.iter()
-    }
 }
 
 /// See the [Error Object](https://docs.mod.io/#error-object) docs for more information.
