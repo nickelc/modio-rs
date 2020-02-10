@@ -231,7 +231,7 @@ pub struct User {
     pub name_id: String,
     pub username: String,
     pub date_online: u32,
-    #[serde(deserialize_with = "deserialize_avatar")]
+    #[serde(default, deserialize_with = "deserialize_empty_object")]
     pub avatar: Option<Avatar>,
     pub timezone: String,
     pub language: String,
@@ -304,26 +304,35 @@ impl fmt::Display for EventType {
     }
 }
 
-/// Deserialize empty objects for the `avatar` property of the User object as `None`.
+/// Deserialize empty objects for optional properties as `None`.
 ///
-/// The mod.io api returns `{"avatar": {}}` for users without avatars instead of returning
-/// `{"avatar": null}`.
-fn deserialize_avatar<'de, D>(deserializer: D) -> Result<Option<Avatar>, D::Error>
+/// The mod.io api returns `"field": {}` for some optional properties instead of returning
+/// `"field": null` or omitting the field.
+///
+/// This function supports the following JSON examples as `None`.
+/// ```json
+/// {"id": 1, "field": {}}
+/// {"id": 1, "field": null}
+///
+/// // And missing fields with `#[serde(default)]`
+/// {"id": 1}
+/// ```
+pub fn deserialize_empty_object<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
 where
     D: Deserializer<'de>,
+    T: Deserialize<'de>,
 {
-    match Avatar::deserialize(deserializer) {
-        Ok(avatar) => Ok(Some(avatar)),
-        Err(err) => {
-            let err_s = err.to_string();
-            if err_s.starts_with("missing field `filename`")
-                || err_s.starts_with("invalid type: null")
-            {
-                Ok(None)
-            } else {
-                Err(err)
-            }
-        }
+    #[derive(Deserialize)]
+    #[serde(untagged, deny_unknown_fields)]
+    enum Helper<T> {
+        Data(T),
+        Empty {},
+        Null,
+    }
+    match Helper::deserialize(deserializer) {
+        Ok(Helper::Data(data)) => Ok(Some(data)),
+        Ok(_) => Ok(None),
+        Err(e) => Err(e),
     }
 }
 
@@ -519,7 +528,7 @@ pub mod mods {
         pub description_plaintext: Option<String>,
         pub metadata_blob: Option<String>,
         pub profile_url: Url,
-        #[serde(deserialize_with = "deserialize_modfile")]
+        #[serde(default, deserialize_with = "deserialize_empty_object")]
         pub modfile: Option<File>,
         pub media: Media,
         #[serde(rename = "metadata_kvp", deserialize_with = "deserialize_kvp")]
@@ -869,28 +878,74 @@ pub mod mods {
             self as u64
         }
     }
+}
 
-    /// Deserialize empty objects for the `modfile` property of the Mod object as `None`.
-    ///
-    /// The mod.io api returns `{"modfile": {}}` for mods without files instead of returning
-    /// `{"modfile": null}`.
-    fn deserialize_modfile<'de, D>(deserializer: D) -> Result<Option<File>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        match File::deserialize(deserializer) {
-            Ok(file) => Ok(Some(file)),
-            Err(err) => {
-                let err_s = err.to_string();
-                if err_s.starts_with("missing field `id`")
-                    || err_s.starts_with("invalid type: null")
-                {
-                    Ok(None)
-                } else {
-                    Err(err)
-                }
-            }
+#[cfg(test)]
+mod tests {
+    use serde::Deserialize;
+
+    #[test]
+    fn deserialize_empty_object() {
+        #[derive(Deserialize, Debug, PartialEq)]
+        struct Game {
+            id: u32,
+            #[serde(default, deserialize_with = "super::deserialize_empty_object")]
+            header: Option<Header>,
         }
+
+        #[derive(Deserialize, Debug, PartialEq)]
+        struct Header {
+            filename: String,
+        }
+
+        let s = r#"{"id":1,"header":{"filename":"foobar"}}"#;
+        let value = serde_json::from_str::<Game>(s).unwrap();
+        let expected = Game {
+            id: 1,
+            header: Some(Header {
+                filename: "foobar".to_string(),
+            }),
+        };
+        assert_eq!(value, expected);
+
+        let s = r#"{"id":1,"header":{}}"#;
+        let value = serde_json::from_str::<Game>(s).unwrap();
+        let expected = Game {
+            id: 1,
+            header: None,
+        };
+        assert_eq!(value, expected);
+
+        let s = r#"{"id":1,"header":null}"#;
+        let value = serde_json::from_str::<Game>(s).unwrap();
+        let expected = Game {
+            id: 1,
+            header: None,
+        };
+        assert_eq!(value, expected);
+
+        let s = r#"{"id":1}"#;
+        let value = serde_json::from_str::<Game>(s).unwrap();
+        let expected = Game {
+            id: 1,
+            header: None,
+        };
+        assert_eq!(value, expected);
+
+        let s = r#"{"id":1,"header":{"filename":"foobar","id":1}}"#;
+        let value = serde_json::from_str::<Game>(s).unwrap();
+        let expected = Game {
+            id: 1,
+            header: Some(Header {
+                filename: "foobar".to_string(),
+            }),
+        };
+        assert_eq!(value, expected);
+
+        let s = r#"{"id":1,"header":{"id":1}}"#;
+        let value = serde_json::from_str::<Game>(s).unwrap_err();
+        let expected = "data did not match any variant of untagged enum Helper at line 1 column 26";
+        assert_eq!(format!("{}", value), expected);
     }
 }
 
