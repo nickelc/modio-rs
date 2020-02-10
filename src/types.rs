@@ -359,7 +359,8 @@ pub mod game {
         pub ugc_name: String,
         pub icon: Icon,
         pub logo: Logo,
-        pub header: HeaderImage,
+        #[serde(default, deserialize_with = "deserialize_empty_object")]
+        pub header: Option<HeaderImage>,
         pub name: String,
         pub name_id: String,
         pub summary: String,
