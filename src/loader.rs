@@ -9,6 +9,7 @@ use crate::routing::Route;
 use crate::types::List;
 use crate::{Modio, QueryString, Result};
 
+/// Interface for retrieving search results.
 pub struct Query<T> {
     modio: Modio,
     route: Route,
@@ -28,17 +29,25 @@ impl<T> Query<T> {
 }
 
 impl<T: DeserializeOwned + Send> Query<T> {
+    /// Returns the first search result page.
     pub async fn first(self) -> Result<Vec<T>> {
         let list = self.bulk().try_next().await;
         list.map(Option::unwrap_or_default)
     }
 
+    /// Returns the complete search result list.
+    pub async fn collect(self) -> Result<Vec<T>> {
+        self.bulk().try_concat().await
+    }
+
+    /// Provides a stream over all search result items.
     pub fn iter(self) -> impl Stream<Item = Result<T>> {
         self.bulk()
             .map_ok(|list| stream::iter(list.into_iter().map(Ok)))
             .try_flatten()
     }
 
+    /// Provides a stream over all search result pages.
     pub fn bulk(self) -> impl Stream<Item = Result<Vec<T>>> {
         struct State {
             offset: u32,

@@ -158,6 +158,7 @@ use crate::users::Users;
 pub use crate::auth::Credentials;
 pub use crate::download::DownloadAction;
 pub use crate::error::{Error, Result};
+pub use crate::loader::Query;
 pub use crate::types::{Deletion, Editing};
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";

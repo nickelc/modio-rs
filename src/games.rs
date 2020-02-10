@@ -28,13 +28,19 @@ impl MyGames {
         Self { modio }
     }
 
+    /// Returns a `Query` interface to retrieve all games the authenticated user added or
+    /// is team member of. [required: token]
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn search(&self, filter: Filter) -> Query<Game> {
+        Query::new(self.modio.clone(), Route::UserGames, filter)
+    }
+
     /// List all games the authenticated user added or is team member of. [required: token]
     ///
     /// See [Filters and sorting](filters/index.html).
     pub async fn list(self, filter: Filter) -> Result<Vec<Game>> {
-        Query::new(self.modio, Route::UserGames, filter)
-            .first()
-            .await
+        self.search(filter).first().await
     }
 
     /// Provides a stream over all games the authenticated user added or is team member of.
@@ -42,7 +48,7 @@ impl MyGames {
     ///
     /// See [Filters and sorting](filters/index.html).
     pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<Game>> {
-        Query::new(self.modio, Route::UserGames, filter).iter()
+        self.search(filter).iter()
     }
 }
 
@@ -56,20 +62,25 @@ impl Games {
         Self { modio }
     }
 
+    /// Returns a `Query` interface to retrieve all games.
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn search(&self, filter: Filter) -> Query<Game> {
+        Query::new(self.modio.clone(), Route::GetGames, filter)
+    }
+
     /// List all games.
     ///
     /// See [Filters and sorting](filters/index.html).
     pub async fn list(self, filter: Filter) -> Result<Vec<Game>> {
-        Query::new(self.modio, Route::GetGames, filter)
-            .first()
-            .await
+        self.search(filter).first().await
     }
 
     /// Provides a stream over all games.
     ///
     /// See [Filters and sorting](filters/index.html).
     pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<Game>> {
-        Query::new(self.modio, Route::GetGames, filter).iter()
+        self.search(filter).iter()
     }
 
     /// Return a reference to a game.

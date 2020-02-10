@@ -22,20 +22,26 @@ impl MyFiles {
         Self { modio }
     }
 
+    /// Returns a `Query` interface to retrieve all modfiles the authenticated user uploaded.
+    /// [required: token]
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn search(&self, filter: Filter) -> Query<File> {
+        Query::new(self.modio.clone(), Route::UserFiles, filter)
+    }
+
     /// Return all modfiles the authenticated user uploaded. [required: token]
     ///
     /// See [Filters and sorting](filters/index.html).
     pub async fn list(self, filter: Filter) -> Result<Vec<File>> {
-        Query::new(self.modio, Route::UserFiles, filter)
-            .first()
-            .await
+        self.search(filter).first().await
     }
 
     /// Provides a stream over all modfiles the authenticated user uploaded. [required: token]
     ///
     /// See [Filters and sorting](filters/index.html).
     pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<File>> {
-        Query::new(self.modio, Route::UserFiles, filter).iter()
+        self.search(filter).iter()
     }
 }
 
@@ -55,26 +61,30 @@ impl Files {
         }
     }
 
-    /// Return all files that are published for a mod this `Files` refers to.
+    /// Returns a `Query` interface to retrieve all files that are published
+    /// for a mod this `Files` refers to.
     ///
     /// See [Filters and sorting](filters/index.html).
-    pub async fn list(self, filter: Filter) -> Result<Vec<File>> {
+    pub fn search(&self, filter: Filter) -> Query<File> {
         let route = Route::GetFiles {
             game_id: self.game,
             mod_id: self.mod_id,
         };
-        Query::new(self.modio, route, filter).first().await
+        Query::new(self.modio.clone(), route, filter)
+    }
+
+    /// Return all files that are published for a mod this `Files` refers to.
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub async fn list(self, filter: Filter) -> Result<Vec<File>> {
+        self.search(filter).first().await
     }
 
     /// Provides a stream over all files that are published for a mod this `Files` refers to.
     ///
     /// See [Filters and sorting](filters/index.html).
     pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<File>> {
-        let route = Route::GetFiles {
-            game_id: self.game,
-            mod_id: self.mod_id,
-        };
-        Query::new(self.modio, route, filter).iter()
+        self.search(filter).iter()
     }
 
     /// Return a reference to a file.

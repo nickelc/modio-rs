@@ -30,21 +30,27 @@ impl MyMods {
         Self { modio }
     }
 
+    /// Returns a `Query` interface to retrieve all mods the authenticated user added or
+    /// is team member of. [required: token]
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn search(&self, filter: Filter) -> Query<Mod> {
+        Query::new(self.modio.clone(), Route::UserMods, filter)
+    }
+
     /// List all mods the authenticated user added or is team member of. [required: token]
     ///
     /// See [Filters and sorting](filters/index.html).
     pub async fn list(self, filter: Filter) -> Result<Vec<Mod>> {
-        Query::new(self.modio, Route::UserMods, filter)
-            .first()
-            .await
+        self.search(filter).first().await
     }
 
-    /// Provides a stream over mods the authenticated user added or is team member of. [required:
-    /// token]
+    /// Provides a stream over mods the authenticated user added or is team member of.
+    /// [required: token]
     ///
     /// See [Filters and sorting](filters/index.html).
     pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<Mod>> {
-        Query::new(self.modio, Route::UserMods, filter).iter()
+        self.search(filter).iter()
     }
 }
 
@@ -64,20 +70,26 @@ impl Mods {
         ModRef::new(self.modio.clone(), self.game, id)
     }
 
+    /// Returns a `Query` interface to retrieve all mods.
+    ///
+    /// See [Filters and sorting](filters/index.html).
+    pub fn search(&self, filter: Filter) -> Query<Mod> {
+        let route = Route::GetMods { game_id: self.game };
+        Query::new(self.modio.clone(), route, filter)
+    }
+
     /// List all mods.
     ///
     /// See [Filters and sorting](filters/index.html).
     pub async fn list(self, filter: Filter) -> Result<Vec<Mod>> {
-        let route = Route::GetMods { game_id: self.game };
-        Query::new(self.modio, route, filter).first().await
+        self.search(filter).first().await
     }
 
     /// Provides a stream over all mods of the game.
     ///
     /// See [Filters and sorting](filters/index.html).
     pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<Mod>> {
-        let route = Route::GetMods { game_id: self.game };
-        Query::new(self.modio, route, filter).iter()
+        self.search(filter).iter()
     }
 
     /// Add a mod and return the newly created Modio mod object. [required: token]
