@@ -153,7 +153,6 @@ use crate::mods::{ModRef, Mods};
 use crate::reports::Reports;
 use crate::request::RequestBuilder;
 use crate::types::ModioMessage;
-use crate::users::Users;
 
 pub use crate::auth::Credentials;
 pub use crate::download::DownloadAction;
@@ -473,11 +472,6 @@ impl Modio {
     /// associated with the current authentication credentials.
     pub fn me(&self) -> Me {
         Me::new(self.clone())
-    }
-
-    /// Return a reference to an interface that provides access to user information.
-    pub fn users(&self) -> Users {
-        Users::new(self.clone())
     }
 
     /// Return a reference to an interface to report games, mods and users.

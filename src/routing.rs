@@ -179,7 +179,6 @@ pub enum Route {
     UserMods,
     UserFiles,
     UserRatings,
-    GetResourceOwner,
     SubmitReport,
 }
 
@@ -325,7 +324,6 @@ impl Route {
             UserMods => route!(GET, Route::user_mods(), Token),
             UserFiles => route!(GET, Route::user_files(), Token),
             UserRatings => route!(GET, Route::user_ratings(), Token),
-            GetResourceOwner => route!(POST, Route::resource_owner(), Token),
             SubmitReport => route!(POST, Route::report(), Token),
         }
     }
@@ -440,10 +438,6 @@ impl Route {
 
     pub fn mod_comment(game_id: u32, mod_id: u32, comment_id: u32) -> String {
         format!("/games/{}/mods/{}/comment/{}", game_id, mod_id, comment_id)
-    }
-
-    pub fn resource_owner() -> &'static str {
-        "/general/ownership"
     }
 
     pub fn report() -> &'static str {
