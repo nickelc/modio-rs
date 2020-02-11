@@ -1,12 +1,12 @@
-//! Me interface
+//! User interface
 use crate::files::MyFiles;
 use crate::games::MyGames;
 use crate::mods::MyMods;
 use crate::prelude::*;
 use crate::types::mods::Mod;
-use crate::types::User;
 
 pub use crate::types::mods::Rating;
+pub use crate::types::{Avatar, User};
 pub use crate::types::{Event, EventType};
 
 /// Interface for resources owned by the authenticated user or is team member of.
@@ -19,9 +19,14 @@ impl Me {
         Self { modio }
     }
 
-    /// Return the authenticated user. [required: token]
-    pub async fn authenticated_user(self) -> Result<User> {
-        self.modio.request(Route::AuthorizedUser).send().await
+    /// Returns the current user if authenticated.
+    pub async fn current(self) -> Result<Option<User>> {
+        if self.modio.credentials.token.is_some() {
+            let user = self.modio.request(Route::AuthorizedUser).send().await?;
+            Ok(Some(user))
+        } else {
+            Ok(None)
+        }
     }
 
     /// Return a reference to an interface that provides access to games the authenticated user
@@ -91,8 +96,8 @@ pub mod filters {
     /// # Example
     /// ```
     /// use modio::filter::prelude::*;
-    /// use modio::me::filters::events::EventType as Filter;
     /// use modio::mods::EventType;
+    /// use modio::user::filters::events::EventType as Filter;
     ///
     /// let filter = Id::gt(1024).and(Filter::eq(EventType::ModfileChanged));
     /// ```
@@ -151,7 +156,7 @@ pub mod filters {
     /// # Example
     /// ```
     /// use modio::filter::prelude::*;
-    /// use modio::me::filters::subscriptions::Id;
+    /// use modio::user::filters::subscriptions::Id;
     ///
     /// let filter = Id::_in(vec![1, 2]).order_by(Id::desc());
     /// ```
@@ -228,9 +233,9 @@ pub mod filters {
     /// # Example
     /// ```
     /// use modio::filter::prelude::*;
-    /// use modio::me::filters::ratings::GameId;
-    /// use modio::me::filters::ratings::DateAdded;
-    /// use modio::me::filters::ratings::Rating;
+    /// use modio::user::filters::ratings::GameId;
+    /// use modio::user::filters::ratings::DateAdded;
+    /// use modio::user::filters::ratings::Rating;
     ///
     /// let filter = GameId::_in(vec![1, 2]).order_by(DateAdded::desc());
     ///

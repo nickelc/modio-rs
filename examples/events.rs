@@ -46,7 +46,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let filter = DateAdded::gt(tstamp);
         println!("event filter: {}", filter);
 
-        let list: Vec<_> = modio.me().events(filter).try_collect().await?;
+        let list: Vec<_> = modio.user().events(filter).try_collect().await?;
 
         println!("event count: {}", list.len());
         println!("{:#?}", list);

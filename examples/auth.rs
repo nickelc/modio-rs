@@ -33,7 +33,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Consume the endpoint and create an endpoint with new credentials.
     let modio = modio.with_credentials(new_creds);
-    let user = modio.me().authenticated_user().await?;
+    let user = modio.user().current().await?;
     println!("Authenticated user:\n{:#?}", user);
 
     Ok(())

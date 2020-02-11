@@ -130,12 +130,11 @@ pub mod comments;
 pub mod download;
 pub mod files;
 pub mod games;
-pub mod me;
 pub mod metadata;
 pub mod mods;
 pub mod reports;
 pub mod teams;
-pub mod users;
+pub mod user;
 
 mod error;
 mod loader;
@@ -148,11 +147,11 @@ use crate::auth::Auth;
 use crate::comments::Comments;
 use crate::download::Downloader;
 use crate::games::{GameRef, Games};
-use crate::me::Me;
 use crate::mods::{ModRef, Mods};
 use crate::reports::Reports;
 use crate::request::RequestBuilder;
 use crate::types::ModioMessage;
+use crate::user::Me;
 
 pub use crate::auth::Credentials;
 pub use crate::download::DownloadAction;
@@ -470,7 +469,7 @@ impl Modio {
 
     /// Return a reference to an interface that provides access to resources owned by the user
     /// associated with the current authentication credentials.
-    pub fn me(&self) -> Me {
+    pub fn user(&self) -> Me {
         Me::new(self.clone())
     }
 
