@@ -192,8 +192,6 @@ pub struct User {
     pub date_online: u32,
     #[serde(default, deserialize_with = "deserialize_empty_object")]
     pub avatar: Option<Avatar>,
-    pub timezone: String,
-    pub language: String,
     pub profile_url: Url,
 }
 
