@@ -20,40 +20,6 @@ pub use crate::types::mods::{
 pub use crate::types::Logo;
 pub use crate::types::Status;
 
-/// Interface for mods the authenticated user added or is team member of.
-pub struct MyMods {
-    modio: Modio,
-}
-
-impl MyMods {
-    pub(crate) fn new(modio: Modio) -> Self {
-        Self { modio }
-    }
-
-    /// Returns a `Query` interface to retrieve all mods the authenticated user added or
-    /// is team member of. [required: token]
-    ///
-    /// See [Filters and sorting](filters/index.html).
-    pub fn search(&self, filter: Filter) -> Query<Mod> {
-        Query::new(self.modio.clone(), Route::UserMods, filter)
-    }
-
-    /// List all mods the authenticated user added or is team member of. [required: token]
-    ///
-    /// See [Filters and sorting](filters/index.html).
-    pub async fn list(self, filter: Filter) -> Result<Vec<Mod>> {
-        self.search(filter).first().await
-    }
-
-    /// Provides a stream over mods the authenticated user added or is team member of.
-    /// [required: token]
-    ///
-    /// See [Filters and sorting](filters/index.html).
-    pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<Mod>> {
-        self.search(filter).iter()
-    }
-}
-
 /// Interface for mods of a game.
 pub struct Mods {
     modio: Modio,

@@ -1,9 +1,7 @@
 //! User interface
-use crate::files::MyFiles;
-use crate::games::MyGames;
-use crate::mods::MyMods;
 use crate::prelude::*;
-use crate::types::mods::Mod;
+use crate::types::game::Game;
+use crate::types::mods::{File, Mod};
 
 pub use crate::types::mods::Rating;
 pub use crate::types::{Avatar, User};
@@ -29,22 +27,28 @@ impl Me {
         }
     }
 
-    /// Return a reference to an interface that provides access to games the authenticated user
-    /// added or is a team member of.
-    pub fn games(&self) -> MyGames {
-        MyGames::new(self.modio.clone())
+    /// Returns a `Query` interface to retrieve all games the authenticated user added or
+    /// is team member of. [required: token]
+    ///
+    /// See [Filters and sorting](filters/games/index.html).
+    pub fn games(&self, filter: Filter) -> Query<Game> {
+        Query::new(self.modio.clone(), Route::UserGames, filter)
     }
 
-    /// Return a reference to an interface that provides access to mods the authenticated user
-    /// added or is a team member of.
-    pub fn mods(&self) -> MyMods {
-        MyMods::new(self.modio.clone())
+    /// Returns a `Query` interface to retrieve all mods the authenticated user added or
+    /// is team member of. [required: token]
+    ///
+    /// See [Filters and sorting](filters/mods/index.html).
+    pub fn mods(&self, filter: Filter) -> Query<Mod> {
+        Query::new(self.modio.clone(), Route::UserMods, filter)
     }
 
-    /// Return a reference to an interface that provides access to modfiles the authenticated user
-    /// uploaded.
-    pub fn files(&self) -> MyFiles {
-        MyFiles::new(self.modio.clone())
+    /// Returns a `Query` interface to retrieve all modfiles the authenticated user uploaded.
+    /// [required: token]
+    ///
+    /// See [Filters and sorting](filters/files/index.html).
+    pub fn files(&self, filter: Filter) -> Query<File> {
+        Query::new(self.modio.clone(), Route::UserFiles, filter)
     }
 
     /// Provides a stream the events that have been fired specific to the authenticated user.
@@ -74,6 +78,13 @@ impl Me {
 /// Filters for events, subscriptions and ratings.
 #[rustfmt::skip]
 pub mod filters {
+    #[doc(inline)]
+    pub use crate::games::filters as games;
+    #[doc(inline)]
+    pub use crate::mods::filters as mods;
+    #[doc(inline)]
+    pub use crate::files::filters as files;
+
     /// User event filters and sorting.
     ///
     /// # Filters

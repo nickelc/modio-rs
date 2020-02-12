@@ -12,39 +12,6 @@ use crate::prelude::*;
 
 pub use crate::types::mods::{Download, File, FileHash};
 
-/// Interface for the modfiles the authenticated user uploaded.
-pub struct MyFiles {
-    modio: Modio,
-}
-
-impl MyFiles {
-    pub(crate) fn new(modio: Modio) -> Self {
-        Self { modio }
-    }
-
-    /// Returns a `Query` interface to retrieve all modfiles the authenticated user uploaded.
-    /// [required: token]
-    ///
-    /// See [Filters and sorting](filters/index.html).
-    pub fn search(&self, filter: Filter) -> Query<File> {
-        Query::new(self.modio.clone(), Route::UserFiles, filter)
-    }
-
-    /// Return all modfiles the authenticated user uploaded. [required: token]
-    ///
-    /// See [Filters and sorting](filters/index.html).
-    pub async fn list(self, filter: Filter) -> Result<Vec<File>> {
-        self.search(filter).first().await
-    }
-
-    /// Provides a stream over all modfiles the authenticated user uploaded. [required: token]
-    ///
-    /// See [Filters and sorting](filters/index.html).
-    pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<File>> {
-        self.search(filter).iter()
-    }
-}
-
 /// Interface for the modfiles of a mod.
 pub struct Files {
     modio: Modio,

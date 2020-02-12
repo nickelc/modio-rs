@@ -18,40 +18,6 @@ pub use crate::types::game::{
 pub use crate::types::Logo;
 pub use crate::types::Status;
 
-/// Interface for games the authenticated user added or is team member of.
-pub struct MyGames {
-    modio: Modio,
-}
-
-impl MyGames {
-    pub(crate) fn new(modio: Modio) -> Self {
-        Self { modio }
-    }
-
-    /// Returns a `Query` interface to retrieve all games the authenticated user added or
-    /// is team member of. [required: token]
-    ///
-    /// See [Filters and sorting](filters/index.html).
-    pub fn search(&self, filter: Filter) -> Query<Game> {
-        Query::new(self.modio.clone(), Route::UserGames, filter)
-    }
-
-    /// List all games the authenticated user added or is team member of. [required: token]
-    ///
-    /// See [Filters and sorting](filters/index.html).
-    pub async fn list(self, filter: Filter) -> Result<Vec<Game>> {
-        self.search(filter).first().await
-    }
-
-    /// Provides a stream over all games the authenticated user added or is team member of.
-    /// [required: token]
-    ///
-    /// See [Filters and sorting](filters/index.html).
-    pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<Game>> {
-        self.search(filter).iter()
-    }
-}
-
 /// Interface for games.
 pub struct Games {
     modio: Modio,

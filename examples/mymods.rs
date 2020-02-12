@@ -30,7 +30,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .order_by(Id::desc());
 
     // Create the call for `/me/mods` and wait for the result.
-    for mod_ in modio.user().mods().list(filter).await? {
+    for mod_ in modio.user().mods(filter).collect().await? {
         println!("{:#?}", mod_);
     }
     Ok(())
