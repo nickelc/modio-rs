@@ -25,6 +25,7 @@ impl Reports {
 
 pub struct Report {
     pub name: String,
+    pub contact: Option<String>,
     pub summary: String,
     pub kind: ReportType,
     pub resource: Resource,
@@ -42,9 +43,16 @@ pub enum Resource {
 }
 
 impl Report {
-    pub fn new<S: Into<String>>(name: S, summary: S, kind: ReportType, resource: Resource) -> Self {
+    pub fn new<S: Into<String>>(
+        name: S,
+        contact: Option<S>,
+        summary: S,
+        kind: ReportType,
+        resource: Resource,
+    ) -> Self {
         Self {
             name: name.into(),
+            contact: contact.map(Into::into),
             summary: summary.into(),
             kind,
             resource,
@@ -64,6 +72,7 @@ impl QueryString for Report {
             ReportType::DMCA => 1,
         };
         form_urlencoded::Serializer::new(String::new())
+            .extend_pairs(self.contact.as_ref().map(|c| ("contact", c)))
             .append_pair("resource", resource)
             .append_pair("id", &id.to_string())
             .append_pair("type", &_type.to_string())
