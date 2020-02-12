@@ -220,7 +220,6 @@ enum_number! {
     pub enum Status {
         NotAccepted = 0,
         Accepted = 1,
-        Archived = 2,
         Deleted = 3,
     }
 }
