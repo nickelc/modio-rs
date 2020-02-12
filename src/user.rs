@@ -51,27 +51,28 @@ impl Me {
         Query::new(self.modio.clone(), Route::UserFiles, filter)
     }
 
-    /// Provides a stream the events that have been fired specific to the authenticated user.
-    /// [required: token]
+    /// Returns a `Query` interface to retrieve the events that have been fired specific to the
+    /// authenticated user. [required: token]
     ///
     /// See [Filters and sorting](filters/events/index.html).
-    pub fn events(self, filter: Filter) -> impl Stream<Item = Result<Event>> {
-        Query::new(self.modio, Route::UserEvents, filter).iter()
+    pub fn events(self, filter: Filter) -> Query<Event> {
+        Query::new(self.modio, Route::UserEvents, filter)
     }
 
-    /// Provides a stream over all mod's the authenticated user is subscribed to. [required: token]
+    /// Returns a `Query` interface to retrieve the mods the authenticated user is subscribed to.
+    /// [required: token]
     ///
     /// See [Filters and sorting](filters/subscriptions/index.html).
-    pub fn subscriptions(self, filter: Filter) -> impl Stream<Item = Result<Mod>> {
-        Query::new(self.modio, Route::UserSubscriptions, filter).iter()
+    pub fn subscriptions(self, filter: Filter) -> Query<Mod> {
+        Query::new(self.modio, Route::UserSubscriptions, filter)
     }
 
-    /// Provides a stream over all mod rating's submitted by the authenticated user. [required:
-    /// token]
+    /// Returns a `Query` interface to retrieve the mod ratings submitted by the authenticated user.
+    /// [required: token]
     ///
     /// See [Filters and sorting](filters/ratings/index.html).
-    pub fn ratings(self, filter: Filter) -> impl Stream<Item = Result<Rating>> {
-        Query::new(self.modio, Route::UserRatings, filter).iter()
+    pub fn ratings(self, filter: Filter) -> Query<Rating> {
+        Query::new(self.modio, Route::UserRatings, filter)
     }
 }
 

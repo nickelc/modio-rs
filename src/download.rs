@@ -147,7 +147,8 @@ async fn request_file(modio: Modio, action: DownloadAction) -> Result<Response> 
 
             let files = modio.mod_(game_id, mod_id).files();
             let mut list = files
-                .list(filter)
+                .search(filter)
+                .first()
                 .map_err(|e| match e.kind() {
                     Kind::Status(StatusCode::NOT_FOUND) => {
                         error::download_mod_not_found(game_id, mod_id)

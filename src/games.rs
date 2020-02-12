@@ -28,25 +28,11 @@ impl Games {
         Self { modio }
     }
 
-    /// Returns a `Query` interface to retrieve all games.
+    /// Returns a `Query` interface to retrieve games.
     ///
     /// See [Filters and sorting](filters/index.html).
     pub fn search(&self, filter: Filter) -> Query<Game> {
         Query::new(self.modio.clone(), Route::GetGames, filter)
-    }
-
-    /// List all games.
-    ///
-    /// See [Filters and sorting](filters/index.html).
-    pub async fn list(self, filter: Filter) -> Result<Vec<Game>> {
-        self.search(filter).first().await
-    }
-
-    /// Provides a stream over all games.
-    ///
-    /// See [Filters and sorting](filters/index.html).
-    pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<Game>> {
-        self.search(filter).iter()
     }
 
     /// Return a reference to a game.
@@ -126,7 +112,7 @@ impl Tags {
             game_id: self.game_id,
         };
         Query::new(self.modio, route, Default::default())
-            .first()
+            .collect()
             .await
     }
 

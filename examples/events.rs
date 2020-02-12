@@ -2,7 +2,6 @@ use std::env;
 use std::process;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use futures_util::TryStreamExt;
 use tokio::time::{self, Instant};
 
 use modio::filter::prelude::*;
@@ -46,7 +45,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let filter = DateAdded::gt(tstamp);
         println!("event filter: {}", filter);
 
-        let list: Vec<_> = modio.user().events(filter).try_collect().await?;
+        let list: Vec<_> = modio.user().events(filter).collect().await?;
 
         println!("event count: {}", list.len());
         println!("{:#?}", list);

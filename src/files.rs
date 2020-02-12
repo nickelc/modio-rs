@@ -40,20 +40,6 @@ impl Files {
         Query::new(self.modio.clone(), route, filter)
     }
 
-    /// Return all files that are published for a mod this `Files` refers to.
-    ///
-    /// See [Filters and sorting](filters/index.html).
-    pub async fn list(self, filter: Filter) -> Result<Vec<File>> {
-        self.search(filter).first().await
-    }
-
-    /// Provides a stream over all files that are published for a mod this `Files` refers to.
-    ///
-    /// See [Filters and sorting](filters/index.html).
-    pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<File>> {
-        self.search(filter).iter()
-    }
-
     /// Return a reference to a file.
     pub fn get(&self, id: u32) -> FileRef {
         FileRef::new(self.modio.clone(), self.game, self.mod_id, id)

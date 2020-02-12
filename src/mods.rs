@@ -31,12 +31,7 @@ impl Mods {
         Self { modio, game }
     }
 
-    /// Return a reference to a mod.
-    pub fn get(&self, id: u32) -> ModRef {
-        ModRef::new(self.modio.clone(), self.game, id)
-    }
-
-    /// Returns a `Query` interface to retrieve all mods.
+    /// Returns a `Query` interface to retrieve mods.
     ///
     /// See [Filters and sorting](filters/index.html).
     pub fn search(&self, filter: Filter) -> Query<Mod> {
@@ -44,18 +39,9 @@ impl Mods {
         Query::new(self.modio.clone(), route, filter)
     }
 
-    /// List all mods.
-    ///
-    /// See [Filters and sorting](filters/index.html).
-    pub async fn list(self, filter: Filter) -> Result<Vec<Mod>> {
-        self.search(filter).first().await
-    }
-
-    /// Provides a stream over all mods of the game.
-    ///
-    /// See [Filters and sorting](filters/index.html).
-    pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<Mod>> {
-        self.search(filter).iter()
+    /// Return a reference to a mod.
+    pub fn get(&self, id: u32) -> ModRef {
+        ModRef::new(self.modio.clone(), self.game, id)
     }
 
     /// Add a mod and return the newly created Modio mod object. [required: token]
@@ -69,20 +55,21 @@ impl Mods {
             .await
     }
 
-    /// Provides a stream over the statistics for all mods of a game.
+    /// Returns a `Query` interface to retrieve the statistics for all mods of a game.
     ///
     /// See [Filters and sorting](filters/stats/index.html).
-    pub fn statistics(self, filter: Filter) -> impl Stream<Item = Result<Statistics>> {
+    pub fn statistics(self, filter: Filter) -> Query<Statistics> {
         let route = Route::GetAllModStats { game_id: self.game };
-        Query::new(self.modio, route, filter).iter()
+        Query::new(self.modio, route, filter)
     }
 
-    /// Provides a stream over the event log for all mods of a game sorted by latest event first.
+    /// Returns a `Query` interface to retrieve the event log of all mods of the game sorted by
+    /// latest event first.
     ///
     /// See [Filters and sorting](filters/events/index.html).
-    pub fn events(self, filter: Filter) -> impl Stream<Item = Result<Event>> {
+    pub fn events(self, filter: Filter) -> Query<Event> {
         let route = Route::GetAllModEvents { game_id: self.game };
-        Query::new(self.modio, route, filter).iter()
+        Query::new(self.modio, route, filter)
     }
 }
 
@@ -146,15 +133,15 @@ impl ModRef {
         self.modio.request(route).send().await
     }
 
-    /// Provides a stream over the event log for a mod sorted by latest event first.
+    /// Returns a `Query` interface to retrieve the event log for a mod sorted by latest event first.
     ///
     /// See [Filters and sorting](filters/events/index.html).
-    pub fn events(self, filter: Filter) -> impl Stream<Item = Result<Event>> {
+    pub fn events(self, filter: Filter) -> Query<Event> {
         let route = Route::GetModEvents {
             game_id: self.game,
             mod_id: self.id,
         };
-        Query::new(self.modio, route, filter).iter()
+        Query::new(self.modio, route, filter)
     }
 
     /// Return a reference to an interface to manage team members of a mod.
@@ -287,7 +274,7 @@ impl Dependencies {
             mod_id: self.mod_id,
         };
         Query::new(self.modio, route, Default::default())
-            .first()
+            .collect()
             .await
     }
 
@@ -352,7 +339,7 @@ impl Tags {
             mod_id: self.mod_id,
         };
         Query::new(self.modio, route, Default::default())
-            .first()
+            .collect()
             .await
     }
 

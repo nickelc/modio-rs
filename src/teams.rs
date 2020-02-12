@@ -32,20 +32,6 @@ impl Members {
         Query::new(self.modio.clone(), route, filter)
     }
 
-    /// List all team members.
-    ///
-    /// See [Filters and sorting](filters/index.html).
-    pub async fn list(self, filter: Filter) -> Result<Vec<TeamMember>> {
-        self.search(filter).first().await
-    }
-
-    /// Provides a stream over all team members.
-    ///
-    /// See [Filters and sorting](filters/index.html).
-    pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<TeamMember>> {
-        self.search(filter).iter()
-    }
-
     /// Add a team member by email. [required: token]
     #[allow(clippy::should_implement_trait)]
     pub async fn add(self, options: InviteTeamMemberOptions) -> Result<()> {

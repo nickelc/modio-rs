@@ -59,7 +59,7 @@
 //!
 //! // Get mod with its dependencies and all files
 //! let deps = modref.dependencies().list();
-//! let files = modref.files().list(Default::default());
+//! let files = modref.files().search(Default::default()).collect();
 //! let mod_ = modref.get();
 //!
 //! let (m, deps, files) = try_join3(mod_, deps, files).await?;

@@ -29,20 +29,6 @@ impl Comments {
         Query::new(self.modio.clone(), route, filter)
     }
 
-    /// List all comments.
-    ///
-    /// See [Filters and sorting](filters/index.html).
-    pub async fn list(self, filter: Filter) -> Result<Vec<Comment>> {
-        self.search(filter).first().await
-    }
-
-    /// Provides a stream over all comments of the mod.
-    ///
-    /// See [Filters and sorting](filters/index.html).
-    pub fn iter(self, filter: Filter) -> impl Stream<Item = Result<Comment>> {
-        self.search(filter).iter()
-    }
-
     /// Return comment by id.
     pub async fn get(self, id: u32) -> Result<Comment> {
         let route = Route::GetModComment {
