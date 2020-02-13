@@ -11,12 +11,9 @@
 //! - Manually create an [OAuth 2 Access Token (Read + Write)](https://mod.io/oauth)
 //! - [Email Authentication Flow](auth/struct.Auth.html#example) to create an OAuth 2 Access Token
 //! (Read + Write)
-//! - [Encrypted gog user auth ticket](auth/struct.Auth.html#method.gog_auth) to create an
-//! OAuth 2 Access Token (Read + Write)
-//! - [Encrypted steam user auth ticket](auth/struct.Auth.html#method.steam_auth) to create an
-//! OAuth 2 Access Token (Read + Write)
-//! - [Oculus user data](auth/struct.Auth.html#method.oculus_auth) to create an
-//! OAuth 2 Access Token (Read + Write)
+//! - [External Authentication](auth/struct.Auth.html#method.external) to create an
+//! OAuth 2 Access Token (Read + Write) automatically on platforms such as Steam, GOG, itch.io and
+//! Oculus.
 //!
 //! # Rate Limiting
 //!
