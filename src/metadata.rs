@@ -4,7 +4,7 @@ use serde::Deserialize;
 use url::form_urlencoded;
 
 use crate::prelude::*;
-use crate::types::mods::MetadataMap;
+pub use crate::types::mods::MetadataMap;
 
 pub struct Metadata {
     modio: Modio,
