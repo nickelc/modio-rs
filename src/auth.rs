@@ -98,13 +98,6 @@ impl fmt::Display for Error {
     }
 }
 
-/// Various forms of supported external platforms.
-pub enum Service {
-    Steam(u64),
-    Gog(u64),
-    Itchio(u64),
-}
-
 /// Authentication Flow interface to retrieve access tokens. See the [mod.io Authentication
 /// docs](https://docs.mod.io/#email-authentication-flow) for more information.
 ///
@@ -256,21 +249,10 @@ impl Auth {
     /// Link an external account. Requires an auth token from the external platform.
     ///
     /// See the [mod.io docs](https://docs.mod.io/#link-external-account) for more information.
-    pub async fn link(self, email: &str, service: Service) -> Result<()> {
-        let (service, id) = match service {
-            Service::Steam(id) => ("steam", id.to_string()),
-            Service::Gog(id) => ("gog", id.to_string()),
-            Service::Itchio(id) => ("itch", id.to_string()),
-        };
-        let data = form_urlencoded::Serializer::new(String::new())
-            .append_pair("email", email)
-            .append_pair("service", service)
-            .append_pair("service_id", &id)
-            .finish();
-
+    pub async fn link(self, options: LinkOptions) -> Result<()> {
         self.modio
             .request(Route::LinkAccount)
-            .body(data)
+            .body(options.to_query_string())
             .send::<ModioMessage>()
             .await?;
 
@@ -444,6 +426,56 @@ impl QueryString for SteamOptions {
             .extend_pairs(&self.params)
             .finish()
     }
+}
+
+/// Options for connecting external accounts with the authenticated user's email address.
+pub struct LinkOptions {
+    email: String,
+    service: Service,
+}
+
+impl LinkOptions {
+    pub fn steam<S: Into<String>>(email: S, steam_id: u64) -> Self {
+        Self {
+            email: email.into(),
+            service: Service::Steam(steam_id),
+        }
+    }
+
+    pub fn gog<S: Into<String>>(email: S, gog_id: u64) -> Self {
+        Self {
+            email: email.into(),
+            service: Service::Gog(gog_id),
+        }
+    }
+
+    pub fn itchio<S: Into<String>>(email: S, itchio_id: u64) -> Self {
+        Self {
+            email: email.into(),
+            service: Service::Itchio(itchio_id),
+        }
+    }
+}
+
+impl QueryString for LinkOptions {
+    fn to_query_string(&self) -> String {
+        let (service, id) = match self.service {
+            Service::Steam(id) => ("steam", id.to_string()),
+            Service::Gog(id) => ("gog", id.to_string()),
+            Service::Itchio(id) => ("itch", id.to_string()),
+        };
+        form_urlencoded::Serializer::new(String::new())
+            .append_pair("email", &self.email)
+            .append_pair("service", service)
+            .append_pair("service_id", &id)
+            .finish()
+    }
+}
+
+enum Service {
+    Steam(u64),
+    Gog(u64),
+    Itchio(u64),
 }
 
 // vim: fdm=marker
