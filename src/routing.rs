@@ -341,7 +341,7 @@ impl Route {
     }
 
     pub fn auth_gog() -> &'static str {
-        "/external/steamgog"
+        "/external/galaxyauth"
     }
 
     pub fn auth_oculus() -> &'static str {
