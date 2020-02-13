@@ -8,6 +8,7 @@ pub enum Route {
     AuthEmailExchange,
     AuthSteam,
     AuthGog,
+    AuthItchio,
     AuthOculus,
     LinkAccount,
     GetGames,
@@ -203,6 +204,7 @@ impl Route {
             AuthEmailExchange => route!(POST, Route::auth_email_exchange(), ApiKey),
             AuthSteam => route!(POST, Route::auth_steam(), ApiKey),
             AuthGog => route!(POST, Route::auth_gog(), ApiKey),
+            AuthItchio => route!(POST, Route::auth_itchio(), ApiKey),
             AuthOculus => route!(POST, Route::auth_oculus(), ApiKey),
             LinkAccount => route!(POST, Route::link_account(), Token),
             GetGames => route!(GET, Route::games(), Any),
@@ -342,6 +344,10 @@ impl Route {
 
     pub fn auth_gog() -> &'static str {
         "/external/galaxyauth"
+    }
+
+    pub fn auth_itchio() -> &'static str {
+        "/external/itchioauth"
     }
 
     pub fn auth_oculus() -> &'static str {

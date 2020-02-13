@@ -102,6 +102,7 @@ impl fmt::Display for Error {
 pub enum Service {
     Steam(u64),
     Gog(u64),
+    Itchio(u64),
 }
 
 /// Authentication Flow interface to retrieve access tokens. See the [mod.io Authentication
@@ -192,12 +193,13 @@ impl Auth {
         })
     }
 
-    /// Authenticate via external services ([Steam], [GOG], [Oculus]).
+    /// Authenticate via external services ([Steam], [GOG], [itch.io], [Oculus]).
     ///
     /// See the [mod.io docs](https://docs.mod.io/#authentication-2) for more information.
     ///
     /// [Steam]: struct.SteamOptions.html
     /// [GOG]: struct.GalaxyOptions.html
+    /// [itch.io]: struct.ItchioOptions.html
     /// [Oculus]: struct.OculusOptions.html
     ///
     /// # Examples
@@ -214,6 +216,12 @@ impl Auth {
     /// use modio::auth::GalaxyOptions;
     /// let opts = GalaxyOptions::new("ticket").email("foobar@example.com");
     /// modio.auth().external(opts).await?;
+    ///
+    /// use modio::auth::ItchioOptions;
+    /// # let now = 1;
+    /// # let two_weeks = 2;
+    /// let opts = ItchioOptions::new("token").expired_at(now + two_weeks);
+    /// modio.auth().external(opts).await?;
     /// #   Ok(())
     /// # }
     /// ```
@@ -223,6 +231,7 @@ impl Auth {
     {
         let (route, data) = match auth_options.into() {
             AuthOptions::Gog(opts) => (Route::AuthGog, opts.to_query_string()),
+            AuthOptions::Itchio(opts) => (Route::AuthItchio, opts.to_query_string()),
             AuthOptions::Oculus(opts) => (Route::AuthOculus, opts.to_query_string()),
             AuthOptions::Steam(opts) => (Route::AuthSteam, opts.to_query_string()),
         };
@@ -251,6 +260,7 @@ impl Auth {
         let (service, id) = match service {
             Service::Steam(id) => ("steam", id.to_string()),
             Service::Gog(id) => ("gog", id.to_string()),
+            Service::Itchio(id) => ("itch", id.to_string()),
         };
         let data = form_urlencoded::Serializer::new(String::new())
             .append_pair("email", email)
@@ -271,6 +281,7 @@ impl Auth {
 /// Various options for external authentication.
 pub enum AuthOptions {
     Gog(GalaxyOptions),
+    Itchio(ItchioOptions),
     Oculus(OculusOptions),
     Steam(SteamOptions),
 }
@@ -279,6 +290,12 @@ pub enum AuthOptions {
 impl From<GalaxyOptions> for AuthOptions {
     fn from(options: GalaxyOptions) -> AuthOptions {
         AuthOptions::Gog(options)
+    }
+}
+
+impl From<ItchioOptions> for AuthOptions {
+    fn from(options: ItchioOptions) -> AuthOptions {
+        AuthOptions::Itchio(options)
     }
 }
 
@@ -321,6 +338,39 @@ impl GalaxyOptions {
 }
 
 impl QueryString for GalaxyOptions {
+    fn to_query_string(&self) -> String {
+        form_urlencoded::Serializer::new(String::new())
+            .extend_pairs(&self.params)
+            .finish()
+    }
+}
+
+/// Authentication options for an itch.io JWT token.
+///
+/// See the [mod.io docs](https://docs.mod.io/#authenticate-via-itch-io) for more information.
+pub struct ItchioOptions {
+    params: std::collections::BTreeMap<&'static str, String>,
+}
+
+impl ItchioOptions {
+    pub fn new<T>(token: T) -> Self
+    where
+        T: Into<String>,
+    {
+        let mut params = std::collections::BTreeMap::new();
+        params.insert("itchio_token", token.into());
+        Self { params }
+    }
+
+    option!(email >> "email");
+    option!(
+        /// Unix timestamp of date in which the returned token will expire. Value cannot be higher
+        /// than the default value which is a week.
+        expired_at: u64 >> "date_expires"
+    );
+}
+
+impl QueryString for ItchioOptions {
     fn to_query_string(&self) -> String {
         form_urlencoded::Serializer::new(String::new())
             .extend_pairs(&self.params)
