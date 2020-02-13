@@ -11,7 +11,7 @@ use crate::ModioMessage;
 use crate::QueryString;
 use crate::Result;
 
-/// Various forms of authentication credentials supported by [mod.io](https://mod.io).
+/// [mod.io](https://mod.io) credentials. API key with optional OAuth2 access token.
 #[derive(Clone, PartialEq)]
 pub struct Credentials {
     pub api_key: String,
@@ -104,34 +104,6 @@ pub enum Service {
     Gog(u64),
 }
 
-#[derive(Debug)]
-pub struct OculusOptions {
-    params: std::collections::BTreeMap<&'static str, String>,
-}
-
-impl OculusOptions {
-    pub fn new<T>(nonce: T, user_id: u64, auth_token: T) -> Self
-    where
-        T: Into<String>,
-    {
-        let mut params = std::collections::BTreeMap::new();
-        params.insert("nonce", nonce.into());
-        params.insert("user_id", user_id.to_string());
-        params.insert("auth_token", auth_token.into());
-        Self { params }
-    }
-
-    option!(email >> "email");
-}
-
-impl QueryString for OculusOptions {
-    fn to_query_string(&self) -> String {
-        form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(&self.params)
-            .finish()
-    }
-}
-
 /// Authentication Flow interface to retrieve access tokens. See the [mod.io Authentication
 /// docs](https://docs.mod.io/#email-authentication-flow) for more information.
 ///
@@ -220,6 +192,58 @@ impl Auth {
         })
     }
 
+    /// Authenticate via external services ([Steam], [GOG], [Oculus]).
+    ///
+    /// See the [mod.io docs](https://docs.mod.io/#authentication-2) for more information.
+    ///
+    /// [Steam]: struct.SteamOptions.html
+    /// [GOG]: struct.GalaxyOptions.html
+    /// [Oculus]: struct.OculusOptions.html
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// # use modio::{Credentials, Modio, Result};
+    /// # #[tokio::main]
+    /// # async fn run() -> Result<()> {
+    /// #   let modio = modio::Modio::new("apikey")?;
+    /// use modio::auth::SteamOptions;
+    /// let opts = SteamOptions::new("ticket");
+    /// modio.auth().external(opts).await?;
+    ///
+    /// use modio::auth::GalaxyOptions;
+    /// let opts = GalaxyOptions::new("ticket").email("foobar@example.com");
+    /// modio.auth().external(opts).await?;
+    /// #   Ok(())
+    /// # }
+    /// ```
+    pub async fn external<T>(self, auth_options: T) -> Result<Credentials>
+    where
+        T: Into<AuthOptions>,
+    {
+        let (route, data) = match auth_options.into() {
+            AuthOptions::Gog(opts) => (Route::AuthGog, opts.to_query_string()),
+            AuthOptions::Oculus(opts) => (Route::AuthOculus, opts.to_query_string()),
+            AuthOptions::Steam(opts) => (Route::AuthSteam, opts.to_query_string()),
+        };
+
+        let t = self
+            .modio
+            .request(route)
+            .body(data)
+            .send::<AccessToken>()
+            .await?;
+
+        let token = Token {
+            value: t.value,
+            expired_at: t.expired_at,
+        };
+        Ok(Credentials {
+            api_key: self.modio.credentials.api_key,
+            token: Some(token),
+        })
+    }
+
     /// Link an external account. Requires an auth token from the external platform.
     ///
     /// See the [mod.io docs](https://docs.mod.io/#link-external-account) for more information.
@@ -242,76 +266,134 @@ impl Auth {
 
         Ok(())
     }
+}
 
-    /// Get the access token for an encrypted gog app ticket. [required: apikey]
-    ///
-    /// See the [mod.io docs](https://docs.mod.io/#authenticate-via-gog-galaxy) for more
-    /// information.
-    pub async fn gog_auth(self, ticket: &str) -> Result<Credentials> {
-        let data = form_urlencoded::Serializer::new(String::new())
-            .append_pair("appdata", ticket)
-            .finish();
+/// Various options for external authentication.
+pub enum AuthOptions {
+    Gog(GalaxyOptions),
+    Oculus(OculusOptions),
+    Steam(SteamOptions),
+}
 
-        let t = self
-            .modio
-            .request(Route::AuthGog)
-            .body(data)
-            .send::<AccessToken>()
-            .await?;
-
-        let token = Token {
-            value: t.value,
-            expired_at: t.expired_at,
-        };
-        Ok(Credentials {
-            api_key: self.modio.credentials.api_key,
-            token: Some(token),
-        })
-    }
-
-    /// Get the access token for an encrypted steam app ticket. [required: apikey]
-    ///
-    /// See the [mod.io docs](https://docs.mod.io/#authenticate-via-steam) for more information.
-    pub async fn steam_auth(self, ticket: &str) -> Result<Credentials> {
-        let data = form_urlencoded::Serializer::new(String::new())
-            .append_pair("appdata", ticket)
-            .finish();
-
-        let t = self
-            .modio
-            .request(Route::AuthSteam)
-            .body(data)
-            .send::<AccessToken>()
-            .await?;
-
-        let token = Token {
-            value: t.value,
-            expired_at: t.expired_at,
-        };
-        Ok(Credentials {
-            api_key: self.modio.credentials.api_key,
-            token: Some(token),
-        })
-    }
-
-    /// Get the access token for an Oculus user. [required: apikey]
-    ///
-    /// See the [mod.io docs](https://docs.mod.io/#authenticate-via-oculus) for more information.
-    pub async fn oculus_auth(self, options: OculusOptions) -> Result<Credentials> {
-        let t = self
-            .modio
-            .request(Route::AuthOculus)
-            .body(options.to_query_string())
-            .send::<AccessToken>()
-            .await?;
-
-        let token = Token {
-            value: t.value,
-            expired_at: t.expired_at,
-        };
-        Ok(Credentials {
-            api_key: self.modio.credentials.api_key,
-            token: Some(token),
-        })
+// impl From<*Options> for AuthOptions {{{
+impl From<GalaxyOptions> for AuthOptions {
+    fn from(options: GalaxyOptions) -> AuthOptions {
+        AuthOptions::Gog(options)
     }
 }
+
+impl From<OculusOptions> for AuthOptions {
+    fn from(options: OculusOptions) -> AuthOptions {
+        AuthOptions::Oculus(options)
+    }
+}
+
+impl From<SteamOptions> for AuthOptions {
+    fn from(options: SteamOptions) -> AuthOptions {
+        AuthOptions::Steam(options)
+    }
+}
+// }}}
+
+/// Authentication options for an encrypted gog app ticket.
+///
+/// See the [mod.io docs](https://docs.mod.io/#authenticate-via-gog-galaxy) for more information.
+pub struct GalaxyOptions {
+    params: std::collections::BTreeMap<&'static str, String>,
+}
+
+impl GalaxyOptions {
+    pub fn new<T>(ticket: T) -> Self
+    where
+        T: Into<String>,
+    {
+        let mut params = std::collections::BTreeMap::new();
+        params.insert("appdata", ticket.into());
+        Self { params }
+    }
+
+    option!(email >> "email");
+    option!(
+        /// Unix timestamp of date in which the returned token will expire. Value cannot be higher
+        /// than the default value which is a common year.
+        expired_at: u64 >> "date_expires"
+    );
+}
+
+impl QueryString for GalaxyOptions {
+    fn to_query_string(&self) -> String {
+        form_urlencoded::Serializer::new(String::new())
+            .extend_pairs(&self.params)
+            .finish()
+    }
+}
+
+/// Authentication options for an Oculus user.
+///
+/// See the [mod.io docs](https://docs.mod.io/#authenticate-via-oculus) for more information.
+pub struct OculusOptions {
+    params: std::collections::BTreeMap<&'static str, String>,
+}
+
+impl OculusOptions {
+    pub fn new<T>(nonce: T, user_id: u64, auth_token: T) -> Self
+    where
+        T: Into<String>,
+    {
+        let mut params = std::collections::BTreeMap::new();
+        params.insert("nonce", nonce.into());
+        params.insert("user_id", user_id.to_string());
+        params.insert("auth_token", auth_token.into());
+        Self { params }
+    }
+
+    option!(email >> "email");
+    option!(
+        /// Unix timestamp of date in which the returned token will expire. Value cannot be higher
+        /// than the default value which is a common year.
+        expired_at: u64 >> "date_expires"
+    );
+}
+
+impl QueryString for OculusOptions {
+    fn to_query_string(&self) -> String {
+        form_urlencoded::Serializer::new(String::new())
+            .extend_pairs(&self.params)
+            .finish()
+    }
+}
+
+/// Authentication options for an encrypted steam app ticket.
+///
+/// See the [mod.io docs](https://docs.mod.io/#authenticate-via-steam) for more information.
+pub struct SteamOptions {
+    params: std::collections::BTreeMap<&'static str, String>,
+}
+
+impl SteamOptions {
+    pub fn new<T>(ticket: T) -> Self
+    where
+        T: Into<String>,
+    {
+        let mut params = std::collections::BTreeMap::new();
+        params.insert("appdata", ticket.into());
+        Self { params }
+    }
+
+    option!(email >> "email");
+    option!(
+        /// Unix timestamp of date in which the returned token will expire. Value cannot be higher
+        /// than the default value which is a common year.
+        expired_at: u64 >> "date_expires"
+    );
+}
+
+impl QueryString for SteamOptions {
+    fn to_query_string(&self) -> String {
+        form_urlencoded::Serializer::new(String::new())
+            .extend_pairs(&self.params)
+            .finish()
+    }
+}
+
+// vim: fdm=marker
