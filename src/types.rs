@@ -542,14 +542,6 @@ pub mod mods {
         ModDeleted,
         /// User has joined or left the mod team.
         ModTeamChanged,
-        /// User has joined a team.
-        UserTeamJoin,
-        /// User has left a team.
-        UserTeamLeave,
-        /// User has subscribed to a mod.
-        UserSubscribe,
-        /// User has unsubscribed to a mod.
-        UserUnsubscribe,
     }
 
     impl fmt::Display for EventType {
@@ -561,10 +553,6 @@ pub mod mods {
                 EventType::ModEdited => "MOD_EDITED",
                 EventType::ModDeleted => "MOD_DELETED",
                 EventType::ModTeamChanged => "MOD_TEAM_CHANGED",
-                EventType::UserTeamJoin => "USER_TEAM_JOIN",
-                EventType::UserTeamLeave => "USER_TEAM_LEAVE",
-                EventType::UserSubscribe => "USER_SUBSCRIBE",
-                EventType::UserUnsubscribe => "USER_UNSUBSCRIBE",
             }
             .fmt(fmt)
         }
