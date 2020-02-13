@@ -20,8 +20,9 @@
 //!
 //! # Rate Limiting
 //!
-//! For API requests using API key authentication are **unlimited** and for OAuth 2 authentication
-//! requests are limited to **120 requests per hour**.
+//! - API keys linked to a game have **unlimited requests**.
+//! - API keys linked to a user have **60 requests per minute**.
+//! - OAuth2 user tokens are limited to **120 requests per minute**.
 //!
 //! [`Error::is_ratelimited`](struct.Error.html#method.is_ratelimited) will return true
 //! if the rate limit associated with credentials has been exhausted.
