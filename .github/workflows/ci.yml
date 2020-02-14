@@ -8,8 +8,8 @@ jobs:
     runs-on: [ubuntu-latest]
 
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@v1
+      - name: Checkout
+        uses: actions/checkout@v2
 
       - name: Install rust (stable)
         uses: actions-rs/toolchain@v1
@@ -40,8 +40,8 @@ jobs:
         rust: [stable, beta, nightly]
 
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@v1
+      - name: Checkout
+        uses: actions/checkout@v2
 
       - name: Install rust (${{ matrix.rust }})
         uses: actions-rs/toolchain@v1
