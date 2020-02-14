@@ -62,17 +62,17 @@ jobs:
           command: check
           args: --examples --tests --no-default-features
 
-      # - name: Check `rustls-tls` feature
-      #   uses: actions-rs/cargo@v1
-      #   with:
-      #     command: check
-      #     args: --examples --tests --no-default-features --features rustls-tls
-      #
-      # - name: Check `default-tls` and `rustls-tls` feature
-      #   uses: actions-rs/cargo@v1
-      #   with:
-      #     command: check
-      #     args: --examples --tests --features rustls-tls
+      - name: Check `rustls-tls` feature
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --examples --tests --no-default-features --features rustls-tls
+
+      - name: Check `default-tls` and `rustls-tls` feature
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --examples --tests --features rustls-tls
 
       - name: Tests
         uses: actions-rs/cargo@v1
