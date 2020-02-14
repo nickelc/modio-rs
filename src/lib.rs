@@ -183,7 +183,7 @@ pub mod client {
     pub use reqwest::header;
     pub use reqwest::redirect::Policy;
     pub use reqwest::ClientBuilder;
-    #[cfg(feature = "tls")]
+    #[cfg(feature = "__tls")]
     pub use reqwest::{Certificate, Identity};
     pub use reqwest::{Proxy, Url};
 }
@@ -204,11 +204,11 @@ struct Config {
     credentials: Credentials,
     builder: Option<ClientBuilder>,
     proxies: Vec<Proxy>,
-    #[cfg(feature = "tls")]
+    #[cfg(feature = "__tls")]
     tls: TlsBackend,
 }
 
-#[cfg(feature = "tls")]
+#[cfg(feature = "__tls")]
 enum TlsBackend {
     #[cfg(feature = "default-tls")]
     Default,
@@ -216,7 +216,7 @@ enum TlsBackend {
     Rustls,
 }
 
-#[cfg(feature = "tls")]
+#[cfg(feature = "__tls")]
 impl Default for TlsBackend {
     fn default() -> TlsBackend {
         #[cfg(feature = "default-tls")]
@@ -242,7 +242,7 @@ impl Builder {
                 credentials: credentials.into(),
                 builder: None,
                 proxies: Vec::new(),
-                #[cfg(feature = "tls")]
+                #[cfg(feature = "__tls")]
                 tls: TlsBackend::default(),
             },
         }
@@ -257,7 +257,7 @@ impl Builder {
         let client = {
             let mut builder = {
                 let builder = config.builder.unwrap_or_else(Client::builder);
-                #[cfg(feature = "tls")]
+                #[cfg(feature = "__tls")]
                 match config.tls {
                     #[cfg(feature = "default-tls")]
                     TlsBackend::Default => builder.use_native_tls(),
@@ -265,7 +265,7 @@ impl Builder {
                     TlsBackend::Rustls => builder.use_rustls_tls(),
                 }
 
-                #[cfg(not(feature = "tls"))]
+                #[cfg(not(feature = "__tls"))]
                 builder
             };
 

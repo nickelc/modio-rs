@@ -40,9 +40,11 @@ tokio = { version = "0.2", features = ["full"] }
 
 [features]
 default = ["default-tls"]
-tls = []
-default-tls = ["reqwest/native-tls", "tls"]
-rustls-tls = ["reqwest/rustls-tls", "tls"]
+default-tls = ["reqwest/native-tls", "__tls"]
+rustls-tls = ["reqwest/rustls-tls", "__tls"]
+
+# Internal features
+__tls = []
 
 [package.metadata.docs.rs]
 all-features = true
