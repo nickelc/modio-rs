@@ -18,9 +18,9 @@ pub struct RequestBuilder {
 }
 
 struct Request {
-    pub(crate) route: Route,
-    pub(crate) query: Option<String>,
-    pub(crate) body: Option<Body>,
+    route: Route,
+    query: Option<String>,
+    body: Option<Body>,
 }
 
 pub enum Body {
