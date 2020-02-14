@@ -180,7 +180,7 @@ impl ModRef {
         self.modio
             .request(route)
             .body(Form::from(options))
-            .send::<ModioMessage>()
+            .send::<Message>()
             .await?;
 
         Ok(())
@@ -208,7 +208,7 @@ impl ModRef {
         self.modio
             .request(route)
             .body(rating.to_query_string())
-            .send::<ModioMessage>()
+            .send::<Message>()
             .await
             .map(|_| ())
             .or_else(|err| match err.kind() {
@@ -297,7 +297,7 @@ impl Dependencies {
         self.modio
             .request(route)
             .body(options.to_query_string())
-            .send::<ModioMessage>()
+            .send::<Message>()
             .await?;
         Ok(())
     }
@@ -362,7 +362,7 @@ impl Tags {
         self.modio
             .request(route)
             .body(options.to_query_string())
-            .send::<ModioMessage>()
+            .send::<Message>()
             .await?;
         Ok(())
     }

@@ -6,8 +6,8 @@ use serde::Deserialize;
 use url::form_urlencoded;
 
 use crate::routing::Route;
+use crate::types::Message;
 use crate::Modio;
-use crate::ModioMessage;
 use crate::QueryString;
 use crate::Result;
 
@@ -157,7 +157,7 @@ impl Auth {
         self.modio
             .request(Route::AuthEmailRequest)
             .body(data)
-            .send::<ModioMessage>()
+            .send::<Message>()
             .await?;
 
         Ok(())
@@ -253,7 +253,7 @@ impl Auth {
         self.modio
             .request(Route::LinkAccount)
             .body(options.to_query_string())
-            .send::<ModioMessage>()
+            .send::<Message>()
             .await?;
 
         Ok(())

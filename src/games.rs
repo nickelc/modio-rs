@@ -89,7 +89,7 @@ impl GameRef {
         self.modio
             .request(route)
             .body(Form::from(media))
-            .send::<ModioMessage>()
+            .send::<Message>()
             .await?;
         Ok(())
     }
@@ -133,7 +133,7 @@ impl Tags {
         self.modio
             .request(route)
             .body(options.to_query_string())
-            .send::<ModioMessage>()
+            .send::<Message>()
             .await?;
         Ok(())
     }

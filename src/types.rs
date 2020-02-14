@@ -121,7 +121,7 @@ macro_rules! bitflags_serde {
 
 /// See the [Message Object](https://docs.mod.io/#message-object) docs for more information.
 #[derive(Debug, Deserialize)]
-pub struct ModioMessage {
+pub struct Message {
     pub code: u16,
     pub message: String,
 }
@@ -150,7 +150,7 @@ fn deserialize_message<'de, D>(deserializer: D) -> Result<(), D::Error>
 where
     D: serde::Deserializer<'de>,
 {
-    ModioMessage::deserialize(deserializer).map(|_| ())
+    Message::deserialize(deserializer).map(|_| ())
 }
 
 /// See the [Multiple Item Response](https://docs.mod.io/#response-formats) docs for more
@@ -170,7 +170,7 @@ pub struct List<T> {
 
 /// See the [Error Object](https://docs.mod.io/#error-object) docs for more information.
 #[derive(Debug, Deserialize)]
-pub struct ModioErrorResponse {
+pub struct ErrorResponse {
     #[serde(rename = "error")]
     pub error: ClientError,
 }

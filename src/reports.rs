@@ -17,7 +17,7 @@ impl Reports {
         self.modio
             .request(Route::SubmitReport)
             .body(report.to_query_string())
-            .send::<ModioMessage>()
+            .send::<Message>()
             .await?;
         Ok(())
     }

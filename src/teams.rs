@@ -42,7 +42,7 @@ impl Members {
         self.modio
             .request(route)
             .body(options.to_query_string())
-            .send::<ModioMessage>()
+            .send::<Message>()
             .await?;
 
         Ok(())
@@ -58,7 +58,7 @@ impl Members {
         self.modio
             .request(route)
             .body(options.to_query_string())
-            .send::<ModioMessage>()
+            .send::<Message>()
             .await?;
 
         Ok(())

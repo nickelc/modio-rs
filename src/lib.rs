@@ -148,7 +148,6 @@ use crate::games::{GameRef, Games};
 use crate::mods::{ModRef, Mods};
 use crate::reports::Reports;
 use crate::request::RequestBuilder;
-use crate::types::ModioMessage;
 use crate::user::Me;
 
 pub use crate::auth::Credentials;
@@ -170,10 +169,10 @@ mod prelude {
     pub use crate::filter::Filter;
     pub(crate) use crate::loader::Query;
     pub use crate::routing::Route;
+    pub(crate) use crate::types::Message;
     pub use crate::Deletion;
     pub use crate::Editing;
     pub use crate::Modio;
-    pub(crate) use crate::ModioMessage;
     pub(crate) use crate::QueryString;
     pub use crate::Result;
 }

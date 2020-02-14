@@ -9,7 +9,7 @@ use url::Url;
 use crate::auth::Token;
 use crate::error::{self, Result};
 use crate::routing::{AuthMethod, Route};
-use crate::types::ModioErrorResponse;
+use crate::types::ErrorResponse;
 use crate::Modio;
 
 pub struct RequestBuilder {
@@ -139,7 +139,7 @@ impl RequestBuilder {
                     debug!("ratelimit reached: reset in {} mins", reset);
                     Err(error::ratelimit(reset))
                 }
-                _ => serde_json::from_slice::<ModioErrorResponse>(&body)
+                _ => serde_json::from_slice::<ErrorResponse>(&body)
                     .map(|mer| Err(error::error_for_status(status, mer.error)))
                     .map_err(error::decode)?,
             }

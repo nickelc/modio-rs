@@ -54,7 +54,7 @@ impl Metadata {
         self.modio
             .request(route)
             .body(metadata.to_query_string())
-            .send::<ModioMessage>()
+            .send::<Message>()
             .await?;
         Ok(())
     }
