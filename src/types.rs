@@ -235,6 +235,7 @@ pub struct Event {
     pub event_type: EventType,
 }
 
+/// Type of user event that was triggered.
 #[derive(Debug, PartialEq, Eq, Hash, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum EventType {
@@ -443,6 +444,10 @@ pub mod game {
         pub tags: Vec<String>,
     }
 
+    /// Defines the type of a tag. See [TagOption] or [AddTagsOptions].
+    ///
+    /// [TagOption]: struct.TagOption.html
+    /// [AddTagsOptions]: struct.AddTagsOptions.html
     #[derive(Debug, Deserialize)]
     #[serde(rename_all = "lowercase")]
     pub enum TagType {
@@ -527,6 +532,7 @@ pub mod mods {
         pub event_type: EventType,
     }
 
+    /// Type of mod event that was triggered.
     #[derive(Debug, PartialEq, Eq, Hash, Deserialize)]
     #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
     pub enum EventType {
@@ -600,6 +606,7 @@ pub mod mods {
         pub date_expires: u64,
     }
 
+    /// Part of [Statistics](struct.Statistics.html)
     #[derive(Debug, Deserialize)]
     pub struct Popularity {
         #[serde(rename = "popularity_rank_position")]
@@ -608,6 +615,7 @@ pub mod mods {
         pub rank_total: u32,
     }
 
+    /// Part of [Statistics](struct.Statistics.html)
     #[derive(Debug, Deserialize)]
     pub struct Ratings {
         #[serde(rename = "ratings_total")]
@@ -810,6 +818,7 @@ pub mod mods {
     }
 
     enum_number! {
+        /// Defines the role of a team member.
         #[derive(Debug)]
         pub enum TeamLevel {
             Moderator = 1,
