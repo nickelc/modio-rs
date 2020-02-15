@@ -171,13 +171,12 @@ pub struct List<T> {
 /// See the [Error Object](https://docs.mod.io/#error-object) docs for more information.
 #[derive(Debug, Deserialize)]
 pub struct ErrorResponse {
-    #[serde(rename = "error")]
-    pub error: ClientError,
+    pub error: Error,
 }
 
 /// See the [Error Object](https://docs.mod.io/#error-object) docs for more information.
 #[derive(Debug, Deserialize)]
-pub struct ClientError {
+pub struct Error {
     pub code: u16,
     pub message: String,
     pub errors: Option<HashMap<String, String>>,

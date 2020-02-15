@@ -8,8 +8,7 @@ use reqwest::StatusCode;
 
 use crate::auth::Error as AuthError;
 use crate::download::Error as DownloadError;
-
-pub use crate::types::ClientError;
+use crate::types::Error as ModioError;
 
 /// A `Result` alias where the `Err` case is `modio::Error`.
 pub type Result<T, E = Error> = std::result::Result<T, E>;
@@ -179,9 +178,9 @@ pub(crate) enum Kind {
     Status(StatusCode),
 }
 
-impl StdError for ClientError {}
+impl StdError for ModioError {}
 
-impl fmt::Display for ClientError {
+impl fmt::Display for ModioError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut buf = String::new();
         buf.push_str(&self.message);
@@ -226,7 +225,7 @@ pub(crate) fn decode<E: Into<BoxError>>(e: E) -> Error {
     Error::new(Kind::Decode, Some(e))
 }
 
-pub(crate) fn error_for_status(code: StatusCode, error: ClientError) -> Error {
+pub(crate) fn error_for_status(code: StatusCode, error: ModioError) -> Error {
     match code {
         StatusCode::UNPROCESSABLE_ENTITY => Error::new(
             Kind::Validation(error.message, error.errors.unwrap_or_default()),
