@@ -57,7 +57,7 @@ impl RequestBuilder {
     where
         Out: DeserializeOwned + Send,
     {
-        let (method, auth_method, path) = self.request.route.pieces();
+        let (method, path, auth_method) = self.request.route.pieces();
 
         if let (AuthMethod::Token, None) = (&auth_method, &self.modio.credentials.token) {
             return Err(error::token_required());
