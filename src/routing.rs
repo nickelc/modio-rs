@@ -22,7 +22,7 @@ macro_rules! define_routes {
         {$($pout:tt)*};
         // See, nothing here?
     ) => {
-        #[derive(Debug, Clone)]
+        #[derive(Debug, Clone, Copy)]
         pub enum Route {
             $($eout)*
         }

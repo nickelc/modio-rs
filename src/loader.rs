@@ -69,7 +69,7 @@ impl<T: DeserializeOwned + Send> Query<T> {
             };
 
             let list = modio
-                .request(route.clone())
+                .request(route)
                 .query(filter.to_query_string())
                 .send::<List<T>>()
                 .await?;
