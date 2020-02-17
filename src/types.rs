@@ -443,10 +443,7 @@ pub mod game {
         pub tags: Vec<String>,
     }
 
-    /// Defines the type of a tag. See [TagOption] or [AddTagsOptions].
-    ///
-    /// [TagOption]: struct.TagOption.html
-    /// [AddTagsOptions]: struct.AddTagsOptions.html
+    /// Defines the type of a tag. See [`TagOption`].
     #[derive(Debug, Deserialize)]
     #[serde(rename_all = "lowercase")]
     pub enum TagType {
@@ -605,7 +602,7 @@ pub mod mods {
         pub date_expires: u64,
     }
 
-    /// Part of [Statistics](struct.Statistics.html)
+    /// Part of [`Statistics`]
     #[derive(Debug, Deserialize)]
     pub struct Popularity {
         #[serde(rename = "popularity_rank_position")]
@@ -614,7 +611,7 @@ pub mod mods {
         pub rank_total: u32,
     }
 
-    /// Part of [Statistics](struct.Statistics.html)
+    /// Part of [`Statistics`]
     #[derive(Debug, Deserialize)]
     pub struct Ratings {
         #[serde(rename = "ratings_total")]

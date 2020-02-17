@@ -30,7 +30,7 @@ impl Games {
 
     /// Returns a `Query` interface to retrieve games.
     ///
-    /// See [Filters and sorting](filters/index.html).
+    /// See [Filters and sorting](filters).
     pub fn search(&self, filter: Filter) -> Query<Game> {
         Query::new(self.modio.clone(), Route::GetGames, filter)
     }

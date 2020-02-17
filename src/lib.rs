@@ -11,9 +11,8 @@
 //! - Manually create an [OAuth 2 Access Token (Read + Write)](https://mod.io/oauth)
 //! - [Email Authentication Flow](auth/struct.Auth.html#example) to create an OAuth 2 Access Token
 //! (Read + Write)
-//! - [External Authentication](auth/struct.Auth.html#method.external) to create an
-//! OAuth 2 Access Token (Read + Write) automatically on platforms such as Steam, GOG, itch.io and
-//! Oculus.
+//! - [External Authentication](auth::Auth::external) to create an OAuth 2 Access Token (Read + Write)
+//! automatically on platforms such as Steam, GOG, itch.io and Oculus.
 //!
 //! # Rate Limiting
 //!
@@ -21,7 +20,7 @@
 //! - API keys linked to a user have **60 requests per minute**.
 //! - OAuth2 user tokens are limited to **120 requests per minute**.
 //!
-//! [`Error::is_ratelimited`](struct.Error.html#method.is_ratelimited) will return true
+//! [`Error::is_ratelimited`] will return true
 //! if the rate limit associated with credentials has been exhausted.
 //!
 //! # Example: Basic setup
@@ -41,7 +40,7 @@
 //! }
 //! ```
 //!
-//! For testing purposes use [`Modio::host`](struct.Modio.html#method.host) to create a client for the
+//! For testing purposes use [`Modio::host`] to create a client for the
 //! mod.io [test environment](https://docs.mod.io/#testing).
 //!
 //! # Example: Chaining api requests
@@ -113,6 +112,7 @@
 //! ```
 #![doc(html_root_url = "https://docs.rs/modio/0.4.1")]
 #![deny(rust_2018_idioms)]
+#![deny(intra_doc_link_resolution_failure)]
 
 use reqwest::header::USER_AGENT;
 use reqwest::header::{HeaderMap, HeaderValue};
@@ -409,10 +409,10 @@ impl Modio {
         ModRef::new(self.clone(), game_id, mod_id)
     }
 
-    /// Returns [`Downloader`](download/struct.Downloader.html) for saving to file or retrieving
+    /// Returns [`Downloader`](download::Downloader) for saving to file or retrieving
     /// the data via [`Stream`](futures_core::Stream).
     ///
-    /// The download fails with [`modio::download::Error`](download/enum.Error.html) as source
+    /// The download fails with [`modio::download::Error`](download::Error) as source
     /// if a primary file, a specific file or a specific version is not found.
     ///
     /// # Example

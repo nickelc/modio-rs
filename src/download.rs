@@ -20,8 +20,6 @@ use crate::Modio;
 
 /// A `Downloader` can be used to stream a mod file or save the file to a local file.
 /// Constructed with [`Modio::download`].
-///
-/// [`Modio::download`]: ../struct.Modio.html#method.download
 pub struct Downloader {
     modio: Modio,
     action: DownloadAction,
@@ -190,8 +188,6 @@ async fn request_file(modio: Modio, action: DownloadAction) -> Result<Response> 
 }
 
 /// Defines the action that is performed for [`Modio::download`].
-///
-/// [`Modio::download`]: ../struct.Modio.html#method.download
 #[derive(Debug)]
 pub enum DownloadAction {
     /// Download the primary modfile of a mod.
@@ -219,12 +215,10 @@ pub enum ResolvePolicy {
     /// Download the latest file.
     Latest,
     /// Return with [`Error::MultipleFilesFound`] as source error.
-    ///
-    /// [`Error::MultipleFilesFound`]: enum.Error.html#variant.MultipleFilesFound
     Fail,
 }
 
-/// The Errors that may occur when using [`Modio::download`](../struct.Modio.html#method.download).
+/// The Errors that may occur when using [`Modio::download`].
 #[derive(Debug)]
 pub enum Error {
     /// The mod has not found.
@@ -238,7 +232,7 @@ pub enum Error {
         file_id: u32,
     },
     /// Multiple files for a given version were found and the policy was set to
-    /// [`ResolvePolicy::Fail`](enum.ResolvePolicy.html#variant.Fail).
+    /// [`ResolvePolicy::Fail`].
     MultipleFilesFound {
         game_id: u32,
         mod_id: u32,
@@ -298,8 +292,7 @@ impl fmt::Display for Error {
     }
 }
 
-/// Convert `Mod` to [`DownloadAction::File`](enum.DownloadAction.html#variant.File) or
-/// [`DownloadAction::Primary`](enum.DownloadAction.html#variant.Primary) if `Mod::modfile` is `None`
+/// Convert `Mod` to [`DownloadAction::File`] or [`DownloadAction::Primary`] if `Mod::modfile` is `None`
 impl From<Mod> for DownloadAction {
     fn from(m: Mod) -> DownloadAction {
         if let Some(file) = m.modfile {
@@ -313,22 +306,21 @@ impl From<Mod> for DownloadAction {
     }
 }
 
-/// Convert `File` to [`DownloadAction::FileObj`](enum.DownloadAction.html#variant.FileObj)
+/// Convert `File` to [`DownloadAction::FileObj`]
 impl From<File> for DownloadAction {
     fn from(file: File) -> DownloadAction {
         DownloadAction::FileObj(Box::new(file))
     }
 }
 
-/// Convert `(u32, u32)` to [`DownloadAction::Primary`](enum.DownloadAction.html#variant.Primary)
+/// Convert `(u32, u32)` to [`DownloadAction::Primary`]
 impl From<(u32, u32)> for DownloadAction {
     fn from((game_id, mod_id): (u32, u32)) -> DownloadAction {
         DownloadAction::Primary { game_id, mod_id }
     }
 }
 
-/// Convert `(u32, u32, u32)` to
-/// [`DownloadAction::File`](enum.DownloadAction.html#variant.File)
+/// Convert `(u32, u32, u32)` to [`DownloadAction::File`]
 impl From<(u32, u32, u32)> for DownloadAction {
     fn from((game_id, mod_id, file_id): (u32, u32, u32)) -> DownloadAction {
         DownloadAction::File {
@@ -339,8 +331,8 @@ impl From<(u32, u32, u32)> for DownloadAction {
     }
 }
 
-/// Convert `(u32, u32, String)` to [`DownloadAction::Version`](enum.DownloadAction.html#variant.Version)
-/// with resolve policy set to `ResolvePolicy::Latest`
+/// Convert `(u32, u32, String)` to [`DownloadAction::Version`] with resolve policy
+/// set to `ResolvePolicy::Latest`
 impl From<(u32, u32, String)> for DownloadAction {
     fn from((game_id, mod_id, version): (u32, u32, String)) -> DownloadAction {
         DownloadAction::Version {
@@ -352,8 +344,8 @@ impl From<(u32, u32, String)> for DownloadAction {
     }
 }
 
-/// Convert `(u32, u32, &'a str)` to [`DownloadAction::Version`](enum.DownloadAction.html#variant.Version)
-/// with resolve policy set to `ResolvePolicy::Latest`
+/// Convert `(u32, u32, &'a str)` to [`DownloadAction::Version`] with resolve policy
+/// set to `ResolvePolicy::Latest`
 impl<'a> From<(u32, u32, &'a str)> for DownloadAction {
     fn from((game_id, mod_id, version): (u32, u32, &'a str)) -> DownloadAction {
         DownloadAction::Version {

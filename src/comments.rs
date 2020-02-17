@@ -20,7 +20,7 @@ impl Comments {
 
     /// Returns a `Query` interface to retrieve all comments.
     ///
-    /// See [Filters and sorting](filters/index.html).
+    /// See [Filters and sorting](filters).
     pub fn search(&self, filter: Filter) -> Query<Comment> {
         let route = Route::GetModComments {
             game_id: self.game,

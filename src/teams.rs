@@ -23,7 +23,7 @@ impl Members {
 
     /// Returns a `Query` interface to retrieve all team members.
     ///
-    /// See [Filters and sorting](filters/index.html).
+    /// See [Filters and sorting](filters).
     pub fn search(&self, filter: Filter) -> Query<TeamMember> {
         let route = Route::GetTeamMembers {
             game_id: self.game,

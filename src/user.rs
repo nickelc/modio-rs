@@ -30,7 +30,7 @@ impl Me {
     /// Returns a `Query` interface to retrieve all games the authenticated user added or
     /// is team member of. [required: token]
     ///
-    /// See [Filters and sorting](filters/games/index.html).
+    /// See [Filters and sorting](filters::games).
     pub fn games(&self, filter: Filter) -> Query<Game> {
         Query::new(self.modio.clone(), Route::UserGames, filter)
     }
@@ -38,7 +38,7 @@ impl Me {
     /// Returns a `Query` interface to retrieve all mods the authenticated user added or
     /// is team member of. [required: token]
     ///
-    /// See [Filters and sorting](filters/mods/index.html).
+    /// See [Filters and sorting](filters::mods).
     pub fn mods(&self, filter: Filter) -> Query<Mod> {
         Query::new(self.modio.clone(), Route::UserMods, filter)
     }
@@ -46,7 +46,7 @@ impl Me {
     /// Returns a `Query` interface to retrieve all modfiles the authenticated user uploaded.
     /// [required: token]
     ///
-    /// See [Filters and sorting](filters/files/index.html).
+    /// See [Filters and sorting](filters::files).
     pub fn files(&self, filter: Filter) -> Query<File> {
         Query::new(self.modio.clone(), Route::UserFiles, filter)
     }
@@ -54,7 +54,7 @@ impl Me {
     /// Returns a `Query` interface to retrieve the events that have been fired specific to the
     /// authenticated user. [required: token]
     ///
-    /// See [Filters and sorting](filters/events/index.html).
+    /// See [Filters and sorting](filters::events).
     pub fn events(self, filter: Filter) -> Query<Event> {
         Query::new(self.modio, Route::UserEvents, filter)
     }
@@ -62,7 +62,7 @@ impl Me {
     /// Returns a `Query` interface to retrieve the mods the authenticated user is subscribed to.
     /// [required: token]
     ///
-    /// See [Filters and sorting](filters/subscriptions/index.html).
+    /// See [Filters and sorting](filters::subscriptions).
     pub fn subscriptions(self, filter: Filter) -> Query<Mod> {
         Query::new(self.modio, Route::UserSubscriptions, filter)
     }
@@ -70,7 +70,7 @@ impl Me {
     /// Returns a `Query` interface to retrieve the mod ratings submitted by the authenticated user.
     /// [required: token]
     ///
-    /// See [Filters and sorting](filters/ratings/index.html).
+    /// See [Filters and sorting](filters::ratings).
     pub fn ratings(self, filter: Filter) -> Query<Rating> {
         Query::new(self.modio, Route::UserRatings, filter)
     }

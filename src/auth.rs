@@ -190,10 +190,10 @@ impl Auth {
     ///
     /// See the [mod.io docs](https://docs.mod.io/#authentication-2) for more information.
     ///
-    /// [Steam]: struct.SteamOptions.html
-    /// [GOG]: struct.GalaxyOptions.html
-    /// [itch.io]: struct.ItchioOptions.html
-    /// [Oculus]: struct.OculusOptions.html
+    /// [Steam]: SteamOptions
+    /// [GOG]: GalaxyOptions
+    /// [itch.io]: ItchioOptions
+    /// [Oculus]: OculusOptions
     ///
     /// # Examples
     ///

@@ -258,51 +258,51 @@ pub(crate) mod sealed {
 }
 
 pub trait Eq: sealed::FilterPriv {
-    /// Creates [`Equals`](enum.Operator.html#variant.Equals) filter.
+    /// Creates [`Equals`](Operator::Equals) filter.
     fn eq<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
 pub trait NotEq: sealed::FilterPriv {
-    /// Creates [`Not`](enum.Operator.html#variant.Not) filter.
+    /// Creates [`Not`](Operator::Not) filter.
     fn ne<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
 pub trait Like: sealed::FilterPriv {
-    /// Creates [`Like`](enum.Operator.html#variant.Like) filter.
+    /// Creates [`Like`](Operator::Like) filter.
     fn like<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
 pub trait NotLike: sealed::FilterPriv {
-    /// Creates [`NotLike`](enum.Operator.html#variant.Like) filter.
+    /// Creates [`NotLike`](Operator::Like) filter.
     fn not_like<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
 pub trait In: sealed::FilterPriv {
-    /// Creates [`In`](enum.Operator.html#variant.In) filter.
+    /// Creates [`In`](Operator::In) filter.
     fn _in<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
 pub trait NotIn: sealed::FilterPriv {
-    /// Creates [`NotIn`](enum.Operator.html#variant.NotIn) filter.
+    /// Creates [`NotIn`](Operator::NotIn) filter.
     fn not_in<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
 pub trait Cmp: sealed::FilterPriv {
-    /// Creates [`Max`](enum.Operator.html#variant.Max) filter.
+    /// Creates [`Max`](Operator::Max) filter.
     fn le<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 
-    /// Creates [`SmallerThan`](enum.Operator.html#variant.SmallerThan) filter.
+    /// Creates [`SmallerThan`](Operator::SmallerThan) filter.
     fn lt<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 
-    /// Creates [`Min`](enum.Operator.html#variant.Min) filter.
+    /// Creates [`Min`](Operator::Min) filter.
     fn ge<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 
-    /// Creates [`GreaterThan`](enum.Operator.html#variant.GreaterThan) filter.
+    /// Creates [`GreaterThan`](Operator::GreaterThan) filter.
     fn gt<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 
 pub trait BitwiseAnd: sealed::FilterPriv {
-    /// Creates [`BitwiseAnd`](enum.Operator.html#variant.BitwiseAnd) filter.
+    /// Creates [`BitwiseAnd`](Operator::BitwiseAnd) filter.
     fn bit_and<T: fmt::Display, V: Into<OneOrMany<T>>>(value: V) -> Filter;
 }
 

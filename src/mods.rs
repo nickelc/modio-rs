@@ -33,7 +33,7 @@ impl Mods {
 
     /// Returns a `Query` interface to retrieve mods.
     ///
-    /// See [Filters and sorting](filters/index.html).
+    /// See [Filters and sorting](filters).
     pub fn search(&self, filter: Filter) -> Query<Mod> {
         let route = Route::GetMods { game_id: self.game };
         Query::new(self.modio.clone(), route, filter)
@@ -57,7 +57,7 @@ impl Mods {
 
     /// Returns a `Query` interface to retrieve the statistics for all mods of a game.
     ///
-    /// See [Filters and sorting](filters/stats/index.html).
+    /// See [Filters and sorting](filters::stats).
     pub fn statistics(self, filter: Filter) -> Query<Statistics> {
         let route = Route::GetAllModStats { game_id: self.game };
         Query::new(self.modio, route, filter)
@@ -66,7 +66,7 @@ impl Mods {
     /// Returns a `Query` interface to retrieve the event log of all mods of the game sorted by
     /// latest event first.
     ///
-    /// See [Filters and sorting](filters/events/index.html).
+    /// See [Filters and sorting](filters::events).
     pub fn events(self, filter: Filter) -> Query<Event> {
         let route = Route::GetAllModEvents { game_id: self.game };
         Query::new(self.modio, route, filter)
@@ -135,7 +135,7 @@ impl ModRef {
 
     /// Returns a `Query` interface to retrieve the event log for a mod sorted by latest event first.
     ///
-    /// See [Filters and sorting](filters/events/index.html).
+    /// See [Filters and sorting](filters::events).
     pub fn events(self, filter: Filter) -> Query<Event> {
         let route = Route::GetModEvents {
             game_id: self.game,

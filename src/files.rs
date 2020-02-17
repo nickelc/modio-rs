@@ -31,7 +31,7 @@ impl Files {
     /// Returns a `Query` interface to retrieve all files that are published
     /// for a mod this `Files` refers to.
     ///
-    /// See [Filters and sorting](filters/index.html).
+    /// See [Filters and sorting](filters).
     pub fn search(&self, filter: Filter) -> Query<File> {
         let route = Route::GetFiles {
             game_id: self.game,

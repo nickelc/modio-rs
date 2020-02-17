@@ -55,7 +55,7 @@ impl Error {
         }
     }
 
-    /// Returns true if the error is from a [`DownloadAction`](download/enum.DownloadAction.html).
+    /// Returns true if the error is from a [`DownloadAction`](crate::download::DownloadAction).
     pub fn is_download(&self) -> bool {
         match self.inner.kind {
             Kind::Download => true,
