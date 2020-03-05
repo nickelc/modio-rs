@@ -776,10 +776,8 @@ pub mod mods {
         pub id: u32,
         pub mod_id: u32,
         pub date_added: u64,
-        pub date_scanned: u64,
-        pub virus_status: u32,
-        pub virus_positive: u32,
-        pub virustotal_hash: Option<String>,
+        #[serde(flatten)]
+        pub virus_scan: VirusScan,
         pub filesize: u64,
         pub filehash: FileHash,
         pub filename: String,
@@ -787,6 +785,17 @@ pub mod mods {
         pub changelog: Option<String>,
         pub metadata_blob: Option<String>,
         pub download: Download,
+    }
+
+    /// See the [Modfile Object](https://docs.mod.io/#modfile-object) docs for more information.
+    #[derive(Debug, Deserialize)]
+    pub struct VirusScan {
+        pub date_scanned: u64,
+        #[serde(rename = "virus_status")]
+        pub status: u32,
+        #[serde(rename = "virus_positive")]
+        pub result: u32,
+        pub virustotal_hash: Option<String>,
     }
 
     /// See the [Filehash Object](https://docs.mod.io/#filehash-object) docs for more information.
