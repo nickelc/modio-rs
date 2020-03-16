@@ -34,6 +34,12 @@ pub struct Report {
 pub enum ReportType {
     Generic,
     DMCA,
+    NotWorking,
+    RudeContent,
+    IllegalContent,
+    StolenContent,
+    FalseInformation,
+    Other,
 }
 
 pub enum Resource {
@@ -70,6 +76,12 @@ impl QueryString for Report {
         let _type = match self.kind {
             ReportType::Generic => 0,
             ReportType::DMCA => 1,
+            ReportType::NotWorking => 2,
+            ReportType::RudeContent => 3,
+            ReportType::IllegalContent => 4,
+            ReportType::StolenContent => 5,
+            ReportType::FalseInformation => 6,
+            ReportType::Other => 7,
         };
         form_urlencoded::Serializer::new(String::new())
             .extend_pairs(self.contact.as_ref().map(|c| ("contact", c)))
