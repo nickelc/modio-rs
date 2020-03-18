@@ -30,7 +30,7 @@ impl<T> Query<T> {
 
 impl<T: DeserializeOwned + Send> Query<T> {
     /// Returns the first search result page.
-    pub async fn first(self) -> Result<Vec<T>> {
+    pub async fn first_page(self) -> Result<Vec<T>> {
         let list = self.bulk().try_next().await;
         list.map(Option::unwrap_or_default)
     }
