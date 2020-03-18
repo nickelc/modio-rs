@@ -29,6 +29,13 @@ impl<T> Query<T> {
 }
 
 impl<T: DeserializeOwned + Send> Query<T> {
+    /// Returns the first search result.
+    pub async fn first(mut self) -> Result<Option<T>> {
+        self.filter = self.filter.limit(1);
+        let list = self.first_page().await;
+        list.map(|l| l.into_iter().next())
+    }
+
     /// Returns the first search result page.
     pub async fn first_page(self) -> Result<Vec<T>> {
         let list = self.bulk().try_next().await;
