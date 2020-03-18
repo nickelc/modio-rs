@@ -32,7 +32,7 @@ async fn empty() -> Result<()> {
     );
 
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
-    let list = modio.games().search(Default::default()).first().await?;
+    let list = modio.games().search(Default::default()).collect().await?;
     assert!(list.is_empty());
 
     Ok(())
