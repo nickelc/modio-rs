@@ -34,7 +34,7 @@ url = { version = "2", features = ["serde"] }
 [dev-dependencies]
 dotenv = "0.15"
 env_logger = { version = "0.7", default-features = false }
-httptest = "0.12"
+httptest = "0.13"
 md5 = "0.7"
 tokio = { version = "0.2", features = ["full"] }
 

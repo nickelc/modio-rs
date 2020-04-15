@@ -1,5 +1,5 @@
 use futures_util::TryStreamExt;
-use httptest::{mappers::*, responders::*};
+use httptest::{matchers::*, responders::*};
 use httptest::{Expectation, Server};
 
 use modio::filter::prelude::*;
