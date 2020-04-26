@@ -444,6 +444,14 @@ impl Filter {
     }
 }
 
+impl std::ops::Add for Filter {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        self.and(other)
+    }
+}
+
 impl fmt::Display for Filter {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         use crate::QueryString;
@@ -676,6 +684,18 @@ mod test {
 
         let f = custom_order_by_asc("foo");
         assert_eq!(f.to_query_string(), "_sort=foo");
+    }
+
+    #[test]
+    fn std_ops_add() {
+        use super::prelude::*;
+        use crate::QueryString;
+
+        let f = Id::eq(1) + Id::eq(2);
+        assert_eq!(f.to_query_string(), "id=2");
+
+        let f = Id::eq(1) + NameId::eq("foo");
+        assert_eq!(f.to_query_string(), "id=1&name_id=foo");
     }
 }
 
