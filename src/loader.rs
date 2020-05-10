@@ -41,13 +41,13 @@ impl<T: DeserializeOwned + Send> Query<T> {
 
     /// Returns the first search result page.
     pub async fn first_page(self) -> Result<Vec<T>> {
-        let list = self.bulk().await?.try_next().await;
+        let list = self.paged().await?.try_next().await;
         list.map(Option::unwrap_or_default)
     }
 
     /// Returns the complete search result list.
     pub async fn collect(self) -> Result<Vec<T>> {
-        self.bulk().await?.try_concat().await
+        self.paged().await?.try_concat().await
     }
 
     /// Provides a stream over all search result items.
@@ -60,7 +60,7 @@ impl<T: DeserializeOwned + Send> Query<T> {
     }
 
     /// Provides a stream over all search result pages.
-    pub async fn bulk(self) -> Result<impl Stream<Item = Result<Vec<T>>>> {
+    pub async fn paged(self) -> Result<impl Stream<Item = Result<Vec<T>>>> {
         let (st, (total, limit)) = stream(self.modio, self.route, self.filter).await?;
         let size_hint = if total == 0 {
             0

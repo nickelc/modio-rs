@@ -64,14 +64,14 @@ fn create_games_endpoint() -> Server {
 }
 
 #[tokio::test]
-async fn bulk() -> Result<()> {
+async fn paged() -> Result<()> {
     env_logger::try_init().ok();
     let server = create_games_endpoint();
 
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
     let filter = with_limit(7);
 
-    let mut iter = modio.games().search(filter).bulk().await?;
+    let mut iter = modio.games().search(filter).paged().await?;
     let mut total = 0;
     let mut count = 0;
     // First & Last Game ID's of every loaded page result
