@@ -1,3 +1,4 @@
+use futures_core::Stream;
 use futures_util::TryStreamExt;
 use httptest::{matchers::*, responders::*};
 use httptest::{Expectation, Server};
@@ -38,9 +39,7 @@ async fn empty() -> Result<()> {
     Ok(())
 }
 
-#[tokio::test]
-async fn bulk() -> Result<()> {
-    env_logger::try_init().ok();
+fn create_games_endpoint() -> Server {
     let server = Server::run();
 
     expect_requests!(
@@ -61,14 +60,23 @@ async fn bulk() -> Result<()> {
         body:  include_str!("fixtures/games-page5.json")
     );
 
+    server
+}
+
+#[tokio::test]
+async fn bulk() -> Result<()> {
+    env_logger::try_init().ok();
+    let server = create_games_endpoint();
+
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
     let filter = with_limit(7);
 
-    let mut iter = modio.games().search(filter).bulk();
+    let mut iter = modio.games().search(filter).bulk().await?;
     let mut total = 0;
     let mut count = 0;
     // First & Last Game ID's of every loaded page result
     let mut ids = vec![(1, 51), (63, 152), (164, 214), (224, 251), (255, 296)].into_iter();
+    let size_hint = iter.size_hint();
 
     while let Ok(Some(list)) = iter.try_next().await {
         if let Some((first, last)) = ids.next() {
@@ -81,5 +89,27 @@ async fn bulk() -> Result<()> {
 
     assert_eq!(count, 5);
     assert_eq!(total, 31);
+    assert_eq!((count, None), size_hint);
+    Ok(())
+}
+
+#[tokio::test]
+async fn iter() -> Result<()> {
+    env_logger::try_init().ok();
+    let server = create_games_endpoint();
+
+    let modio = Modio::host(server.url_str("/v1"), "foobar")?;
+    let filter = with_limit(7);
+
+    let mut iter = modio.games().search(filter).iter().await?;
+    let mut count = 0;
+    let size_hint = iter.size_hint();
+
+    while let Ok(Some(_)) = iter.try_next().await {
+        count += 1;
+    }
+
+    assert_eq!(count, 31);
+    assert_eq!((count, None), size_hint);
     Ok(())
 }

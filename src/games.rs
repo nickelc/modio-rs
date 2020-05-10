@@ -117,11 +117,12 @@ impl Tags {
     }
 
     /// Provides a stream over all tag options.
-    pub fn iter(self) -> impl Stream<Item = Result<TagOption>> {
+    pub async fn iter(self) -> Result<impl Stream<Item = Result<TagOption>>> {
         let route = Route::GetGameTags {
             game_id: self.game_id,
         };
-        Query::new(self.modio, route, Default::default()).iter()
+        let filter = Default::default();
+        Query::new(self.modio, route, filter).iter().await
     }
 
     /// Add tag options. [required: token]

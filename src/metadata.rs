@@ -35,6 +35,7 @@ impl Metadata {
         };
         Query::new(self.modio, route, Default::default())
             .iter()
+            .await?
             .try_fold(MetadataMap::new(), |mut map, kv: KV| {
                 map.entry(kv.metakey)
                     .or_insert_with(Vec::new)

@@ -279,12 +279,13 @@ impl Dependencies {
     }
 
     /// Provides a stream over all mod dependencies.
-    pub fn iter(self) -> impl Stream<Item = Result<Dependency>> {
+    pub async fn iter(self) -> Result<impl Stream<Item = Result<Dependency>>> {
         let route = Route::GetModDependencies {
             game_id: self.game_id,
             mod_id: self.mod_id,
         };
-        Query::new(self.modio, route, Default::default()).iter()
+        let filter = Default::default();
+        Query::new(self.modio, route, filter).iter().await
     }
 
     /// Add mod dependencies. [required: token]
@@ -344,12 +345,13 @@ impl Tags {
     }
 
     /// Provides a stream over all mod tags.
-    pub fn iter(self) -> impl Stream<Item = Result<Tag>> {
+    pub async fn iter(self) -> Result<impl Stream<Item = Result<Tag>>> {
         let route = Route::GetModTags {
             game_id: self.game_id,
             mod_id: self.mod_id,
         };
-        Query::new(self.modio, route, Default::default()).iter()
+        let filter = Default::default();
+        Query::new(self.modio, route, filter).iter().await
     }
 
     /// Add mod tags. [required: token]
