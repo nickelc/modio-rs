@@ -41,13 +41,13 @@ impl<T: DeserializeOwned + Send> Query<T> {
 
     /// Returns the first search result page.
     pub async fn first_page(self) -> Result<Vec<T>> {
-        let list = self.paged().await?.try_next().await;
+        let list = self.paged().await?.map_ok(|p| p.0.data).try_next().await;
         list.map(Option::unwrap_or_default)
     }
 
     /// Returns the complete search result list.
     pub async fn collect(self) -> Result<Vec<T>> {
-        self.paged().await?.try_concat().await
+        self.paged().await?.map_ok(|p| p.0.data).try_concat().await
     }
 
     /// Provides a stream over all search result items.
@@ -60,7 +60,7 @@ impl<T: DeserializeOwned + Send> Query<T> {
     }
 
     /// Provides a stream over all search result pages.
-    pub async fn paged(self) -> Result<impl Stream<Item = Result<Vec<T>>>> {
+    pub async fn paged(self) -> Result<impl Stream<Item = Result<Page<T>>>> {
         let (st, (total, limit)) = stream(self.modio, self.route, self.filter).await?;
         let size_hint = if total == 0 {
             0
@@ -75,7 +75,7 @@ async fn stream<T>(
     modio: Modio,
     route: Route,
     filter: Filter,
-) -> Result<(impl Stream<Item = Result<Vec<T>>>, (u32, u32))>
+) -> Result<(impl Stream<Item = Result<Page<T>>>, (u32, u32))>
 where
     T: DeserializeOwned + Send,
 {
@@ -98,7 +98,7 @@ where
     let initial = (modio, route, filter, state);
     let stats = (list.total, list.limit);
 
-    let first = stream::once(async { Ok::<_, crate::Error>(list.data) });
+    let first = stream::once(async { Ok::<_, crate::Error>(Page(list)) });
 
     let others = stream::try_unfold(initial, |(modio, route, filter, state)| async move {
         if let State { remaining: 0, .. } = state {
@@ -124,11 +124,76 @@ where
             },
         );
 
-        Ok(Some((list.data, state)))
+        Ok(Some((Page(list), state)))
     });
 
     Ok((first.chain(others), stats))
 }
+
+/// A `Page` returned by the [`Query::paged`] stream for a search result.
+pub struct Page<T>(List<T>);
+
+impl<T> Page<T> {
+    pub fn data(&self) -> &Vec<T> {
+        &self.0.data
+    }
+
+    pub fn into_data(self) -> Vec<T> {
+        self.0.data
+    }
+
+    /// Returns the current page number.
+    pub fn current(&self) -> usize {
+        self.0.offset as usize / self.page_size() + 1
+    }
+
+    /// Returns the number of pages.
+    pub fn page_count(&self) -> usize {
+        if self.0.total == 0 {
+            0
+        } else {
+            (self.total() - 1) / self.page_size() + 1
+        }
+    }
+
+    /// Returns the size of a page.
+    pub fn page_size(&self) -> usize {
+        self.0.limit as usize
+    }
+
+    /// Returns the total number of the search result.
+    pub fn total(&self) -> usize {
+        self.0.total as usize
+    }
+}
+
+// Impl IntoIterator & Deref for Page<T> {{{
+impl<T> std::ops::Deref for Page<T> {
+    type Target = Vec<T>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0.data
+    }
+}
+
+impl<'a, T> std::iter::IntoIterator for &'a Page<T> {
+    type Item = &'a T;
+    type IntoIter = std::slice::Iter<'a, T>;
+
+    fn into_iter(self) -> std::slice::Iter<'a, T> {
+        self.0.data.iter()
+    }
+}
+
+impl<T> std::iter::IntoIterator for Page<T> {
+    type Item = T;
+    type IntoIter = std::vec::IntoIter<T>;
+
+    fn into_iter(self) -> std::vec::IntoIter<T> {
+        self.0.data.into_iter()
+    }
+}
+// }}}
 
 pin_project! {
     struct ResultStream<St> {
@@ -155,3 +220,5 @@ impl<St: Stream> Stream for ResultStream<St> {
         self.project().stream.poll_next(cx)
     }
 }
+
+// vim: fdm=marker
