@@ -100,7 +100,8 @@ async fn empty_first_page() -> Result<()> {
     let server = create_empty_result();
 
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
-    let list = modio.games().search(Default::default()).first_page().await?;
+    let filter = Default::default();
+    let list = modio.games().search(filter).first_page().await?;
 
     assert!(list.is_empty());
     Ok(())
@@ -112,7 +113,8 @@ async fn first_page() -> Result<()> {
     let server = create_first_page_only();
 
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
-    let list = modio.games().search(Default::default()).first_page().await?;
+    let filter = Default::default();
+    let list = modio.games().search(filter).first_page().await?;
 
     assert_eq!(7, list.len());
     assert_eq!(1, list[0].id);
