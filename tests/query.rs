@@ -21,9 +21,7 @@ macro_rules! expect_requests {
     };
 }
 
-#[tokio::test]
-async fn empty() -> Result<()> {
-    env_logger::try_init().ok();
+fn create_empty_result() -> Server {
     let server = Server::run();
 
     expect_requests!(
@@ -32,11 +30,7 @@ async fn empty() -> Result<()> {
         body: r#"{"data":[],"result_count":0,"result_offset":0,"result_limit":100,"result_total":0}"#
     );
 
-    let modio = Modio::host(server.url_str("/v1"), "foobar")?;
-    let list = modio.games().search(Default::default()).collect().await?;
-    assert!(list.is_empty());
-
-    Ok(())
+    server
 }
 
 fn create_games_endpoint() -> Server {
@@ -61,6 +55,31 @@ fn create_games_endpoint() -> Server {
     );
 
     server
+}
+
+#[tokio::test]
+async fn empty_collect() -> Result<()> {
+    env_logger::try_init().ok();
+    let server = create_empty_result();
+
+    let modio = Modio::host(server.url_str("/v1"), "foobar")?;
+    let list = modio.games().search(Default::default()).collect().await?;
+    assert!(list.is_empty());
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn empty_paged() -> Result<()> {
+    env_logger::try_init().ok();
+    let server = create_empty_result();
+
+    let modio = Modio::host(server.url_str("/v1"), "foobar")?;
+    let mut st = modio.games().search(Default::default()).paged().await?;
+
+    assert_eq!((0, None), st.size_hint());
+    assert!(st.try_next().await?.is_none());
+    Ok(())
 }
 
 #[tokio::test]

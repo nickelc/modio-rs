@@ -3,6 +3,7 @@ use std::pin::Pin;
 use std::task::{Context, Poll};
 
 use futures_core::Stream;
+use futures_util::future::Either;
 use futures_util::{stream, StreamExt, TryStreamExt};
 use pin_project_lite::pin_project;
 use serde::de::DeserializeOwned;
@@ -155,6 +156,9 @@ where
     };
     let initial = (modio, route, filter, state);
     let stats = (list.total, list.limit);
+    if list.total == 0 {
+        return Ok((Either::Left(stream::empty()), stats));
+    }
 
     let first = stream::once(async { Ok::<_, crate::Error>(Page(list)) });
 
@@ -185,7 +189,7 @@ where
         Ok(Some((Page(list), state)))
     });
 
-    Ok((first.chain(others), stats))
+    Ok((Either::Right(first.chain(others)), stats))
 }
 
 /// A `Page` returned by the [`Query::paged`] stream for a search result.
@@ -207,11 +211,7 @@ impl<T> Page<T> {
 
     /// Returns the number of pages.
     pub fn page_count(&self) -> usize {
-        if self.0.total == 0 {
-            0
-        } else {
-            (self.total() - 1) / self.page_size() + 1
-        }
+        (self.total() - 1) / self.page_size() + 1
     }
 
     /// Returns the size of a page.
