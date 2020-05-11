@@ -51,6 +51,41 @@ impl<T: DeserializeOwned + Send> Query<T> {
     }
 
     /// Provides a stream over all search result items.
+    ///
+    /// Beware that a `Filter::with_limit` will NOT limit the number of items returned
+    /// by the stream, but limits the page size for the underlying API requests.
+    ///
+    /// # Example
+    /// ```no_run
+    /// use futures_util::TryStreamExt;
+    /// use modio::filter::prelude::*;
+    ///
+    /// # use modio::{Credentials, Modio, Result};
+    /// #
+    /// # async fn run() -> Result<()> {
+    /// #     let modio = Modio::new(Credentials::new("apikey"))?;
+    /// let filter = Fulltext::eq("soldier");
+    /// let mut st = modio.game(51).mods().search(filter).iter().await?;
+    ///
+    /// // Stream of `Mod`
+    /// while let Some(mod_) = st.try_next().await? {
+    ///     println!("{}. {}", mod_.id, mod_.name);
+    /// }
+    ///
+    /// use futures_util::StreamExt;
+    ///
+    /// // Retrieve the first 10 mods. (Default page size is `100`.)
+    /// let filter = Fulltext::eq("tftd") + with_limit(10);
+    /// let st = modio.game(51).mods().search(filter).iter().await?;
+    /// let mut st = st.take(10);
+    ///
+    /// // Stream of `Mod`
+    /// while let Some(mod_) = st.try_next().await? {
+    ///     println!("{}. {}", mod_.id, mod_.name);
+    /// }
+    /// #     Ok(())
+    /// # }
+    /// ```
     pub async fn iter(self) -> Result<impl Stream<Item = Result<T>>> {
         let (st, (total, _)) = stream(self.modio, self.route, self.filter).await?;
         let st = st
@@ -60,6 +95,29 @@ impl<T: DeserializeOwned + Send> Query<T> {
     }
 
     /// Provides a stream over all search result pages.
+    ///
+    /// # Example
+    /// ```no_run
+    /// use futures_util::TryStreamExt;
+    /// use modio::filter::prelude::*;
+    ///
+    /// # use modio::{Credentials, Modio, Result};
+    /// #
+    /// # async fn run() -> Result<()> {
+    /// #     let modio = Modio::new(Credentials::new("apikey"))?;
+    /// let filter = Fulltext::eq("tftd").limit(10);
+    /// let mut st = modio.game(51).mods().search(filter).paged().await?;
+    ///
+    /// // Stream of paged results `Page<Mod>` with page size = 10
+    /// while let Some(page) = st.try_next().await? {
+    ///     println!("Page {}/{}", page.current(), page.page_count());
+    ///     for item in page {
+    ///         println!("  {}. {}", item.id, item.name);
+    ///     }
+    /// }
+    /// #     Ok(())
+    /// # }
+    /// ```
     pub async fn paged(self) -> Result<impl Stream<Item = Result<Page<T>>>> {
         let (st, (total, limit)) = stream(self.modio, self.route, self.filter).await?;
         let size_hint = if total == 0 {

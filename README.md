@@ -68,16 +68,42 @@ See [full example](examples/auth.rs).
 use modio::filter::prelude::*;
 
 // List games with filter `name_id = "0ad"`
-let games = modio.games().list(NameId::eq("0ad")).await?;
+let games = modio.games().search(NameId::eq("0ad")).collect().await?;
 ```
 
 ### Mods
 ```rust
 // List all mods for 0 A.D.
-let mods = modio.game(5).mods().list(Default::default).await?;
+let mods = modio.game(5).mods().search(Default::default()).collect().await?;
 
 // Get the details of the `balancing-mod` mod
 let balancing_mod = modio.mod_(5, 110).get().await?;
+```
+
+### Streaming search result
+```rust
+use futures::TryStreamExt;
+
+let filter = Fulltext::eq("tftd").limit(10);
+let mut st = modio.game(51).mods().search(filter).paged().await?;
+let (_page_count, _) = st.size_hint();
+
+// Stream of paged results `Page<Mod>` with page size = 10
+while let Some(page) = st.try_next().await? {
+    println!("Page {}/{} - Items #{}", page.current(), page.page_count(), page.len());
+    for item in page {
+        println!("  {}. {}", item.id, item.name);
+    }
+}
+
+let filter = Fulltext::eq("soldier");
+let mut st = modio.game(51).mods().search(filter).iter().await?;
+let (_total, _) = st.size_hint();
+
+// Stream of `Mod`
+while let Some(mod_) = st.try_next().await? {
+    println!("{}. {}", mod_.id, mod_.name);
+}
 ```
 
 ### Download
