@@ -66,7 +66,8 @@ impl Downloader {
     ///     mod_id: 19,
     /// };
     ///
-    /// modio.download(action)
+    /// modio
+    ///     .download(action)
     ///     .stream()
     ///     .try_for_each(|bytes| {
     ///         println!("Bytes: {:?}", bytes);

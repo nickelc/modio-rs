@@ -335,8 +335,7 @@ where
 /// ```
 /// use modio::filter::{custom_filter, custom_order_by_asc, Operator};
 ///
-/// let filter = custom_filter("foo", Operator::Like, "bar*")
-///     .order_by(custom_order_by_asc("foo"));
+/// let filter = custom_filter("foo", Operator::Like, "bar*").order_by(custom_order_by_asc("foo"));
 /// ```
 pub fn custom_order_by_asc<S: Into<String>>(name: S) -> Filter {
     Filter::new_order_by_asc(name)
@@ -347,8 +346,7 @@ pub fn custom_order_by_asc<S: Into<String>>(name: S) -> Filter {
 /// ```
 /// use modio::filter::{custom_filter, custom_order_by_desc, Operator};
 ///
-/// let filter = custom_filter("foo", Operator::Like, "bar*")
-///     .order_by(custom_order_by_desc("foo"));
+/// let filter = custom_filter("foo", Operator::Like, "bar*").order_by(custom_order_by_desc("foo"));
 /// ```
 pub fn custom_order_by_desc<S: Into<String>>(name: S) -> Filter {
     Filter::new_order_by_desc(name)

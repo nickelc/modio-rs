@@ -30,9 +30,7 @@
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     let modio = Modio::new(
-//!         Credentials::new("user-or-game-api-key"),
-//!     )?;
+//!     let modio = Modio::new(Credentials::new("user-or-game-api-key"))?;
 //!
 //!     // create some tasks and execute them
 //!     // let result = task.await?;
@@ -447,7 +445,8 @@ impl Modio {
     ///     version: "0.1".to_string(),
     ///     policy: ResolvePolicy::Latest,
     /// };
-    /// modio.download(action)
+    /// modio
+    ///     .download(action)
     ///     .stream()
     ///     .try_for_each(|bytes| {
     ///         println!("Bytes: {:?}", bytes);
