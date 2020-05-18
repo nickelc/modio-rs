@@ -1,6 +1,5 @@
-<a href="https://mod.io"><img src="https://static.mod.io/v1/images/branding/modio-color-dark.svg" alt="mod.io" width="400"/></a>
+<a href="https://mod.io"><img src="https://github.com/nickelc/modio-rs/raw/master/header.png" alt="mod.io" width="320"/></a>
 
-# modio-rs
 [![Crates.io][crates-badge]][crates-url]
 ![License][license-badge]
 [![Released API docs][docs-badge]][docs-url]
