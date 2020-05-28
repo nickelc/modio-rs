@@ -1,4 +1,5 @@
 //! Authentication Flow interface
+use std::collections::BTreeMap;
 use std::error::Error as StdError;
 use std::fmt;
 
@@ -222,12 +223,10 @@ impl Auth {
     where
         T: Into<AuthOptions>,
     {
-        let (route, data) = match auth_options.into() {
-            AuthOptions::Gog(opts) => (Route::AuthGog, opts.to_query_string()),
-            AuthOptions::Itchio(opts) => (Route::AuthItchio, opts.to_query_string()),
-            AuthOptions::Oculus(opts) => (Route::AuthOculus, opts.to_query_string()),
-            AuthOptions::Steam(opts) => (Route::AuthSteam, opts.to_query_string()),
-        };
+        let AuthOptions { route, params } = auth_options.into();
+        let data = form_urlencoded::Serializer::new(String::new())
+            .extend_pairs(params)
+            .finish();
 
         let t = self
             .modio
@@ -260,36 +259,46 @@ impl Auth {
     }
 }
 
-/// Various options for external authentication.
-pub enum AuthOptions {
-    Gog(GalaxyOptions),
-    Itchio(ItchioOptions),
-    Oculus(OculusOptions),
-    Steam(SteamOptions),
+/// Options for external authentication.
+pub struct AuthOptions {
+    route: Route,
+    params: BTreeMap<&'static str, String>,
 }
 
 // impl From<*Options> for AuthOptions {{{
 impl From<GalaxyOptions> for AuthOptions {
     fn from(options: GalaxyOptions) -> AuthOptions {
-        AuthOptions::Gog(options)
+        AuthOptions {
+            route: Route::AuthGog,
+            params: options.params,
+        }
     }
 }
 
 impl From<ItchioOptions> for AuthOptions {
     fn from(options: ItchioOptions) -> AuthOptions {
-        AuthOptions::Itchio(options)
+        AuthOptions {
+            route: Route::AuthItchio,
+            params: options.params,
+        }
     }
 }
 
 impl From<OculusOptions> for AuthOptions {
     fn from(options: OculusOptions) -> AuthOptions {
-        AuthOptions::Oculus(options)
+        AuthOptions {
+            route: Route::AuthOculus,
+            params: options.params,
+        }
     }
 }
 
 impl From<SteamOptions> for AuthOptions {
     fn from(options: SteamOptions) -> AuthOptions {
-        AuthOptions::Steam(options)
+        AuthOptions {
+            route: Route::AuthSteam,
+            params: options.params,
+        }
     }
 }
 // }}}
@@ -298,7 +307,7 @@ impl From<SteamOptions> for AuthOptions {
 ///
 /// See the [mod.io docs](https://docs.mod.io/#authenticate-via-gog-galaxy) for more information.
 pub struct GalaxyOptions {
-    params: std::collections::BTreeMap<&'static str, String>,
+    params: BTreeMap<&'static str, String>,
 }
 
 impl GalaxyOptions {
@@ -306,7 +315,7 @@ impl GalaxyOptions {
     where
         T: Into<String>,
     {
-        let mut params = std::collections::BTreeMap::new();
+        let mut params = BTreeMap::new();
         params.insert("appdata", ticket.into());
         Self { params }
     }
@@ -319,19 +328,11 @@ impl GalaxyOptions {
     );
 }
 
-impl QueryString for GalaxyOptions {
-    fn to_query_string(&self) -> String {
-        form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(&self.params)
-            .finish()
-    }
-}
-
 /// Authentication options for an itch.io JWT token.
 ///
 /// See the [mod.io docs](https://docs.mod.io/#authenticate-via-itch-io) for more information.
 pub struct ItchioOptions {
-    params: std::collections::BTreeMap<&'static str, String>,
+    params: BTreeMap<&'static str, String>,
 }
 
 impl ItchioOptions {
@@ -339,7 +340,7 @@ impl ItchioOptions {
     where
         T: Into<String>,
     {
-        let mut params = std::collections::BTreeMap::new();
+        let mut params = BTreeMap::new();
         params.insert("itchio_token", token.into());
         Self { params }
     }
@@ -352,19 +353,11 @@ impl ItchioOptions {
     );
 }
 
-impl QueryString for ItchioOptions {
-    fn to_query_string(&self) -> String {
-        form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(&self.params)
-            .finish()
-    }
-}
-
 /// Authentication options for an Oculus user.
 ///
 /// See the [mod.io docs](https://docs.mod.io/#authenticate-via-oculus) for more information.
 pub struct OculusOptions {
-    params: std::collections::BTreeMap<&'static str, String>,
+    params: BTreeMap<&'static str, String>,
 }
 
 impl OculusOptions {
@@ -372,7 +365,7 @@ impl OculusOptions {
     where
         T: Into<String>,
     {
-        let mut params = std::collections::BTreeMap::new();
+        let mut params = BTreeMap::new();
         params.insert("nonce", nonce.into());
         params.insert("user_id", user_id.to_string());
         params.insert("auth_token", auth_token.into());
@@ -387,19 +380,11 @@ impl OculusOptions {
     );
 }
 
-impl QueryString for OculusOptions {
-    fn to_query_string(&self) -> String {
-        form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(&self.params)
-            .finish()
-    }
-}
-
 /// Authentication options for an encrypted steam app ticket.
 ///
 /// See the [mod.io docs](https://docs.mod.io/#authenticate-via-steam) for more information.
 pub struct SteamOptions {
-    params: std::collections::BTreeMap<&'static str, String>,
+    params: BTreeMap<&'static str, String>,
 }
 
 impl SteamOptions {
@@ -407,7 +392,7 @@ impl SteamOptions {
     where
         T: Into<String>,
     {
-        let mut params = std::collections::BTreeMap::new();
+        let mut params = BTreeMap::new();
         params.insert("appdata", ticket.into());
         Self { params }
     }
@@ -418,14 +403,6 @@ impl SteamOptions {
         /// than the default value which is a common year.
         expired_at: u64 >> "date_expires"
     );
-}
-
-impl QueryString for SteamOptions {
-    fn to_query_string(&self) -> String {
-        form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(&self.params)
-            .finish()
-    }
 }
 
 /// Options for connecting external accounts with the authenticated user's email address.
