@@ -432,6 +432,32 @@ pub mod game {
         pub original: Url,
     }
 
+    /// See the [Game Statistics Object](https://docs.mod.io/#game-stats-object) docs for more
+    /// information.
+    #[derive(Debug, Deserialize)]
+    pub struct Statistics {
+        pub game_id: u32,
+        #[serde(rename = "mods_count_total")]
+        pub mods_total: u32,
+        #[serde(rename = "mods_subscribers_total")]
+        pub subscribers_total: u32,
+        #[serde(flatten)]
+        pub downloads: Downloads,
+        #[serde(rename = "date_expires")]
+        pub expired_at: u64,
+    }
+
+    /// Part of [`Statistics`]
+    #[derive(Debug, Deserialize)]
+    pub struct Downloads {
+        #[serde(rename = "mods_downloads_total")]
+        pub total: u32,
+        #[serde(rename = "mods_downloads_today")]
+        pub today: u32,
+        #[serde(rename = "mods_downloads_daily_average")]
+        pub daily_average: u32,
+    }
+
     /// See the [Game Tag Option Object](https://docs.mod.io/#game-tag-option-object) docs for more
     /// information.
     #[derive(Debug, Deserialize)]

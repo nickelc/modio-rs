@@ -111,6 +111,7 @@ define_routes! {
     { GetGame, GET: "/games/{}", [game_id], Any },
     { AddGameMedia, POST: "/games/{}/media", [game_id], Token },
     { EditGame, PUT: "/games/{}", [game_id], Token },
+    { GetGameStats, GET: "/games/{}/stats", [game_id], Any },
     { GetGameTags, GET: "/games/{}/tags", [game_id], Any },
     { AddGameTags, POST: "/games/{}/tags", [game_id], Token },
     { DeleteGameTags, DELETE: "/games/{}/tags", [game_id], Token },
