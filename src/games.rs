@@ -12,8 +12,9 @@ use crate::ModRef;
 use crate::Mods;
 
 pub use crate::types::game::{
-    ApiAccessOptions, CommunityOptions, CurationOption, Downloads, Game, HeaderImage, Icon, MaturityOptions,
-    PresentationOption, RevenueOptions, Statistics, SubmissionOption, TagOption, TagType,
+    ApiAccessOptions, CommunityOptions, CurationOption, Downloads, Game, HeaderImage, Icon,
+    MaturityOptions, PresentationOption, RevenueOptions, Statistics, SubmissionOption, TagOption,
+    TagType,
 };
 pub use crate::types::Logo;
 pub use crate::types::Status;
@@ -71,10 +72,7 @@ impl GameRef {
     /// Return the statistics for a game.
     pub async fn statistics(self) -> Result<Statistics> {
         let route = Route::GetGameStats { game_id: self.id };
-        self.modio
-            .request(route)
-            .send()
-            .await
+        self.modio.request(route).send().await
     }
 
     /// Return a reference to an interface that provides access to the tags of a game.
