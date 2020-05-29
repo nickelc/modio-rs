@@ -3,11 +3,10 @@ use std::collections::BTreeMap;
 use std::error::Error as StdError;
 use std::fmt;
 
-use serde::Deserialize;
 use url::form_urlencoded;
 
 use crate::routing::Route;
-use crate::types::Message;
+use crate::types::{AccessToken, Message};
 use crate::Modio;
 use crate::QueryString;
 use crate::Result;
@@ -134,14 +133,6 @@ impl fmt::Display for Error {
 /// ```
 pub struct Auth {
     modio: Modio,
-}
-
-#[derive(Deserialize)]
-struct AccessToken {
-    #[serde(rename = "access_token")]
-    value: String,
-    #[serde(rename = "date_expires")]
-    expired_at: Option<u64>,
 }
 
 impl Auth {
