@@ -127,7 +127,8 @@ modio.download(action).save_to_file("mod.zip").await?;
 
 // Download the specific version of a mod.
 // if multiple files are found then the latest file is downloaded.
-// Set policy to `ResolvePolicy::Fail` to return with `modio::download::Error::MultipleFilesFound` as source error.
+// Set policy to `ResolvePolicy::Fail` to return with `modio::download::Error::MultipleFilesFound`
+// as source error.
 let action = DownloadAction::Version {
     game_id: 5,
     mod_id: 19,
