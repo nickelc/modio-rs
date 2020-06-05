@@ -352,14 +352,26 @@ pub struct OculusOptions {
 }
 
 impl OculusOptions {
-    pub fn new<T>(nonce: T, user_id: u64, auth_token: T) -> Self
+    pub fn new_for_quest<T>(nonce: T, user_id: u64, auth_token: T) -> Self
     where
         T: Into<String>,
     {
+        OculusOptions::new("quest".to_owned(), nonce.into(), user_id, auth_token.into())
+    }
+
+    pub fn new_for_rift<T>(nonce: T, user_id: u64, auth_token: T) -> Self
+    where
+        T: Into<String>,
+    {
+        OculusOptions::new("rift".to_owned(), nonce.into(), user_id, auth_token.into())
+    }
+
+    fn new(device: String, nonce: String, user_id: u64, auth_token: String) -> Self {
         let mut params = BTreeMap::new();
-        params.insert("nonce", nonce.into());
+        params.insert("device", device);
+        params.insert("nonce", nonce);
         params.insert("user_id", user_id.to_string());
-        params.insert("auth_token", auth_token.into());
+        params.insert("auth_token", auth_token);
         Self { params }
     }
 
