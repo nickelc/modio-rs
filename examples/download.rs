@@ -3,7 +3,6 @@ use std::io::{self, Write};
 use std::process;
 
 use futures_util::{future, TryStreamExt};
-use md5;
 
 use modio::{auth::Credentials, Modio};
 
