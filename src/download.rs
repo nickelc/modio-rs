@@ -2,12 +2,10 @@
 use std::error::Error as StdError;
 use std::fmt;
 use std::path::Path;
-use std::task::Poll;
 
 use bytes::Bytes;
-use futures_core::{ready, Stream};
-use futures_util::stream::poll_fn;
-use futures_util::{future, FutureExt, SinkExt, StreamExt, TryFutureExt};
+use futures_core::Stream;
+use futures_util::{SinkExt, StreamExt, TryFutureExt, TryStreamExt};
 use log::debug;
 use reqwest::{Method, Response, StatusCode};
 use tokio::fs::File as AsyncFile;
@@ -79,16 +77,7 @@ impl Downloader {
     /// ```
     pub fn stream(self) -> impl Stream<Item = Result<Bytes>> {
         request_file(self.modio, self.action)
-            .and_then(|mut res| {
-                let st = poll_fn(
-                    move |cx| match ready!(Box::pin(res.chunk()).poll_unpin(cx)) {
-                        Ok(Some(bytes)) => Poll::Ready(Some(Ok(bytes))),
-                        Err(e) => Poll::Ready(Some(Err(error::request(e)))),
-                        Ok(None) => Poll::Ready(None),
-                    },
-                );
-                future::ok(st)
-            })
+            .and_then(|res| async { Ok(res.bytes_stream().map_err(error::request)) })
             .try_flatten_stream()
     }
 }
