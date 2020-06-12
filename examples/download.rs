@@ -2,7 +2,7 @@ use std::env;
 use std::io::{self, Write};
 use std::process;
 
-use futures_util::{future, TryStreamExt};
+use futures_util::TryStreamExt;
 
 use modio::{auth::Credentials, Modio};
 
@@ -40,7 +40,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let m = modio.mod_(game_id, mod_id).get().await?;
     if let Some(file) = m.modfile {
         // Download the file and calculate its md5 digest.
-        let ctx = md5::Context::new();
+        let mut ctx = md5::Context::new();
+        let mut size = 0;
 
         println!("mod: {}", m.name);
         println!("url: {}", file.download.binary_url);
@@ -48,17 +49,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("filesize: {}", file.filesize);
         println!("reported md5: {}", file.filehash.md5);
 
-        let (size, ctx) = modio
-            .download(file)
-            .stream()
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
-            .try_fold((0, ctx), |(size, mut ctx), bytes| {
-                match ctx.write_all(&bytes) {
-                    Ok(()) => future::ok((size + bytes.len(), ctx)),
-                    Err(e) => future::err(e),
-                }
-            })
-            .await?;
+        let mut st = Box::pin(modio.download(file).stream());
+        while let Some(bytes) = st.try_next().await? {
+            size += bytes.len();
+            ctx.write_all(&bytes)?;
+        }
+
         println!("computed md5: {:x}", ctx.compute());
         println!("downloaded size: {}", size);
     } else {

@@ -55,7 +55,7 @@ impl Downloader {
     ///
     /// # Example
     /// ```no_run
-    /// use futures_util::{future, TryStreamExt};
+    /// use futures_util::TryStreamExt;
     ///
     /// # async fn run() -> Result<(), Box<dyn std::error::Error>> {
     /// #     let modio = modio::Modio::new("api-key")?;
@@ -64,14 +64,10 @@ impl Downloader {
     ///     mod_id: 19,
     /// };
     ///
-    /// modio
-    ///     .download(action)
-    ///     .stream()
-    ///     .try_for_each(|bytes| {
-    ///         println!("Bytes: {:?}", bytes);
-    ///         future::ok(())
-    ///     })
-    ///     .await?;
+    /// let mut st = Box::pin(modio.download(action).stream());
+    /// while let Some(bytes) = st.try_next().await? {
+    ///     println!("Bytes: {:?}", bytes);
+    /// }
     /// #     Ok(())
     /// # }
     /// ```
