@@ -1,7 +1,6 @@
 use std::env;
 use std::process;
 
-use futures_util::future::try_join3;
 use modio::{auth::Credentials, Modio};
 
 #[tokio::main]
@@ -27,19 +26,24 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let modref = modio.mod_(51, 158);
 
     // Get mod with its dependencies and all files
-    let deps = modref.dependencies().list();
-    let files = modref.files().search(Default::default()).collect();
-    let mod_ = modref.get();
+    let deps = modref.dependencies().list().await?;
+    let files = modref.files().search(Default::default()).collect().await?;
+    let m = modref.get().await?;
 
-    let (m, deps, files) = try_join3(mod_, deps, files).await?;
-
-    println!("{}", m.name);
+    println!("{}, {}\n", m.name, m.profile_url);
     println!(
         "deps: {:?}",
         deps.into_iter().map(|d| d.mod_id).collect::<Vec<_>>()
     );
+    println!(
+        "stats: downloads={} subscribers={}\n",
+        m.stats.downloads_total, m.stats.subscribers_total,
+    );
+    let primary = m.modfile.as_ref().map(|f| f.id).unwrap_or_default();
+    println!("files:");
     for file in files {
-        println!("file id: {} version: {:?}", file.id, file.version);
+        let primary = if primary == file.id { "*" } else { " " };
+        println!("{} id: {} version: {:?}", primary, file.id, file.version);
     }
     Ok(())
 }
