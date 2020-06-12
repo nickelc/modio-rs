@@ -51,6 +51,26 @@ impl Downloader {
         self.stream().forward(out).await
     }
 
+    /// Get the full mod file as `Bytes`.
+    ///
+    /// # Example
+    /// ```no_run
+    /// # async fn run() -> Result<(), Box<dyn std::error::Error>> {
+    /// #     let modio = modio::Modio::new("api-key")?;
+    /// let action = modio::DownloadAction::Primary {
+    ///     game_id: 5,
+    ///     mod_id: 19,
+    /// };
+    ///
+    /// let bytes = modio.download(action).bytes().await?;
+    /// #     Ok(())
+    /// # }
+    /// ```
+    pub async fn bytes(self) -> Result<Bytes> {
+        let resp = request_file(self.modio, self.action).await?;
+        resp.bytes().map_err(error::request).await
+    }
+
     /// `Stream` of bytes of the mod file.
     ///
     /// # Example
