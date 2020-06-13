@@ -111,6 +111,7 @@
 #![doc(html_root_url = "https://docs.rs/modio/0.4.1")]
 #![deny(rust_2018_idioms)]
 #![deny(intra_doc_link_resolution_failure)]
+use std::convert::TryInto;
 
 use reqwest::header::USER_AGENT;
 use reqwest::header::{HeaderMap, HeaderValue};
@@ -197,12 +198,13 @@ pub struct Builder {
 
 struct Config {
     host: Option<String>,
-    agent: Option<String>,
     credentials: Credentials,
     builder: Option<ClientBuilder>,
+    headers: HeaderMap,
     proxies: Vec<Proxy>,
     #[cfg(feature = "__tls")]
     tls: TlsBackend,
+    error: Option<Error>,
 }
 
 #[cfg(feature = "__tls")]
@@ -235,12 +237,13 @@ impl Builder {
         Builder {
             config: Config {
                 host: None,
-                agent: None,
                 credentials: credentials.into(),
                 builder: None,
+                headers: HeaderMap::new(),
                 proxies: Vec::new(),
                 #[cfg(feature = "__tls")]
                 tls: TlsBackend::default(),
+                error: None,
             },
         }
     }
@@ -248,6 +251,11 @@ impl Builder {
     /// Returns a `Modio` client that uses this `Builder` configuration.
     pub fn build(self) -> Result<Modio> {
         let config = self.config;
+
+        if let Some(e) = config.error {
+            return Err(e);
+        }
+
         let host = config.host.unwrap_or_else(|| DEFAULT_HOST.to_string());
         let credentials = config.credentials;
 
@@ -266,12 +274,10 @@ impl Builder {
                 builder
             };
 
-            let mut headers = HeaderMap::new();
-            let agent = match config.agent {
-                Some(agent) => HeaderValue::from_str(&agent).map_err(error::builder)?,
-                None => HeaderValue::from_static(DEFAULT_AGENT),
-            };
-            headers.insert(USER_AGENT, agent);
+            let mut headers = config.headers;
+            if !headers.contains_key(USER_AGENT) {
+                headers.insert(USER_AGENT, HeaderValue::from_static(DEFAULT_AGENT));
+            }
 
             for proxy in config.proxies {
                 builder = builder.proxy(proxy);
@@ -316,8 +322,19 @@ impl Builder {
     /// Set the user agent used for every request.
     ///
     /// Defaults to `"modio/{version}"`
-    pub fn agent<S: Into<String>>(mut self, agent: S) -> Builder {
-        self.config.agent = Some(agent.into());
+    pub fn user_agent<V>(mut self, value: V) -> Builder
+    where
+        V: TryInto<HeaderValue>,
+        V::Error: Into<http::Error>,
+    {
+        match value.try_into() {
+            Ok(value) => {
+                self.config.headers.insert(USER_AGENT, value);
+            }
+            Err(e) => {
+                self.config.error = Some(error::builder(e.into()));
+            }
+        }
         self
     }
 
