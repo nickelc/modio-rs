@@ -177,7 +177,8 @@ mod prelude {
 }
 
 /// Re-exports of the used reqwest types.
-pub mod client {
+#[doc(hidden)]
+pub mod lib {
     pub use reqwest::header;
     pub use reqwest::redirect::Policy;
     pub use reqwest::ClientBuilder;
