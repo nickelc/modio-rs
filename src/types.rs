@@ -780,11 +780,11 @@ pub mod mods {
                     metavalue: String,
                 }
 
-                let mut map = MetadataMap::new();
+                let size = seq.size_hint().unwrap_or_default();
+                let mut map = MetadataMap::with_capacity(size);
+
                 while let Ok(Some(elem)) = seq.next_element::<KV>() {
-                    map.entry(elem.metakey)
-                        .or_insert_with(Vec::new)
-                        .push(elem.metavalue);
+                    map.entry(elem.metakey).or_default().push(elem.metavalue);
                 }
                 Ok(map)
             }

@@ -33,16 +33,16 @@ impl Metadata {
             game_id: self.game,
             mod_id: self.mod_id,
         };
-        Query::new(self.modio, route, Default::default())
-            .iter()
-            .await?
-            .try_fold(MetadataMap::new(), |mut map, kv: KV| async {
-                map.entry(kv.metakey)
-                    .or_insert_with(Vec::new)
-                    .push(kv.metavalue);
-                Ok(map)
-            })
-            .await
+        let filter = Default::default();
+        let mut it = Query::<KV>::new(self.modio, route, filter).iter().await?;
+
+        let (size, _) = it.size_hint();
+        let mut map = MetadataMap::with_capacity(size);
+
+        while let Some(kv) = it.try_next().await? {
+            map.entry(kv.metakey).or_default().push(kv.metavalue);
+        }
+        Ok(map)
     }
 
     /// Add metadata for a mod that this `Metadata` refers to.
