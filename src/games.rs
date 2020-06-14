@@ -6,10 +6,9 @@ use mime::IMAGE_STAR;
 use url::form_urlencoded;
 use url::Url;
 
+use crate::mods::{ModRef, Mods};
 use crate::multipart::FileSource;
 use crate::prelude::*;
-use crate::ModRef;
-use crate::Mods;
 
 pub use crate::types::game::{
     ApiAccessOptions, CommunityOptions, CurationOption, Downloads, Game, HeaderImage, Icon,

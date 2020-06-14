@@ -12,6 +12,11 @@ use crate::routing::{AuthMethod, Route};
 use crate::types::ErrorResponse;
 use crate::Modio;
 
+#[allow(dead_code)]
+const X_RATELIMIT_LIMIT: &str = "x-ratelimit-limit";
+const X_RATELIMIT_REMAINING: &str = "x-ratelimit-remaining";
+const X_RATELIMIT_RETRY_AFTER: &str = "x-ratelimit-retryafter";
+
 pub struct RequestBuilder {
     modio: Modio,
     request: Request,
@@ -109,12 +114,12 @@ impl RequestBuilder {
         } else {
             let remaining = response
                 .headers()
-                .get(super::X_RATELIMIT_REMAINING)
+                .get(X_RATELIMIT_REMAINING)
                 .and_then(|v| v.to_str().ok())
                 .and_then(|v| v.parse::<u64>().ok());
             let reset = response
                 .headers()
-                .get(super::X_RATELIMIT_RETRY_AFTER)
+                .get(X_RATELIMIT_RETRY_AFTER)
                 .and_then(|v| v.to_str().ok())
                 .and_then(|v| v.parse::<u64>().ok());
             (remaining, reset)

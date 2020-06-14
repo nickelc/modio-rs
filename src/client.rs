@@ -1,0 +1,328 @@
+use std::convert::TryInto;
+
+use ::reqwest::{Client, ClientBuilder, Proxy};
+use http::header::USER_AGENT;
+use http::header::{HeaderMap, HeaderValue};
+
+use crate::auth::{Auth, Credentials};
+use crate::download::{DownloadAction, Downloader};
+use crate::error::{self, Error, Result};
+use crate::games::{GameRef, Games};
+use crate::mods::ModRef;
+use crate::reports::Reports;
+use crate::request::RequestBuilder;
+use crate::routing::Route;
+use crate::user::Me;
+
+const DEFAULT_HOST: &str = "https://api.mod.io/v1";
+const TEST_HOST: &str = "https://api.test.mod.io/v1";
+const DEFAULT_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), '/', env!("CARGO_PKG_VERSION"));
+
+/// A `Builder` can be used to create a `Modio` client with custom configuration.
+pub struct Builder {
+    config: Config,
+}
+
+struct Config {
+    host: Option<String>,
+    credentials: Credentials,
+    builder: Option<ClientBuilder>,
+    headers: HeaderMap,
+    proxies: Vec<Proxy>,
+    #[cfg(feature = "__tls")]
+    tls: TlsBackend,
+    error: Option<Error>,
+}
+
+#[cfg(feature = "__tls")]
+enum TlsBackend {
+    #[cfg(feature = "default-tls")]
+    Default,
+    #[cfg(feature = "rustls-tls")]
+    Rustls,
+}
+
+#[cfg(feature = "__tls")]
+impl Default for TlsBackend {
+    fn default() -> TlsBackend {
+        #[cfg(feature = "default-tls")]
+        {
+            TlsBackend::Default
+        }
+        #[cfg(all(feature = "rustls-tls", not(feature = "default-tls")))]
+        {
+            TlsBackend::Rustls
+        }
+    }
+}
+
+impl Builder {
+    /// Constructs a new `Builder`.
+    ///
+    /// This is the same as `Modio::builder(credentials)`.
+    pub fn new<C: Into<Credentials>>(credentials: C) -> Builder {
+        Builder {
+            config: Config {
+                host: None,
+                credentials: credentials.into(),
+                builder: None,
+                headers: HeaderMap::new(),
+                proxies: Vec::new(),
+                #[cfg(feature = "__tls")]
+                tls: TlsBackend::default(),
+                error: None,
+            },
+        }
+    }
+
+    /// Returns a `Modio` client that uses this `Builder` configuration.
+    pub fn build(self) -> Result<Modio> {
+        let config = self.config;
+
+        if let Some(e) = config.error {
+            return Err(e);
+        }
+
+        let host = config.host.unwrap_or_else(|| DEFAULT_HOST.to_string());
+        let credentials = config.credentials;
+
+        let client = {
+            let mut builder = {
+                let builder = config.builder.unwrap_or_else(Client::builder);
+                #[cfg(feature = "__tls")]
+                match config.tls {
+                    #[cfg(feature = "default-tls")]
+                    TlsBackend::Default => builder.use_native_tls(),
+                    #[cfg(feature = "rustls-tls")]
+                    TlsBackend::Rustls => builder.use_rustls_tls(),
+                }
+
+                #[cfg(not(feature = "__tls"))]
+                builder
+            };
+
+            let mut headers = config.headers;
+            if !headers.contains_key(USER_AGENT) {
+                headers.insert(USER_AGENT, HeaderValue::from_static(DEFAULT_AGENT));
+            }
+
+            for proxy in config.proxies {
+                builder = builder.proxy(proxy);
+            }
+
+            builder
+                .default_headers(headers)
+                .build()
+                .map_err(error::builder)?
+        };
+
+        Ok(Modio {
+            host,
+            credentials,
+            client,
+        })
+    }
+
+    /// Configure the underlying `reqwest` client using `reqwest::ClientBuilder`.
+    pub fn client<F>(mut self, f: F) -> Builder
+    where
+        F: FnOnce(ClientBuilder) -> ClientBuilder,
+    {
+        self.config.builder = Some(f(Client::builder()));
+        self
+    }
+
+    /// Set the mod.io api host.
+    ///
+    /// Defaults to `"https://api.mod.io/v1"`
+    pub fn host<S: Into<String>>(mut self, host: S) -> Builder {
+        self.config.host = Some(host.into());
+        self
+    }
+
+    /// Use the mod.io api test host.
+    pub fn use_test(mut self) -> Builder {
+        self.config.host = Some(TEST_HOST.into());
+        self
+    }
+
+    /// Set the user agent used for every request.
+    ///
+    /// Defaults to `"modio/{version}"`
+    pub fn user_agent<V>(mut self, value: V) -> Builder
+    where
+        V: TryInto<HeaderValue>,
+        V::Error: Into<http::Error>,
+    {
+        match value.try_into() {
+            Ok(value) => {
+                self.config.headers.insert(USER_AGENT, value);
+            }
+            Err(e) => {
+                self.config.error = Some(error::builder(e.into()));
+            }
+        }
+        self
+    }
+
+    /// Add a `Proxy` to the list of proxies the client will use.
+    pub fn proxy(mut self, proxy: Proxy) -> Builder {
+        self.config.proxies.push(proxy);
+        self
+    }
+
+    /// Use native TLS backend.
+    #[cfg(feature = "default-tls")]
+    pub fn use_default_tls(mut self) -> Builder {
+        self.config.tls = TlsBackend::Default;
+        self
+    }
+
+    /// Use rustls TLS backend.
+    #[cfg(feature = "rustls-tls")]
+    pub fn use_rustls_tls(mut self) -> Builder {
+        self.config.tls = TlsBackend::Rustls;
+        self
+    }
+}
+
+/// Endpoint interface to interacting with the [mod.io](https://mod.io) API.
+#[derive(Clone, Debug)]
+pub struct Modio {
+    pub(crate) host: String,
+    pub(crate) client: Client,
+    pub(crate) credentials: Credentials,
+}
+
+impl Modio {
+    /// Constructs a new `Builder` to configure a `Modio` client.
+    ///
+    /// This is the same as `Builder::new(credentials)`.
+    pub fn builder<C: Into<Credentials>>(credentials: C) -> Builder {
+        Builder::new(credentials)
+    }
+
+    /// Create an endpoint to [https://api.mod.io/v1](https://docs.mod.io/#mod-io-api-v1).
+    pub fn new<C>(credentials: C) -> Result<Self>
+    where
+        C: Into<Credentials>,
+    {
+        Builder::new(credentials).build()
+    }
+
+    /// Create an endpoint to a different host.
+    pub fn host<H, C>(host: H, credentials: C) -> Result<Self>
+    where
+        H: Into<String>,
+        C: Into<Credentials>,
+    {
+        Builder::new(credentials).host(host).build()
+    }
+
+    /// Consume the endpoint and create an endpoint with new credentials.
+    pub fn with_credentials<CR>(self, credentials: CR) -> Self
+    where
+        CR: Into<Credentials>,
+    {
+        Self {
+            host: self.host,
+            client: self.client,
+            credentials: credentials.into(),
+        }
+    }
+
+    /// Return a reference to an interface for requesting access tokens.
+    pub fn auth(&self) -> Auth {
+        Auth::new(self.clone())
+    }
+
+    /// Return a reference to an interface that provides access to game information.
+    pub fn games(&self) -> Games {
+        Games::new(self.clone())
+    }
+
+    /// Return a reference to a game.
+    pub fn game(&self, game_id: u32) -> GameRef {
+        GameRef::new(self.clone(), game_id)
+    }
+
+    /// Return a reference to a mod.
+    pub fn mod_(&self, game_id: u32, mod_id: u32) -> ModRef {
+        ModRef::new(self.clone(), game_id, mod_id)
+    }
+
+    /// Returns [`Downloader`] for saving to file or retrieving
+    /// the data via [`Stream`].
+    ///
+    /// The download fails with [`modio::download::Error`] as source
+    /// if a primary file, a specific file or a specific version is not found.
+    ///
+    /// [`Downloader`]: crate::download::Downloader
+    /// [`modio::download::Error`]: crate::download::Error
+    /// [`Stream`]: futures_core::Stream
+    ///
+    /// # Example
+    /// ```no_run
+    /// use futures_util::{future, TryStreamExt};
+    /// use modio::download::{DownloadAction, ResolvePolicy};
+    /// # async fn run() -> Result<(), Box<dyn std::error::Error>> {
+    /// #    let modio = modio::Modio::new("user-or-game-api-key")?;
+    ///
+    /// // Download the primary file of a mod.
+    /// let action = DownloadAction::Primary {
+    ///     game_id: 5,
+    ///     mod_id: 19,
+    /// };
+    /// modio.download(action).save_to_file("mod.zip").await?;
+    ///
+    /// // Download the specific file of a mod.
+    /// let action = DownloadAction::File {
+    ///     game_id: 5,
+    ///     mod_id: 19,
+    ///     file_id: 101,
+    /// };
+    /// modio.download(action).save_to_file("mod.zip").await?;
+    ///
+    /// // Download the specific version of a mod.
+    /// // if multiple files are found then the latest file is downloaded.
+    /// // Set policy to `ResolvePolicy::Fail` to return with
+    /// // `modio::download::Error::MultipleFilesFound` as source error.
+    /// let action = DownloadAction::Version {
+    ///     game_id: 5,
+    ///     mod_id: 19,
+    ///     version: "0.1".to_string(),
+    ///     policy: ResolvePolicy::Latest,
+    /// };
+    /// modio
+    ///     .download(action)
+    ///     .stream()
+    ///     .try_for_each(|bytes| {
+    ///         println!("Bytes: {:?}", bytes);
+    ///         future::ok(())
+    ///     })
+    ///     .await?;
+    /// #    Ok(())
+    /// # }
+    /// ```
+    pub fn download<A>(&self, action: A) -> Downloader
+    where
+        DownloadAction: From<A>,
+    {
+        Downloader::new(self.clone(), action.into())
+    }
+
+    /// Return a reference to an interface that provides access to resources owned by the user
+    /// associated with the current authentication credentials.
+    pub fn user(&self) -> Me {
+        Me::new(self.clone())
+    }
+
+    /// Return a reference to an interface to report games, mods and users.
+    pub fn reports(&self) -> Reports {
+        Reports::new(self.clone())
+    }
+
+    pub(crate) fn request(&self, route: Route) -> RequestBuilder {
+        RequestBuilder::new(self.clone(), route)
+    }
+}

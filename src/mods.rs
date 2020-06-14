@@ -5,13 +5,13 @@ use std::path::Path;
 use mime::{APPLICATION_OCTET_STREAM, IMAGE_STAR};
 use url::{form_urlencoded, Url};
 
+use crate::comments::Comments;
 use crate::error::Kind;
 use crate::files::{FileRef, Files};
 use crate::metadata::Metadata;
 use crate::multipart::FileSource;
 use crate::prelude::*;
 use crate::teams::Members;
-use crate::Comments;
 
 pub use crate::types::mods::{
     Dependency, Event, EventType, Image, MaturityOption, Media, Mod, Popularity, Ratings,
