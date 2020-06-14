@@ -145,19 +145,15 @@ pub use crate::types::{Deletion, Editing};
 
 mod prelude {
     pub use futures_core::Stream;
-    pub use futures_util::{TryFutureExt, TryStreamExt};
-    pub use reqwest::multipart::{Form, Part};
+    pub use reqwest::multipart::Form;
     pub use reqwest::StatusCode;
 
     pub use crate::filter::Filter;
-    pub(crate) use crate::loader::Query;
+    pub use crate::loader::Query;
     pub use crate::routing::Route;
-    pub(crate) use crate::types::Message;
-    pub use crate::Deletion;
-    pub use crate::Editing;
-    pub use crate::Modio;
+    pub use crate::types::Message;
     pub(crate) use crate::QueryString;
-    pub use crate::Result;
+    pub use crate::{Deletion, Editing, Modio, Result};
 }
 
 /// Re-exports of the used reqwest types.

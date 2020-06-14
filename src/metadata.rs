@@ -1,5 +1,5 @@
 //! Mod metadata KVP interface
-use futures_util::future;
+use futures_util::TryStreamExt;
 use serde::Deserialize;
 use url::form_urlencoded;
 
@@ -36,11 +36,11 @@ impl Metadata {
         Query::new(self.modio, route, Default::default())
             .iter()
             .await?
-            .try_fold(MetadataMap::new(), |mut map, kv: KV| {
+            .try_fold(MetadataMap::new(), |mut map, kv: KV| async {
                 map.entry(kv.metakey)
                     .or_insert_with(Vec::new)
                     .push(kv.metavalue);
-                future::ok(map)
+                Ok(map)
             })
             .await
     }
