@@ -188,6 +188,7 @@ pub struct ErrorResponse {
 #[derive(Debug, Deserialize)]
 pub struct Error {
     pub code: u16,
+    pub error_ref: u16,
     pub message: String,
     pub errors: Option<HashMap<String, String>>,
 }

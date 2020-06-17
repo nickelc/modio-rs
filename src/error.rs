@@ -22,6 +22,7 @@ type BoxError = Box<dyn StdError + Send + Sync>;
 
 struct Inner {
     kind: Kind,
+    error_ref: Option<u16>,
     source: Option<BoxError>,
 }
 
@@ -33,6 +34,20 @@ impl Error {
         Error {
             inner: Box::new(Inner {
                 kind,
+                error_ref: None,
+                source: source.map(Into::into),
+            }),
+        }
+    }
+
+    pub(crate) fn new_error_ref<E>(kind: Kind, error_ref: u16, source: Option<E>) -> Error
+    where
+        E: Into<BoxError>,
+    {
+        Error {
+            inner: Box::new(Inner {
+                kind,
+                error_ref: Some(error_ref),
                 source: source.map(Into::into),
             }),
         }
@@ -93,6 +108,13 @@ impl Error {
             Kind::Decode => true,
             _ => false,
         }
+    }
+
+    /// Returns modio's error reference code.
+    ///
+    /// See the [Error Codes](https://docs.mod.io/#error-codes) docs for more information.
+    pub fn error_ref(&self) -> Option<u16> {
+        self.inner.error_ref
     }
 
     /// Returns status code if the error was generated from a response.
@@ -201,8 +223,8 @@ pub(crate) fn token_required() -> Error {
     Error::new(Kind::Auth, Some(AuthError::TokenRequired))
 }
 
-pub(crate) fn unauthorized() -> Error {
-    Error::new(Kind::Auth, Some(AuthError::Unauthorized))
+pub(crate) fn unauthorized(error_ref: u16) -> Error {
+    Error::new_error_ref(Kind::Auth, error_ref, Some(AuthError::Unauthorized))
 }
 
 pub(crate) fn builder_or_request(e: reqwest::Error) -> Error {
@@ -225,14 +247,15 @@ pub(crate) fn decode<E: Into<BoxError>>(e: E) -> Error {
     Error::new(Kind::Decode, Some(e))
 }
 
-pub(crate) fn error_for_status(code: StatusCode, error: ModioError) -> Error {
-    match code {
-        StatusCode::UNPROCESSABLE_ENTITY => Error::new(
+pub(crate) fn error_for_status(status: StatusCode, error: ModioError) -> Error {
+    match status {
+        StatusCode::UNPROCESSABLE_ENTITY => Error::new_error_ref(
             Kind::Validation(error.message, error.errors.unwrap_or_default()),
+            error.error_ref,
             None::<Error>,
         ),
-        StatusCode::UNAUTHORIZED => unauthorized(),
-        _ => Error::new(Kind::Status(code), Some(error)),
+        StatusCode::UNAUTHORIZED => unauthorized(error.error_ref),
+        _ => Error::new_error_ref(Kind::Status(status), error.error_ref, Some(error)),
     }
 }
 
