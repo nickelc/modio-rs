@@ -12,8 +12,10 @@ use crate::routing::{AuthMethod, Route};
 use crate::types::ErrorResponse;
 use crate::Modio;
 
+#[allow(dead_code)]
 mod headers {
-    #[allow(dead_code)]
+    const X_MODIO_ERROR_REF: &str = "x-modio-error-ref";
+    const X_MODIO_REQUEST_ID: &str = "x-modio-request-id";
     const X_RATELIMIT_LIMIT: &str = "x-ratelimit-limit";
     const X_RATELIMIT_REMAINING: &str = "x-ratelimit-remaining";
     const X_RATELIMIT_RETRY_AFTER: &str = "x-ratelimit-retryafter";
