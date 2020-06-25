@@ -66,6 +66,46 @@ impl Report {
     }
 }
 
+#[doc(hidden)]
+impl serde::ser::Serialize for Report {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::ser::Serializer,
+    {
+        use serde::ser::SerializeMap;
+
+        let (resource, id) = match self.resource {
+            Resource::Game(id) => ("games", id),
+            Resource::Mod(id) => ("mods", id),
+            Resource::User(id) => ("users", id),
+        };
+        let _type = match self.kind {
+            ReportType::Generic => 0,
+            ReportType::DMCA => 1,
+            ReportType::NotWorking => 2,
+            ReportType::RudeContent => 3,
+            ReportType::IllegalContent => 4,
+            ReportType::StolenContent => 5,
+            ReportType::FalseInformation => 6,
+            ReportType::Other => 7,
+        };
+
+        let len = if self.contact.is_some() { 6 } else { 5 };
+        let mut map = serializer.serialize_map(Some(len))?;
+
+        if let Some(ref c) = self.contact {
+            map.serialize_entry("contact", c)?;
+        }
+        map.serialize_entry("resource", resource)?;
+        map.serialize_entry("id", &id)?;
+        map.serialize_entry("type", &_type)?;
+        map.serialize_entry("name", &self.name)?;
+        map.serialize_entry("summary", &self.summary)?;
+
+        map.end()
+    }
+}
+
 impl QueryString for Report {
     fn to_query_string(&self) -> String {
         let (resource, id) = match self.resource {

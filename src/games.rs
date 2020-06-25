@@ -255,6 +255,8 @@ impl EditGameOptions {
     option!(maturity_options: MaturityOptions >> "maturity_options");
 }
 
+impl_serialize_params!(EditGameOptions >> params);
+
 impl crate::QueryString for EditGameOptions {
     fn to_query_string(&self) -> String {
         url::form_urlencoded::Serializer::new(String::new())
@@ -287,6 +289,25 @@ impl AddTagsOptions {
             hidden: true,
             tags: tags.to_vec(),
         }
+    }
+}
+
+#[doc(hidden)]
+impl serde::ser::Serialize for AddTagsOptions {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::ser::Serializer,
+    {
+        use serde::ser::SerializeMap;
+
+        let mut map = serializer.serialize_map(Some(self.tags.len() + 3))?;
+        map.serialize_entry("name", &self.name)?;
+        map.serialize_entry("type", &self.kind.to_string())?;
+        map.serialize_entry("hidden", &self.hidden.to_string())?;
+        for t in &self.tags {
+            map.serialize_entry("tags[]", t)?;
+        }
+        map.end()
     }
 }
 
@@ -323,6 +344,28 @@ impl DeleteTagsOptions {
                 Some(tags.to_vec())
             },
         }
+    }
+}
+
+#[doc(hidden)]
+impl serde::ser::Serialize for DeleteTagsOptions {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::ser::Serializer,
+    {
+        use serde::ser::SerializeMap;
+
+        let len = self.tags.as_ref().map(|t| t.len()).unwrap_or(1);
+        let mut map = serializer.serialize_map(Some(len + 1))?;
+        map.serialize_entry("name", &self.name)?;
+        if let Some(ref tags) = self.tags {
+            for t in tags {
+                map.serialize_entry("tags[]", t)?;
+            }
+        } else {
+            map.serialize_entry("tags[]", "")?;
+        }
+        map.end()
     }
 }
 

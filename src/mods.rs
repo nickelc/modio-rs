@@ -549,6 +549,23 @@ pub enum Rating {
     Negative,
 }
 
+#[doc(hidden)]
+impl serde::ser::Serialize for Rating {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::ser::Serializer,
+    {
+        use serde::ser::SerializeMap;
+
+        let mut map = serializer.serialize_map(Some(1))?;
+        match self {
+            Rating::Negative => map.serialize_entry("rating", "-1")?,
+            Rating::Positive => map.serialize_entry("rating", "1")?,
+        }
+        map.end()
+    }
+}
+
 impl QueryString for Rating {
     fn to_query_string(&self) -> String {
         format!(
@@ -697,6 +714,8 @@ impl EditModOptions {
     option!(metadata_blob >> "metadata_blob");
 }
 
+impl_serialize_params!(EditModOptions >> params);
+
 impl QueryString for EditModOptions {
     fn to_query_string(&self) -> String {
         form_urlencoded::Serializer::new(String::new())
@@ -723,6 +742,22 @@ impl EditDependenciesOptions {
     }
 }
 
+#[doc(hidden)]
+impl serde::ser::Serialize for EditDependenciesOptions {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::ser::Serializer,
+    {
+        use serde::ser::SerializeMap;
+
+        let mut map = serializer.serialize_map(Some(self.dependencies.len()))?;
+        for d in &self.dependencies {
+            map.serialize_entry("dependencies[]", d)?;
+        }
+        map.end()
+    }
+}
+
 impl QueryString for EditDependenciesOptions {
     fn to_query_string(&self) -> String {
         form_urlencoded::Serializer::new(String::new())
@@ -744,6 +779,22 @@ impl EditTagsOptions {
         Self {
             tags: tags.to_vec(),
         }
+    }
+}
+
+#[doc(hidden)]
+impl serde::ser::Serialize for EditTagsOptions {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::ser::Serializer,
+    {
+        use serde::ser::SerializeMap;
+
+        let mut map = serializer.serialize_map(Some(self.tags.len()))?;
+        for t in &self.tags {
+            map.serialize_entry("tags[]", t)?;
+        }
+        map.end()
     }
 }
 
@@ -880,6 +931,37 @@ impl DeleteMediaOptions {
             sketchfab: Some(urls.to_vec()),
             ..self
         }
+    }
+}
+
+#[doc(hidden)]
+impl serde::ser::Serialize for DeleteMediaOptions {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::ser::Serializer,
+    {
+        use serde::ser::SerializeMap;
+
+        let len = self.images.as_ref().map(Vec::len).unwrap_or_default()
+            + self.youtube.as_ref().map(Vec::len).unwrap_or_default()
+            + self.sketchfab.as_ref().map(Vec::len).unwrap_or_default();
+        let mut map = serializer.serialize_map(Some(len))?;
+        if let Some(ref images) = self.images {
+            for e in images {
+                map.serialize_entry("images[]", e)?;
+            }
+        }
+        if let Some(ref urls) = self.youtube {
+            for e in urls {
+                map.serialize_entry("youtube[]", e)?;
+            }
+        }
+        if let Some(ref urls) = self.sketchfab {
+            for e in urls {
+                map.serialize_entry("sketchfab[]", e)?;
+            }
+        }
+        map.end()
     }
 }
 

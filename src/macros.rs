@@ -45,3 +45,23 @@ macro_rules! option {
         }
     };
 }
+
+macro_rules! impl_serialize_params {
+    ($T:ty >> $map:ident) => {
+        #[doc(hidden)]
+        impl serde::ser::Serialize for $T {
+            fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+            where
+                S: serde::ser::Serializer,
+            {
+                use serde::ser::SerializeMap;
+
+                let mut map = serializer.serialize_map(Some(self.$map.len()))?;
+                for (k, v) in &self.$map {
+                    map.serialize_entry(k, v)?;
+                }
+                map.end()
+            }
+        }
+    };
+}

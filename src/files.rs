@@ -262,6 +262,8 @@ impl EditFileOptions {
     option!(metadata_blob >> "metadata_blob");
 }
 
+impl_serialize_params!(EditFileOptions >> params);
+
 impl QueryString for EditFileOptions {
     fn to_query_string(&self) -> String {
         form_urlencoded::Serializer::new(String::new())

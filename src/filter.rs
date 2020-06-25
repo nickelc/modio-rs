@@ -459,6 +459,48 @@ impl fmt::Display for Filter {
 
 impl sealed::FilterPriv for Filter {}
 
+#[doc(hidden)]
+impl serde::ser::Serialize for Filter {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::ser::Serializer,
+    {
+        use serde::ser::SerializeMap;
+
+        let map_filters = |f: &FilterEntry| {
+            let value = match f.value {
+                OneOrMany::One(ref v) => v.to_string(),
+                OneOrMany::Many(ref v) => v
+                    .iter()
+                    .map(ToString::to_string)
+                    .collect::<Vec<_>>()
+                    .join(","),
+            };
+            (format!("{}{}", f.name, f.op), value)
+        };
+
+        let len = self.filters.len()
+            + self.limit.as_ref().map(|_| 1).unwrap_or_default()
+            + self.offset.as_ref().map(|_| 1).unwrap_or_default()
+            + self.order_by.as_ref().map(|_| 1).unwrap_or_default();
+
+        let mut map = serializer.serialize_map(Some(len))?;
+        for (k, v) in self.filters.iter().map(map_filters) {
+            map.serialize_entry(&k, &v)?;
+        }
+        if let Some(ref limit) = self.limit {
+            map.serialize_entry("_limit", limit)?;
+        }
+        if let Some(ref offset) = self.offset {
+            map.serialize_entry("_offset", offset)?;
+        }
+        if let Some(ref order_by) = self.order_by {
+            map.serialize_entry("_sort", &order_by.to_string())?;
+        }
+        map.end()
+    }
+}
+
 impl crate::QueryString for Filter {
     fn to_query_string(&self) -> String {
         let map_filters = |f: &FilterEntry| {

@@ -437,6 +437,27 @@ impl LinkOptions {
     }
 }
 
+#[doc(hidden)]
+impl serde::ser::Serialize for LinkOptions {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::ser::Serializer,
+    {
+        use serde::ser::SerializeStruct;
+
+        let (service, id) = match self.service {
+            Service::Steam(id) => ("steam", id),
+            Service::Gog(id) => ("gog", id),
+            Service::Itchio(id) => ("itch", id),
+        };
+        let mut opts = serializer.serialize_struct("LinkOptions", 3)?;
+        opts.serialize_field("email", &self.email)?;
+        opts.serialize_field("service", service)?;
+        opts.serialize_field("service_id", &id)?;
+        opts.end()
+    }
+}
+
 impl QueryString for LinkOptions {
     fn to_query_string(&self) -> String {
         let (service, id) = match self.service {

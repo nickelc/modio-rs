@@ -74,6 +74,28 @@ impl Metadata {
     }
 }
 
+#[doc(hidden)]
+impl serde::ser::Serialize for MetadataMap {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::ser::Serializer,
+    {
+        use serde::ser::SerializeMap;
+
+        let len = self.values().map(|v| std::cmp::max(1, v.len())).sum();
+        let mut map = serializer.serialize_map(Some(len))?;
+        for (k, vals) in self.iter() {
+            if vals.is_empty() {
+                map.serialize_entry("metadata[]", k)?;
+            }
+            for v in vals {
+                map.serialize_entry("metadata[]", &format!("{}:{}", k, v))?;
+            }
+        }
+        map.end()
+    }
+}
+
 impl QueryString for MetadataMap {
     fn to_query_string(&self) -> String {
         let mut ser = form_urlencoded::Serializer::new(String::new());
