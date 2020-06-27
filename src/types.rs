@@ -740,7 +740,32 @@ pub mod mods {
 
     /// See the [Metadata KVP Object](https://docs.mod.io/#metadata-kvp-object) docs for more
     /// information.
-    pub type MetadataMap = HashMap<String, Vec<String>>;
+    #[derive(Debug, Clone, Default)]
+    pub struct MetadataMap(HashMap<String, Vec<String>>);
+
+    impl MetadataMap {
+        pub fn new() -> Self {
+            Default::default()
+        }
+
+        pub fn with_capacity(capacity: usize) -> Self {
+            MetadataMap(HashMap::with_capacity(capacity))
+        }
+    }
+
+    impl std::ops::Deref for MetadataMap {
+        type Target = HashMap<String, Vec<String>>;
+
+        fn deref(&self) -> &Self::Target {
+            &self.0
+        }
+    }
+
+    impl std::ops::DerefMut for MetadataMap {
+        fn deref_mut(&mut self) -> &mut Self::Target {
+            &mut self.0
+        }
+    }
 
     /// Deserialize a sequence of key-value objects to a `MetadataMap`.
     ///
