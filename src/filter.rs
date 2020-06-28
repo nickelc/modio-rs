@@ -452,8 +452,10 @@ impl std::ops::Add for Filter {
 
 impl fmt::Display for Filter {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        use crate::QueryString;
-        f.write_str(&self.to_query_string())
+        match serde_json::to_string(&self) {
+            Ok(s) => f.write_str(&s),
+            Err(_) => Err(fmt::Error),
+        }
     }
 }
 
@@ -498,28 +500,6 @@ impl serde::ser::Serialize for Filter {
             map.serialize_entry("_sort", &order_by.to_string())?;
         }
         map.end()
-    }
-}
-
-impl crate::QueryString for Filter {
-    fn to_query_string(&self) -> String {
-        let map_filters = |f: &FilterEntry| {
-            let value = match f.value {
-                OneOrMany::One(ref v) => v.to_string(),
-                OneOrMany::Many(ref v) => v
-                    .iter()
-                    .map(ToString::to_string)
-                    .collect::<Vec<_>>()
-                    .join(","),
-            };
-            (format!("{}{}", f.name, f.op), value)
-        };
-        url::form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(self.filters.iter().map(map_filters))
-            .extend_pairs(self.order_by.iter().map(|s| ("_sort", s.to_string())))
-            .extend_pairs(self.offset.iter().map(|o| ("_offset", o.to_string())))
-            .extend_pairs(self.limit.iter().map(|l| ("_limit", l.to_string())))
-            .finish()
     }
 }
 
@@ -668,7 +648,6 @@ mod test {
     #[allow(dead_code)]
     fn filters() {
         use super::prelude::*;
-        use crate::QueryString;
 
         filter!(GameId, GAME_ID, "game_id", Eq, NotEq, Like, In, Cmp, OrderBy);
         filter!(NameId, NAME_ID, "name_id", Eq, NotEq, Like, In, Cmp, OrderBy);
@@ -678,64 +657,68 @@ mod test {
         assert_eq!(NAME_ID, "name_id");
 
         let f = GameId::eq(1);
-        assert_eq!(f.to_query_string(), "game_id=1");
+        assert_eq!(f.to_string(), r#"{"game_id":"1"}"#);
 
         let f = GameId::_in(vec![1, 2]).and(NameId::like("foobar*"));
-        assert_eq!(f.to_query_string(), "game_id-in=1%2C2&name_id-lk=foobar*");
+        assert_eq!(
+            f.to_string(),
+            r#"{"game_id-in":"1,2","name_id-lk":"foobar*"}"#
+        );
 
         let f = GameId::eq(1).and(GameId::eq(2)).and(GameId::ne(3));
-        assert_eq!(f.to_query_string(), "game_id=2&game_id-not=3");
+        assert_eq!(f.to_string(), r#"{"game_id":"2","game_id-not":"3"}"#);
 
         let f = GameId::eq(1).order_by(NameId::asc());
-        assert_eq!(f.to_query_string(), "game_id=1&_sort=name_id");
+        assert_eq!(f.to_string(), r#"{"game_id":"1","_sort":"name_id"}"#);
 
         let f = NameId::like("foo*").and(NameId::not_like("bar*"));
-        assert_eq!(f.to_query_string(), "name_id-lk=foo*&name_id-not-lk=bar*");
+        assert_eq!(
+            f.to_string(),
+            r#"{"name_id-lk":"foo*","name_id-not-lk":"bar*"}"#
+        );
 
         let f = NameId::gt(1).and(NameId::lt(2));
-        assert_eq!(f.to_query_string(), "name_id-st=2&name_id-gt=1");
+        assert_eq!(f.to_string(), r#"{"name_id-st":"2","name_id-gt":"1"}"#);
 
         let f = NameId::ge(1).and(NameId::le(2));
-        assert_eq!(f.to_query_string(), "name_id-min=1&name_id-max=2");
+        assert_eq!(f.to_string(), r#"{"name_id-min":"1","name_id-max":"2"}"#);
 
         let f = BitOption::bit_and(1);
-        assert_eq!(f.to_query_string(), "bit_option-bitwise-and=1");
+        assert_eq!(f.to_string(), r#"{"bit_option-bitwise-and":"1"}"#);
 
         let f = NameId::desc();
-        assert_eq!(f.to_query_string(), "_sort=-name_id");
+        assert_eq!(f.to_string(), r#"{"_sort":"-name_id"}"#);
 
         let f = with_limit(10).and(with_limit(20));
-        assert_eq!(f.to_query_string(), "_limit=20");
+        assert_eq!(f.to_string(), r#"{"_limit":20}"#);
 
         let f = with_offset(10).and(with_offset(20));
-        assert_eq!(f.to_query_string(), "_offset=20");
+        assert_eq!(f.to_string(), r#"{"_offset":20}"#);
     }
 
     #[test]
     fn custom_filters() {
         use super::prelude::*;
         use super::*;
-        use crate::QueryString;
 
         filter!(GameId, GAME_ID, "game_id", Eq);
 
         let f = GameId::eq(1).and(custom_filter("foo", Operator::Equals, "bar"));
-        assert_eq!(f.to_query_string(), "foo=bar&game_id=1");
+        assert_eq!(f.to_string(), r#"{"foo":"bar","game_id":"1"}"#);
 
         let f = custom_order_by_asc("foo");
-        assert_eq!(f.to_query_string(), "_sort=foo");
+        assert_eq!(f.to_string(), r#"{"_sort":"foo"}"#);
     }
 
     #[test]
     fn std_ops_add() {
         use super::prelude::*;
-        use crate::QueryString;
 
         let f = Id::eq(1) + Id::eq(2);
-        assert_eq!(f.to_query_string(), "id=2");
+        assert_eq!(f.to_string(), r#"{"id":"2"}"#);
 
         let f = Id::eq(1) + NameId::eq("foo");
-        assert_eq!(f.to_query_string(), "id=1&name_id=foo");
+        assert_eq!(f.to_string(), r#"{"id":"1","name_id":"foo"}"#);
     }
 }
 

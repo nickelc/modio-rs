@@ -3,7 +3,7 @@ use std::ffi::OsStr;
 use std::path::Path;
 
 use mime::{APPLICATION_OCTET_STREAM, IMAGE_STAR};
-use url::{form_urlencoded, Url};
+use url::Url;
 
 use crate::comments::Comments;
 use crate::error::Kind;
@@ -550,18 +550,6 @@ impl serde::ser::Serialize for Rating {
     }
 }
 
-impl QueryString for Rating {
-    fn to_query_string(&self) -> String {
-        format!(
-            "rating={}",
-            match *self {
-                Rating::Negative => -1,
-                Rating::Positive => 1,
-            }
-        )
-    }
-}
-
 pub struct AddModOptions {
     visible: Option<Visibility>,
     logo: FileSource,
@@ -700,14 +688,6 @@ impl EditModOptions {
 
 impl_serialize_params!(EditModOptions >> params);
 
-impl QueryString for EditModOptions {
-    fn to_query_string(&self) -> String {
-        form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(&self.params)
-            .finish()
-    }
-}
-
 pub struct EditDependenciesOptions {
     dependencies: Vec<u32>,
 }
@@ -742,18 +722,6 @@ impl serde::ser::Serialize for EditDependenciesOptions {
     }
 }
 
-impl QueryString for EditDependenciesOptions {
-    fn to_query_string(&self) -> String {
-        form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(
-                self.dependencies
-                    .iter()
-                    .map(|d| ("dependencies[]", d.to_string())),
-            )
-            .finish()
-    }
-}
-
 pub struct EditTagsOptions {
     tags: Vec<String>,
 }
@@ -779,14 +747,6 @@ impl serde::ser::Serialize for EditTagsOptions {
             map.serialize_entry("tags[]", t)?;
         }
         map.end()
-    }
-}
-
-impl QueryString for EditTagsOptions {
-    fn to_query_string(&self) -> String {
-        form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(self.tags.iter().map(|t| ("tags[]", t)))
-            .finish()
     }
 }
 
@@ -946,21 +906,5 @@ impl serde::ser::Serialize for DeleteMediaOptions {
             }
         }
         map.end()
-    }
-}
-
-impl QueryString for DeleteMediaOptions {
-    fn to_query_string(&self) -> String {
-        let mut ser = form_urlencoded::Serializer::new(String::new());
-        if let Some(ref images) = self.images {
-            ser.extend_pairs(images.iter().map(|i| ("images[]", i)));
-        }
-        if let Some(ref urls) = self.youtube {
-            ser.extend_pairs(urls.iter().map(|u| ("youtube[]", u)));
-        }
-        if let Some(ref urls) = self.sketchfab {
-            ser.extend_pairs(urls.iter().map(|u| ("sketchfab[]", u)));
-        }
-        ser.finish()
     }
 }

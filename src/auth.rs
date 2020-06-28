@@ -3,12 +3,9 @@ use std::collections::BTreeMap;
 use std::error::Error as StdError;
 use std::fmt;
 
-use url::form_urlencoded;
-
 use crate::routing::Route;
 use crate::types::{AccessToken, Message};
 use crate::Modio;
-use crate::QueryString;
 use crate::Result;
 
 /// [mod.io](https://mod.io) credentials. API key with optional OAuth2 access token.
@@ -444,21 +441,6 @@ impl serde::ser::Serialize for LinkOptions {
         opts.serialize_field("service", service)?;
         opts.serialize_field("service_id", &id)?;
         opts.end()
-    }
-}
-
-impl QueryString for LinkOptions {
-    fn to_query_string(&self) -> String {
-        let (service, id) = match self.service {
-            Service::Steam(id) => ("steam", id.to_string()),
-            Service::Gog(id) => ("gog", id.to_string()),
-            Service::Itchio(id) => ("itch", id.to_string()),
-        };
-        form_urlencoded::Serializer::new(String::new())
-            .append_pair("email", &self.email)
-            .append_pair("service", service)
-            .append_pair("service_id", &id)
-            .finish()
     }
 }
 

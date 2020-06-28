@@ -1,6 +1,4 @@
 //! Team members interface
-use url::form_urlencoded;
-
 use crate::prelude::*;
 
 pub use crate::types::mods::{TeamLevel, TeamMember};
@@ -140,14 +138,6 @@ impl InviteTeamMemberOptions {
 
 impl_serialize_params!(InviteTeamMemberOptions >> params);
 
-impl QueryString for InviteTeamMemberOptions {
-    fn to_query_string(&self) -> String {
-        form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(&self.params)
-            .finish()
-    }
-}
-
 #[derive(Debug, Default)]
 pub struct EditTeamMemberOptions {
     params: std::collections::BTreeMap<&'static str, String>,
@@ -159,11 +149,3 @@ impl EditTeamMemberOptions {
 }
 
 impl_serialize_params!(EditTeamMemberOptions >> params);
-
-impl QueryString for EditTeamMemberOptions {
-    fn to_query_string(&self) -> String {
-        form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(&self.params)
-            .finish()
-    }
-}

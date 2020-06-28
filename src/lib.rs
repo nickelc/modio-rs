@@ -152,7 +152,6 @@ mod prelude {
     pub use crate::loader::Query;
     pub use crate::routing::Route;
     pub use crate::types::Message;
-    pub(crate) use crate::QueryString;
     pub use crate::{Deletion, Editing, Modio, Result};
 }
 
@@ -165,8 +164,4 @@ pub mod lib {
     #[cfg(feature = "__tls")]
     pub use reqwest::{Certificate, Identity};
     pub use reqwest::{Proxy, Url};
-}
-
-trait QueryString {
-    fn to_query_string(&self) -> String;
 }

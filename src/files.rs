@@ -5,7 +5,6 @@ use std::path::Path;
 
 use mime::APPLICATION_OCTET_STREAM;
 use tokio::io::AsyncRead;
-use url::form_urlencoded;
 
 use crate::multipart::FileSource;
 use crate::prelude::*;
@@ -259,11 +258,3 @@ impl EditFileOptions {
 }
 
 impl_serialize_params!(EditFileOptions >> params);
-
-impl QueryString for EditFileOptions {
-    fn to_query_string(&self) -> String {
-        form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(&self.params)
-            .finish()
-    }
-}

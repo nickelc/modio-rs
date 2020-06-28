@@ -1,6 +1,4 @@
 //! Reports interface
-use url::form_urlencoded;
-
 use crate::prelude::*;
 
 pub struct Reports {
@@ -103,33 +101,5 @@ impl serde::ser::Serialize for Report {
         map.serialize_entry("summary", &self.summary)?;
 
         map.end()
-    }
-}
-
-impl QueryString for Report {
-    fn to_query_string(&self) -> String {
-        let (resource, id) = match self.resource {
-            Resource::Game(id) => ("games", id),
-            Resource::Mod(id) => ("mods", id),
-            Resource::User(id) => ("users", id),
-        };
-        let _type = match self.kind {
-            ReportType::Generic => 0,
-            ReportType::DMCA => 1,
-            ReportType::NotWorking => 2,
-            ReportType::RudeContent => 3,
-            ReportType::IllegalContent => 4,
-            ReportType::StolenContent => 5,
-            ReportType::FalseInformation => 6,
-            ReportType::Other => 7,
-        };
-        form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(self.contact.as_ref().map(|c| ("contact", c)))
-            .append_pair("resource", resource)
-            .append_pair("id", &id.to_string())
-            .append_pair("type", &_type.to_string())
-            .append_pair("name", &self.name)
-            .append_pair("summary", &self.summary)
-            .finish()
     }
 }

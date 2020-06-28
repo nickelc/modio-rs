@@ -3,7 +3,6 @@ use std::ffi::OsStr;
 use std::path::Path;
 
 use mime::IMAGE_STAR;
-use url::form_urlencoded;
 use url::Url;
 
 use crate::mods::{ModRef, Mods};
@@ -249,14 +248,6 @@ impl EditGameOptions {
 
 impl_serialize_params!(EditGameOptions >> params);
 
-impl crate::QueryString for EditGameOptions {
-    fn to_query_string(&self) -> String {
-        url::form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(&self.params)
-            .finish()
-    }
-}
-
 pub struct AddTagsOptions {
     name: String,
     kind: TagType,
@@ -300,17 +291,6 @@ impl serde::ser::Serialize for AddTagsOptions {
             map.serialize_entry("tags[]", t)?;
         }
         map.end()
-    }
-}
-
-impl QueryString for AddTagsOptions {
-    fn to_query_string(&self) -> String {
-        form_urlencoded::Serializer::new(String::new())
-            .append_pair("name", &self.name)
-            .append_pair("type", &self.kind.to_string())
-            .append_pair("hidden", &self.hidden.to_string())
-            .extend_pairs(self.tags.iter().map(|t| ("tags[]", t)))
-            .finish()
     }
 }
 
@@ -358,18 +338,6 @@ impl serde::ser::Serialize for DeleteTagsOptions {
             map.serialize_entry("tags[]", "")?;
         }
         map.end()
-    }
-}
-
-impl QueryString for DeleteTagsOptions {
-    fn to_query_string(&self) -> String {
-        let mut ser = form_urlencoded::Serializer::new(String::new());
-        ser.append_pair("name", &self.name);
-        match &self.tags {
-            Some(tags) => ser.extend_pairs(tags.iter().map(|t| ("tags[]", t))),
-            None => ser.append_pair("tags[]", ""),
-        };
-        ser.finish()
     }
 }
 

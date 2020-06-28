@@ -1,7 +1,6 @@
 //! Mod metadata KVP interface
 use futures_util::TryStreamExt;
 use serde::Deserialize;
-use url::form_urlencoded;
 
 use crate::prelude::*;
 pub use crate::types::mods::MetadataMap;
@@ -89,20 +88,5 @@ impl serde::ser::Serialize for MetadataMap {
             }
         }
         map.end()
-    }
-}
-
-impl QueryString for MetadataMap {
-    fn to_query_string(&self) -> String {
-        let mut ser = form_urlencoded::Serializer::new(String::new());
-        for (k, vals) in self.iter() {
-            if vals.is_empty() {
-                ser.append_pair("metadata[]", k);
-            }
-            for v in vals {
-                ser.append_pair("metadata[]", &format!("{}:{}", k, v));
-            }
-        }
-        ser.finish()
     }
 }
