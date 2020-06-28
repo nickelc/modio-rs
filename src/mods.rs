@@ -50,7 +50,7 @@ impl Mods {
         let route = Route::AddMod { game_id: self.game };
         self.modio
             .request(route)
-            .body(Form::from(options))
+            .multipart(Form::from(options))
             .send()
             .await
     }
@@ -155,11 +155,7 @@ impl ModRef {
             game_id: self.game,
             mod_id: self.id,
         };
-        self.modio
-            .request(route)
-            .body(options.to_query_string())
-            .send()
-            .await
+        self.modio.request(route).form(&options).send().await
     }
 
     /// Delete a mod. [required: token]
@@ -179,7 +175,7 @@ impl ModRef {
         };
         self.modio
             .request(route)
-            .body(Form::from(options))
+            .multipart(Form::from(options))
             .send::<Message>()
             .await?;
 
@@ -192,11 +188,7 @@ impl ModRef {
             game_id: self.game,
             mod_id: self.id,
         };
-        self.modio
-            .request(route)
-            .body(options.to_query_string())
-            .send()
-            .await
+        self.modio.request(route).form(&options).send().await
     }
 
     /// Submit a positive or negative rating for a mod. [required: token]
@@ -207,7 +199,7 @@ impl ModRef {
         };
         self.modio
             .request(route)
-            .body(rating.to_query_string())
+            .form(&rating)
             .send::<Message>()
             .await
             .map(|_| ())
@@ -297,7 +289,7 @@ impl Dependencies {
         };
         self.modio
             .request(route)
-            .body(options.to_query_string())
+            .form(&options)
             .send::<Message>()
             .await?;
         Ok(())
@@ -309,11 +301,7 @@ impl Dependencies {
             game_id: self.game_id,
             mod_id: self.mod_id,
         };
-        self.modio
-            .request(route)
-            .body(options.to_query_string())
-            .send()
-            .await
+        self.modio.request(route).form(&options).send().await
     }
 }
 
@@ -363,7 +351,7 @@ impl Tags {
         };
         self.modio
             .request(route)
-            .body(options.to_query_string())
+            .form(&options)
             .send::<Message>()
             .await?;
         Ok(())
@@ -375,11 +363,7 @@ impl Tags {
             game_id: self.game_id,
             mod_id: self.mod_id,
         };
-        self.modio
-            .request(route)
-            .body(options.to_query_string())
-            .send()
-            .await
+        self.modio.request(route).form(&options).send().await
     }
 }
 

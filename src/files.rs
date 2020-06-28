@@ -54,7 +54,7 @@ impl Files {
         };
         self.modio
             .request(route)
-            .body(Form::from(options))
+            .multipart(Form::from(options))
             .send()
             .await
     }
@@ -95,11 +95,7 @@ impl FileRef {
             mod_id: self.mod_id,
             file_id: self.id,
         };
-        self.modio
-            .request(route)
-            .body(options.to_query_string())
-            .send()
-            .await
+        self.modio.request(route).form(&options).send().await
     }
 
     /// Delete a modfile. [required: token]

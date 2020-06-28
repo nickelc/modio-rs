@@ -82,11 +82,7 @@ impl GameRef {
     /// Edit details for a game. [required: token]
     pub async fn edit(self, options: EditGameOptions) -> Result<Editing<Game>> {
         let route = Route::EditGame { game_id: self.id };
-        self.modio
-            .request(route)
-            .body(options.to_query_string())
-            .send()
-            .await
+        self.modio.request(route).form(&options).send().await
     }
 
     /// Add new media to a game. [required: token]
@@ -94,7 +90,7 @@ impl GameRef {
         let route = Route::AddGameMedia { game_id: self.id };
         self.modio
             .request(route)
-            .body(Form::from(media))
+            .multipart(Form::from(media))
             .send::<Message>()
             .await?;
         Ok(())
@@ -139,7 +135,7 @@ impl Tags {
         };
         self.modio
             .request(route)
-            .body(options.to_query_string())
+            .form(&options)
             .send::<Message>()
             .await?;
         Ok(())
@@ -150,11 +146,7 @@ impl Tags {
         let route = Route::DeleteGameTags {
             game_id: self.game_id,
         };
-        self.modio
-            .request(route)
-            .body(options.to_query_string())
-            .send()
-            .await
+        self.modio.request(route).form(&options).send().await
     }
 }
 

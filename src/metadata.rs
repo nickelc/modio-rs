@@ -54,7 +54,7 @@ impl Metadata {
         };
         self.modio
             .request(route)
-            .body(metadata.to_query_string())
+            .form(&metadata)
             .send::<Message>()
             .await?;
         Ok(())
@@ -66,11 +66,7 @@ impl Metadata {
             game_id: self.game,
             mod_id: self.mod_id,
         };
-        self.modio
-            .request(route)
-            .body(metadata.to_query_string())
-            .send()
-            .await
+        self.modio.request(route).form(&metadata).send().await
     }
 }
 

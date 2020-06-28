@@ -142,13 +142,9 @@ impl Auth {
 
     /// Request a security code be sent to the email of the user. [required: apikey]
     pub async fn request_code(self, email: &str) -> Result<()> {
-        let data = form_urlencoded::Serializer::new(String::new())
-            .append_pair("email", email)
-            .finish();
-
         self.modio
             .request(Route::AuthEmailRequest)
-            .body(data)
+            .form(&[("email", email)])
             .send::<Message>()
             .await?;
 
@@ -157,14 +153,10 @@ impl Auth {
 
     /// Get the access token for a security code. [required: apikey]
     pub async fn security_code(self, code: &str) -> Result<Credentials> {
-        let data = form_urlencoded::Serializer::new(String::new())
-            .append_pair("security_code", code)
-            .finish();
-
         let t = self
             .modio
             .request(Route::AuthEmailExchange)
-            .body(data)
+            .form(&[("security_code", code)])
             .send::<AccessToken>()
             .await?;
 
@@ -215,14 +207,11 @@ impl Auth {
         T: Into<AuthOptions>,
     {
         let AuthOptions { route, params } = auth_options.into();
-        let data = form_urlencoded::Serializer::new(String::new())
-            .extend_pairs(params)
-            .finish();
 
         let t = self
             .modio
             .request(route)
-            .body(data)
+            .form(&params)
             .send::<AccessToken>()
             .await?;
 
@@ -242,7 +231,7 @@ impl Auth {
     pub async fn link(self, options: LinkOptions) -> Result<()> {
         self.modio
             .request(Route::LinkAccount)
-            .body(options.to_query_string())
+            .form(&options)
             .send::<Message>()
             .await?;
 

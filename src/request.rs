@@ -4,6 +4,7 @@ use reqwest::header::{HeaderValue, CONTENT_TYPE};
 use reqwest::multipart::Form;
 use reqwest::StatusCode;
 use serde::de::DeserializeOwned;
+use serde::ser::Serialize;
 use url::Url;
 
 use crate::auth::Token;
@@ -38,93 +39,78 @@ mod headers {
 
 pub struct RequestBuilder {
     modio: Modio,
-    request: Request,
-}
-
-struct Request {
-    route: Route,
-    query: Option<String>,
-    body: Option<Body>,
-}
-
-pub enum Body {
-    Form(String),
-    Multipart(Form),
+    request: Result<reqwest::RequestBuilder>,
 }
 
 impl RequestBuilder {
-    pub(crate) fn new(modio: Modio, route: Route) -> Self {
+    pub fn new(modio: Modio, route: Route) -> Self {
+        let (method, path, auth_method) = route.pieces();
+
+        if let (AuthMethod::Token, None) = (&auth_method, &modio.credentials.token) {
+            return Self {
+                modio,
+                request: Err(error::token_required()),
+            };
+        }
+
+        let url = format!("{}{}", modio.host, path);
+        let params = [("api_key", &modio.credentials.api_key)];
+        let request = Url::parse_with_params(&url, &params)
+            .map(|url| {
+                let mut req = modio.client.request(method, url);
+
+                if let (AuthMethod::Token, Some(Token { value, .. })) =
+                    (&auth_method, &modio.credentials.token)
+                {
+                    req = req.bearer_auth(value);
+                }
+                req
+            })
+            .map_err(error::builder);
+
+        Self { modio, request }
+    }
+
+    pub fn query<T: Serialize + ?Sized>(self, query: &T) -> Self {
         Self {
-            modio,
-            request: Request {
-                route,
-                query: None,
-                body: None,
-            },
+            request: self.request.map(|r| r.query(query)),
+            ..self
         }
     }
 
-    pub fn query(mut self, query: String) -> Self {
-        self.request.query = Some(query);
-        self
+    pub fn form<T: Serialize + ?Sized>(self, form: &T) -> Self {
+        Self {
+            request: self.request.map(|r| r.form(form)),
+            ..self
+        }
     }
 
-    pub fn body<T>(mut self, body: T) -> Self
-    where
-        Body: From<T>,
-    {
-        self.request.body = Some(body.into());
-        self
+    pub fn multipart(self, form: Form) -> Self {
+        Self {
+            request: self.request.map(|r| r.multipart(form)),
+            ..self
+        }
     }
 
     pub async fn send<Out>(self) -> Result<Out>
     where
         Out: DeserializeOwned + Send,
     {
-        let (method, path, auth_method) = self.request.route.pieces();
-
-        if let (AuthMethod::Token, None) = (&auth_method, &self.modio.credentials.token) {
-            return Err(error::token_required());
-        }
-        let url = match self.request.query {
-            Some(query) => format!("{}{}?{}", self.modio.host, path, query),
-            None => format!("{}{}", self.modio.host, path),
-        };
-
-        let params = Some(("api_key", self.modio.credentials.api_key));
-        let url = Url::parse_with_params(&url, params).map_err(error::builder)?;
-
-        debug!("request: {} {}", method, url);
-        let mut req = self.modio.client.request(method, url);
-
-        if let (AuthMethod::Token, Some(Token { value, .. })) =
-            (&auth_method, &self.modio.credentials.token)
-        {
-            req = req.bearer_auth(value);
+        let mut req = self.request?.build().map_err(error::builder)?;
+        if !req.headers().contains_key(CONTENT_TYPE) {
+            req.headers_mut().insert(
+                CONTENT_TYPE,
+                HeaderValue::from_static("application/x-www-form-urlencoded"),
+            );
         }
 
-        match self.request.body {
-            Some(Body::Form(s)) => {
-                trace!("body: {}", s);
-                req = req.header(
-                    CONTENT_TYPE,
-                    HeaderValue::from_static("application/x-www-form-urlencoded"),
-                );
-                req = req.body(s);
-            }
-            Some(Body::Multipart(mp)) => {
-                trace!("{:?}", mp);
-                req = req.multipart(mp);
-            }
-            None => {
-                req = req.header(
-                    CONTENT_TYPE,
-                    HeaderValue::from_static("application/x-www-form-urlencoded"),
-                );
-            }
-        }
-
-        let response = req.send().map_err(error::builder_or_request).await?;
+        debug!("request: {} {}", req.method(), req.url());
+        let response = self
+            .modio
+            .client
+            .execute(req)
+            .map_err(error::request)
+            .await?;
 
         let status = response.status();
 
@@ -158,17 +144,5 @@ impl RequestBuilder {
                     .map_err(error::decode)?,
             }
         }
-    }
-}
-
-impl From<String> for Body {
-    fn from(s: String) -> Body {
-        Body::Form(s)
-    }
-}
-
-impl From<Form> for Body {
-    fn from(form: Form) -> Body {
-        Body::Multipart(form)
     }
 }

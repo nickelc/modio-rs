@@ -11,7 +11,7 @@ use serde::de::DeserializeOwned;
 use crate::filter::Filter;
 use crate::routing::Route;
 use crate::types::List;
-use crate::{Modio, QueryString, Result};
+use crate::{Modio, Result};
 
 /// Interface for retrieving search results.
 pub struct Query<T> {
@@ -145,7 +145,7 @@ where
     }
     let list = modio
         .request(route)
-        .query(filter.to_query_string())
+        .query(&filter)
         .send::<List<T>>()
         .await?;
 
@@ -171,7 +171,7 @@ where
 
         let list = modio
             .request(route)
-            .query(filter.to_query_string())
+            .query(&filter)
             .send::<List<T>>()
             .await?;
 

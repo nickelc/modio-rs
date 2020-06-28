@@ -16,7 +16,7 @@ impl Reports {
     pub async fn submit(self, report: Report) -> Result<()> {
         self.modio
             .request(Route::SubmitReport)
-            .body(report.to_query_string())
+            .form(&report)
             .send::<Message>()
             .await?;
         Ok(())
