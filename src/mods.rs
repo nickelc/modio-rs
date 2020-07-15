@@ -444,7 +444,7 @@ pub mod filters {
     filter!(Modfile, MODFILE, "modfile", Eq, NotEq, In, Cmp);
     filter!(MetadataBlob, METADATA_BLOB, "metadata_blob", Eq, NotEq, Like);
     filter!(MetadataKVP, METADATA_KVP, "metadata_kvp", Eq, NotEq, Like);
-    filter!(Tags, TAGS, "tags", Eq, NotEq, Like);
+    filter!(Tags, TAGS, "tags", Eq, NotEq, Like, In);
 
     filter!(Downloads, DOWNLOADS, "downloads", OrderBy);
     filter!(Popular, POPULAR, "popular", OrderBy);
