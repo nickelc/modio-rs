@@ -120,6 +120,8 @@ impl RequestBuilder {
             headers::parse_headers(response.headers())
         };
 
+        trace!("response headers: {:?}", response.headers());
+
         let body = response.bytes().map_err(error::request).await?;
 
         if log_enabled!(log::Level::Trace) {
