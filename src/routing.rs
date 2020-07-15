@@ -144,6 +144,8 @@ define_routes! {
     { DeleteTeamMember, DELETE: "/games/{}/mods/{}/team/{}", [game_id, mod_id, member_id], Token },
     { GetModComments, GET: "/games/{}/mods/{}/comments", [game_id, mod_id], Any },
     { GetModComment, GET: "/games/{}/mods/{}/comments/{}", [game_id, mod_id, comment_id], Any },
+    { AddModComment, POST: "/games/{}/mods/{}/comments", [game_id, mod_id], Token },
+    { EditModComment, PUT: "/games/{}/mods/{}/comments/{}", [game_id, mod_id, comment_id], Token },
     { DeleteModComment, DELETE: "/games/{}/mods/{}/comments/{}", [game_id, mod_id, comment_id], Token },
     { GetFiles, GET: "/games/{}/mods/{}/files", [game_id, mod_id], Any },
     { GetFile, GET: "/games/{}/mods/{}/files/{}", [game_id, mod_id, file_id], Any },

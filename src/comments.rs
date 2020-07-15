@@ -39,6 +39,37 @@ impl Comments {
         self.modio.request(route).send().await
     }
 
+    /// Add a new comment. [required: token]
+    pub async fn add<S>(self, content: S, reply_id: Option<u32>) -> Result<Comment>
+    where
+        S: Into<String>,
+    {
+        let route = Route::AddModComment {
+            game_id: self.game,
+            mod_id: self.mod_id,
+        };
+        let content = content.into();
+        let data = CommentOptions { content, reply_id };
+        self.modio.request(route).form(&data).send().await
+    }
+
+    /// Edit a comment by id. [required: token]
+    pub async fn edit<S>(self, id: u32, content: S) -> Result<Comment>
+    where
+        S: Into<String>,
+    {
+        let route = Route::EditModComment {
+            game_id: self.game,
+            mod_id: self.mod_id,
+            comment_id: id,
+        };
+        let data = CommentOptions {
+            content: content.into(),
+            reply_id: None,
+        };
+        self.modio.request(route).form(&data).send().await
+    }
+
     /// Delete a comment by id. [required: token]
     pub async fn delete(self, id: u32) -> Result<()> {
         let route = Route::DeleteModComment {
@@ -98,4 +129,13 @@ pub mod filters {
     filter!(ThreadPosition, THREAD_POSITION, "thread_position", Eq, NotEq, In, Like);
     filter!(Karma, KARMA, "karma", Eq, NotEq, In, Cmp);
     filter!(Content, CONTENT, "content", Eq, NotEq, Like);
+}
+
+use serde::Serialize;
+
+#[derive(Serialize)]
+struct CommentOptions {
+    content: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    reply_id: Option<u32>,
 }
