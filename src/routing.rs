@@ -106,6 +106,7 @@ define_routes! {
     { AuthGog, POST: "/external/galaxyauth", ApiKey },
     { AuthItchio, POST: "/external/itchioauth", ApiKey },
     { AuthOculus, POST: "/external/oculusauth", ApiKey },
+    { AuthXbox, POST: "/external/xboxauth", ApiKey },
     { LinkAccount, POST: "/external/link", Token },
     { GetGames, GET: "/games", Any },
     { GetGame, GET: "/games/{}", [game_id], Any },

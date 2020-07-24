@@ -278,6 +278,15 @@ impl From<SteamOptions> for AuthOptions {
         }
     }
 }
+
+impl From<XboxOptions> for AuthOptions {
+    fn from(options: XboxOptions) -> AuthOptions {
+        AuthOptions {
+            route: Route::AuthXbox,
+            params: options.params,
+        }
+    }
+}
 // }}}
 
 /// Authentication options for an encrypted gog app ticket.
@@ -383,6 +392,31 @@ impl SteamOptions {
     {
         let mut params = BTreeMap::new();
         params.insert("appdata", ticket.into());
+        Self { params }
+    }
+
+    option!(email >> "email");
+    option!(
+        /// Unix timestamp of date in which the returned token will expire. Value cannot be higher
+        /// than the default value which is a common year.
+        expired_at: u64 >> "date_expires"
+    );
+}
+
+/// Authentication options for an Xbox Live token.
+///
+/// See the [mod.io docs](https://docs.mod.io/#authenticate-via-xbox-live) for more information.
+pub struct XboxOptions {
+    params: BTreeMap<&'static str, String>,
+}
+
+impl XboxOptions {
+    pub fn new<T>(token: T) -> Self
+    where
+        T: Into<String>,
+    {
+        let mut params = BTreeMap::new();
+        params.insert("xbox_token", token.into());
         Self { params }
     }
 
