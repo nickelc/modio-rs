@@ -107,6 +107,7 @@ define_routes! {
     { AuthItchio, POST: "/external/itchioauth", ApiKey },
     { AuthOculus, POST: "/external/oculusauth", ApiKey },
     { AuthXbox, POST: "/external/xboxauth", ApiKey },
+    { AuthDiscord, POST: "/external/discordauth", ApiKey },
     { LinkAccount, POST: "/external/link", Token },
     { GetGames, GET: "/games", Any },
     { GetGame, GET: "/games/{}", [game_id], Any },

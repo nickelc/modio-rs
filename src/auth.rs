@@ -287,6 +287,15 @@ impl From<XboxOptions> for AuthOptions {
         }
     }
 }
+
+impl From<DiscordOptions> for AuthOptions {
+    fn from(options: DiscordOptions) -> AuthOptions {
+        AuthOptions {
+            route: Route::AuthDiscord,
+            params: options.params,
+        }
+    }
+}
 // }}}
 
 /// Authentication options for an encrypted gog app ticket.
@@ -424,6 +433,31 @@ impl XboxOptions {
     option!(
         /// Unix timestamp of date in which the returned token will expire. Value cannot be higher
         /// than the default value which is a common year.
+        expired_at: u64 >> "date_expires"
+    );
+}
+
+/// Authentication options for an Discord token.
+///
+/// See the [mod.io docs](https://docs.mod.io/#authenticate-via-discord) for more information.
+pub struct DiscordOptions {
+    params: BTreeMap<&'static str, String>,
+}
+
+impl DiscordOptions {
+    pub fn new<T>(token: T) -> Self
+    where
+        T: Into<String>,
+    {
+        let mut params = BTreeMap::new();
+        params.insert("discord_token", token.into());
+        Self { params }
+    }
+
+    option!(email >> "email");
+    option!(
+        /// Unix timestamp of date in which the returned token will expire. Value cannot be higher
+        /// than the default value which is a week.
         expired_at: u64 >> "date_expires"
     );
 }
