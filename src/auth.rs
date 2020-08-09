@@ -167,7 +167,7 @@ impl Auth {
         })
     }
 
-    /// Authenticate via external services ([Steam], [GOG], [itch.io], [Oculus]).
+    /// Authenticate via external services ([Steam], [GOG], [itch.io], [Xbox], [Discord], [Oculus]).
     ///
     /// See the [mod.io docs](https://docs.mod.io/#authentication-2) for more information.
     ///
@@ -175,6 +175,8 @@ impl Auth {
     /// [GOG]: GalaxyOptions
     /// [itch.io]: ItchioOptions
     /// [Oculus]: OculusOptions
+    /// [Xbox]: XboxOptions
+    /// [Discord]: DiscordOptions
     ///
     /// # Examples
     ///

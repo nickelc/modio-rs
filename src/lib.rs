@@ -12,7 +12,7 @@
 //! - [Email Authentication Flow](auth/struct.Auth.html#example) to create an OAuth 2 Access Token
 //! (Read + Write)
 //! - [External Authentication](auth::Auth::external) to create an OAuth 2 Access Token (Read + Write)
-//! automatically on platforms such as Steam, GOG, itch.io and Oculus.
+//! automatically on platforms such as Steam, GOG, itch.io, Xbox, Discord and Oculus.
 //!
 //! # Rate Limiting
 //!
