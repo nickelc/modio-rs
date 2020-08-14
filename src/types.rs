@@ -581,6 +581,10 @@ pub mod mods {
         ModDeleted,
         /// User has joined or left the mod team.
         ModTeamChanged,
+        /// A comment has been published for a mod.
+        ModCommentAdded,
+        /// A comment has been deleted from a mod.
+        ModCommentDeleted,
     }
 
     impl fmt::Display for EventType {
@@ -592,6 +596,8 @@ pub mod mods {
                 EventType::ModEdited => "MOD_EDITED",
                 EventType::ModDeleted => "MOD_DELETED",
                 EventType::ModTeamChanged => "MOD_TEAM_CHANGED",
+                EventType::ModCommentAdded => "MOD_COMMENT_ADDED",
+                EventType::ModCommentDeleted => "MOD_COMMENT_DELETED",
             }
             .fmt(fmt)
         }
