@@ -116,6 +116,14 @@ macro_rules! bitflags_serde {
 }
 // }}}
 
+/// Used by `EventType` enums to catch unsupported event type variants
+#[derive(Deserialize)]
+#[serde(untagged)]
+enum NonExhaustive<T> {
+    Known(T),
+    Unknown(String),
+}
+
 /// See the [Access Token Object](https://docs.mod.io/#access-token-object) docs for more
 /// information.
 #[derive(Deserialize)]
@@ -244,8 +252,37 @@ pub struct Event {
 
 /// Type of user event that was triggered.
 #[derive(Debug, PartialEq, Eq, Hash, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[serde(from = "NonExhaustive<KnownEventType>")]
 pub enum EventType {
+    /// User has joined a team.
+    UserTeamJoin,
+    /// User has left a team.
+    UserTeamLeave,
+    /// User has subscribed to a mod.
+    UserSubscribe,
+    /// User has unsubscribed to a mod.
+    UserUnsubscribe,
+    /// New event types which are not supported yet.
+    Other(String),
+}
+
+impl fmt::Display for EventType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            EventType::UserTeamJoin => "USER_TEAM_JOIN".fmt(f),
+            EventType::UserTeamLeave => "USER_TEAM_LEAVE".fmt(f),
+            EventType::UserSubscribe => "USER_SUBSCRIBE".fmt(f),
+            EventType::UserUnsubscribe => "USER_UNSUBSCRIBE".fmt(f),
+            EventType::Other(s) => s.fmt(f),
+        }
+    }
+}
+
+// impl #[serde(from = "NonExhaustive<KnowEventType>")] {{{
+#[derive(Deserialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[allow(clippy::enum_variant_names)]
+enum KnownEventType {
     /// User has joined a team.
     UserTeamJoin,
     /// User has left a team.
@@ -256,17 +293,21 @@ pub enum EventType {
     UserUnsubscribe,
 }
 
-impl fmt::Display for EventType {
-    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            EventType::UserTeamJoin => "USER_TEAM_JOIN",
-            EventType::UserTeamLeave => "USER_TEAM_LEAVE",
-            EventType::UserSubscribe => "USER_SUBSCRIBE",
-            EventType::UserUnsubscribe => "USER_UNSUBSCRIBE",
+impl From<NonExhaustive<KnownEventType>> for EventType {
+    fn from(kind: NonExhaustive<KnownEventType>) -> EventType {
+        use KnownEventType::*;
+        use NonExhaustive::*;
+
+        match kind {
+            Known(UserTeamJoin) => EventType::UserTeamJoin,
+            Known(UserTeamLeave) => EventType::UserTeamLeave,
+            Known(UserSubscribe) => EventType::UserSubscribe,
+            Known(UserUnsubscribe) => EventType::UserUnsubscribe,
+            Unknown(other) => EventType::Other(other),
         }
-        .fmt(fmt)
     }
 }
+// }}}
 
 /// Deserialize empty objects for optional properties as `None`.
 ///
@@ -509,7 +550,7 @@ pub mod mods {
     use serde::{Deserialize, Deserializer};
     use url::Url;
 
-    use super::deserialize_empty_object;
+    use super::{deserialize_empty_object, NonExhaustive};
     use super::{Logo, Status, User};
 
     /// See the [Mod Object](https://docs.mod.io/#mod-object) docs for more information.
@@ -595,23 +636,68 @@ pub mod mods {
         ModCommentAdded,
         /// A comment has been deleted from a mod.
         ModCommentDeleted,
+        /// New event types which are not supported yet.
+        Other(String),
     }
 
     impl fmt::Display for EventType {
-        fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-            match *self {
-                EventType::ModfileChanged => "MODFILE_CHANGED",
-                EventType::ModAvailable => "MOD_AVAILABLE",
-                EventType::ModUnavailable => "MOD_UNAVAILABLE",
-                EventType::ModEdited => "MOD_EDITED",
-                EventType::ModDeleted => "MOD_DELETED",
-                EventType::ModTeamChanged => "MOD_TEAM_CHANGED",
-                EventType::ModCommentAdded => "MOD_COMMENT_ADDED",
-                EventType::ModCommentDeleted => "MOD_COMMENT_DELETED",
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            match self {
+                EventType::ModfileChanged => "MODFILE_CHANGED".fmt(f),
+                EventType::ModAvailable => "MOD_AVAILABLE".fmt(f),
+                EventType::ModUnavailable => "MOD_UNAVAILABLE".fmt(f),
+                EventType::ModEdited => "MOD_EDITED".fmt(f),
+                EventType::ModDeleted => "MOD_DELETED".fmt(f),
+                EventType::ModTeamChanged => "MOD_TEAM_CHANGED".fmt(f),
+                EventType::ModCommentAdded => "MOD_COMMENT_ADDED".fmt(f),
+                EventType::ModCommentDeleted => "MOD_COMMENT_DELETED".fmt(f),
+                EventType::Other(s) => s.fmt(f),
             }
-            .fmt(fmt)
         }
     }
+
+    // impl #[serde(from = "NonExhaustive<KnowEventType>")] {{{
+    #[derive(Deserialize)]
+    #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+    #[allow(clippy::enum_variant_names)]
+    enum KnownEventType {
+        /// Primary file changed, the mod should be updated.
+        ModfileChanged,
+        /// Mod is marked as accepted and public.
+        ModAvailable,
+        /// Mod is marked as not accepted, deleted or hidden.
+        ModUnavailable,
+        /// Mod has been updated.
+        ModEdited,
+        /// Mod has been permanently deleted.
+        ModDeleted,
+        /// User has joined or left the mod team.
+        ModTeamChanged,
+        /// A comment has been published for a mod.
+        ModCommentAdded,
+        /// A comment has been deleted from a mod.
+        ModCommentDeleted,
+    }
+
+    impl From<NonExhaustive<KnownEventType>> for EventType {
+        fn from(kind: NonExhaustive<KnownEventType>) -> EventType {
+            use KnownEventType::*;
+            use NonExhaustive::*;
+
+            match kind {
+                Known(ModfileChanged) => EventType::ModfileChanged,
+                Known(ModAvailable) => EventType::ModAvailable,
+                Known(ModUnavailable) => EventType::ModUnavailable,
+                Known(ModEdited) => EventType::ModEdited,
+                Known(ModDeleted) => EventType::ModDeleted,
+                Known(ModTeamChanged) => EventType::ModTeamChanged,
+                Known(ModCommentAdded) => EventType::ModCommentAdded,
+                Known(ModCommentDeleted) => EventType::ModCommentDeleted,
+                Unknown(other) => EventType::Other(other),
+            }
+        }
+    }
+    // }}}
 
     /// See the [Mod Dependency Object](https://docs.mod.io/#mod-dependencies-object) docs for more
     /// information.
