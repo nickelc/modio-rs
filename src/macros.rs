@@ -49,12 +49,12 @@ macro_rules! option {
 macro_rules! impl_serialize_params {
     ($T:ty >> $map:ident) => {
         #[doc(hidden)]
-        impl serde::ser::Serialize for $T {
-            fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+        impl ::serde::ser::Serialize for $T {
+            fn serialize<S>(&self, serializer: S) -> ::std::result::Result<S::Ok, S::Error>
             where
-                S: serde::ser::Serializer,
+                S: ::serde::ser::Serializer,
             {
-                use serde::ser::SerializeMap;
+                use ::serde::ser::SerializeMap;
 
                 let mut map = serializer.serialize_map(Some(self.$map.len()))?;
                 for (k, v) in &self.$map {

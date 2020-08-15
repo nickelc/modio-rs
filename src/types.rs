@@ -3,8 +3,7 @@ use std::fmt;
 
 use bitflags::bitflags;
 use serde::de::Deserializer;
-use serde::ser::Serializer;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use url::Url;
 
 // macro: enum_number {{{
@@ -27,39 +26,39 @@ macro_rules! enum_number {
             )*
         }
 
-        impl fmt::Display for $name {
-            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        impl ::std::fmt::Display for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> ::std::fmt::Result {
                 (*self as u8).fmt(f)
             }
         }
 
-        impl Serialize for $name {
-            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        impl ::serde::Serialize for $name {
+            fn serialize<S>(&self, serializer: S) -> ::std::result::Result<S::Ok, S::Error>
             where
-                S: Serializer,
+                S: ::serde::Serializer,
             {
                 // Serialize the enum as a u64.
                 serializer.serialize_u64(*self as u64)
             }
         }
 
-        impl<'de> Deserialize<'de> for $name {
-            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        impl<'de> ::serde::Deserialize<'de> for $name {
+            fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
             where
-                D: Deserializer<'de>,
+                D: ::serde::Deserializer<'de>,
             {
                 struct Visitor;
 
-                impl<'de> serde::de::Visitor<'de> for Visitor {
+                impl<'de> ::serde::de::Visitor<'de> for Visitor {
                     type Value = $name;
 
-                    fn expecting(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+                    fn expecting(&self, fmt: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
                         fmt.write_str("positive integer")
                     }
 
-                    fn visit_u64<E>(self, value: u64) -> Result<$name, E>
+                    fn visit_u64<E>(self, value: u64) -> ::std::result::Result<$name, E>
                     where
-                        E: serde::de::Error,
+                        E: ::serde::de::Error,
                     {
                         match value {
                             $( $value => Ok($name::$variant), )*
@@ -82,23 +81,23 @@ macro_rules! enum_number {
 // macro: bitflags_serde {{{
 macro_rules! bitflags_serde {
     ($name:ident, $type:ty) => {
-        impl<'de> Deserialize<'de> for $name {
-            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        impl<'de> ::serde::Deserialize<'de> for $name {
+            fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
             where
-                D: Deserializer<'de>,
+                D: ::serde::Deserializer<'de>,
             {
                 struct Visitor;
 
-                impl<'de> serde::de::Visitor<'de> for Visitor {
+                impl<'de> ::serde::de::Visitor<'de> for Visitor {
                     type Value = $name;
 
-                    fn expecting(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+                    fn expecting(&self, fmt: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
                         fmt.write_str("positive integer")
                     }
 
-                    fn visit_u64<E>(self, value: u64) -> Result<$name, E>
+                    fn visit_u64<E>(self, value: u64) -> ::std::result::Result<$name, E>
                     where
-                        E: serde::de::Error,
+                        E: ::serde::de::Error,
                     {
                         $name::from_bits(value as $type).ok_or_else(|| {
                             E::custom(format!("invalid {} value: {}", stringify!($name), value))
@@ -110,8 +109,8 @@ macro_rules! bitflags_serde {
             }
         }
 
-        impl fmt::Display for $name {
-            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        impl ::std::fmt::Display for $name {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
                 self.bits.fmt(f)
             }
         }
