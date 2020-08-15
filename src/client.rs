@@ -219,14 +219,14 @@ impl Modio {
         Builder::new(credentials).host(host).build()
     }
 
-    /// Consume the endpoint and create an endpoint with new credentials.
-    pub fn with_credentials<CR>(self, credentials: CR) -> Self
+    /// Return an endpoint with new credentials.
+    pub fn with_credentials<CR>(&self, credentials: CR) -> Self
     where
         CR: Into<Credentials>,
     {
         Self {
-            host: self.host,
-            client: self.client,
+            host: self.host.clone(),
+            client: self.client.clone(),
             credentials: credentials.into(),
         }
     }
