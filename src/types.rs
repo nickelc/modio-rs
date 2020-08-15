@@ -1,9 +1,7 @@
 use std::collections::HashMap;
 use std::fmt;
 
-use bitflags::bitflags;
-use serde::de::Deserializer;
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
 use url::Url;
 
 // macro: enum_number {{{
@@ -303,8 +301,14 @@ where
 }
 
 pub mod game {
-    use super::*;
     use std::fmt;
+
+    use bitflags::bitflags;
+    use serde::Deserialize;
+    use url::Url;
+
+    use super::deserialize_empty_object;
+    use super::{Logo, Status, User};
 
     /// See the [Game Object](https://docs.mod.io/#game-object) docs for more information.
     #[derive(Debug, Deserialize)]
@@ -498,8 +502,15 @@ pub mod game {
 }
 
 pub mod mods {
-    use super::*;
-    use serde::de::{Deserialize, Deserializer};
+    use std::collections::HashMap;
+    use std::fmt;
+
+    use bitflags::bitflags;
+    use serde::{Deserialize, Deserializer};
+    use url::Url;
+
+    use super::deserialize_empty_object;
+    use super::{Logo, Status, User};
 
     /// See the [Mod Object](https://docs.mod.io/#mod-object) docs for more information.
     #[derive(Debug, Deserialize)]
