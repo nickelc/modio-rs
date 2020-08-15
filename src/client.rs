@@ -4,7 +4,7 @@ use ::reqwest::{Client, ClientBuilder, Proxy};
 use http::header::USER_AGENT;
 use http::header::{HeaderMap, HeaderValue};
 
-use crate::auth::{Auth, Credentials};
+use crate::auth::{Auth, Credentials, Token};
 use crate::download::{DownloadAction, Downloader};
 use crate::error::{self, Error, Result};
 use crate::games::{GameRef, Games};
@@ -228,6 +228,21 @@ impl Modio {
             host: self.host.clone(),
             client: self.client.clone(),
             credentials: credentials.into(),
+        }
+    }
+
+    /// Return an endpoint with a new token.
+    pub fn with_token<T>(&self, token: T) -> Self
+    where
+        T: Into<Token>,
+    {
+        Self {
+            host: self.host.clone(),
+            client: self.client.clone(),
+            credentials: Credentials {
+                api_key: self.credentials.api_key.clone(),
+                token: Some(token.into()),
+            },
         }
     }
 
