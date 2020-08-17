@@ -203,8 +203,8 @@ impl ModRef {
             .send::<Message>()
             .await
             .map(|_| ())
-            .or_else(|err| match err.kind() {
-                Kind::Status(StatusCode::BAD_REQUEST) => Ok(()),
+            .or_else(|err| match (err.kind(), err.error_ref()) {
+                (Kind::Status(StatusCode::BAD_REQUEST), Some(15028)) => Ok(()),
                 _ => Err(err),
             })
     }
@@ -220,8 +220,8 @@ impl ModRef {
             .send::<Mod>()
             .await
             .map(|_| ())
-            .or_else(|err| match err.kind() {
-                Kind::Status(StatusCode::BAD_REQUEST) => Ok(()),
+            .or_else(|err| match (err.kind(), err.error_ref()) {
+                (Kind::Status(StatusCode::BAD_REQUEST), Some(15004)) => Ok(()),
                 _ => Err(err),
             })
     }
@@ -236,8 +236,8 @@ impl ModRef {
             .request(route)
             .send()
             .await
-            .or_else(|err| match err.kind() {
-                Kind::Status(StatusCode::BAD_REQUEST) => Ok(()),
+            .or_else(|err| match (err.kind(), err.error_ref()) {
+                (Kind::Status(StatusCode::BAD_REQUEST), Some(15005)) => Ok(()),
                 _ => Err(err),
             })
     }
