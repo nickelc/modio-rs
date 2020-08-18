@@ -167,7 +167,7 @@ impl Auth {
         })
     }
 
-    /// Authenticate via external services ([Steam], [GOG], [itch.io], [Xbox], [Discord], [Oculus]).
+    /// Authenticate via external services ([Steam], [GOG], [itch.io], [Switch], [Xbox], [Discord], [Oculus]).
     ///
     /// See the [mod.io docs](https://docs.mod.io/#authentication-2) for more information.
     ///
@@ -175,6 +175,7 @@ impl Auth {
     /// [GOG]: GalaxyOptions
     /// [itch.io]: ItchioOptions
     /// [Oculus]: OculusOptions
+    /// [Switch]: SwitchOptions
     /// [Xbox]: XboxOptions
     /// [Discord]: DiscordOptions
     ///
@@ -276,6 +277,15 @@ impl From<SteamOptions> for AuthOptions {
     fn from(options: SteamOptions) -> AuthOptions {
         AuthOptions {
             route: Route::AuthSteam,
+            params: options.params,
+        }
+    }
+}
+
+impl From<SwitchOptions> for AuthOptions {
+    fn from(options: SwitchOptions) -> AuthOptions {
+        AuthOptions {
+            route: Route::AuthSwitch,
             params: options.params,
         }
     }
@@ -403,6 +413,31 @@ impl SteamOptions {
     {
         let mut params = BTreeMap::new();
         params.insert("appdata", ticket.into());
+        Self { params }
+    }
+
+    option!(email >> "email");
+    option!(
+        /// Unix timestamp of date in which the returned token will expire. Value cannot be higher
+        /// than the default value which is a common year.
+        expired_at: u64 >> "date_expires"
+    );
+}
+
+/// Authentication options for the NSA ID token.
+///
+/// See the [mod.io docs](https://docs.mod.io/#authenticate-via-switch) for more information.
+pub struct SwitchOptions {
+    params: BTreeMap<&'static str, String>,
+}
+
+impl SwitchOptions {
+    pub fn new<T>(id_token: T) -> Self
+    where
+        T: Into<String>,
+    {
+        let mut params = BTreeMap::new();
+        params.insert("id_token", id_token.into());
         Self { params }
     }
 

@@ -106,6 +106,7 @@ define_routes! {
     { AuthGog, POST: "/external/galaxyauth", ApiKey },
     { AuthItchio, POST: "/external/itchioauth", ApiKey },
     { AuthOculus, POST: "/external/oculusauth", ApiKey },
+    { AuthSwitch, POST: "/external/switchauth", ApiKey },
     { AuthXbox, POST: "/external/xboxauth", ApiKey },
     { AuthDiscord, POST: "/external/discordauth", ApiKey },
     { LinkAccount, POST: "/external/link", Token },
