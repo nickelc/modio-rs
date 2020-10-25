@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   lints:
     name: Rustfmt and clippy
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -26,14 +26,11 @@ jobs:
           args: --all-features -- -D warnings
 
       - name: Run rustfmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: -- --check
+        run: cargo fmt -- --check
 
   build_and_test:
     name: Build and test
-    runs-on: [ubuntu-latest]
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -51,31 +48,16 @@ jobs:
           override: true
 
       - name: Check default features
-        uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --examples --tests
+        run: cargo check --examples --tests
 
       - name: Check no default features
-        uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --examples --tests --no-default-features
+        run: cargo check --examples --tests --no-default-features
 
       - name: Check `rustls-tls` feature
-        uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --examples --tests --no-default-features --features rustls-tls
+        run: cargo check --examples --tests --no-default-features --features rustls-tls
 
       - name: Check `default-tls` and `rustls-tls` feature
-        uses: actions-rs/cargo@v1
-        with:
-          command: check
-          args: --examples --tests --features rustls-tls
+        run: cargo check --examples --tests --features rustls-tls
 
       - name: Tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --all-features
+        run: cargo test --all-features
