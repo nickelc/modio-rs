@@ -28,6 +28,24 @@ jobs:
       - name: Run rustfmt
         run: cargo fmt -- --check
 
+  docs:
+    name: Build docs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install rust (nightly)
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+
+      - name: Generate docs
+        run: cargo doc --no-deps --all-features
+
   build_and_test:
     name: Build and test
     runs-on: ubuntu-latest
