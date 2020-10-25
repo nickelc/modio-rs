@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `src/auth.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>auth.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../modio/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/auth.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>auth.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../modio/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -583,7 +585,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">Credentials</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">token</span>.<span class="ident">is_some</span>() {
             <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;Credentials(apikey+token)&quot;</span>)
         } <span class="kw">else</span> {
@@ -593,14 +595,14 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Credentials</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;&gt;</span>(<span class="ident">api_key</span>: <span class="ident">S</span>) <span class="op">-&gt;</span> <span class="ident">Credentials</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">api_key</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Credentials</span> {
         <span class="ident">Credentials</span> {
             <span class="ident">api_key</span>: <span class="ident">api_key</span>.<span class="ident">into</span>(),
             <span class="ident">token</span>: <span class="prelude-val">None</span>,
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_token</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;&gt;</span>(<span class="ident">api_key</span>: <span class="ident">S</span>, <span class="ident">token</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="ident">Credentials</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_token</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">api_key</span>: <span class="ident">S</span>, <span class="ident">token</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Credentials</span> {
         <span class="ident">Credentials</span> {
             <span class="ident">api_key</span>: <span class="ident">api_key</span>.<span class="ident">into</span>(),
             <span class="ident">token</span>: <span class="prelude-val">Some</span>(<span class="ident">Token</span> {
@@ -612,25 +614,25 @@
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Credentials</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">api_key</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">Credentials</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">api_key</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Credentials</span> {
         <span class="ident">Credentials</span>::<span class="ident">new</span>(<span class="ident">api_key</span>)
     }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>)<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Credentials</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>((<span class="ident">api_key</span>, <span class="ident">token</span>): (<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>)) <span class="op">-&gt;</span> <span class="ident">Credentials</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>((<span class="ident">api_key</span>, <span class="ident">token</span>): (<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>)) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Credentials</span> {
         <span class="ident">Credentials</span>::<span class="ident">with_token</span>(<span class="ident">api_key</span>, <span class="ident">token</span>)
     }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Credentials</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">api_key</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="ident">Credentials</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">api_key</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Credentials</span> {
         <span class="ident">Credentials</span>::<span class="ident">new</span>(<span class="ident">api_key</span>)
     }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">String</span>)<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Credentials</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>((<span class="ident">api_key</span>, <span class="ident">token</span>): (<span class="ident">String</span>, <span class="ident">String</span>)) <span class="op">-&gt;</span> <span class="ident">Credentials</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>((<span class="ident">api_key</span>, <span class="ident">token</span>): (<span class="ident">String</span>, <span class="ident">String</span>)) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Credentials</span> {
         <span class="ident">Credentials</span>::<span class="ident">with_token</span>(<span class="ident">api_key</span>, <span class="ident">token</span>)
     }
 }
@@ -647,10 +649,10 @@
 <span class="kw">impl</span> <span class="ident">StdError</span> <span class="kw">for</span> <span class="ident">Error</span> {}
 
 <span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">Error</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Error</span>::<span class="ident">Unauthorized</span> <span class="op">=&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;Unauthorized&quot;</span>),
-            <span class="ident">Error</span>::<span class="ident">TokenRequired</span> <span class="op">=&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;Access token is required&quot;</span>),
+            <span class="ident">Error</span>::<span class="ident">Unauthorized</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;Unauthorized&quot;</span>),
+            <span class="ident">Error</span>::<span class="ident">TokenRequired</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;Access token is required&quot;</span>),
         }
     }
 }
@@ -693,29 +695,29 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Auth</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">modio</span>: <span class="ident">Modio</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">modio</span>: <span class="ident">Modio</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span> { <span class="ident">modio</span> }
     }
 
     <span class="doccomment">/// Request a security code be sent to the email of the user. [required: apikey]</span>
-    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">request_code</span>(<span class="self">self</span>, <span class="ident">email</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">request_code</span>(<span class="self">self</span>, <span class="ident">email</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">modio</span>
             .<span class="ident">request</span>(<span class="ident">Route</span>::<span class="ident">AuthEmailRequest</span>)
             .<span class="ident">form</span>(<span class="kw-2">&amp;</span>[(<span class="string">&quot;email&quot;</span>, <span class="ident">email</span>)])
             .<span class="ident">send</span>::<span class="op">&lt;</span><span class="ident">Message</span><span class="op">&gt;</span>()
-            .<span class="kw">await</span><span class="question-mark">?</span>;
+            .<span class="ident">await</span><span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Get the access token for a security code. [required: apikey]</span>
-    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">security_code</span>(<span class="self">self</span>, <span class="ident">code</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Credentials</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">security_code</span>(<span class="self">self</span>, <span class="ident">code</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Credentials</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">modio</span>
             .<span class="ident">request</span>(<span class="ident">Route</span>::<span class="ident">AuthEmailExchange</span>)
             .<span class="ident">form</span>(<span class="kw-2">&amp;</span>[(<span class="string">&quot;security_code&quot;</span>, <span class="ident">code</span>)])
             .<span class="ident">send</span>::<span class="op">&lt;</span><span class="ident">AccessToken</span><span class="op">&gt;</span>()
-            .<span class="kw">await</span><span class="question-mark">?</span>;
+            .<span class="ident">await</span><span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="ident">token</span> <span class="op">=</span> <span class="ident">Token</span> {
             <span class="ident">value</span>: <span class="ident">t</span>.<span class="ident">value</span>,
@@ -762,7 +764,7 @@
     <span class="doccomment">/// #   Ok(())</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">external</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">auth_options</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Credentials</span><span class="op">&gt;</span>
+    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">external</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">auth_options</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Credentials</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">AuthOptions</span><span class="op">&gt;</span>,
     {
@@ -773,7 +775,7 @@
             .<span class="ident">request</span>(<span class="ident">route</span>)
             .<span class="ident">form</span>(<span class="kw-2">&amp;</span><span class="ident">params</span>)
             .<span class="ident">send</span>::<span class="op">&lt;</span><span class="ident">AccessToken</span><span class="op">&gt;</span>()
-            .<span class="kw">await</span><span class="question-mark">?</span>;
+            .<span class="ident">await</span><span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="ident">token</span> <span class="op">=</span> <span class="ident">Token</span> {
             <span class="ident">value</span>: <span class="ident">t</span>.<span class="ident">value</span>,
@@ -788,12 +790,12 @@
     <span class="doccomment">/// Link an external account. Requires an auth token from the external platform.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// See the [mod.io docs](https://docs.mod.io/#link-external-account) for more information.</span>
-    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">link</span>(<span class="self">self</span>, <span class="ident">options</span>: <span class="ident">LinkOptions</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">link</span>(<span class="self">self</span>, <span class="ident">options</span>: <span class="ident">LinkOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">modio</span>
             .<span class="ident">request</span>(<span class="ident">Route</span>::<span class="ident">LinkAccount</span>)
             .<span class="ident">form</span>(<span class="kw-2">&amp;</span><span class="ident">options</span>)
             .<span class="ident">send</span>::<span class="op">&lt;</span><span class="ident">Message</span><span class="op">&gt;</span>()
-            .<span class="kw">await</span><span class="question-mark">?</span>;
+            .<span class="ident">await</span><span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
     }
@@ -807,7 +809,7 @@
 
 <span class="comment">// impl From&lt;*Options&gt; for AuthOptions {{{</span>
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">GalaxyOptions</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">AuthOptions</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="ident">GalaxyOptions</span>) <span class="op">-&gt;</span> <span class="ident">AuthOptions</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="ident">GalaxyOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">AuthOptions</span> {
         <span class="ident">AuthOptions</span> {
             <span class="ident">route</span>: <span class="ident">Route</span>::<span class="ident">AuthGog</span>,
             <span class="ident">params</span>: <span class="ident">options</span>.<span class="ident">params</span>,
@@ -816,7 +818,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">ItchioOptions</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">AuthOptions</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="ident">ItchioOptions</span>) <span class="op">-&gt;</span> <span class="ident">AuthOptions</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="ident">ItchioOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">AuthOptions</span> {
         <span class="ident">AuthOptions</span> {
             <span class="ident">route</span>: <span class="ident">Route</span>::<span class="ident">AuthItchio</span>,
             <span class="ident">params</span>: <span class="ident">options</span>.<span class="ident">params</span>,
@@ -825,7 +827,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">OculusOptions</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">AuthOptions</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="ident">OculusOptions</span>) <span class="op">-&gt;</span> <span class="ident">AuthOptions</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="ident">OculusOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">AuthOptions</span> {
         <span class="ident">AuthOptions</span> {
             <span class="ident">route</span>: <span class="ident">Route</span>::<span class="ident">AuthOculus</span>,
             <span class="ident">params</span>: <span class="ident">options</span>.<span class="ident">params</span>,
@@ -834,7 +836,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">SteamOptions</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">AuthOptions</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="ident">SteamOptions</span>) <span class="op">-&gt;</span> <span class="ident">AuthOptions</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="ident">SteamOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">AuthOptions</span> {
         <span class="ident">AuthOptions</span> {
             <span class="ident">route</span>: <span class="ident">Route</span>::<span class="ident">AuthSteam</span>,
             <span class="ident">params</span>: <span class="ident">options</span>.<span class="ident">params</span>,
@@ -843,7 +845,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">SwitchOptions</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">AuthOptions</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="ident">SwitchOptions</span>) <span class="op">-&gt;</span> <span class="ident">AuthOptions</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="ident">SwitchOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">AuthOptions</span> {
         <span class="ident">AuthOptions</span> {
             <span class="ident">route</span>: <span class="ident">Route</span>::<span class="ident">AuthSwitch</span>,
             <span class="ident">params</span>: <span class="ident">options</span>.<span class="ident">params</span>,
@@ -852,7 +854,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">XboxOptions</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">AuthOptions</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="ident">XboxOptions</span>) <span class="op">-&gt;</span> <span class="ident">AuthOptions</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="ident">XboxOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">AuthOptions</span> {
         <span class="ident">AuthOptions</span> {
             <span class="ident">route</span>: <span class="ident">Route</span>::<span class="ident">AuthXbox</span>,
             <span class="ident">params</span>: <span class="ident">options</span>.<span class="ident">params</span>,
@@ -861,7 +863,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">DiscordOptions</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">AuthOptions</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="ident">DiscordOptions</span>) <span class="op">-&gt;</span> <span class="ident">AuthOptions</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">options</span>: <span class="ident">DiscordOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">AuthOptions</span> {
         <span class="ident">AuthOptions</span> {
             <span class="ident">route</span>: <span class="ident">Route</span>::<span class="ident">AuthDiscord</span>,
             <span class="ident">params</span>: <span class="ident">options</span>.<span class="ident">params</span>,
@@ -878,7 +880,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">GalaxyOptions</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">ticket</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="self">Self</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">ticket</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     {
@@ -887,11 +889,11 @@
         <span class="self">Self</span> { <span class="ident">params</span> }
     }
 
-    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">email</span> <span class="op">&gt;&gt;</span> <span class="string">&quot;email&quot;</span>);
+    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">email</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;email&quot;</span>);
     <span class="macro">option</span><span class="macro">!</span>(
         <span class="doccomment">/// Unix timestamp of date in which the returned token will expire. Value cannot be higher</span>
         <span class="doccomment">/// than the default value which is a common year.</span>
-        <span class="ident">expired_at</span>: <span class="ident">u64</span> <span class="op">&gt;&gt;</span> <span class="string">&quot;date_expires&quot;</span>
+        <span class="ident">expired_at</span>: <span class="ident">u64</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;date_expires&quot;</span>
     );
 }
 
@@ -903,7 +905,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">ItchioOptions</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">token</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="self">Self</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">token</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     {
@@ -912,11 +914,11 @@
         <span class="self">Self</span> { <span class="ident">params</span> }
     }
 
-    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">email</span> <span class="op">&gt;&gt;</span> <span class="string">&quot;email&quot;</span>);
+    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">email</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;email&quot;</span>);
     <span class="macro">option</span><span class="macro">!</span>(
         <span class="doccomment">/// Unix timestamp of date in which the returned token will expire. Value cannot be higher</span>
         <span class="doccomment">/// than the default value which is a week.</span>
-        <span class="ident">expired_at</span>: <span class="ident">u64</span> <span class="op">&gt;&gt;</span> <span class="string">&quot;date_expires&quot;</span>
+        <span class="ident">expired_at</span>: <span class="ident">u64</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;date_expires&quot;</span>
     );
 }
 
@@ -928,21 +930,21 @@
 }
 
 <span class="kw">impl</span> <span class="ident">OculusOptions</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_for_quest</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">nonce</span>: <span class="ident">T</span>, <span class="ident">user_id</span>: <span class="ident">u64</span>, <span class="ident">auth_token</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="self">Self</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_for_quest</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">nonce</span>: <span class="ident">T</span>, <span class="ident">user_id</span>: <span class="ident">u64</span>, <span class="ident">auth_token</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     {
         <span class="ident">OculusOptions</span>::<span class="ident">new</span>(<span class="string">&quot;quest&quot;</span>.<span class="ident">to_owned</span>(), <span class="ident">nonce</span>.<span class="ident">into</span>(), <span class="ident">user_id</span>, <span class="ident">auth_token</span>.<span class="ident">into</span>())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_for_rift</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">nonce</span>: <span class="ident">T</span>, <span class="ident">user_id</span>: <span class="ident">u64</span>, <span class="ident">auth_token</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="self">Self</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_for_rift</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">nonce</span>: <span class="ident">T</span>, <span class="ident">user_id</span>: <span class="ident">u64</span>, <span class="ident">auth_token</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     {
         <span class="ident">OculusOptions</span>::<span class="ident">new</span>(<span class="string">&quot;rift&quot;</span>.<span class="ident">to_owned</span>(), <span class="ident">nonce</span>.<span class="ident">into</span>(), <span class="ident">user_id</span>, <span class="ident">auth_token</span>.<span class="ident">into</span>())
     }
 
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">device</span>: <span class="ident">String</span>, <span class="ident">nonce</span>: <span class="ident">String</span>, <span class="ident">user_id</span>: <span class="ident">u64</span>, <span class="ident">auth_token</span>: <span class="ident">String</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">device</span>: <span class="ident">String</span>, <span class="ident">nonce</span>: <span class="ident">String</span>, <span class="ident">user_id</span>: <span class="ident">u64</span>, <span class="ident">auth_token</span>: <span class="ident">String</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">params</span> <span class="op">=</span> <span class="ident">BTreeMap</span>::<span class="ident">new</span>();
         <span class="ident">params</span>.<span class="ident">insert</span>(<span class="string">&quot;device&quot;</span>, <span class="ident">device</span>);
         <span class="ident">params</span>.<span class="ident">insert</span>(<span class="string">&quot;nonce&quot;</span>, <span class="ident">nonce</span>);
@@ -951,11 +953,11 @@
         <span class="self">Self</span> { <span class="ident">params</span> }
     }
 
-    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">email</span> <span class="op">&gt;&gt;</span> <span class="string">&quot;email&quot;</span>);
+    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">email</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;email&quot;</span>);
     <span class="macro">option</span><span class="macro">!</span>(
         <span class="doccomment">/// Unix timestamp of date in which the returned token will expire. Value cannot be higher</span>
         <span class="doccomment">/// than the default value which is a common year.</span>
-        <span class="ident">expired_at</span>: <span class="ident">u64</span> <span class="op">&gt;&gt;</span> <span class="string">&quot;date_expires&quot;</span>
+        <span class="ident">expired_at</span>: <span class="ident">u64</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;date_expires&quot;</span>
     );
 }
 
@@ -967,7 +969,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">SteamOptions</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">ticket</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="self">Self</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">ticket</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     {
@@ -976,11 +978,11 @@
         <span class="self">Self</span> { <span class="ident">params</span> }
     }
 
-    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">email</span> <span class="op">&gt;&gt;</span> <span class="string">&quot;email&quot;</span>);
+    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">email</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;email&quot;</span>);
     <span class="macro">option</span><span class="macro">!</span>(
         <span class="doccomment">/// Unix timestamp of date in which the returned token will expire. Value cannot be higher</span>
         <span class="doccomment">/// than the default value which is a common year.</span>
-        <span class="ident">expired_at</span>: <span class="ident">u64</span> <span class="op">&gt;&gt;</span> <span class="string">&quot;date_expires&quot;</span>
+        <span class="ident">expired_at</span>: <span class="ident">u64</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;date_expires&quot;</span>
     );
 }
 
@@ -992,7 +994,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">SwitchOptions</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">id_token</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="self">Self</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">id_token</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     {
@@ -1001,11 +1003,11 @@
         <span class="self">Self</span> { <span class="ident">params</span> }
     }
 
-    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">email</span> <span class="op">&gt;&gt;</span> <span class="string">&quot;email&quot;</span>);
+    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">email</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;email&quot;</span>);
     <span class="macro">option</span><span class="macro">!</span>(
         <span class="doccomment">/// Unix timestamp of date in which the returned token will expire. Value cannot be higher</span>
         <span class="doccomment">/// than the default value which is a common year.</span>
-        <span class="ident">expired_at</span>: <span class="ident">u64</span> <span class="op">&gt;&gt;</span> <span class="string">&quot;date_expires&quot;</span>
+        <span class="ident">expired_at</span>: <span class="ident">u64</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;date_expires&quot;</span>
     );
 }
 
@@ -1017,7 +1019,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">XboxOptions</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">token</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="self">Self</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">token</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     {
@@ -1026,11 +1028,11 @@
         <span class="self">Self</span> { <span class="ident">params</span> }
     }
 
-    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">email</span> <span class="op">&gt;&gt;</span> <span class="string">&quot;email&quot;</span>);
+    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">email</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;email&quot;</span>);
     <span class="macro">option</span><span class="macro">!</span>(
         <span class="doccomment">/// Unix timestamp of date in which the returned token will expire. Value cannot be higher</span>
         <span class="doccomment">/// than the default value which is a common year.</span>
-        <span class="ident">expired_at</span>: <span class="ident">u64</span> <span class="op">&gt;&gt;</span> <span class="string">&quot;date_expires&quot;</span>
+        <span class="ident">expired_at</span>: <span class="ident">u64</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;date_expires&quot;</span>
     );
 }
 
@@ -1042,7 +1044,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">DiscordOptions</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">token</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="self">Self</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">token</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     {
@@ -1051,11 +1053,11 @@
         <span class="self">Self</span> { <span class="ident">params</span> }
     }
 
-    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">email</span> <span class="op">&gt;&gt;</span> <span class="string">&quot;email&quot;</span>);
+    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">email</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;email&quot;</span>);
     <span class="macro">option</span><span class="macro">!</span>(
         <span class="doccomment">/// Unix timestamp of date in which the returned token will expire. Value cannot be higher</span>
         <span class="doccomment">/// than the default value which is a week.</span>
-        <span class="ident">expired_at</span>: <span class="ident">u64</span> <span class="op">&gt;&gt;</span> <span class="string">&quot;date_expires&quot;</span>
+        <span class="ident">expired_at</span>: <span class="ident">u64</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;date_expires&quot;</span>
     );
 }
 
@@ -1066,21 +1068,21 @@
 }
 
 <span class="kw">impl</span> <span class="ident">LinkOptions</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">steam</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;&gt;</span>(<span class="ident">email</span>: <span class="ident">S</span>, <span class="ident">steam_id</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">steam</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">email</span>: <span class="ident">S</span>, <span class="ident">steam_id</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">email</span>: <span class="ident">email</span>.<span class="ident">into</span>(),
             <span class="ident">service</span>: <span class="ident">Service</span>::<span class="ident">Steam</span>(<span class="ident">steam_id</span>),
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">gog</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;&gt;</span>(<span class="ident">email</span>: <span class="ident">S</span>, <span class="ident">gog_id</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">gog</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">email</span>: <span class="ident">S</span>, <span class="ident">gog_id</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">email</span>: <span class="ident">email</span>.<span class="ident">into</span>(),
             <span class="ident">service</span>: <span class="ident">Service</span>::<span class="ident">Gog</span>(<span class="ident">gog_id</span>),
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">itchio</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;&gt;</span>(<span class="ident">email</span>: <span class="ident">S</span>, <span class="ident">itchio_id</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">itchio</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">email</span>: <span class="ident">S</span>, <span class="ident">itchio_id</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">email</span>: <span class="ident">email</span>.<span class="ident">into</span>(),
             <span class="ident">service</span>: <span class="ident">Service</span>::<span class="ident">Itchio</span>(<span class="ident">itchio_id</span>),
@@ -1090,16 +1092,16 @@
 
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
 <span class="kw">impl</span> <span class="ident">serde</span>::<span class="ident">ser</span>::<span class="ident">Serialize</span> <span class="kw">for</span> <span class="ident">LinkOptions</span> {
-    <span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) <span class="op">-&gt;</span> <span class="ident">std</span>::<span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S</span>::<span class="prelude-val">Ok</span>, <span class="ident">S</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std</span>::<span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S</span>::<span class="prelude-val">Ok</span>, <span class="ident">S</span>::<span class="ident">Error</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">S</span>: <span class="ident">serde</span>::<span class="ident">ser</span>::<span class="ident">Serializer</span>,
     {
         <span class="kw">use</span> <span class="ident">serde</span>::<span class="ident">ser</span>::<span class="ident">SerializeStruct</span>;
 
         <span class="kw">let</span> (<span class="ident">service</span>, <span class="ident">id</span>) <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">service</span> {
-            <span class="ident">Service</span>::<span class="ident">Steam</span>(<span class="ident">id</span>) <span class="op">=&gt;</span> (<span class="string">&quot;steam&quot;</span>, <span class="ident">id</span>),
-            <span class="ident">Service</span>::<span class="ident">Gog</span>(<span class="ident">id</span>) <span class="op">=&gt;</span> (<span class="string">&quot;gog&quot;</span>, <span class="ident">id</span>),
-            <span class="ident">Service</span>::<span class="ident">Itchio</span>(<span class="ident">id</span>) <span class="op">=&gt;</span> (<span class="string">&quot;itch&quot;</span>, <span class="ident">id</span>),
+            <span class="ident">Service</span>::<span class="ident">Steam</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="string">&quot;steam&quot;</span>, <span class="ident">id</span>),
+            <span class="ident">Service</span>::<span class="ident">Gog</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="string">&quot;gog&quot;</span>, <span class="ident">id</span>),
+            <span class="ident">Service</span>::<span class="ident">Itchio</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="string">&quot;itch&quot;</span>, <span class="ident">id</span>),
         };
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">serializer</span>.<span class="ident">serialize_struct</span>(<span class="string">&quot;LinkOptions&quot;</span>, <span class="number">3</span>)<span class="question-mark">?</span>;
         <span class="ident">opts</span>.<span class="ident">serialize_field</span>(<span class="string">&quot;email&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">email</span>)<span class="question-mark">?</span>;

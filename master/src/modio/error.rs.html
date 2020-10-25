@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `src/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../modio/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../modio/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -300,27 +302,6 @@
 <span id="299">299</span>
 <span id="300">300</span>
 <span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
-<span id="304">304</span>
-<span id="305">305</span>
-<span id="306">306</span>
-<span id="307">307</span>
-<span id="308">308</span>
-<span id="309">309</span>
-<span id="310">310</span>
-<span id="311">311</span>
-<span id="312">312</span>
-<span id="313">313</span>
-<span id="314">314</span>
-<span id="315">315</span>
-<span id="316">316</span>
-<span id="317">317</span>
-<span id="318">318</span>
-<span id="319">319</span>
-<span id="320">320</span>
-<span id="321">321</span>
-<span id="322">322</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Client errors</span>
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
@@ -342,7 +323,7 @@
     <span class="ident">inner</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Inner</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">type</span> <span class="ident">BoxError</span> <span class="op">=</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">StdError</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span>;
+<span class="kw">type</span> <span class="ident">BoxError</span> <span class="op">=</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">StdError</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span>;
 
 <span class="kw">struct</span> <span class="ident">Inner</span> {
     <span class="ident">kind</span>: <span class="ident">Kind</span>,
@@ -351,7 +332,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Error</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="ident">kind</span>: <span class="ident">Kind</span>, <span class="ident">source</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Error</span>
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="ident">kind</span>: <span class="ident">Kind</span>, <span class="ident">source</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Error</span>
     <span class="kw">where</span>
         <span class="ident">E</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">BoxError</span><span class="op">&gt;</span>,
     {
@@ -364,7 +345,7 @@
         }
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">new_error_ref</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="ident">kind</span>: <span class="ident">Kind</span>, <span class="ident">error_ref</span>: <span class="ident">u16</span>, <span class="ident">source</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Error</span>
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">new_error_ref</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="ident">kind</span>: <span class="ident">Kind</span>, <span class="ident">error_ref</span>: <span class="ident">u16</span>, <span class="ident">source</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Error</span>
     <span class="kw">where</span>
         <span class="ident">E</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">BoxError</span><span class="op">&gt;</span>,
     {
@@ -379,91 +360,70 @@
 
     <span class="doccomment">/// Returns true if the API key/access token is incorrect, revoked, expired or the request</span>
     <span class="doccomment">/// needs a different authentication method.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_auth</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span> {
-            <span class="ident">Kind</span>::<span class="ident">Auth</span> <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
-        }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_auth</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="macro">matches</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span>, <span class="ident">Kind</span>::<span class="ident">Auth</span>)
     }
 
     <span class="doccomment">/// Returns true if the error is from a type Builder.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_builder</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span> {
-            <span class="ident">Kind</span>::<span class="ident">Builder</span> <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
-        }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_builder</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="macro">matches</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span>, <span class="ident">Kind</span>::<span class="ident">Builder</span>)
     }
 
     <span class="doccomment">/// Returns true if the error is from a [`DownloadAction`](crate::download::DownloadAction).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_download</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span> {
-            <span class="ident">Kind</span>::<span class="ident">Download</span> <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
-        }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_download</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="macro">matches</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span>, <span class="ident">Kind</span>::<span class="ident">Download</span>)
     }
 
     <span class="doccomment">/// Returns true if the rate limit associated with credentials has been exhausted.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_ratelimited</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span> {
-            <span class="ident">Kind</span>::<span class="ident">RateLimit</span> { .. } <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
-        }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_ratelimited</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="macro">matches</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span>, <span class="ident">Kind</span>::<span class="ident">RateLimit</span> { .. })
     }
 
     <span class="doccomment">/// Returns true if the error was generated from a response.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_status</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span> {
-            <span class="ident">Kind</span>::<span class="ident">Status</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
-        }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_status</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="macro">matches</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span>, <span class="ident">Kind</span>::<span class="ident">Status</span>(<span class="kw">_</span>))
     }
 
     <span class="doccomment">/// Returns true if the error contains validation errors.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_validation</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span> {
-            <span class="ident">Kind</span>::<span class="ident">Validation</span>(<span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
-        }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_validation</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="macro">matches</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span>, <span class="ident">Kind</span>::<span class="ident">Validation</span>(<span class="kw">_</span>, <span class="kw">_</span>))
     }
 
     <span class="doccomment">/// Returns true if the error is related to serialization.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_decode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span> {
-            <span class="ident">Kind</span>::<span class="ident">Decode</span> <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
-        }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_decode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="macro">matches</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span>, <span class="ident">Kind</span>::<span class="ident">Decode</span>)
     }
 
     <span class="doccomment">/// Returns modio&#39;s error reference code.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// See the [Error Codes](https://docs.mod.io/#error-codes) docs for more information.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">error_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">error_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">error_ref</span>
     }
 
     <span class="doccomment">/// Returns status code if the error was generated from a response.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">status</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">StatusCode</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">status</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">StatusCode</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span> {
-            <span class="ident">Kind</span>::<span class="ident">Status</span>(<span class="ident">code</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">code</span>),
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+            <span class="ident">Kind</span>::<span class="ident">Status</span>(<span class="ident">code</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">code</span>),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
         }
     }
 
     <span class="doccomment">/// Returns validation message &amp; errors from the response.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">validation</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="ident">String</span>, <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span>)<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">validation</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="ident">String</span>, <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">String</span><span class="op">&gt;</span>)<span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span> {
-            <span class="ident">Kind</span>::<span class="ident">Validation</span>(<span class="kw-2">ref</span> <span class="ident">msg</span>, <span class="kw-2">ref</span> <span class="ident">errors</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>((<span class="ident">msg</span>, <span class="ident">errors</span>)),
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+            <span class="ident">Kind</span>::<span class="ident">Validation</span>(<span class="kw-2">ref</span> <span class="ident">msg</span>, <span class="kw-2">ref</span> <span class="ident">errors</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>((<span class="ident">msg</span>, <span class="ident">errors</span>)),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
         }
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">kind</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Kind</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">kind</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Kind</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">Error</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;modio::Error&quot;</span>);
 
         <span class="ident">builder</span>.<span class="ident">field</span>(<span class="string">&quot;kind&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span>);
@@ -476,14 +436,14 @@
 }
 
 <span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">Error</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">kind</span> {
-            <span class="ident">Kind</span>::<span class="ident">Auth</span> <span class="op">=&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;authentication error&quot;</span>)<span class="question-mark">?</span>,
-            <span class="ident">Kind</span>::<span class="ident">Builder</span> <span class="op">=&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;builder error&quot;</span>)<span class="question-mark">?</span>,
-            <span class="ident">Kind</span>::<span class="ident">Decode</span> <span class="op">=&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;error decoding response body&quot;</span>)<span class="question-mark">?</span>,
-            <span class="ident">Kind</span>::<span class="ident">Download</span> <span class="op">=&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;download error&quot;</span>)<span class="question-mark">?</span>,
-            <span class="ident">Kind</span>::<span class="ident">Request</span> <span class="op">=&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;http request error&quot;</span>)<span class="question-mark">?</span>,
-            <span class="ident">Kind</span>::<span class="ident">Status</span>(<span class="ident">code</span>) <span class="op">=&gt;</span> {
+            <span class="ident">Kind</span>::<span class="ident">Auth</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;authentication error&quot;</span>)<span class="question-mark">?</span>,
+            <span class="ident">Kind</span>::<span class="ident">Builder</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;builder error&quot;</span>)<span class="question-mark">?</span>,
+            <span class="ident">Kind</span>::<span class="ident">Decode</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;error decoding response body&quot;</span>)<span class="question-mark">?</span>,
+            <span class="ident">Kind</span>::<span class="ident">Download</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;download error&quot;</span>)<span class="question-mark">?</span>,
+            <span class="ident">Kind</span>::<span class="ident">Request</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;http request error&quot;</span>)<span class="question-mark">?</span>,
+            <span class="ident">Kind</span>::<span class="ident">Status</span>(<span class="ident">code</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">prefix</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">code</span>.<span class="ident">is_client_error</span>() {
                     <span class="string">&quot;HTTP status client error&quot;</span>
                 } <span class="kw">else</span> {
@@ -492,10 +452,10 @@
                 };
                 <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{} ({})&quot;</span>, <span class="ident">prefix</span>, <span class="ident">code</span>)<span class="question-mark">?</span>;
             }
-            <span class="ident">Kind</span>::<span class="ident">RateLimit</span> { <span class="ident">reset</span> } <span class="op">=&gt;</span> {
+            <span class="ident">Kind</span>::<span class="ident">RateLimit</span> { <span class="ident">reset</span> } <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;API rate limit reached. Try again in {:?}.&quot;</span>, <span class="ident">reset</span>)<span class="question-mark">?</span>;
             }
-            <span class="ident">Kind</span>::<span class="ident">Validation</span>(<span class="kw-2">ref</span> <span class="ident">message</span>, <span class="kw-2">ref</span> <span class="ident">errors</span>) <span class="op">=&gt;</span> {
+            <span class="ident">Kind</span>::<span class="ident">Validation</span>(<span class="kw-2">ref</span> <span class="ident">message</span>, <span class="kw-2">ref</span> <span class="ident">errors</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;validation failed: &#39;{}&#39; {:?}&quot;</span>, <span class="ident">message</span>, <span class="ident">errors</span>)<span class="question-mark">?</span>;
             }
         };
@@ -507,7 +467,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">StdError</span> <span class="kw">for</span> <span class="ident">Error</span> {
-    <span class="kw">fn</span> <span class="ident">source</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>(<span class="kw">dyn</span> <span class="ident">StdError</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>)<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">source</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>(<span class="ident">dyn</span> <span class="ident">StdError</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>)<span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">source</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">e</span> <span class="kw">as</span> <span class="kw">_</span>)
     }
 }
@@ -527,7 +487,7 @@
 <span class="kw">impl</span> <span class="ident">StdError</span> <span class="kw">for</span> <span class="ident">ModioError</span> {}
 
 <span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">ModioError</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
         <span class="ident">buf</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">message</span>);
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">errors</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">errors</span> {
@@ -543,15 +503,15 @@
     }
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">token_required</span>() <span class="op">-&gt;</span> <span class="ident">Error</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">token_required</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Error</span> {
     <span class="ident">Error</span>::<span class="ident">new</span>(<span class="ident">Kind</span>::<span class="ident">Auth</span>, <span class="prelude-val">Some</span>(<span class="ident">AuthError</span>::<span class="ident">TokenRequired</span>))
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">unauthorized</span>(<span class="ident">error_ref</span>: <span class="ident">u16</span>) <span class="op">-&gt;</span> <span class="ident">Error</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">unauthorized</span>(<span class="ident">error_ref</span>: <span class="ident">u16</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Error</span> {
     <span class="ident">Error</span>::<span class="ident">new_error_ref</span>(<span class="ident">Kind</span>::<span class="ident">Auth</span>, <span class="ident">error_ref</span>, <span class="prelude-val">Some</span>(<span class="ident">AuthError</span>::<span class="ident">Unauthorized</span>))
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">builder_or_request</span>(<span class="ident">e</span>: <span class="ident">reqwest</span>::<span class="ident">Error</span>) <span class="op">-&gt;</span> <span class="ident">Error</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">builder_or_request</span>(<span class="ident">e</span>: <span class="ident">reqwest</span>::<span class="ident">Error</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Error</span> {
     <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">is_builder</span>() {
         <span class="ident">builder</span>(<span class="ident">e</span>)
     } <span class="kw">else</span> {
@@ -559,31 +519,31 @@
     }
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">builder</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">BoxError</span><span class="op">&gt;&gt;</span>(<span class="ident">e</span>: <span class="ident">E</span>) <span class="op">-&gt;</span> <span class="ident">Error</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">builder</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">BoxError</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">e</span>: <span class="ident">E</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Error</span> {
     <span class="ident">Error</span>::<span class="ident">new</span>(<span class="ident">Kind</span>::<span class="ident">Builder</span>, <span class="prelude-val">Some</span>(<span class="ident">e</span>))
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">request</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">BoxError</span><span class="op">&gt;&gt;</span>(<span class="ident">e</span>: <span class="ident">E</span>) <span class="op">-&gt;</span> <span class="ident">Error</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">request</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">BoxError</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">e</span>: <span class="ident">E</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Error</span> {
     <span class="ident">Error</span>::<span class="ident">new</span>(<span class="ident">Kind</span>::<span class="ident">Request</span>, <span class="prelude-val">Some</span>(<span class="ident">e</span>))
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">decode</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">BoxError</span><span class="op">&gt;&gt;</span>(<span class="ident">e</span>: <span class="ident">E</span>) <span class="op">-&gt;</span> <span class="ident">Error</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">decode</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">BoxError</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">e</span>: <span class="ident">E</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Error</span> {
     <span class="ident">Error</span>::<span class="ident">new</span>(<span class="ident">Kind</span>::<span class="ident">Decode</span>, <span class="prelude-val">Some</span>(<span class="ident">e</span>))
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">error_for_status</span>(<span class="ident">status</span>: <span class="ident">StatusCode</span>, <span class="ident">error</span>: <span class="ident">ModioError</span>) <span class="op">-&gt;</span> <span class="ident">Error</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">error_for_status</span>(<span class="ident">status</span>: <span class="ident">StatusCode</span>, <span class="ident">error</span>: <span class="ident">ModioError</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Error</span> {
     <span class="kw">match</span> <span class="ident">status</span> {
-        <span class="ident">StatusCode</span>::<span class="ident">UNPROCESSABLE_ENTITY</span> <span class="op">=&gt;</span> <span class="ident">Error</span>::<span class="ident">new_error_ref</span>(
+        <span class="ident">StatusCode</span>::<span class="ident">UNPROCESSABLE_ENTITY</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Error</span>::<span class="ident">new_error_ref</span>(
             <span class="ident">Kind</span>::<span class="ident">Validation</span>(<span class="ident">error</span>.<span class="ident">message</span>, <span class="ident">error</span>.<span class="ident">errors</span>.<span class="ident">unwrap_or_default</span>()),
             <span class="ident">error</span>.<span class="ident">error_ref</span>,
             <span class="prelude-val">None</span>::<span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span>,
         ),
-        <span class="ident">StatusCode</span>::<span class="ident">UNAUTHORIZED</span> <span class="op">=&gt;</span> <span class="ident">unauthorized</span>(<span class="ident">error</span>.<span class="ident">error_ref</span>),
-        <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">Error</span>::<span class="ident">new_error_ref</span>(<span class="ident">Kind</span>::<span class="ident">Status</span>(<span class="ident">status</span>), <span class="ident">error</span>.<span class="ident">error_ref</span>, <span class="prelude-val">Some</span>(<span class="ident">error</span>)),
+        <span class="ident">StatusCode</span>::<span class="ident">UNAUTHORIZED</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">unauthorized</span>(<span class="ident">error</span>.<span class="ident">error_ref</span>),
+        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Error</span>::<span class="ident">new_error_ref</span>(<span class="ident">Kind</span>::<span class="ident">Status</span>(<span class="ident">status</span>), <span class="ident">error</span>.<span class="ident">error_ref</span>, <span class="prelude-val">Some</span>(<span class="ident">error</span>)),
     }
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">ratelimit</span>(<span class="ident">reset</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">Error</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">ratelimit</span>(<span class="ident">reset</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Error</span> {
     <span class="ident">Error</span>::<span class="ident">new</span>(
         <span class="ident">Kind</span>::<span class="ident">RateLimit</span> {
             <span class="ident">reset</span>: <span class="ident">Duration</span>::<span class="ident">from_secs</span>(<span class="ident">reset</span> <span class="op">*</span> <span class="number">60</span>),
@@ -592,21 +552,21 @@
     )
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">download_mod_not_found</span>(<span class="ident">game_id</span>: <span class="ident">u32</span>, <span class="ident">mod_id</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="ident">Error</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">download_mod_not_found</span>(<span class="ident">game_id</span>: <span class="ident">u32</span>, <span class="ident">mod_id</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Error</span> {
     <span class="ident">Error</span>::<span class="ident">new</span>(
         <span class="ident">Kind</span>::<span class="ident">Download</span>,
         <span class="prelude-val">Some</span>(<span class="ident">DownloadError</span>::<span class="ident">ModNotFound</span> { <span class="ident">game_id</span>, <span class="ident">mod_id</span> }),
     )
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">download_no_primary</span>(<span class="ident">game_id</span>: <span class="ident">u32</span>, <span class="ident">mod_id</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="ident">Error</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">download_no_primary</span>(<span class="ident">game_id</span>: <span class="ident">u32</span>, <span class="ident">mod_id</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Error</span> {
     <span class="ident">Error</span>::<span class="ident">new</span>(
         <span class="ident">Kind</span>::<span class="ident">Download</span>,
         <span class="prelude-val">Some</span>(<span class="ident">DownloadError</span>::<span class="ident">NoPrimaryFile</span> { <span class="ident">game_id</span>, <span class="ident">mod_id</span> }),
     )
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">download_file_not_found</span>(<span class="ident">game_id</span>: <span class="ident">u32</span>, <span class="ident">mod_id</span>: <span class="ident">u32</span>, <span class="ident">file_id</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="ident">Error</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">download_file_not_found</span>(<span class="ident">game_id</span>: <span class="ident">u32</span>, <span class="ident">mod_id</span>: <span class="ident">u32</span>, <span class="ident">file_id</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Error</span> {
     <span class="ident">Error</span>::<span class="ident">new</span>(
         <span class="ident">Kind</span>::<span class="ident">Download</span>,
         <span class="prelude-val">Some</span>(<span class="ident">DownloadError</span>::<span class="ident">FileNotFound</span> {
@@ -617,7 +577,7 @@
     )
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">download_multiple_files</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">game_id</span>: <span class="ident">u32</span>, <span class="ident">mod_id</span>: <span class="ident">u32</span>, <span class="ident">version</span>: <span class="ident">S</span>) <span class="op">-&gt;</span> <span class="ident">Error</span>
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">download_multiple_files</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">game_id</span>: <span class="ident">u32</span>, <span class="ident">mod_id</span>: <span class="ident">u32</span>, <span class="ident">version</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Error</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 {
@@ -631,7 +591,7 @@
     )
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">download_version_not_found</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">game_id</span>: <span class="ident">u32</span>, <span class="ident">mod_id</span>: <span class="ident">u32</span>, <span class="ident">version</span>: <span class="ident">S</span>) <span class="op">-&gt;</span> <span class="ident">Error</span>
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">download_version_not_found</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">game_id</span>: <span class="ident">u32</span>, <span class="ident">mod_id</span>: <span class="ident">u32</span>, <span class="ident">version</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Error</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 {
