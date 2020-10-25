@@ -38,7 +38,6 @@ use modio::{Credentials, Modio, Result};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let mut rt = Runtime::new()?;
     let modio = Modio::new(
         Credentials::new("user-or-game-apikey"),
     )?;
