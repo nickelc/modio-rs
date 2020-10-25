@@ -521,10 +521,7 @@ impl std::cmp::Eq for FilterEntry {}
 
 impl PartialEq for FilterEntry {
     fn eq(&self, other: &FilterEntry) -> bool {
-        match self.cmp(other) {
-            std::cmp::Ordering::Equal => true,
-            _ => false,
-        }
+        matches!(self.cmp(other), std::cmp::Ordering::Equal)
     }
 }
 

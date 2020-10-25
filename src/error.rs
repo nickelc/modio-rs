@@ -56,58 +56,37 @@ impl Error {
     /// Returns true if the API key/access token is incorrect, revoked, expired or the request
     /// needs a different authentication method.
     pub fn is_auth(&self) -> bool {
-        match self.inner.kind {
-            Kind::Auth => true,
-            _ => false,
-        }
+        matches!(self.inner.kind, Kind::Auth)
     }
 
     /// Returns true if the error is from a type Builder.
     pub fn is_builder(&self) -> bool {
-        match self.inner.kind {
-            Kind::Builder => true,
-            _ => false,
-        }
+        matches!(self.inner.kind, Kind::Builder)
     }
 
     /// Returns true if the error is from a [`DownloadAction`](crate::download::DownloadAction).
     pub fn is_download(&self) -> bool {
-        match self.inner.kind {
-            Kind::Download => true,
-            _ => false,
-        }
+        matches!(self.inner.kind, Kind::Download)
     }
 
     /// Returns true if the rate limit associated with credentials has been exhausted.
     pub fn is_ratelimited(&self) -> bool {
-        match self.inner.kind {
-            Kind::RateLimit { .. } => true,
-            _ => false,
-        }
+        matches!(self.inner.kind, Kind::RateLimit { .. })
     }
 
     /// Returns true if the error was generated from a response.
     pub fn is_status(&self) -> bool {
-        match self.inner.kind {
-            Kind::Status(_) => true,
-            _ => false,
-        }
+        matches!(self.inner.kind, Kind::Status(_))
     }
 
     /// Returns true if the error contains validation errors.
     pub fn is_validation(&self) -> bool {
-        match self.inner.kind {
-            Kind::Validation(_, _) => true,
-            _ => false,
-        }
+        matches!(self.inner.kind, Kind::Validation(_, _))
     }
 
     /// Returns true if the error is related to serialization.
     pub fn is_decode(&self) -> bool {
-        match self.inner.kind {
-            Kind::Decode => true,
-            _ => false,
-        }
+        matches!(self.inner.kind, Kind::Decode)
     }
 
     /// Returns modio's error reference code.
