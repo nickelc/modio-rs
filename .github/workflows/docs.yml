@@ -25,6 +25,8 @@ jobs:
 
       - name: Generate docs
         run: cargo doc --no-deps --all-features
+        env:
+          RUSTDOCFLAGS: --cfg docsrs
 
       - name: Prepare docs
         shell: bash -e -O extglob {0}

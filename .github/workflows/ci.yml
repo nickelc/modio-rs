@@ -45,6 +45,8 @@ jobs:
 
       - name: Generate docs
         run: cargo doc --no-deps --all-features
+        env:
+          RUSTDOCFLAGS: --cfg docsrs
 
   build_and_test:
     name: Build and test

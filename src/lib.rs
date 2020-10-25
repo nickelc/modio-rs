@@ -110,7 +110,7 @@
 //! ```
 #![doc(html_root_url = "https://docs.rs/modio/0.4.1")]
 #![deny(rust_2018_idioms)]
-#![deny(intra_doc_link_resolution_failure)]
+#![cfg_attr(docsrs, deny(broken_intra_doc_links))]
 
 #[macro_use]
 mod macros;
