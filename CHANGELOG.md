@@ -1,3 +1,99 @@
+### v0.5 (2020-11-02)
+
+* Switch to `async/await`, `std::future` and `tokio 0.2`.
+
+* Rework the `Error` type, remove several `Error::is_*` methods. ([a230d3c])
+
+* Replace `DownloadAction::Url` with `DownloadAction::FileObj`. ([1fd5ff6], [8fbd8d1])
+
+* Introduce `Downloader` with `save_to_file(path)`, `bytes()` and `stream()` methods. ([3ba706a], [b4b7a87])
+
+```rust
+// Before
+let action = modio::DownloadAction::Primary {
+    game_id: 123,
+    mod_id: 45,
+};
+
+let file = std::file::File::create("mod.zip")?;
+let (len, out) = rt.block_on(modio.download(action, out))?;
+
+// After
+modio.download(action).save_to_file("mod.zip").await?;
+
+let bytes: Bytes = modio.download(action).bytes().await?;
+
+let stream = Box::pin(modio.download(action).stream());
+while let Some(bytes) = stream.try_next().await? {
+    // process(bytes)
+}
+```
+
+* Remove `Users::get|list|iter` methods. The `/users` endpoints are no longer supported. ([1c547aa])
+
+* Replace list & iter methods with `search(filter)` returning the `Query<T>` type which implements
+  various methods to load search results. ([ebf5374], [f8a35de])
+
+```rust
+// Before
+let stream = modio.games().iter(&filter);
+
+let first_page: modio::List<Game> = rt.block_on(modio.games().list(&filter));
+
+// After
+let stream = modio.games().search(filter).iter().await?;
+
+let first: Option<Game> = modio.games().search(filter).first().await?;
+let first_page: Vec<Game> = modio.games().search(filter).first_page().await?;
+
+let list: Vec<Game> = modio.games().search(filter).collect().await?;
+
+// stream of `modio::Page<Game>`
+let stream = modio.games().search(filter).paged().await?;
+```
+
+* Add Oculus, itch.io, Xbox Live, Discord & Switch authentication.
+  ([5d46974], [2315236], [96fdc07], [013f43d], [38698cc])
+
+* Add expiry date of the access token. ([9445c3c])
+
+* Remove all deprecated code. ([c3032af])
+
+* Update `url` to v2.0.
+
+* Use `tracing` instead of `log`. ([0a1c2e4])
+
+* New endpoints for adding & editing comments and game stats. ([1062775], [633cf28])
+
+* New event type variants for added/deleted comments and unsupported with `Other(String)`.
+  ([8a85576], [d636096])
+
+* Add modio's new `error_ref` error code. ([24b7c33])
+
+[a230d3c]: https://github.com/nickelc/modio-rs/commit/a230d3c790e2eb3d1d03160f3e3f1219c2f4fc34
+[1fd5ff6]: https://github.com/nickelc/modio-rs/commit/1fd5ff67597e57975684a735b88a949f44d775bc
+[8fbd8d1]: https://github.com/nickelc/modio-rs/commit/8fbd8d1017738dcaacf8a807f43c0e6640f93552
+[3ba706a]: https://github.com/nickelc/modio-rs/commit/3ba706a3020576f425d2fc75122ee9d459f55972
+[b4b7a87]: https://github.com/nickelc/modio-rs/commit/b4b7a8709e4c9ecc70c8ad98aa4849ca7f187391
+[1c547aa]: https://github.com/nickelc/modio-rs/commit/1c547aa1b9751d6bfb4185d13f685df5136fd052
+[ebf5374]: https://github.com/nickelc/modio-rs/commit/ebf5374e1396c3b502e858d973d63396e2d6b1dd
+[f8a35de]: https://github.com/nickelc/modio-rs/commit/f8a35de3906542bbb16b2c477c34e4e4e04cee0b
+
+[5d46974]: https://github.com/nickelc/modio-rs/commit/5d469749265a58f73eba140de7fccf90e2efc03d
+[2315236]: https://github.com/nickelc/modio-rs/commit/2315236c5fa3909004586f5cc164dfe78f0414b5
+[96fdc07]: https://github.com/nickelc/modio-rs/commit/96fdc0722b2cd944b79a6ae19e69d52e402477e3
+[013f43d]: https://github.com/nickelc/modio-rs/commit/013f43d46b1d21c2cbd4b3b1011721c1daeeb0d0
+[38698cc]: https://github.com/nickelc/modio-rs/commit/38698cc98baab8def4b780cd4fe9104800f3143f
+
+[9445c3c]: https://github.com/nickelc/modio-rs/commit/9445c3c6e9efcf5d50f730c41c20288689264aeb
+[c3032af]: https://github.com/nickelc/modio-rs/commit/c3032af3b44acaa88b331c55bffc43324289030a
+[0a1c2e4]: https://github.com/nickelc/modio-rs/commit/0a1c2e47d2ab0ae71b340100b5f505aed4f46caa
+[1062775]: https://github.com/nickelc/modio-rs/commit/10627752df9c435cea9cdda239b5f649aa9d1598
+[633cf28]: https://github.com/nickelc/modio-rs/commit/633cf2835f4f24442258fb655c64633b1daa87d1
+[8a85576]: https://github.com/nickelc/modio-rs/commit/8a8557610287cb24c8ebd24b3581fea585f78968
+[d636096]: https://github.com/nickelc/modio-rs/commit/d6360962696f757400fb118436285b75dedf946e
+[24b7c33]: https://github.com/nickelc/modio-rs/commit/24b7c33b887ab051b7b2fc63ce886ebd2c155e9c
+
 ### v0.4.2 (not released)
 
 * New `Error::is_authentication` accessor
