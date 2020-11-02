@@ -19,14 +19,14 @@ jobs:
           override: true
           components: clippy, rustfmt
 
+      - name: Run rustfmt
+        run: cargo fmt -- --check
+
       - name: Run clippy
         uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-features -- -D warnings
-
-      - name: Run rustfmt
-        run: cargo fmt -- --check
 
   docs:
     name: Build docs
