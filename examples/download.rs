@@ -17,7 +17,7 @@ fn prompt(prompt: &str) -> io::Result<u32> {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv::dotenv().ok();
-    env_logger::init();
+    tracing_subscriber::fmt::init();
 
     // Fetch the access token / api key from the environment of the current process.
     let creds = match (env::var("MODIO_TOKEN"), env::var("MODIO_API_KEY")) {

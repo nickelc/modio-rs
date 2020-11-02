@@ -18,7 +18,6 @@ bytes = "0.5"
 futures-core = "0.3.4"
 futures-util = { version = "0.3.4", features = ["sink"] }
 http = "0.2"
-log = "0.4"
 mime = "0.3"
 pin-project-lite = "0.1"
 reqwest = { version = "0.10", default-features = false, features = ["stream"] }
@@ -26,14 +25,15 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "0.2", default-features = false, features = ["fs"] }
 tokio-util = { version = "0.3", features = ["codec"] }
+tracing = "0.1"
 url = { version = "2", features = ["serde"] }
 
 [dev-dependencies]
 dotenv = "0.15"
-env_logger = { version = "0.7", default-features = false }
 httptest = "0.13"
 md5 = "0.7"
 tokio = { version = "0.2", features = ["full"] }
+tracing-subscriber = "0.2"
 
 [features]
 default = ["default-tls"]

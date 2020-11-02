@@ -1,10 +1,10 @@
 use futures_util::TryFutureExt;
-use log::{debug, log_enabled, trace};
 use reqwest::header::{HeaderValue, CONTENT_TYPE};
 use reqwest::multipart::Form;
 use reqwest::StatusCode;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
+use tracing::{debug, level_enabled, trace};
 use url::Url;
 
 use crate::auth::Token;
@@ -124,7 +124,7 @@ impl RequestBuilder {
 
         let body = response.bytes().map_err(error::request).await?;
 
-        if log_enabled!(log::Level::Trace) {
+        if level_enabled!(tracing::Level::TRACE) {
             match std::str::from_utf8(&body) {
                 Ok(s) => trace!("status: {}, response: {}", status, s),
                 Err(_) => trace!("status: {}, response: {:?}", status, body),

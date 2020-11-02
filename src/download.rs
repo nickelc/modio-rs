@@ -6,11 +6,11 @@ use std::path::Path;
 use bytes::Bytes;
 use futures_core::Stream;
 use futures_util::{SinkExt, StreamExt, TryFutureExt, TryStreamExt};
-use log::debug;
 use reqwest::{Method, Response, StatusCode};
 use tokio::fs::File as AsyncFile;
 use tokio::io::BufWriter;
 use tokio_util::codec::{BytesCodec, FramedWrite};
+use tracing::debug;
 
 use crate::error::{self, Kind, Result};
 use crate::types::mods::{File, Mod};

@@ -71,7 +71,6 @@ fn create_games_endpoint() -> Server {
 
 #[tokio::test]
 async fn empty_first() -> Result<()> {
-    env_logger::try_init().ok();
     let server = create_empty_result();
 
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
@@ -83,7 +82,6 @@ async fn empty_first() -> Result<()> {
 
 #[tokio::test]
 async fn first() -> Result<()> {
-    env_logger::try_init().ok();
     let server = create_first_page_only();
 
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
@@ -96,7 +94,6 @@ async fn first() -> Result<()> {
 
 #[tokio::test]
 async fn empty_first_page() -> Result<()> {
-    env_logger::try_init().ok();
     let server = create_empty_result();
 
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
@@ -109,7 +106,6 @@ async fn empty_first_page() -> Result<()> {
 
 #[tokio::test]
 async fn first_page() -> Result<()> {
-    env_logger::try_init().ok();
     let server = create_first_page_only();
 
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
@@ -124,7 +120,6 @@ async fn first_page() -> Result<()> {
 
 #[tokio::test]
 async fn empty_collect() -> Result<()> {
-    env_logger::try_init().ok();
     let server = create_empty_result();
 
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
@@ -136,7 +131,6 @@ async fn empty_collect() -> Result<()> {
 
 #[tokio::test]
 async fn collect() -> Result<()> {
-    env_logger::try_init().ok();
     let server = create_games_endpoint();
 
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
@@ -150,7 +144,6 @@ async fn collect() -> Result<()> {
 
 #[tokio::test]
 async fn empty_paged() -> Result<()> {
-    env_logger::try_init().ok();
     let server = create_empty_result();
 
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
@@ -163,7 +156,6 @@ async fn empty_paged() -> Result<()> {
 
 #[tokio::test]
 async fn paged() -> Result<()> {
-    env_logger::try_init().ok();
     let server = create_games_endpoint();
 
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
@@ -193,7 +185,6 @@ async fn paged() -> Result<()> {
 
 #[tokio::test]
 async fn iter() -> Result<()> {
-    env_logger::try_init().ok();
     let server = create_games_endpoint();
 
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
