@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["modio"] = [{"text":"impl Serialize for Status","synthetic":false,"types":[]},{"text":"impl Serialize for PresentationOption","synthetic":false,"types":[]},{"text":"impl Serialize for SubmissionOption","synthetic":false,"types":[]},{"text":"impl Serialize for CurationOption","synthetic":false,"types":[]},{"text":"impl Serialize for MaturityOptions","synthetic":false,"types":[]},{"text":"impl Serialize for Visibility","synthetic":false,"types":[]},{"text":"impl Serialize for TeamLevel","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
