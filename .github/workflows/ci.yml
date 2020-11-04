@@ -2,6 +2,9 @@ name: ci
 
 on: [push, pull_request]
 
+env:
+  minrust: 1.42.0
+
 jobs:
   lints:
     name: Rustfmt and clippy
@@ -81,3 +84,19 @@ jobs:
 
       - name: Tests
         run: cargo test --all-features
+
+  MSRV:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install rust (${{ env.minrust }})
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.minrust }}
+          profile: minimal
+          override: true
+
+      - run: cargo check --all-features
