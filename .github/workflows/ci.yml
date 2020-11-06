@@ -15,11 +15,8 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install rust (stable)
-        uses: actions-rs/toolchain@v1
+        uses: hecrj/setup-rust-action@v1
         with:
-          profile: minimal
-          toolchain: stable
-          override: true
           components: clippy, rustfmt
 
       - name: Run rustfmt
@@ -40,11 +37,9 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install rust (nightly)
-        uses: actions-rs/toolchain@v1
+        uses: hecrj/setup-rust-action@v1
         with:
-          profile: minimal
-          toolchain: nightly
-          override: true
+          rust-version: nightly
 
       - name: Generate docs
         run: cargo doc --no-deps --all-features
@@ -64,11 +59,9 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install rust (${{ matrix.rust }})
-        uses: actions-rs/toolchain@v1
+        uses: hecrj/setup-rust-action@v1
         with:
-          profile: minimal
-          toolchain: ${{ matrix.rust }}
-          override: true
+          rust-version: ${{ matrix.rust }}
 
       - name: Check default features
         run: cargo check --examples --tests
@@ -93,10 +86,8 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install rust (${{ env.minrust }})
-        uses: actions-rs/toolchain@v1
+        uses: hecrj/setup-rust-action@v1
         with:
-          toolchain: ${{ env.minrust }}
-          profile: minimal
-          override: true
+          rust-version: ${{ env.minrust }}
 
       - run: cargo check --all-features
