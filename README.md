@@ -1,11 +1,11 @@
 <a href="https://mod.io"><img src="https://github.com/nickelc/modio-rs/raw/master/header.png" alt="mod.io" width="320"/></a>
 
 [![Crates.io][crates-badge]][crates-url]
-![License][license-badge]
 [![Released API docs][docs-badge]][docs-url]
 [![Master API docs][master-docs-badge]][master-docs-url]
-[![Workflow Status][workflow-badge]][actions-url]
 ![Rust version][rust-version]
+![License][license-badge]
+[![Workflow Status][workflow-badge]][actions-url]
 
 [crates-badge]: https://img.shields.io/crates/v/modio.svg
 [crates-url]: https://crates.io/crates/modio
@@ -16,7 +16,7 @@
 [master-docs-url]: https://nickelc.github.io/modio-rs/master/
 [workflow-badge]: https://github.com/nickelc/modio-rs/workflows/ci/badge.svg
 [actions-url]: https://github.com/nickelc/modio-rs/actions
-[rust-version]: https://img.shields.io/badge/rust-1.42.0%2B-blue.svg
+[rust-version]: https://img.shields.io/badge/rust-1.42.0%2B-lightgrey.svg?logo=rust
 
 `modio` provides a set of building blocks for interacting with the [mod.io](https://mod.io) API.
 
