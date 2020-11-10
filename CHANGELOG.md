@@ -1,3 +1,9 @@
+### v0.5 (2020-11-10)
+
+* Improve the crate description.
+
+* Rearrange the readme badges + MSRV badge.
+
 ### v0.5 (2020-11-02)
 
 * Switch to `async/await`, `std::future` and `tokio 0.2`.
