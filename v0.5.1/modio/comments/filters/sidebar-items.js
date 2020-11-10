@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Content",""],["DateAdded",""],["Fulltext",""],["Id",""],["Karma",""],["ModId",""],["ReplyId",""],["SubmittedBy","Unique id of the user who has ownership of the objects."],["ThreadPosition",""]]});

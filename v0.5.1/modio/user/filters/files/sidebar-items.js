@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Changelog",""],["DateAdded",""],["DateScanned",""],["Filehash",""],["Filename",""],["Filesize",""],["Fulltext",""],["Id",""],["ModId",""],["Version",""],["VirusPositive",""],["VirusStatus",""]]});
