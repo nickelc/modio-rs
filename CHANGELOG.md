@@ -1,4 +1,8 @@
-### v0.5 (2020-11-10)
+### v0.5.2 (2020-11-24)
+
+* Update pin-project-lite to 0.2.
+
+### v0.5.1 (2020-11-10)
 
 * Improve the crate description.
 
