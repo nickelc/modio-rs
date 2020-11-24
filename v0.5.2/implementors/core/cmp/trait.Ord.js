@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["modio"] = [{"text":"impl Ord for Operator","synthetic":false,"types":[]},{"text":"impl Ord for CommunityOptions","synthetic":false,"types":[]},{"text":"impl Ord for RevenueOptions","synthetic":false,"types":[]},{"text":"impl Ord for ApiAccessOptions","synthetic":false,"types":[]},{"text":"impl Ord for MaturityOption","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

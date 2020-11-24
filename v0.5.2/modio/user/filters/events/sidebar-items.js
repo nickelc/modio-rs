@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["DateAdded",""],["EventType",""],["GameId",""],["Id",""],["ModId",""],["UserId",""]]});
