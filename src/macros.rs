@@ -44,6 +44,10 @@ macro_rules! option {
             Self { params }
         }
     };
+    // This variant prevents the poor macro formatting in auth.rs by rustfmt
+    ($(#[$outer:meta])* $name:ident $T:ty >> $param:expr) => {
+        option!($(#[$outer])* $name: $T >> $param);
+    };
 }
 
 macro_rules! impl_serialize_params {

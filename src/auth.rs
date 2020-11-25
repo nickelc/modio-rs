@@ -331,7 +331,7 @@ impl GalaxyOptions {
     option!(
         /// Unix timestamp of date in which the returned token will expire. Value cannot be higher
         /// than the default value which is a common year.
-        expired_at: u64 >> "date_expires"
+        expired_at u64 >> "date_expires"
     );
 }
 
@@ -356,7 +356,7 @@ impl ItchioOptions {
     option!(
         /// Unix timestamp of date in which the returned token will expire. Value cannot be higher
         /// than the default value which is a week.
-        expired_at: u64 >> "date_expires"
+        expired_at u64 >> "date_expires"
     );
 }
 
@@ -395,7 +395,7 @@ impl OculusOptions {
     option!(
         /// Unix timestamp of date in which the returned token will expire. Value cannot be higher
         /// than the default value which is a common year.
-        expired_at: u64 >> "date_expires"
+        expired_at u64 >> "date_expires"
     );
 }
 
@@ -420,7 +420,7 @@ impl SteamOptions {
     option!(
         /// Unix timestamp of date in which the returned token will expire. Value cannot be higher
         /// than the default value which is a common year.
-        expired_at: u64 >> "date_expires"
+        expired_at u64 >> "date_expires"
     );
 }
 
@@ -445,7 +445,7 @@ impl SwitchOptions {
     option!(
         /// Unix timestamp of date in which the returned token will expire. Value cannot be higher
         /// than the default value which is a common year.
-        expired_at: u64 >> "date_expires"
+        expired_at u64 >> "date_expires"
     );
 }
 
@@ -470,7 +470,7 @@ impl XboxOptions {
     option!(
         /// Unix timestamp of date in which the returned token will expire. Value cannot be higher
         /// than the default value which is a common year.
-        expired_at: u64 >> "date_expires"
+        expired_at u64 >> "date_expires"
     );
 }
 
@@ -495,7 +495,7 @@ impl DiscordOptions {
     option!(
         /// Unix timestamp of date in which the returned token will expire. Value cannot be higher
         /// than the default value which is a week.
-        expired_at: u64 >> "date_expires"
+        expired_at u64 >> "date_expires"
     );
 }
 
