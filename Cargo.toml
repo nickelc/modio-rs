@@ -14,25 +14,25 @@ include = ["src/**/*", "LICENSE-*", "README.md", "CHANGELOG.md"]
 
 [dependencies]
 bitflags = "1"
-bytes = "0.5"
+bytes = "1.0"
 futures-core = "0.3.4"
 futures-util = { version = "0.3.4", features = ["sink"] }
 http = "0.2"
 mime = "0.3"
 pin-project-lite = "0.2"
-reqwest = { version = "0.10", default-features = false, features = ["stream"] }
+reqwest = { version = "0.11", default-features = false, features = ["multipart", "stream"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-tokio = { version = "0.2", default-features = false, features = ["fs"] }
-tokio-util = { version = "0.3", features = ["codec"] }
+tokio = { version = "1.0", default-features = false, features = ["fs"] }
+tokio-util = { version = "0.6", features = ["codec"] }
 tracing = "0.1"
 url = { version = "2", features = ["serde"] }
 
 [dev-dependencies]
 dotenv = "0.15"
-httptest = "0.13"
+httptest = "0.14"
 md5 = "0.7"
-tokio = { version = "0.2", features = ["full"] }
+tokio = { version = "1.0", features = ["full"] }
 tracing-subscriber = "0.2"
 
 [features]
