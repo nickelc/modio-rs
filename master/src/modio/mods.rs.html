@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/mods.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mods.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../modio/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../modio/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
                 <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -960,13 +960,13 @@
 
     <span class="doccomment">/// Add a mod and return the newly created Modio mod object. [required: token]</span>
     <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">should_implement_trait</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">add</span>(<span class="self">self</span>, <span class="ident">options</span>: <span class="ident">AddModOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Mod</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">add</span>(<span class="self">self</span>, <span class="ident">options</span>: <span class="ident">AddModOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Mod</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">AddMod</span> { <span class="ident">game_id</span>: <span class="self">self</span>.<span class="ident">game</span> };
         <span class="self">self</span>.<span class="ident">modio</span>
             .<span class="ident">request</span>(<span class="ident">route</span>)
             .<span class="ident">multipart</span>(<span class="ident">Form</span>::<span class="ident">from</span>(<span class="ident">options</span>))
             .<span class="ident">send</span>()
-            .<span class="ident">await</span>
+            .<span class="kw">await</span>
     }
 
     <span class="doccomment">/// Returns a `Query` interface to retrieve the statistics for all mods of a game.</span>
@@ -1000,12 +1000,12 @@
     }
 
     <span class="doccomment">/// Get a reference to the Modio mod object that this `ModRef` refers to.</span>
-    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Mod</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Mod</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">GetMod</span> {
             <span class="ident">game_id</span>: <span class="self">self</span>.<span class="ident">game</span>,
             <span class="ident">mod_id</span>: <span class="self">self</span>.<span class="ident">id</span>,
         };
-        <span class="self">self</span>.<span class="ident">modio</span>.<span class="ident">request</span>(<span class="ident">route</span>).<span class="ident">send</span>().<span class="ident">await</span>
+        <span class="self">self</span>.<span class="ident">modio</span>.<span class="ident">request</span>(<span class="ident">route</span>).<span class="ident">send</span>().<span class="kw">await</span>
     }
 
     <span class="doccomment">/// Return a reference to an interface that provides access to the files of a mod.</span>
@@ -1039,12 +1039,12 @@
     }
 
     <span class="doccomment">/// Return the statistics for a mod.</span>
-    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">statistics</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Statistics</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">statistics</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Statistics</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">GetModStats</span> {
             <span class="ident">game_id</span>: <span class="self">self</span>.<span class="ident">game</span>,
             <span class="ident">mod_id</span>: <span class="self">self</span>.<span class="ident">id</span>,
         };
-        <span class="self">self</span>.<span class="ident">modio</span>.<span class="ident">request</span>(<span class="ident">route</span>).<span class="ident">send</span>().<span class="ident">await</span>
+        <span class="self">self</span>.<span class="ident">modio</span>.<span class="ident">request</span>(<span class="ident">route</span>).<span class="ident">send</span>().<span class="kw">await</span>
     }
 
     <span class="doccomment">/// Returns a `Query` interface to retrieve the event log for a mod sorted by latest event first.</span>
@@ -1064,25 +1064,25 @@
     }
 
     <span class="doccomment">/// Edit details for a mod. [required: token]</span>
-    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">edit</span>(<span class="self">self</span>, <span class="ident">options</span>: <span class="ident">EditModOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Editing</span><span class="op">&lt;</span><span class="ident">Mod</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">edit</span>(<span class="self">self</span>, <span class="ident">options</span>: <span class="ident">EditModOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Editing</span><span class="op">&lt;</span><span class="ident">Mod</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">EditMod</span> {
             <span class="ident">game_id</span>: <span class="self">self</span>.<span class="ident">game</span>,
             <span class="ident">mod_id</span>: <span class="self">self</span>.<span class="ident">id</span>,
         };
-        <span class="self">self</span>.<span class="ident">modio</span>.<span class="ident">request</span>(<span class="ident">route</span>).<span class="ident">form</span>(<span class="kw-2">&amp;</span><span class="ident">options</span>).<span class="ident">send</span>().<span class="ident">await</span>
+        <span class="self">self</span>.<span class="ident">modio</span>.<span class="ident">request</span>(<span class="ident">route</span>).<span class="ident">form</span>(<span class="kw-2">&amp;</span><span class="ident">options</span>).<span class="ident">send</span>().<span class="kw">await</span>
     }
 
     <span class="doccomment">/// Delete a mod. [required: token]</span>
-    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">delete</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">delete</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">DeleteMod</span> {
             <span class="ident">game_id</span>: <span class="self">self</span>.<span class="ident">game</span>,
             <span class="ident">mod_id</span>: <span class="self">self</span>.<span class="ident">id</span>,
         };
-        <span class="self">self</span>.<span class="ident">modio</span>.<span class="ident">request</span>(<span class="ident">route</span>).<span class="ident">send</span>().<span class="ident">await</span>
+        <span class="self">self</span>.<span class="ident">modio</span>.<span class="ident">request</span>(<span class="ident">route</span>).<span class="ident">send</span>().<span class="kw">await</span>
     }
 
     <span class="doccomment">/// Add new media to a mod. [required: token]</span>
-    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">add_media</span>(<span class="self">self</span>, <span class="ident">options</span>: <span class="ident">AddMediaOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">add_media</span>(<span class="self">self</span>, <span class="ident">options</span>: <span class="ident">AddMediaOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">AddModMedia</span> {
             <span class="ident">game_id</span>: <span class="self">self</span>.<span class="ident">game</span>,
             <span class="ident">mod_id</span>: <span class="self">self</span>.<span class="ident">id</span>,
@@ -1091,22 +1091,22 @@
             .<span class="ident">request</span>(<span class="ident">route</span>)
             .<span class="ident">multipart</span>(<span class="ident">Form</span>::<span class="ident">from</span>(<span class="ident">options</span>))
             .<span class="ident">send</span>::<span class="op">&lt;</span><span class="ident">Message</span><span class="op">&gt;</span>()
-            .<span class="ident">await</span><span class="question-mark">?</span>;
+            .<span class="kw">await</span><span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Delete media from a mod. [required: token]</span>
-    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">delete_media</span>(<span class="self">self</span>, <span class="ident">options</span>: <span class="ident">DeleteMediaOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Deletion</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">delete_media</span>(<span class="self">self</span>, <span class="ident">options</span>: <span class="ident">DeleteMediaOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Deletion</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">DeleteModMedia</span> {
             <span class="ident">game_id</span>: <span class="self">self</span>.<span class="ident">game</span>,
             <span class="ident">mod_id</span>: <span class="self">self</span>.<span class="ident">id</span>,
         };
-        <span class="self">self</span>.<span class="ident">modio</span>.<span class="ident">request</span>(<span class="ident">route</span>).<span class="ident">form</span>(<span class="kw-2">&amp;</span><span class="ident">options</span>).<span class="ident">send</span>().<span class="ident">await</span>
+        <span class="self">self</span>.<span class="ident">modio</span>.<span class="ident">request</span>(<span class="ident">route</span>).<span class="ident">form</span>(<span class="kw-2">&amp;</span><span class="ident">options</span>).<span class="ident">send</span>().<span class="kw">await</span>
     }
 
     <span class="doccomment">/// Submit a positive or negative rating for a mod. [required: token]</span>
-    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">rate</span>(<span class="self">self</span>, <span class="ident">rating</span>: <span class="ident">Rating</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">rate</span>(<span class="self">self</span>, <span class="ident">rating</span>: <span class="ident">Rating</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">RateMod</span> {
             <span class="ident">game_id</span>: <span class="self">self</span>.<span class="ident">game</span>,
             <span class="ident">mod_id</span>: <span class="self">self</span>.<span class="ident">id</span>,
@@ -1115,7 +1115,7 @@
             .<span class="ident">request</span>(<span class="ident">route</span>)
             .<span class="ident">form</span>(<span class="kw-2">&amp;</span><span class="ident">rating</span>)
             .<span class="ident">send</span>::<span class="op">&lt;</span><span class="ident">Message</span><span class="op">&gt;</span>()
-            .<span class="ident">await</span>
+            .<span class="kw">await</span>
             .<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> ())
             .<span class="ident">or_else</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="kw">match</span> (<span class="ident">err</span>.<span class="ident">kind</span>(), <span class="ident">err</span>.<span class="ident">error_ref</span>()) {
                 (<span class="ident">Kind</span>::<span class="ident">Status</span>(<span class="ident">StatusCode</span>::<span class="ident">BAD_REQUEST</span>), <span class="prelude-val">Some</span>(<span class="number">15028</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(()),
@@ -1124,7 +1124,7 @@
     }
 
     <span class="doccomment">/// Subscribe the authenticated user to a mod. [required: token]</span>
-    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">subscribe</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">subscribe</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">Subscribe</span> {
             <span class="ident">game_id</span>: <span class="self">self</span>.<span class="ident">game</span>,
             <span class="ident">mod_id</span>: <span class="self">self</span>.<span class="ident">id</span>,
@@ -1132,7 +1132,7 @@
         <span class="self">self</span>.<span class="ident">modio</span>
             .<span class="ident">request</span>(<span class="ident">route</span>)
             .<span class="ident">send</span>::<span class="op">&lt;</span><span class="ident">Mod</span><span class="op">&gt;</span>()
-            .<span class="ident">await</span>
+            .<span class="kw">await</span>
             .<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> ())
             .<span class="ident">or_else</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="kw">match</span> (<span class="ident">err</span>.<span class="ident">kind</span>(), <span class="ident">err</span>.<span class="ident">error_ref</span>()) {
                 (<span class="ident">Kind</span>::<span class="ident">Status</span>(<span class="ident">StatusCode</span>::<span class="ident">BAD_REQUEST</span>), <span class="prelude-val">Some</span>(<span class="number">15004</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(()),
@@ -1141,7 +1141,7 @@
     }
 
     <span class="doccomment">/// Unsubscribe the authenticated user from a mod. [required: token]</span>
-    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">unsubscribe</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">unsubscribe</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">Unsubscribe</span> {
             <span class="ident">game_id</span>: <span class="self">self</span>.<span class="ident">game</span>,
             <span class="ident">mod_id</span>: <span class="self">self</span>.<span class="ident">id</span>,
@@ -1149,7 +1149,7 @@
         <span class="self">self</span>.<span class="ident">modio</span>
             .<span class="ident">request</span>(<span class="ident">route</span>)
             .<span class="ident">send</span>()
-            .<span class="ident">await</span>
+            .<span class="kw">await</span>
             .<span class="ident">or_else</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="kw">match</span> (<span class="ident">err</span>.<span class="ident">kind</span>(), <span class="ident">err</span>.<span class="ident">error_ref</span>()) {
                 (<span class="ident">Kind</span>::<span class="ident">Status</span>(<span class="ident">StatusCode</span>::<span class="ident">BAD_REQUEST</span>), <span class="prelude-val">Some</span>(<span class="number">15005</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(()),
                 <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>),
@@ -1174,29 +1174,29 @@
     }
 
     <span class="doccomment">/// List mod dependencies.</span>
-    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">list</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Dependency</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">list</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Dependency</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">GetModDependencies</span> {
             <span class="ident">game_id</span>: <span class="self">self</span>.<span class="ident">game_id</span>,
             <span class="ident">mod_id</span>: <span class="self">self</span>.<span class="ident">mod_id</span>,
         };
         <span class="ident">Query</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">modio</span>, <span class="ident">route</span>, <span class="ident">Default</span>::<span class="ident">default</span>())
             .<span class="ident">collect</span>()
-            .<span class="ident">await</span>
+            .<span class="kw">await</span>
     }
 
     <span class="doccomment">/// Provides a stream over all mod dependencies.</span>
-    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">iter</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Stream</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Dependency</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">iter</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Stream</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Dependency</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">GetModDependencies</span> {
             <span class="ident">game_id</span>: <span class="self">self</span>.<span class="ident">game_id</span>,
             <span class="ident">mod_id</span>: <span class="self">self</span>.<span class="ident">mod_id</span>,
         };
         <span class="kw">let</span> <span class="ident">filter</span> <span class="op">=</span> <span class="ident">Default</span>::<span class="ident">default</span>();
-        <span class="ident">Query</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">modio</span>, <span class="ident">route</span>, <span class="ident">filter</span>).<span class="ident">iter</span>().<span class="ident">await</span>
+        <span class="ident">Query</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">modio</span>, <span class="ident">route</span>, <span class="ident">filter</span>).<span class="ident">iter</span>().<span class="kw">await</span>
     }
 
     <span class="doccomment">/// Add mod dependencies. [required: token]</span>
     <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">should_implement_trait</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">add</span>(<span class="self">self</span>, <span class="ident">options</span>: <span class="ident">EditDependenciesOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">add</span>(<span class="self">self</span>, <span class="ident">options</span>: <span class="ident">EditDependenciesOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">AddModDepencencies</span> {
             <span class="ident">game_id</span>: <span class="self">self</span>.<span class="ident">game_id</span>,
             <span class="ident">mod_id</span>: <span class="self">self</span>.<span class="ident">mod_id</span>,
@@ -1205,17 +1205,17 @@
             .<span class="ident">request</span>(<span class="ident">route</span>)
             .<span class="ident">form</span>(<span class="kw-2">&amp;</span><span class="ident">options</span>)
             .<span class="ident">send</span>::<span class="op">&lt;</span><span class="ident">Message</span><span class="op">&gt;</span>()
-            .<span class="ident">await</span><span class="question-mark">?</span>;
+            .<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Delete mod dependencies. [required: token]</span>
-    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">delete</span>(<span class="self">self</span>, <span class="ident">options</span>: <span class="ident">EditDependenciesOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Deletion</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">delete</span>(<span class="self">self</span>, <span class="ident">options</span>: <span class="ident">EditDependenciesOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Deletion</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">DeleteModDependencies</span> {
             <span class="ident">game_id</span>: <span class="self">self</span>.<span class="ident">game_id</span>,
             <span class="ident">mod_id</span>: <span class="self">self</span>.<span class="ident">mod_id</span>,
         };
-        <span class="self">self</span>.<span class="ident">modio</span>.<span class="ident">request</span>(<span class="ident">route</span>).<span class="ident">form</span>(<span class="kw-2">&amp;</span><span class="ident">options</span>).<span class="ident">send</span>().<span class="ident">await</span>
+        <span class="self">self</span>.<span class="ident">modio</span>.<span class="ident">request</span>(<span class="ident">route</span>).<span class="ident">form</span>(<span class="kw-2">&amp;</span><span class="ident">options</span>).<span class="ident">send</span>().<span class="kw">await</span>
     }
 }
 
@@ -1236,29 +1236,29 @@
     }
 
     <span class="doccomment">/// List all mod tags.</span>
-    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">list</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Tag</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">list</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Tag</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">GetModTags</span> {
             <span class="ident">game_id</span>: <span class="self">self</span>.<span class="ident">game_id</span>,
             <span class="ident">mod_id</span>: <span class="self">self</span>.<span class="ident">mod_id</span>,
         };
         <span class="ident">Query</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">modio</span>, <span class="ident">route</span>, <span class="ident">Default</span>::<span class="ident">default</span>())
             .<span class="ident">collect</span>()
-            .<span class="ident">await</span>
+            .<span class="kw">await</span>
     }
 
     <span class="doccomment">/// Provides a stream over all mod tags.</span>
-    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">iter</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Stream</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Tag</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">iter</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">impl</span> <span class="ident">Stream</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Tag</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">GetModTags</span> {
             <span class="ident">game_id</span>: <span class="self">self</span>.<span class="ident">game_id</span>,
             <span class="ident">mod_id</span>: <span class="self">self</span>.<span class="ident">mod_id</span>,
         };
         <span class="kw">let</span> <span class="ident">filter</span> <span class="op">=</span> <span class="ident">Default</span>::<span class="ident">default</span>();
-        <span class="ident">Query</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">modio</span>, <span class="ident">route</span>, <span class="ident">filter</span>).<span class="ident">iter</span>().<span class="ident">await</span>
+        <span class="ident">Query</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">modio</span>, <span class="ident">route</span>, <span class="ident">filter</span>).<span class="ident">iter</span>().<span class="kw">await</span>
     }
 
     <span class="doccomment">/// Add mod tags. [required: token]</span>
     <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">should_implement_trait</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">add</span>(<span class="self">self</span>, <span class="ident">options</span>: <span class="ident">EditTagsOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">add</span>(<span class="self">self</span>, <span class="ident">options</span>: <span class="ident">EditTagsOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">AddModTags</span> {
             <span class="ident">game_id</span>: <span class="self">self</span>.<span class="ident">game_id</span>,
             <span class="ident">mod_id</span>: <span class="self">self</span>.<span class="ident">mod_id</span>,
@@ -1267,17 +1267,17 @@
             .<span class="ident">request</span>(<span class="ident">route</span>)
             .<span class="ident">form</span>(<span class="kw-2">&amp;</span><span class="ident">options</span>)
             .<span class="ident">send</span>::<span class="op">&lt;</span><span class="ident">Message</span><span class="op">&gt;</span>()
-            .<span class="ident">await</span><span class="question-mark">?</span>;
+            .<span class="kw">await</span><span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Delete mod tags. [required: token]</span>
-    <span class="kw">pub</span> <span class="ident">async</span> <span class="kw">fn</span> <span class="ident">delete</span>(<span class="self">self</span>, <span class="ident">options</span>: <span class="ident">EditTagsOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Deletion</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">delete</span>(<span class="self">self</span>, <span class="ident">options</span>: <span class="ident">EditTagsOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Deletion</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">DeleteModTags</span> {
             <span class="ident">game_id</span>: <span class="self">self</span>.<span class="ident">game_id</span>,
             <span class="ident">mod_id</span>: <span class="self">self</span>.<span class="ident">mod_id</span>,
         };
-        <span class="self">self</span>.<span class="ident">modio</span>.<span class="ident">request</span>(<span class="ident">route</span>).<span class="ident">form</span>(<span class="kw-2">&amp;</span><span class="ident">options</span>).<span class="ident">send</span>().<span class="ident">await</span>
+        <span class="self">self</span>.<span class="ident">modio</span>.<span class="ident">request</span>(<span class="ident">route</span>).<span class="ident">form</span>(<span class="kw-2">&amp;</span><span class="ident">options</span>).<span class="ident">send</span>().<span class="kw">await</span>
     }
 }
 
