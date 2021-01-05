@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["modio"] = [{"text":"impl Octal for CommunityOptions","synthetic":false,"types":[]},{"text":"impl Octal for RevenueOptions","synthetic":false,"types":[]},{"text":"impl Octal for ApiAccessOptions","synthetic":false,"types":[]},{"text":"impl Octal for MaturityOption","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

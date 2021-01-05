@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["modio"] = [{"text":"impl StructuralEq for Operator","synthetic":false,"types":[]},{"text":"impl StructuralEq for EventType","synthetic":false,"types":[]},{"text":"impl StructuralEq for CommunityOptions","synthetic":false,"types":[]},{"text":"impl StructuralEq for RevenueOptions","synthetic":false,"types":[]},{"text":"impl StructuralEq for ApiAccessOptions","synthetic":false,"types":[]},{"text":"impl StructuralEq for MaturityOption","synthetic":false,"types":[]},{"text":"impl StructuralEq for EventType","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

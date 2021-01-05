@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["DateAdded",""],["Fulltext",""],["Id",""],["Level",""],["Position",""],["UserId",""],["Username",""]]});
