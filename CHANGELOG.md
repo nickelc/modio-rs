@@ -1,3 +1,7 @@
+### v0.6.0 (2020-01-05)
+
+* Update to tokio 1.0 and reqwest 0.11
+
 ### v0.5.2 (2020-11-24)
 
 * Update pin-project-lite to 0.2.
