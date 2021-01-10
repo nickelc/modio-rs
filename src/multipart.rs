@@ -1,14 +1,13 @@
 use std::marker::Unpin;
 use std::path::Path;
 
-use bytes::BytesMut;
-use futures_util::{TryFutureExt, TryStreamExt};
+use futures_util::TryFutureExt;
 use mime::Mime;
 use reqwest::multipart::Part;
 use reqwest::Body;
 use tokio::fs::File;
 use tokio::io::AsyncRead;
-use tokio_util::codec::{BytesCodec, FramedRead};
+use tokio_util::io::ReaderStream;
 
 pub struct FileSource {
     pub body: Body,
@@ -20,7 +19,7 @@ impl FileSource {
     pub fn new_from_file<P: AsRef<Path>>(file: P, filename: String, mime: Mime) -> Self {
         let file = file.as_ref().to_path_buf();
         let st = File::open(file)
-            .map_ok(|file| FramedRead::new(file, BytesCodec::new()).map_ok(BytesMut::freeze))
+            .map_ok(ReaderStream::new)
             .try_flatten_stream();
 
         FileSource {
@@ -34,10 +33,8 @@ impl FileSource {
     where
         T: AsyncRead + Send + Sync + Unpin + 'static,
     {
-        let st = FramedRead::new(read, BytesCodec::new()).map_ok(BytesMut::freeze);
-
         FileSource {
-            body: Body::wrap_stream(st),
+            body: Body::wrap_stream(ReaderStream::new(read)),
             filename,
             mime,
         }
