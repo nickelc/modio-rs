@@ -1,4 +1,5 @@
 use std::convert::TryInto;
+use std::sync::Arc;
 
 use ::reqwest::{Client, ClientBuilder, Proxy};
 use http::header::USER_AGENT;
@@ -117,9 +118,11 @@ impl Builder {
         };
 
         Ok(Modio {
-            host,
-            credentials,
-            client,
+            inner: Arc::new(ClientRef {
+                host,
+                credentials,
+                client,
+            }),
         })
     }
 
@@ -189,6 +192,11 @@ impl Builder {
 /// Endpoint interface to interacting with the [mod.io](https://mod.io) API.
 #[derive(Clone, Debug)]
 pub struct Modio {
+    pub(crate) inner: Arc<ClientRef>,
+}
+
+#[derive(Debug)]
+pub(crate) struct ClientRef {
     pub(crate) host: String,
     pub(crate) client: Client,
     pub(crate) credentials: Credentials,
@@ -225,9 +233,11 @@ impl Modio {
         CR: Into<Credentials>,
     {
         Self {
-            host: self.host.clone(),
-            client: self.client.clone(),
-            credentials: credentials.into(),
+            inner: Arc::new(ClientRef {
+                host: self.inner.host.clone(),
+                client: self.inner.client.clone(),
+                credentials: credentials.into(),
+            }),
         }
     }
 
@@ -237,12 +247,14 @@ impl Modio {
         T: Into<Token>,
     {
         Self {
-            host: self.host.clone(),
-            client: self.client.clone(),
-            credentials: Credentials {
-                api_key: self.credentials.api_key.clone(),
-                token: Some(token.into()),
-            },
+            inner: Arc::new(ClientRef {
+                host: self.inner.host.clone(),
+                client: self.inner.client.clone(),
+                credentials: Credentials {
+                    api_key: self.inner.credentials.api_key.clone(),
+                    token: Some(token.into()),
+                },
+            }),
         }
     }
 

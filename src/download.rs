@@ -184,6 +184,7 @@ async fn request_file(modio: Modio, action: DownloadAction) -> Result<Response> 
 
     debug!("downloading file: {}", url);
     modio
+        .inner
         .client
         .request(Method::GET, url)
         .send()

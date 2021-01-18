@@ -162,7 +162,7 @@ impl Auth {
             expired_at: t.expired_at,
         };
         Ok(Credentials {
-            api_key: self.modio.credentials.api_key,
+            api_key: self.modio.inner.credentials.api_key.clone(),
             token: Some(token),
         })
     }
@@ -220,7 +220,7 @@ impl Auth {
             expired_at: t.expired_at,
         };
         Ok(Credentials {
-            api_key: self.modio.credentials.api_key,
+            api_key: self.modio.inner.credentials.api_key.clone(),
             token: Some(token),
         })
     }

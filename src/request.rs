@@ -46,21 +46,21 @@ impl RequestBuilder {
     pub fn new(modio: Modio, route: Route) -> Self {
         let (method, path, auth_method) = route.pieces();
 
-        if let (AuthMethod::Token, None) = (&auth_method, &modio.credentials.token) {
+        if let (AuthMethod::Token, None) = (&auth_method, &modio.inner.credentials.token) {
             return Self {
                 modio,
                 request: Err(error::token_required()),
             };
         }
 
-        let url = format!("{}{}", modio.host, path);
-        let params = [("api_key", &modio.credentials.api_key)];
+        let url = format!("{}{}", modio.inner.host, path);
+        let params = [("api_key", &modio.inner.credentials.api_key)];
         let request = Url::parse_with_params(&url, &params)
             .map(|url| {
-                let mut req = modio.client.request(method, url);
+                let mut req = modio.inner.client.request(method, url);
 
                 if let (AuthMethod::Token, Some(Token { value, .. })) =
-                    (&auth_method, &modio.credentials.token)
+                    (&auth_method, &modio.inner.credentials.token)
                 {
                     req = req.bearer_auth(value);
                 }
@@ -107,6 +107,7 @@ impl RequestBuilder {
         debug!("request: {} {}", req.method(), req.url());
         let response = self
             .modio
+            .inner
             .client
             .execute(req)
             .map_err(error::request)

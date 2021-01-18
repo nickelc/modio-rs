@@ -19,7 +19,7 @@ impl Me {
 
     /// Returns the current user if authenticated.
     pub async fn current(self) -> Result<Option<User>> {
-        if self.modio.credentials.token.is_some() {
+        if self.modio.inner.credentials.token.is_some() {
             let user = self.modio.request(Route::AuthorizedUser).send().await?;
             Ok(Some(user))
         } else {
