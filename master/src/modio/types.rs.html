@@ -1076,6 +1076,34 @@
 <span id="1073">1073</span>
 <span id="1074">1074</span>
 <span id="1075">1075</span>
+<span id="1076">1076</span>
+<span id="1077">1077</span>
+<span id="1078">1078</span>
+<span id="1079">1079</span>
+<span id="1080">1080</span>
+<span id="1081">1081</span>
+<span id="1082">1082</span>
+<span id="1083">1083</span>
+<span id="1084">1084</span>
+<span id="1085">1085</span>
+<span id="1086">1086</span>
+<span id="1087">1087</span>
+<span id="1088">1088</span>
+<span id="1089">1089</span>
+<span id="1090">1090</span>
+<span id="1091">1091</span>
+<span id="1092">1092</span>
+<span id="1093">1093</span>
+<span id="1094">1094</span>
+<span id="1095">1095</span>
+<span id="1096">1096</span>
+<span id="1097">1097</span>
+<span id="1098">1098</span>
+<span id="1099">1099</span>
+<span id="1100">1100</span>
+<span id="1101">1101</span>
+<span id="1102">1102</span>
+<span id="1103">1103</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
@@ -1197,7 +1225,7 @@
 
 <span class="doccomment">/// Used by `EventType` enums to catch unsupported event type variants</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">untagged</span>)]</span>
+<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">untagged</span>, <span class="ident">expecting</span> <span class="op">=</span> <span class="string">&quot;enum type or unknown string&quot;</span>)]</span>
 <span class="kw">enum</span> <span class="ident">NonExhaustive</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="ident">Known</span>(<span class="ident">T</span>),
     <span class="ident">Unknown</span>(<span class="ident">String</span>),
@@ -1222,7 +1250,7 @@
 
 <span class="doccomment">/// Result type for editing games, mods and files.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Deserialize</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">untagged</span>)]</span>
+<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">untagged</span>, <span class="ident">expecting</span> <span class="op">=</span> <span class="string">&quot;edited object or &#39;no new data&#39; message&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Editing</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="ident">Entity</span>(<span class="ident">T</span>),
     <span class="doccomment">/// The request was successful however no new data was submitted.</span>
@@ -1232,7 +1260,7 @@
 
 <span class="doccomment">/// Result type for deleting game tag options, mod media, mod tags and mod dependencies.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Deserialize</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">untagged</span>)]</span>
+<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">untagged</span>, <span class="ident">expecting</span> <span class="op">=</span> <span class="string">&quot;no content or &#39;no new data&#39; message&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Deletion</span> {
     <span class="ident">Success</span>,
     <span class="doccomment">/// The request was successful however no new data was submitted.</span>
@@ -1407,7 +1435,7 @@
     <span class="ident">T</span>: <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
 {
     <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>)]</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">untagged</span>, <span class="ident">deny_unknown_fields</span>)]</span>
+    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">untagged</span>, <span class="ident">deny_unknown_fields</span>, <span class="ident">expecting</span> <span class="op">=</span> <span class="string">&quot;object, empty object or null&quot;</span>)]</span>
     <span class="kw">enum</span> <span class="ident">Helper</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
         <span class="ident">Data</span>(<span class="ident">T</span>),
         <span class="ident">Empty</span> {},
@@ -1697,7 +1725,7 @@
 
     <span class="doccomment">/// Type of mod event that was triggered.</span>
     <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>, <span class="ident">Deserialize</span>)]</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;SCREAMING_SNAKE_CASE&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">from</span> <span class="op">=</span> <span class="string">&quot;NonExhaustive&lt;KnownEventType&gt;&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">EventType</span> {
         <span class="doccomment">/// Primary file changed, the mod should be updated.</span>
         <span class="ident">ModfileChanged</span>,
@@ -2146,11 +2174,40 @@
 
         <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="string">r#&quot;{&quot;id&quot;:1,&quot;header&quot;:{&quot;id&quot;:1}}&quot;#</span>;
         <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">serde_json</span>::<span class="ident">from_str</span>::<span class="op">&lt;</span><span class="ident">Game</span><span class="op">&gt;</span>(<span class="ident">s</span>).<span class="ident">unwrap_err</span>();
-        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="string">&quot;data did not match any variant of untagged enum Helper at line 1 column 26&quot;</span>;
+        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="string">&quot;object, empty object or null at line 1 column 26&quot;</span>;
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">value</span>), <span class="ident">expected</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">unknown_user_event_type</span>() {
+        <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">EventType</span>;
+
+        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>)]</span>
+        <span class="kw">struct</span> <span class="ident">Event</span> {
+            <span class="ident">kind</span>: <span class="ident">EventType</span>,
+        }
+        <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="string">r#&quot;{&quot;kind&quot;: &quot;UNKNOWN&quot;}&quot;#</span>;
+        <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">serde_json</span>::<span class="ident">from_str</span>::<span class="op">&lt;</span><span class="ident">Event</span><span class="op">&gt;</span>(<span class="ident">s</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="ident">EventType</span>::<span class="ident">Other</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;UNKNOWN&quot;</span>));
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">value</span>.<span class="ident">kind</span>, <span class="ident">expected</span>);
+    }
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">unknown_mod_event_type</span>() {
+        <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">mods</span>::<span class="ident">EventType</span>;
+
+        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>)]</span>
+        <span class="kw">struct</span> <span class="ident">Event</span> {
+            <span class="ident">kind</span>: <span class="ident">EventType</span>,
+        }
+        <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="string">r#&quot;{&quot;kind&quot;: &quot;UNKNOWN&quot;}&quot;#</span>;
+        <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">serde_json</span>::<span class="ident">from_str</span>::<span class="op">&lt;</span><span class="ident">Event</span><span class="op">&gt;</span>(<span class="ident">s</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="ident">EventType</span>::<span class="ident">Other</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;UNKNOWN&quot;</span>));
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">value</span>.<span class="ident">kind</span>, <span class="ident">expected</span>);
     }
 }
 
 <span class="comment">// vim: fdm=marker</span>
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "modio";</script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="modio"></div>
+    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>

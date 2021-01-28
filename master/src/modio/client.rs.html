@@ -344,8 +344,21 @@
 <span id="341">341</span>
 <span id="342">342</span>
 <span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryInto</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">Arc</span>;
 
 <span class="kw">use</span> ::<span class="ident">reqwest</span>::{<span class="ident">Client</span>, <span class="ident">ClientBuilder</span>, <span class="ident">Proxy</span>};
 <span class="kw">use</span> <span class="ident">http</span>::<span class="ident">header</span>::<span class="ident">USER_AGENT</span>;
@@ -464,9 +477,11 @@
         };
 
         <span class="prelude-val">Ok</span>(<span class="ident">Modio</span> {
-            <span class="ident">host</span>,
-            <span class="ident">credentials</span>,
-            <span class="ident">client</span>,
+            <span class="ident">inner</span>: <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">ClientRef</span> {
+                <span class="ident">host</span>,
+                <span class="ident">credentials</span>,
+                <span class="ident">client</span>,
+            }),
         })
     }
 
@@ -536,6 +551,11 @@
 <span class="doccomment">/// Endpoint interface to interacting with the [mod.io](https://mod.io) API.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Modio</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">inner</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">ClientRef</span><span class="op">&gt;</span>,
+}
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">ClientRef</span> {
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">host</span>: <span class="ident">String</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">client</span>: <span class="ident">Client</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">credentials</span>: <span class="ident">Credentials</span>,
@@ -572,9 +592,11 @@
         <span class="ident">CR</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Credentials</span><span class="op">&gt;</span>,
     {
         <span class="self">Self</span> {
-            <span class="ident">host</span>: <span class="self">self</span>.<span class="ident">host</span>.<span class="ident">clone</span>(),
-            <span class="ident">client</span>: <span class="self">self</span>.<span class="ident">client</span>.<span class="ident">clone</span>(),
-            <span class="ident">credentials</span>: <span class="ident">credentials</span>.<span class="ident">into</span>(),
+            <span class="ident">inner</span>: <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">ClientRef</span> {
+                <span class="ident">host</span>: <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">host</span>.<span class="ident">clone</span>(),
+                <span class="ident">client</span>: <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">client</span>.<span class="ident">clone</span>(),
+                <span class="ident">credentials</span>: <span class="ident">credentials</span>.<span class="ident">into</span>(),
+            }),
         }
     }
 
@@ -584,12 +606,14 @@
         <span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Token</span><span class="op">&gt;</span>,
     {
         <span class="self">Self</span> {
-            <span class="ident">host</span>: <span class="self">self</span>.<span class="ident">host</span>.<span class="ident">clone</span>(),
-            <span class="ident">client</span>: <span class="self">self</span>.<span class="ident">client</span>.<span class="ident">clone</span>(),
-            <span class="ident">credentials</span>: <span class="ident">Credentials</span> {
-                <span class="ident">api_key</span>: <span class="self">self</span>.<span class="ident">credentials</span>.<span class="ident">api_key</span>.<span class="ident">clone</span>(),
-                <span class="ident">token</span>: <span class="prelude-val">Some</span>(<span class="ident">token</span>.<span class="ident">into</span>()),
-            },
+            <span class="ident">inner</span>: <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">ClientRef</span> {
+                <span class="ident">host</span>: <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">host</span>.<span class="ident">clone</span>(),
+                <span class="ident">client</span>: <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">client</span>.<span class="ident">clone</span>(),
+                <span class="ident">credentials</span>: <span class="ident">Credentials</span> {
+                    <span class="ident">api_key</span>: <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">credentials</span>.<span class="ident">api_key</span>.<span class="ident">clone</span>(),
+                    <span class="ident">token</span>: <span class="prelude-val">Some</span>(<span class="ident">token</span>.<span class="ident">into</span>()),
+                },
+            }),
         }
     }
 
@@ -689,4 +713,5 @@
     }
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "modio";</script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="modio"></div>
+    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>

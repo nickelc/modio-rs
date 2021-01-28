@@ -365,6 +365,7 @@
 <span id="362">362</span>
 <span id="363">363</span>
 <span id="364">364</span>
+<span id="365">365</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Downloading mod files.</span>
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">StdError</span>;
@@ -552,6 +553,7 @@
 
     <span class="macro">debug</span><span class="macro">!</span>(<span class="string">&quot;downloading file: {}&quot;</span>, <span class="ident">url</span>);
     <span class="ident">modio</span>
+        .<span class="ident">inner</span>
         .<span class="ident">client</span>
         .<span class="ident">request</span>(<span class="ident">Method</span>::<span class="ident">GET</span>, <span class="ident">url</span>)
         .<span class="ident">send</span>()
@@ -731,4 +733,5 @@
     }
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "modio";</script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="modio"></div>
+    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>
