@@ -1,4 +1,12 @@
-### v0.6.0 (2020-01-05)
+### v0.6.1 (2021-01-28)
+
+* Make cloning of the client cheaper.
+
+* Fix the deserialization of mod event types for unknown events.
+
+* Improve serde's error message for untagged enums
+
+### v0.6.0 (2021-01-05)
 
 * Update to tokio 1.0 and reqwest 0.11
 
