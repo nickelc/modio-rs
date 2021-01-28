@@ -1104,6 +1104,10 @@
 <span id="1101">1101</span>
 <span id="1102">1102</span>
 <span id="1103">1103</span>
+<span id="1104">1104</span>
+<span id="1105">1105</span>
+<span id="1106">1106</span>
+<span id="1107">1107</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
@@ -1435,7 +1439,11 @@
     <span class="ident">T</span>: <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
 {
     <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Deserialize</span>)]</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">untagged</span>, <span class="ident">deny_unknown_fields</span>, <span class="ident">expecting</span> <span class="op">=</span> <span class="string">&quot;object, empty object or null&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">serde</span>(
+        <span class="ident">untagged</span>,
+        <span class="ident">deny_unknown_fields</span>,
+        <span class="ident">expecting</span> <span class="op">=</span> <span class="string">&quot;object, empty object or null&quot;</span>
+    )]</span>
     <span class="kw">enum</span> <span class="ident">Helper</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
         <span class="ident">Data</span>(<span class="ident">T</span>),
         <span class="ident">Empty</span> {},
