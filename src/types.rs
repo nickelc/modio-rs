@@ -118,7 +118,7 @@ macro_rules! bitflags_serde {
 
 /// Used by `EventType` enums to catch unsupported event type variants
 #[derive(Deserialize)]
-#[serde(untagged)]
+#[serde(untagged, expecting = "enum type or unknown string")]
 enum NonExhaustive<T> {
     Known(T),
     Unknown(String),
@@ -143,7 +143,7 @@ pub struct Message {
 
 /// Result type for editing games, mods and files.
 #[derive(Debug, Deserialize)]
-#[serde(untagged)]
+#[serde(untagged, expecting = "edited object or 'no new data' message")]
 pub enum Editing<T> {
     Entity(T),
     /// The request was successful however no new data was submitted.
@@ -153,7 +153,7 @@ pub enum Editing<T> {
 
 /// Result type for deleting game tag options, mod media, mod tags and mod dependencies.
 #[derive(Debug, Deserialize)]
-#[serde(untagged)]
+#[serde(untagged, expecting = "no content or 'no new data' message")]
 pub enum Deletion {
     Success,
     /// The request was successful however no new data was submitted.
@@ -328,7 +328,11 @@ where
     T: Deserialize<'de>,
 {
     #[derive(Deserialize)]
-    #[serde(untagged, deny_unknown_fields)]
+    #[serde(
+        untagged,
+        deny_unknown_fields,
+        expecting = "object, empty object or null"
+    )]
     enum Helper<T> {
         Data(T),
         Empty {},
@@ -1067,7 +1071,7 @@ mod tests {
 
         let s = r#"{"id":1,"header":{"id":1}}"#;
         let value = serde_json::from_str::<Game>(s).unwrap_err();
-        let expected = "data did not match any variant of untagged enum Helper at line 1 column 26";
+        let expected = "object, empty object or null at line 1 column 26";
         assert_eq!(format!("{}", value), expected);
     }
 }
