@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["modio"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/ops/arith/trait.Add.html\" title=\"trait core::ops::arith::Add\">Add</a>&lt;<a class=\"struct\" href=\"modio/filter/struct.Filter.html\" title=\"struct modio::filter::Filter\">Filter</a>&gt; for <a class=\"struct\" href=\"modio/filter/struct.Filter.html\" title=\"struct modio::filter::Filter\">Filter</a>","synthetic":false,"types":["modio::filter::Filter"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
