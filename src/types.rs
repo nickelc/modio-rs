@@ -622,7 +622,7 @@ pub mod mods {
 
     /// Type of mod event that was triggered.
     #[derive(Debug, PartialEq, Eq, Hash, Deserialize)]
-    #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+    #[serde(from = "NonExhaustive<KnownEventType>")]
     pub enum EventType {
         /// Primary file changed, the mod should be updated.
         ModfileChanged,
@@ -1073,6 +1073,34 @@ mod tests {
         let value = serde_json::from_str::<Game>(s).unwrap_err();
         let expected = "object, empty object or null at line 1 column 26";
         assert_eq!(format!("{}", value), expected);
+    }
+
+    #[test]
+    fn unknown_user_event_type() {
+        use super::EventType;
+
+        #[derive(Deserialize)]
+        struct Event {
+            kind: EventType,
+        }
+        let s = r#"{"kind": "UNKNOWN"}"#;
+        let value = serde_json::from_str::<Event>(s).unwrap();
+        let expected = EventType::Other(String::from("UNKNOWN"));
+        assert_eq!(value.kind, expected);
+    }
+
+    #[test]
+    fn unknown_mod_event_type() {
+        use super::mods::EventType;
+
+        #[derive(Deserialize)]
+        struct Event {
+            kind: EventType,
+        }
+        let s = r#"{"kind": "UNKNOWN"}"#;
+        let value = serde_json::from_str::<Event>(s).unwrap();
+        let expected = EventType::Other(String::from("UNKNOWN"));
+        assert_eq!(value.kind, expected);
     }
 }
 
