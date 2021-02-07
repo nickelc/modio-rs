@@ -110,6 +110,7 @@ define_routes! {
     { AuthXbox, POST: "/external/xboxauth", ApiKey },
     { AuthDiscord, POST: "/external/discordauth", ApiKey },
     { LinkAccount, POST: "/external/link", Token },
+    { Terms, GET: "/authenticate/terms", ApiKey},
     { GetGames, GET: "/games", Any },
     { GetGame, GET: "/games/{}", [game_id], Any },
     { AddGameMedia, POST: "/games/{}/media", [game_id], Token },

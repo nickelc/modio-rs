@@ -8,6 +8,8 @@ use crate::types::{AccessToken, Message};
 use crate::Modio;
 use crate::Result;
 
+pub use crate::types::auth::{Link, Links, Terms};
+
 /// [mod.io](https://mod.io) credentials. API key with optional OAuth2 access token.
 #[derive(Clone, PartialEq)]
 pub struct Credentials {
@@ -137,6 +139,27 @@ impl Auth {
         Self { modio }
     }
 
+    /// Get text and links for user agreement and consent prior to authentication. [required: apikey]
+    ///
+    /// See the [mod.io docs](https://docs.mod.io/#terms) for more information.
+    pub async fn terms(self, service: Option<Service>) -> Result<Terms> {
+        let svc = match service {
+            Some(Service::Steam) => "steam",
+            Some(Service::Gog) => "gog",
+            Some(Service::Itchio) => "itchio",
+            Some(Service::Oculus) => "oculus",
+            Some(Service::Xbox) => "xbox",
+            Some(Service::Switch) => "switch",
+            Some(Service::Discord) => "discord",
+            _ => "",
+        };
+        self.modio
+            .request(Route::Terms)
+            .form(&[("service", svc)])
+            .send()
+            .await
+    }
+
     /// Request a security code be sent to the email of the user. [required: apikey]
     pub async fn request_code(self, email: &str) -> Result<()> {
         self.modio
@@ -239,6 +262,18 @@ impl Auth {
     }
 }
 
+/// The 3rd party authentication service that will be used after the user agrees to the terms of
+/// use and consent to an account being created.
+pub enum Service {
+    Steam,
+    Gog,
+    Itchio,
+    Oculus,
+    Xbox,
+    Switch,
+    Discord,
+}
+
 /// Options for external authentication.
 pub struct AuthOptions {
     route: Route,
@@ -333,6 +368,7 @@ impl GalaxyOptions {
         /// than the default value which is a common year.
         expired_at u64 >> "date_expires"
     );
+    option!(terms_agreed bool >> "terms_agreed");
 }
 
 /// Authentication options for an itch.io JWT token.
@@ -358,6 +394,7 @@ impl ItchioOptions {
         /// than the default value which is a week.
         expired_at u64 >> "date_expires"
     );
+    option!(terms_agreed bool >> "terms_agreed");
 }
 
 /// Authentication options for an Oculus user.
@@ -397,6 +434,7 @@ impl OculusOptions {
         /// than the default value which is a common year.
         expired_at u64 >> "date_expires"
     );
+    option!(terms_agreed bool >> "terms_agreed");
 }
 
 /// Authentication options for an encrypted steam app ticket.
@@ -422,6 +460,7 @@ impl SteamOptions {
         /// than the default value which is a common year.
         expired_at u64 >> "date_expires"
     );
+    option!(terms_agreed bool >> "terms_agreed");
 }
 
 /// Authentication options for the NSA ID token.
@@ -447,6 +486,7 @@ impl SwitchOptions {
         /// than the default value which is a common year.
         expired_at u64 >> "date_expires"
     );
+    option!(terms_agreed bool >> "terms_agreed");
 }
 
 /// Authentication options for an Xbox Live token.
@@ -472,6 +512,7 @@ impl XboxOptions {
         /// than the default value which is a common year.
         expired_at u64 >> "date_expires"
     );
+    option!(terms_agreed bool >> "terms_agreed");
 }
 
 /// Authentication options for an Discord token.
@@ -497,33 +538,34 @@ impl DiscordOptions {
         /// than the default value which is a week.
         expired_at u64 >> "date_expires"
     );
+    option!(terms_agreed bool >> "terms_agreed");
 }
 
 /// Options for connecting external accounts with the authenticated user's email address.
 pub struct LinkOptions {
     email: String,
-    service: Service,
+    service: LinkService,
 }
 
 impl LinkOptions {
     pub fn steam<S: Into<String>>(email: S, steam_id: u64) -> Self {
         Self {
             email: email.into(),
-            service: Service::Steam(steam_id),
+            service: LinkService::Steam(steam_id),
         }
     }
 
     pub fn gog<S: Into<String>>(email: S, gog_id: u64) -> Self {
         Self {
             email: email.into(),
-            service: Service::Gog(gog_id),
+            service: LinkService::Gog(gog_id),
         }
     }
 
     pub fn itchio<S: Into<String>>(email: S, itchio_id: u64) -> Self {
         Self {
             email: email.into(),
-            service: Service::Itchio(itchio_id),
+            service: LinkService::Itchio(itchio_id),
         }
     }
 }
@@ -537,9 +579,9 @@ impl serde::ser::Serialize for LinkOptions {
         use serde::ser::SerializeStruct;
 
         let (service, id) = match self.service {
-            Service::Steam(id) => ("steam", id),
-            Service::Gog(id) => ("gog", id),
-            Service::Itchio(id) => ("itch", id),
+            LinkService::Steam(id) => ("steam", id),
+            LinkService::Gog(id) => ("gog", id),
+            LinkService::Itchio(id) => ("itch", id),
         };
         let mut opts = serializer.serialize_struct("LinkOptions", 3)?;
         opts.serialize_field("email", &self.email)?;
@@ -549,7 +591,7 @@ impl serde::ser::Serialize for LinkOptions {
     }
 }
 
-enum Service {
+enum LinkService {
     Steam(u64),
     Gog(u64),
     Itchio(u64),
