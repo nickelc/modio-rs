@@ -84,6 +84,8 @@ pub enum Error {
     Unauthorized,
     /// Access token is required to perform the action.
     TokenRequired,
+    /// The acceptance of the Terms of Use is required.
+    TermsAcceptanceRequired,
 }
 
 impl StdError for Error {}
@@ -93,6 +95,7 @@ impl fmt::Display for Error {
         match self {
             Error::Unauthorized => f.write_str("Unauthorized"),
             Error::TokenRequired => f.write_str("Access token is required"),
+            Error::TermsAcceptanceRequired => f.write_str("Terms acceptance is required"),
         }
     }
 }

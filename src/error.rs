@@ -56,7 +56,17 @@ impl Error {
     /// Returns true if the API key/access token is incorrect, revoked, expired or the request
     /// needs a different authentication method.
     pub fn is_auth(&self) -> bool {
-        matches!(self.inner.kind, Kind::Auth)
+        matches!(
+            self.inner.kind,
+            Kind::Auth(AuthError::Unauthorized) | Kind::Auth(AuthError::TokenRequired)
+        )
+    }
+
+    /// Returns true if the acceptance of the Terms of Use is required before continuing external
+    /// authorization.
+    pub fn is_terms_acceptance_required(&self) -> bool {
+        use AuthError::TermsAcceptanceRequired;
+        matches!(self.inner.kind, Kind::Auth(TermsAcceptanceRequired))
     }
 
     /// Returns true if the error is from a type Builder.
@@ -133,7 +143,7 @@ impl fmt::Debug for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.inner.kind {
-            Kind::Auth => f.write_str("authentication error")?,
+            Kind::Auth(ref err) => write!(f, "authentication error: {}", err)?,
             Kind::Builder => f.write_str("builder error")?,
             Kind::Decode => f.write_str("error decoding response body")?,
             Kind::Download => f.write_str("download error")?,
@@ -169,7 +179,7 @@ impl StdError for Error {
 
 #[derive(Debug)]
 pub(crate) enum Kind {
-    Auth,
+    Auth(AuthError),
     Download,
     Validation(String, HashMap<String, String>),
     RateLimit { reset: Duration },
@@ -199,11 +209,20 @@ impl fmt::Display for ModioError {
 }
 
 pub(crate) fn token_required() -> Error {
-    Error::new(Kind::Auth, Some(AuthError::TokenRequired))
+    use AuthError::TokenRequired;
+    Error::new(Kind::Auth(TokenRequired), Some(TokenRequired))
 }
 
 pub(crate) fn unauthorized(error_ref: u16) -> Error {
-    Error::new_error_ref(Kind::Auth, error_ref, Some(AuthError::Unauthorized))
+    use AuthError::Unauthorized;
+    Error::new_error_ref(Kind::Auth(Unauthorized), error_ref, Some(Unauthorized))
+}
+
+pub(crate) fn terms_required() -> Error {
+    Error::new(
+        Kind::Auth(AuthError::TermsAcceptanceRequired),
+        Some(AuthError::TermsAcceptanceRequired),
+    )
 }
 
 pub(crate) fn builder_or_request(e: reqwest::Error) -> Error {
@@ -234,6 +253,7 @@ pub(crate) fn error_for_status(status: StatusCode, error: ModioError) -> Error {
             None::<Error>,
         ),
         StatusCode::UNAUTHORIZED => unauthorized(error.error_ref),
+        StatusCode::FORBIDDEN if error.error_ref == 11051 => terms_required(),
         _ => Error::new_error_ref(Kind::Status(status), error.error_ref, Some(error)),
     }
 }
