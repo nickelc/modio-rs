@@ -559,6 +559,51 @@
 <span id="556">556</span>
 <span id="557">557</span>
 <span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Authentication Flow interface</span>
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">BTreeMap</span>;
@@ -569,6 +614,8 @@
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">types</span>::{<span class="ident">AccessToken</span>, <span class="ident">Message</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">Modio</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="prelude-ty">Result</span>;
+
+<span class="kw">pub</span> <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">types</span>::<span class="ident">auth</span>::{<span class="ident">Link</span>, <span class="ident">Links</span>, <span class="ident">Terms</span>};
 
 <span class="doccomment">/// [mod.io](https://mod.io) credentials. API key with optional OAuth2 access token.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
@@ -644,6 +691,8 @@
     <span class="ident">Unauthorized</span>,
     <span class="doccomment">/// Access token is required to perform the action.</span>
     <span class="ident">TokenRequired</span>,
+    <span class="doccomment">/// The acceptance of the Terms of Use is required.</span>
+    <span class="ident">TermsAcceptanceRequired</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">StdError</span> <span class="kw">for</span> <span class="ident">Error</span> {}
@@ -653,6 +702,7 @@
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">Error</span>::<span class="ident">Unauthorized</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;Unauthorized&quot;</span>),
             <span class="ident">Error</span>::<span class="ident">TokenRequired</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;Access token is required&quot;</span>),
+            <span class="ident">Error</span>::<span class="ident">TermsAcceptanceRequired</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;Terms acceptance is required&quot;</span>),
         }
     }
 }
@@ -697,6 +747,27 @@
 <span class="kw">impl</span> <span class="ident">Auth</span> {
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">modio</span>: <span class="ident">Modio</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span> { <span class="ident">modio</span> }
+    }
+
+    <span class="doccomment">/// Get text and links for user agreement and consent prior to authentication. [required: apikey]</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// See the [mod.io docs](https://docs.mod.io/#terms) for more information.</span>
+    <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">terms</span>(<span class="self">self</span>, <span class="ident">service</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Service</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Terms</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">svc</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">service</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">Service</span>::<span class="ident">Steam</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;steam&quot;</span>,
+            <span class="prelude-val">Some</span>(<span class="ident">Service</span>::<span class="ident">Gog</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;gog&quot;</span>,
+            <span class="prelude-val">Some</span>(<span class="ident">Service</span>::<span class="ident">Itchio</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;itchio&quot;</span>,
+            <span class="prelude-val">Some</span>(<span class="ident">Service</span>::<span class="ident">Oculus</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;oculus&quot;</span>,
+            <span class="prelude-val">Some</span>(<span class="ident">Service</span>::<span class="ident">Xbox</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;xbox&quot;</span>,
+            <span class="prelude-val">Some</span>(<span class="ident">Service</span>::<span class="ident">Switch</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;switch&quot;</span>,
+            <span class="prelude-val">Some</span>(<span class="ident">Service</span>::<span class="ident">Discord</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;discord&quot;</span>,
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;&quot;</span>,
+        };
+        <span class="self">self</span>.<span class="ident">modio</span>
+            .<span class="ident">request</span>(<span class="ident">Route</span>::<span class="ident">Terms</span>)
+            .<span class="ident">form</span>(<span class="kw-2">&amp;</span>[(<span class="string">&quot;service&quot;</span>, <span class="ident">svc</span>)])
+            .<span class="ident">send</span>()
+            .<span class="kw">await</span>
     }
 
     <span class="doccomment">/// Request a security code be sent to the email of the user. [required: apikey]</span>
@@ -801,6 +872,18 @@
     }
 }
 
+<span class="doccomment">/// The 3rd party authentication service that will be used after the user agrees to the terms of</span>
+<span class="doccomment">/// use and consent to an account being created.</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Service</span> {
+    <span class="ident">Steam</span>,
+    <span class="ident">Gog</span>,
+    <span class="ident">Itchio</span>,
+    <span class="ident">Oculus</span>,
+    <span class="ident">Xbox</span>,
+    <span class="ident">Switch</span>,
+    <span class="ident">Discord</span>,
+}
+
 <span class="doccomment">/// Options for external authentication.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AuthOptions</span> {
     <span class="ident">route</span>: <span class="ident">Route</span>,
@@ -895,6 +978,7 @@
         <span class="doccomment">/// than the default value which is a common year.</span>
         <span class="ident">expired_at</span> <span class="ident">u64</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;date_expires&quot;</span>
     );
+    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">terms_agreed</span> <span class="ident">bool</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;terms_agreed&quot;</span>);
 }
 
 <span class="doccomment">/// Authentication options for an itch.io JWT token.</span>
@@ -920,6 +1004,7 @@
         <span class="doccomment">/// than the default value which is a week.</span>
         <span class="ident">expired_at</span> <span class="ident">u64</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;date_expires&quot;</span>
     );
+    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">terms_agreed</span> <span class="ident">bool</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;terms_agreed&quot;</span>);
 }
 
 <span class="doccomment">/// Authentication options for an Oculus user.</span>
@@ -959,6 +1044,7 @@
         <span class="doccomment">/// than the default value which is a common year.</span>
         <span class="ident">expired_at</span> <span class="ident">u64</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;date_expires&quot;</span>
     );
+    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">terms_agreed</span> <span class="ident">bool</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;terms_agreed&quot;</span>);
 }
 
 <span class="doccomment">/// Authentication options for an encrypted steam app ticket.</span>
@@ -984,6 +1070,7 @@
         <span class="doccomment">/// than the default value which is a common year.</span>
         <span class="ident">expired_at</span> <span class="ident">u64</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;date_expires&quot;</span>
     );
+    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">terms_agreed</span> <span class="ident">bool</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;terms_agreed&quot;</span>);
 }
 
 <span class="doccomment">/// Authentication options for the NSA ID token.</span>
@@ -1009,6 +1096,7 @@
         <span class="doccomment">/// than the default value which is a common year.</span>
         <span class="ident">expired_at</span> <span class="ident">u64</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;date_expires&quot;</span>
     );
+    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">terms_agreed</span> <span class="ident">bool</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;terms_agreed&quot;</span>);
 }
 
 <span class="doccomment">/// Authentication options for an Xbox Live token.</span>
@@ -1034,6 +1122,7 @@
         <span class="doccomment">/// than the default value which is a common year.</span>
         <span class="ident">expired_at</span> <span class="ident">u64</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;date_expires&quot;</span>
     );
+    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">terms_agreed</span> <span class="ident">bool</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;terms_agreed&quot;</span>);
 }
 
 <span class="doccomment">/// Authentication options for an Discord token.</span>
@@ -1059,33 +1148,34 @@
         <span class="doccomment">/// than the default value which is a week.</span>
         <span class="ident">expired_at</span> <span class="ident">u64</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;date_expires&quot;</span>
     );
+    <span class="macro">option</span><span class="macro">!</span>(<span class="ident">terms_agreed</span> <span class="ident">bool</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="string">&quot;terms_agreed&quot;</span>);
 }
 
 <span class="doccomment">/// Options for connecting external accounts with the authenticated user&#39;s email address.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LinkOptions</span> {
     <span class="ident">email</span>: <span class="ident">String</span>,
-    <span class="ident">service</span>: <span class="ident">Service</span>,
+    <span class="ident">service</span>: <span class="ident">LinkService</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">LinkOptions</span> {
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">steam</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">email</span>: <span class="ident">S</span>, <span class="ident">steam_id</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">email</span>: <span class="ident">email</span>.<span class="ident">into</span>(),
-            <span class="ident">service</span>: <span class="ident">Service</span>::<span class="ident">Steam</span>(<span class="ident">steam_id</span>),
+            <span class="ident">service</span>: <span class="ident">LinkService</span>::<span class="ident">Steam</span>(<span class="ident">steam_id</span>),
         }
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">gog</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">email</span>: <span class="ident">S</span>, <span class="ident">gog_id</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">email</span>: <span class="ident">email</span>.<span class="ident">into</span>(),
-            <span class="ident">service</span>: <span class="ident">Service</span>::<span class="ident">Gog</span>(<span class="ident">gog_id</span>),
+            <span class="ident">service</span>: <span class="ident">LinkService</span>::<span class="ident">Gog</span>(<span class="ident">gog_id</span>),
         }
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">itchio</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">email</span>: <span class="ident">S</span>, <span class="ident">itchio_id</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">email</span>: <span class="ident">email</span>.<span class="ident">into</span>(),
-            <span class="ident">service</span>: <span class="ident">Service</span>::<span class="ident">Itchio</span>(<span class="ident">itchio_id</span>),
+            <span class="ident">service</span>: <span class="ident">LinkService</span>::<span class="ident">Itchio</span>(<span class="ident">itchio_id</span>),
         }
     }
 }
@@ -1099,9 +1189,9 @@
         <span class="kw">use</span> <span class="ident">serde</span>::<span class="ident">ser</span>::<span class="ident">SerializeStruct</span>;
 
         <span class="kw">let</span> (<span class="ident">service</span>, <span class="ident">id</span>) <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">service</span> {
-            <span class="ident">Service</span>::<span class="ident">Steam</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="string">&quot;steam&quot;</span>, <span class="ident">id</span>),
-            <span class="ident">Service</span>::<span class="ident">Gog</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="string">&quot;gog&quot;</span>, <span class="ident">id</span>),
-            <span class="ident">Service</span>::<span class="ident">Itchio</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="string">&quot;itch&quot;</span>, <span class="ident">id</span>),
+            <span class="ident">LinkService</span>::<span class="ident">Steam</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="string">&quot;steam&quot;</span>, <span class="ident">id</span>),
+            <span class="ident">LinkService</span>::<span class="ident">Gog</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="string">&quot;gog&quot;</span>, <span class="ident">id</span>),
+            <span class="ident">LinkService</span>::<span class="ident">Itchio</span>(<span class="ident">id</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="string">&quot;itch&quot;</span>, <span class="ident">id</span>),
         };
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">opts</span> <span class="op">=</span> <span class="ident">serializer</span>.<span class="ident">serialize_struct</span>(<span class="string">&quot;LinkOptions&quot;</span>, <span class="number">3</span>)<span class="question-mark">?</span>;
         <span class="ident">opts</span>.<span class="ident">serialize_field</span>(<span class="string">&quot;email&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">email</span>)<span class="question-mark">?</span>;
@@ -1111,7 +1201,7 @@
     }
 }
 
-<span class="kw">enum</span> <span class="ident">Service</span> {
+<span class="kw">enum</span> <span class="ident">LinkService</span> {
     <span class="ident">Steam</span>(<span class="ident">u64</span>),
     <span class="ident">Gog</span>(<span class="ident">u64</span>),
     <span class="ident">Itchio</span>(<span class="ident">u64</span>),

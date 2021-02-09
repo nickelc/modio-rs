@@ -1108,6 +1108,40 @@
 <span id="1105">1105</span>
 <span id="1106">1106</span>
 <span id="1107">1107</span>
+<span id="1108">1108</span>
+<span id="1109">1109</span>
+<span id="1110">1110</span>
+<span id="1111">1111</span>
+<span id="1112">1112</span>
+<span id="1113">1113</span>
+<span id="1114">1114</span>
+<span id="1115">1115</span>
+<span id="1116">1116</span>
+<span id="1117">1117</span>
+<span id="1118">1118</span>
+<span id="1119">1119</span>
+<span id="1120">1120</span>
+<span id="1121">1121</span>
+<span id="1122">1122</span>
+<span id="1123">1123</span>
+<span id="1124">1124</span>
+<span id="1125">1125</span>
+<span id="1126">1126</span>
+<span id="1127">1127</span>
+<span id="1128">1128</span>
+<span id="1129">1129</span>
+<span id="1130">1130</span>
+<span id="1131">1131</span>
+<span id="1132">1132</span>
+<span id="1133">1133</span>
+<span id="1134">1134</span>
+<span id="1135">1135</span>
+<span id="1136">1136</span>
+<span id="1137">1137</span>
+<span id="1138">1138</span>
+<span id="1139">1139</span>
+<span id="1140">1140</span>
+<span id="1141">1141</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">HashMap</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
@@ -1453,6 +1487,40 @@
         <span class="prelude-val">Ok</span>(<span class="ident">Helper</span>::<span class="ident">Data</span>(<span class="ident">data</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">data</span>)),
         <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>),
+    }
+}
+
+<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">auth</span> {
+    <span class="kw">use</span> <span class="ident">serde</span>::<span class="ident">Deserialize</span>;
+    <span class="kw">use</span> <span class="ident">url</span>::<span class="ident">Url</span>;
+
+    <span class="doccomment">/// See the [Terms Object](https://docs.mod.io/#terms-object) docs for more information.</span>
+    <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Deserialize</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Terms</span> {
+        <span class="kw">pub</span> <span class="ident">plaintext</span>: <span class="ident">String</span>,
+        <span class="kw">pub</span> <span class="ident">html</span>: <span class="ident">String</span>,
+        <span class="kw">pub</span> <span class="ident">links</span>: <span class="ident">Links</span>,
+    }
+
+    <span class="doccomment">/// Part of [`Terms`]</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// See the [Terms Object](https://docs.mod.io/#terms-object) docs for more information.</span>
+    <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Deserialize</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Links</span> {
+        <span class="kw">pub</span> <span class="ident">website</span>: <span class="ident">Link</span>,
+        <span class="kw">pub</span> <span class="ident">terms</span>: <span class="ident">Link</span>,
+        <span class="kw">pub</span> <span class="ident">privacy</span>: <span class="ident">Link</span>,
+        <span class="kw">pub</span> <span class="ident">manage</span>: <span class="ident">Link</span>,
+    }
+
+    <span class="doccomment">/// Part of [`Terms`]</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// See the [Terms Object](https://docs.mod.io/#terms-object) docs for more information.</span>
+    <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Deserialize</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Link</span> {
+        <span class="kw">pub</span> <span class="ident">text</span>: <span class="ident">String</span>,
+        <span class="kw">pub</span> <span class="ident">url</span>: <span class="ident">Url</span>,
+        <span class="kw">pub</span> <span class="ident">required</span>: <span class="ident">bool</span>,
     }
 }
 
@@ -2026,7 +2094,7 @@
                 <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">seq</span>.<span class="ident">size_hint</span>().<span class="ident">unwrap_or_default</span>();
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">map</span> <span class="op">=</span> <span class="ident">MetadataMap</span>::<span class="ident">with_capacity</span>(<span class="ident">size</span>);
 
-                <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">elem</span>)) <span class="op">=</span> <span class="ident">seq</span>.<span class="ident">next_element</span>::<span class="op">&lt;</span><span class="ident">KV</span><span class="op">&gt;</span>() {
+                <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">elem</span>) <span class="op">=</span> <span class="ident">seq</span>.<span class="ident">next_element</span>::<span class="op">&lt;</span><span class="ident">KV</span><span class="op">&gt;</span>()<span class="question-mark">?</span> {
                     <span class="ident">map</span>.<span class="ident">entry</span>(<span class="ident">elem</span>.<span class="ident">metakey</span>).<span class="ident">or_default</span>().<span class="ident">push</span>(<span class="ident">elem</span>.<span class="ident">metavalue</span>);
                 }
                 <span class="prelude-val">Ok</span>(<span class="ident">map</span>)
