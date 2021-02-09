@@ -78,6 +78,10 @@ jobs:
       - name: Tests
         run: cargo test --all-features
 
+      - name: Check minimal versions
+        if: matrix.rust == 'nightly'
+        run: cargo clean; cargo update -Z minimal-versions; cargo c
+
   MSRV:
     runs-on: ubuntu-latest
 
