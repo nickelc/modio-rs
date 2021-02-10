@@ -250,19 +250,6 @@ impl Auth {
             token: Some(token),
         })
     }
-
-    /// Link an external account. Requires an auth token from the external platform.
-    ///
-    /// See the [mod.io docs](https://docs.mod.io/#link-external-account) for more information.
-    pub async fn link(self, options: LinkOptions) -> Result<()> {
-        self.modio
-            .request(Route::LinkAccount)
-            .form(&options)
-            .send::<Message>()
-            .await?;
-
-        Ok(())
-    }
 }
 
 /// The 3rd party authentication service that will be used after the user agrees to the terms of
@@ -542,62 +529,6 @@ impl DiscordOptions {
         expired_at u64 >> "date_expires"
     );
     option!(terms_agreed bool >> "terms_agreed");
-}
-
-/// Options for connecting external accounts with the authenticated user's email address.
-pub struct LinkOptions {
-    email: String,
-    service: LinkService,
-}
-
-impl LinkOptions {
-    pub fn steam<S: Into<String>>(email: S, steam_id: u64) -> Self {
-        Self {
-            email: email.into(),
-            service: LinkService::Steam(steam_id),
-        }
-    }
-
-    pub fn gog<S: Into<String>>(email: S, gog_id: u64) -> Self {
-        Self {
-            email: email.into(),
-            service: LinkService::Gog(gog_id),
-        }
-    }
-
-    pub fn itchio<S: Into<String>>(email: S, itchio_id: u64) -> Self {
-        Self {
-            email: email.into(),
-            service: LinkService::Itchio(itchio_id),
-        }
-    }
-}
-
-#[doc(hidden)]
-impl serde::ser::Serialize for LinkOptions {
-    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::ser::Serializer,
-    {
-        use serde::ser::SerializeStruct;
-
-        let (service, id) = match self.service {
-            LinkService::Steam(id) => ("steam", id),
-            LinkService::Gog(id) => ("gog", id),
-            LinkService::Itchio(id) => ("itch", id),
-        };
-        let mut opts = serializer.serialize_struct("LinkOptions", 3)?;
-        opts.serialize_field("email", &self.email)?;
-        opts.serialize_field("service", service)?;
-        opts.serialize_field("service_id", &id)?;
-        opts.end()
-    }
-}
-
-enum LinkService {
-    Steam(u64),
-    Gog(u64),
-    Itchio(u64),
 }
 
 // vim: fdm=marker
