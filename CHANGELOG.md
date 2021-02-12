@@ -1,3 +1,11 @@
+### v0.6.2
+
+* Add support for the new terms endpoint.
+
+* Add error variant for the case when the acceptance of Terms of Use is required.
+
+* Don't ignore deserialization errors for metadata kvp data.
+
 ### v0.6.1 (2021-01-28)
 
 * Make cloning of the client cheaper.

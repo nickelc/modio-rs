@@ -108,7 +108,7 @@
 //! #    Ok(())
 //! # }
 //! ```
-#![doc(html_root_url = "https://docs.rs/modio/0.6.1")]
+#![doc(html_root_url = "https://docs.rs/modio/0.6.2")]
 #![deny(rust_2018_idioms)]
 #![cfg_attr(docsrs, deny(broken_intra_doc_links))]
 
