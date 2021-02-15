@@ -911,6 +911,9 @@
 <span id="908">908</span>
 <span id="909">909</span>
 <span id="910">910</span>
+<span id="911">911</span>
+<span id="912">912</span>
+<span id="913">913</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! Mods Interface</span>
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ffi</span>::<span class="ident">OsStr</span>;
@@ -1119,6 +1122,7 @@
             .<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> ())
             .<span class="ident">or_else</span>(<span class="op">|</span><span class="ident">err</span><span class="op">|</span> <span class="kw">match</span> (<span class="ident">err</span>.<span class="ident">kind</span>(), <span class="ident">err</span>.<span class="ident">error_ref</span>()) {
                 (<span class="ident">Kind</span>::<span class="ident">Status</span>(<span class="ident">StatusCode</span>::<span class="ident">BAD_REQUEST</span>), <span class="prelude-val">Some</span>(<span class="number">15028</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(()),
+                (<span class="ident">Kind</span>::<span class="ident">Status</span>(<span class="ident">StatusCode</span>::<span class="ident">BAD_REQUEST</span>), <span class="prelude-val">Some</span>(<span class="number">15043</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(()),
                 <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>),
             })
     }
@@ -1312,7 +1316,7 @@
 <span class="doccomment">/// - Ratings</span>
 <span class="doccomment">/// - Subscribers</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// See the [modio docs](https://docs.mod.io/#get-all-mods) for more information.</span>
+<span class="doccomment">/// See the [modio docs](https://docs.mod.io/#get-mods) for more information.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// By default this returns up to `100` items. you can limit the result by using `limit` and</span>
 <span class="doccomment">/// `offset`.</span>
@@ -1445,6 +1449,7 @@
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Rating</span> {
     <span class="ident">Positive</span>,
     <span class="ident">Negative</span>,
+    <span class="prelude-val">None</span>,
 }
 
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
@@ -1459,6 +1464,7 @@
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">Rating</span>::<span class="ident">Negative</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">map</span>.<span class="ident">serialize_entry</span>(<span class="string">&quot;rating&quot;</span>, <span class="string">&quot;-1&quot;</span>)<span class="question-mark">?</span>,
             <span class="ident">Rating</span>::<span class="ident">Positive</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">map</span>.<span class="ident">serialize_entry</span>(<span class="string">&quot;rating&quot;</span>, <span class="string">&quot;1&quot;</span>)<span class="question-mark">?</span>,
+            <span class="ident">Rating</span>::<span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">map</span>.<span class="ident">serialize_entry</span>(<span class="string">&quot;rating&quot;</span>, <span class="string">&quot;0&quot;</span>)<span class="question-mark">?</span>,
         }
         <span class="ident">map</span>.<span class="ident">end</span>()
     }
