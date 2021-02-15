@@ -90,7 +90,7 @@ impl Members {
 /// - UserId
 /// - Username
 ///
-/// See [modio docs](https://docs.mod.io/#get-all-mod-team-members) for more information.
+/// See [modio docs](https://docs.mod.io/#get-mod-team-members) for more information.
 ///
 /// By default this returns up to `100` items. You can limit the result by using `limit` and
 /// `offset`.

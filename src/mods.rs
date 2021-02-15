@@ -398,7 +398,7 @@ impl Tags {
 /// - Ratings
 /// - Subscribers
 ///
-/// See the [modio docs](https://docs.mod.io/#get-all-mods) for more information.
+/// See the [modio docs](https://docs.mod.io/#get-mods) for more information.
 ///
 /// By default this returns up to `100` items. you can limit the result by using `limit` and
 /// `offset`.

@@ -765,7 +765,7 @@ pub mod mods {
         pub thumb_320x180: Url,
     }
 
-    /// See the [Statistics Object](https://docs.mod.io/#stats-object) docs for more
+    /// See the [Statistics Object](https://docs.mod.io/#mod-stats-object) docs for more
     /// information.
     #[derive(Debug, Deserialize)]
     pub struct Statistics {
