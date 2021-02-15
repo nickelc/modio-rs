@@ -205,6 +205,7 @@ impl ModRef {
             .map(|_| ())
             .or_else(|err| match (err.kind(), err.error_ref()) {
                 (Kind::Status(StatusCode::BAD_REQUEST), Some(15028)) => Ok(()),
+                (Kind::Status(StatusCode::BAD_REQUEST), Some(15043)) => Ok(()),
                 _ => Err(err),
             })
     }
@@ -531,6 +532,7 @@ pub mod filters {
 pub enum Rating {
     Positive,
     Negative,
+    None,
 }
 
 #[doc(hidden)]
@@ -545,6 +547,7 @@ impl serde::ser::Serialize for Rating {
         match self {
             Rating::Negative => map.serialize_entry("rating", "-1")?,
             Rating::Positive => map.serialize_entry("rating", "1")?,
+            Rating::None => map.serialize_entry("rating", "0")?,
         }
         map.end()
     }
