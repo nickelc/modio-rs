@@ -109,6 +109,7 @@ define_routes! {
     { AuthSwitch, POST: "/external/switchauth", ApiKey },
     { AuthXbox, POST: "/external/xboxauth", ApiKey },
     { AuthDiscord, POST: "/external/discordauth", ApiKey },
+    { AuthGoogle, POST: "/external/googleauth", ApiKey },
     { Terms, GET: "/authenticate/terms", ApiKey},
     { GetGames, GET: "/games", Any },
     { GetGame, GET: "/games/{}", [game_id], Any },

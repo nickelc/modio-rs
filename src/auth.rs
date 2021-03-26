@@ -154,6 +154,7 @@ impl Auth {
             Some(Service::Xbox) => "xbox",
             Some(Service::Switch) => "switch",
             Some(Service::Discord) => "discord",
+            Some(Service::Google) => "google",
             _ => "",
         };
         self.modio
@@ -193,7 +194,7 @@ impl Auth {
         })
     }
 
-    /// Authenticate via external services ([Steam], [GOG], [itch.io], [Switch], [Xbox], [Discord], [Oculus]).
+    /// Authenticate via external services ([Steam], [GOG], [itch.io], [Switch], [Xbox], [Discord], [Oculus], [Google]).
     ///
     /// See the [mod.io docs](https://docs.mod.io/#authentication-2) for more information.
     ///
@@ -204,6 +205,7 @@ impl Auth {
     /// [Switch]: SwitchOptions
     /// [Xbox]: XboxOptions
     /// [Discord]: DiscordOptions
+    /// [Google]: GoogleOptions
     ///
     /// # Examples
     ///
@@ -262,6 +264,7 @@ pub enum Service {
     Xbox,
     Switch,
     Discord,
+    Google,
 }
 
 /// Options for external authentication.
@@ -329,6 +332,15 @@ impl From<DiscordOptions> for AuthOptions {
     fn from(options: DiscordOptions) -> AuthOptions {
         AuthOptions {
             route: Route::AuthDiscord,
+            params: options.params,
+        }
+    }
+}
+
+impl From<GoogleOptions> for AuthOptions {
+    fn from(options: GoogleOptions) -> AuthOptions {
+        AuthOptions {
+            route: Route::AuthGoogle,
             params: options.params,
         }
     }
@@ -519,6 +531,32 @@ impl DiscordOptions {
     {
         let mut params = BTreeMap::new();
         params.insert("discord_token", token.into());
+        Self { params }
+    }
+
+    option!(email >> "email");
+    option!(
+        /// Unix timestamp of date in which the returned token will expire. Value cannot be higher
+        /// than the default value which is a week.
+        expired_at u64 >> "date_expires"
+    );
+    option!(terms_agreed bool >> "terms_agreed");
+}
+
+/// Authentication options for an Google token.
+///
+/// See the [mod.io docs](https://docs.mod.io/#authenticate-via-google) for more information.
+pub struct GoogleOptions {
+    params: BTreeMap<&'static str, String>,
+}
+
+impl GoogleOptions {
+    pub fn new<T>(token: T) -> Self
+    where
+        T: Into<String>,
+    {
+        let mut params = BTreeMap::new();
+        params.insert("id_token", token.into());
         Self { params }
     }
 
