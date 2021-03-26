@@ -380,6 +380,7 @@ pub mod auth {
 }
 
 pub mod game {
+    use std::collections::HashMap;
     use std::fmt;
 
     use bitflags::bitflags;
@@ -558,6 +559,8 @@ pub mod game {
         pub name: String,
         #[serde(rename = "type")]
         pub kind: TagType,
+        #[serde(rename = "tag_count_map")]
+        pub tag_count: HashMap<String, u32>,
         pub hidden: bool,
         pub tags: Vec<String>,
     }
