@@ -139,7 +139,7 @@ define_routes! {
     { AddModMetadata, POST: "/games/{}/mods/{}/metadatakvp", [game_id, mod_id], Token },
     { DeleteModMetadata, DELETE: "/games/{}/mods/{}/metadatakvp", [game_id, mod_id], Token },
     { GetModDependencies, GET: "/games/{}/mods/{}/dependencies", [game_id, mod_id], Any },
-    { AddModDepencencies, POST: "/games/{}/mods/{}/dependencies", [game_id, mod_id], Token },
+    { AddModDependencies, POST: "/games/{}/mods/{}/dependencies", [game_id, mod_id], Token },
     { DeleteModDependencies, DELETE: "/games/{}/mods/{}/dependencies", [game_id, mod_id], Token },
     { GetTeamMembers, GET: "/games/{}/mods/{}/team", [game_id, mod_id], Any },
     { AddTeamMember, POST: "/games/{}/mods/{}/team", [game_id, mod_id], Token },
