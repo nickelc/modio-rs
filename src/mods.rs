@@ -284,7 +284,7 @@ impl Dependencies {
     /// Add mod dependencies. [required: token]
     #[allow(clippy::should_implement_trait)]
     pub async fn add(self, options: EditDependenciesOptions) -> Result<()> {
-        let route = Route::AddModDepencencies {
+        let route = Route::AddModDependencies {
             game_id: self.game_id,
             mod_id: self.mod_id,
         };
