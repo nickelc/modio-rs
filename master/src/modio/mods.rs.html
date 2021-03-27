@@ -1201,7 +1201,7 @@
     <span class="doccomment">/// Add mod dependencies. [required: token]</span>
     <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">should_implement_trait</span>)]</span>
     <span class="kw">pub</span> <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">add</span>(<span class="self">self</span>, <span class="ident">options</span>: <span class="ident">EditDependenciesOptions</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">AddModDepencencies</span> {
+        <span class="kw">let</span> <span class="ident">route</span> <span class="op">=</span> <span class="ident">Route</span>::<span class="ident">AddModDependencies</span> {
             <span class="ident">game_id</span>: <span class="self">self</span>.<span class="ident">game_id</span>,
             <span class="ident">mod_id</span>: <span class="self">self</span>.<span class="ident">mod_id</span>,
         };
