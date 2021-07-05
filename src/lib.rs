@@ -138,7 +138,7 @@ mod routing;
 mod types;
 
 pub use crate::auth::Credentials;
-pub use crate::client::{Builder, Modio};
+pub use crate::client::{Builder, Modio, TargetPlatform, TargetPortal};
 pub use crate::download::DownloadAction;
 pub use crate::error::{Error, Result};
 pub use crate::loader::{Page, Query};

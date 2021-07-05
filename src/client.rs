@@ -24,6 +24,82 @@ pub struct Builder {
     config: Config,
 }
 
+/// Defines the platform from which the client's requests originate. See [`Builder::target_platform`]
+///
+/// See the [mod.io docs](https://docs.mod.io/#targeting-a-platform) for more information.
+pub enum TargetPlatform {
+    Android,
+    Ios,
+    Linux,
+    Mac,
+    Windows,
+    PS4,
+    PS5,
+    Switch,
+    Wii,
+    XboxOne,
+    XboxSeriesX,
+}
+
+impl TargetPlatform {
+    #[inline]
+    fn header_name() -> &'static str {
+        "X-Modio-Platform"
+    }
+
+    fn as_header_value(&self) -> HeaderValue {
+        match self {
+            TargetPlatform::Android => HeaderValue::from_static("Android"),
+            TargetPlatform::Ios => HeaderValue::from_static("iOS"),
+            TargetPlatform::Linux => HeaderValue::from_static("Linux"),
+            TargetPlatform::Mac => HeaderValue::from_static("Mac"),
+            TargetPlatform::Windows => HeaderValue::from_static("Windows"),
+            TargetPlatform::PS4 => HeaderValue::from_static("PS4"),
+            TargetPlatform::PS5 => HeaderValue::from_static("PS5"),
+            TargetPlatform::Switch => HeaderValue::from_static("Switch"),
+            TargetPlatform::Wii => HeaderValue::from_static("Wii"),
+            TargetPlatform::XboxOne => HeaderValue::from_static("XboxOne"),
+            TargetPlatform::XboxSeriesX => HeaderValue::from_static("XboxSeriesX"),
+        }
+    }
+}
+
+/// Defines the portal the player is interaction with. See [`Builder::target_portal`]
+///
+/// See the [mod.io docs](https://docs.mod.io/#targeting-a-portal) for more information.
+pub enum TargetPortal {
+    Steam,
+    GOG,
+    EGS,
+    Itchio,
+    Nintendo,
+    PSN,
+    XboxLive,
+    Apple,
+    Google,
+}
+
+impl TargetPortal {
+    #[inline]
+    fn header_name() -> &'static str {
+        "X-Modio-Portal"
+    }
+
+    fn as_header_value(&self) -> HeaderValue {
+        match self {
+            TargetPortal::Steam => HeaderValue::from_static("Steam"),
+            TargetPortal::GOG => HeaderValue::from_static("GOG"),
+            TargetPortal::EGS => HeaderValue::from_static("EGS"),
+            TargetPortal::Itchio => HeaderValue::from_static("Itchio"),
+            TargetPortal::Nintendo => HeaderValue::from_static("Nintendo"),
+            TargetPortal::PSN => HeaderValue::from_static("PSN"),
+            TargetPortal::XboxLive => HeaderValue::from_static("XboxLive"),
+            TargetPortal::Apple => HeaderValue::from_static("Apple"),
+            TargetPortal::Google => HeaderValue::from_static("Google"),
+        }
+    }
+}
+
 struct Config {
     host: Option<String>,
     credentials: Credentials,
@@ -171,6 +247,26 @@ impl Builder {
     /// Add a `Proxy` to the list of proxies the client will use.
     pub fn proxy(mut self, proxy: Proxy) -> Builder {
         self.config.proxies.push(proxy);
+        self
+    }
+
+    /// Set the target platform.
+    ///
+    /// See the [mod.io docs](https://docs.mod.io/#targeting-a-platform) for more information.
+    pub fn target_platform(mut self, platform: TargetPlatform) -> Builder {
+        let name = TargetPlatform::header_name();
+        let value = platform.as_header_value();
+        self.config.headers.insert(name, value);
+        self
+    }
+
+    /// Set the target portal.
+    ///
+    /// See the [mod.io docs](https://docs.mod.io/#targeting-a-portal) for more information.
+    pub fn target_portal(mut self, portal: TargetPortal) -> Builder {
+        let name = TargetPortal::header_name();
+        let value = portal.as_header_value();
+        self.config.headers.insert(name, value);
         self
     }
 
