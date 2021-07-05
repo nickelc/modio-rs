@@ -149,6 +149,7 @@ impl Auth {
         let svc = match service {
             Some(Service::Steam) => "steam",
             Some(Service::Gog) => "gog",
+            Some(Service::EGS) => "epic",
             Some(Service::Itchio) => "itchio",
             Some(Service::Oculus) => "oculus",
             Some(Service::Xbox) => "xbox",
@@ -259,6 +260,7 @@ impl Auth {
 pub enum Service {
     Steam,
     Gog,
+    EGS,
     Itchio,
     Oculus,
     Xbox,
