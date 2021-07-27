@@ -196,8 +196,8 @@ impl Builder {
         Ok(Modio {
             inner: Arc::new(ClientRef {
                 host,
-                credentials,
                 client,
+                credentials,
             }),
         })
     }

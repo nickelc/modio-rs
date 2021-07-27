@@ -327,7 +327,7 @@ impl serde::ser::Serialize for DeleteTagsOptions {
     {
         use serde::ser::SerializeMap;
 
-        let len = self.tags.as_ref().map(|t| t.len()).unwrap_or(1);
+        let len = self.tags.as_ref().map_or(1, |t| t.len());
         let mut map = serializer.serialize_map(Some(len + 1))?;
         map.serialize_entry("name", &self.name)?;
         if let Some(ref tags) = self.tags {

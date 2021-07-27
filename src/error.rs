@@ -199,9 +199,9 @@ impl fmt::Display for ModioError {
             for (k, v) in errors {
                 buf.push('\n');
                 buf.push_str("  ");
-                buf.push_str(&k);
+                buf.push_str(k);
                 buf.push_str(": ");
-                buf.push_str(&v);
+                buf.push_str(v);
             }
         }
         fmt::Display::fmt(&buf, f)
