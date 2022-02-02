@@ -73,8 +73,10 @@ let games = modio.games().search(NameId::eq("0ad")).collect().await?;
 
 ### Mods
 ```rust
+use modio::filter::prelude::*;
+
 // List all mods for 0 A.D.
-let mods = modio.game(5).mods().search(Default::default()).collect().await?;
+let mods = modio.game(5).mods().search(Filter::default()).collect().await?;
 
 // Get the details of the `balancing-mod` mod
 let balancing_mod = modio.mod_(5, 110).get().await?;

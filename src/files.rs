@@ -111,24 +111,24 @@ impl FileRef {
 /// Modfile filters and sorting.
 ///
 /// # Filters
-/// - Fulltext
-/// - Id
-/// - ModId
-/// - DateAdded
-/// - DateScanned
-/// - VirusStatus
-/// - VirusPositive
-/// - Filesize
-/// - Filehash
-/// - Filename
-/// - Version
-/// - Changelog
+/// - `Fulltext`
+/// - `Id`
+/// - `ModId`
+/// - `DateAdded`
+/// - `DateScanned`
+/// - `VirusStatus`
+/// - `VirusPositive`
+/// - `Filesize`
+/// - `Filehash`
+/// - `Filename`
+/// - `Version`
+/// - `Changelog`
 ///
 /// # Sorting
-/// - Id
-/// - ModId
-/// - DateAdded
-/// - Version
+/// - `Id`
+/// - `ModId`
+/// - `DateAdded`
+/// - `Version`
 ///
 /// See [modio docs](https://docs.mod.io/#get-modfiles) for more information.
 ///

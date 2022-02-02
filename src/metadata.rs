@@ -32,7 +32,7 @@ impl Metadata {
             game_id: self.game,
             mod_id: self.mod_id,
         };
-        let filter = Default::default();
+        let filter = Filter::default();
         let mut it = Query::<KV>::new(self.modio, route, filter).iter().await?;
 
         let (size, _) = it.size_hint();

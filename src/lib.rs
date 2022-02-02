@@ -45,6 +45,7 @@
 //!
 //! ```no_run
 //! use futures_util::future::try_join3;
+//! use modio::filter::Filter;
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! #    let modio = modio::Modio::new("user-or-game-api-key")?;
@@ -54,7 +55,7 @@
 //!
 //! // Get mod with its dependencies and all files
 //! let deps = modref.dependencies().list();
-//! let files = modref.files().search(Default::default()).collect();
+//! let files = modref.files().search(Filter::default()).collect();
 //! let mod_ = modref.get();
 //!
 //! let (m, deps, files) = try_join3(mod_, deps, files).await?;

@@ -58,7 +58,7 @@ impl Error {
     pub fn is_auth(&self) -> bool {
         matches!(
             self.inner.kind,
-            Kind::Auth(AuthError::Unauthorized) | Kind::Auth(AuthError::TokenRequired)
+            Kind::Auth(AuthError::Unauthorized | AuthError::TokenRequired)
         )
     }
 

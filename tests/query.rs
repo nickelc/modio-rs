@@ -74,7 +74,7 @@ async fn empty_first() -> Result<()> {
     let server = create_empty_result();
 
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
-    let first = modio.games().search(Default::default()).first().await?;
+    let first = modio.games().search(Filter::default()).first().await?;
 
     assert!(first.is_none());
     Ok(())
@@ -85,7 +85,7 @@ async fn first() -> Result<()> {
     let server = create_first_page_only();
 
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
-    let first = modio.games().search(Default::default()).first().await?;
+    let first = modio.games().search(Filter::default()).first().await?;
 
     assert!(first.is_some());
     assert_eq!(1, first.unwrap().id);
@@ -97,7 +97,7 @@ async fn empty_first_page() -> Result<()> {
     let server = create_empty_result();
 
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
-    let filter = Default::default();
+    let filter = Filter::default();
     let list = modio.games().search(filter).first_page().await?;
 
     assert!(list.is_empty());
@@ -109,7 +109,7 @@ async fn first_page() -> Result<()> {
     let server = create_first_page_only();
 
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
-    let filter = Default::default();
+    let filter = Filter::default();
     let list = modio.games().search(filter).first_page().await?;
 
     assert_eq!(7, list.len());
@@ -123,7 +123,7 @@ async fn empty_collect() -> Result<()> {
     let server = create_empty_result();
 
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
-    let list = modio.games().search(Default::default()).collect().await?;
+    let list = modio.games().search(Filter::default()).collect().await?;
 
     assert!(list.is_empty());
     Ok(())
@@ -134,7 +134,7 @@ async fn collect() -> Result<()> {
     let server = create_games_endpoint();
 
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
-    let list = modio.games().search(Default::default()).collect().await?;
+    let list = modio.games().search(Filter::default()).collect().await?;
 
     assert_eq!(31, list.len());
     assert_eq!(1, list[0].id);
@@ -147,7 +147,7 @@ async fn empty_paged() -> Result<()> {
     let server = create_empty_result();
 
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
-    let mut st = modio.games().search(Default::default()).paged().await?;
+    let mut st = modio.games().search(Filter::default()).paged().await?;
 
     assert_eq!((0, None), st.size_hint());
     assert!(st.try_next().await?.is_none());

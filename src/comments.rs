@@ -84,21 +84,21 @@ impl Comments {
 /// Comment filters and sorting.
 ///
 /// # Filters
-/// - Fulltext
-/// - Id
-/// - ModId
-/// - SubmittedBy
-/// - DateAdded
-/// - ReplyId
-/// - ThreadPosition
-/// - Karma
-/// - Content
+/// - `Fulltext`
+/// - `Id`
+/// - `ModId`
+/// - `SubmittedBy`
+/// - `DateAdded`
+/// - `ReplyId`
+/// - `ThreadPosition`
+/// - `Karma`
+/// - `Content`
 ///
 /// # Sorting
-/// - Id
-/// - ModId
-/// - SubmittedBy
-/// - DateAdded
+/// - `Id`
+/// - `ModId`
+/// - `SubmittedBy`
+/// - `DateAdded`
 ///
 /// See [modio docs](https://docs.mod.io/#get-mod-comments) for more information.
 ///

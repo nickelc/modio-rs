@@ -888,7 +888,7 @@ pub mod mods {
 
     impl MetadataMap {
         pub fn new() -> Self {
-            Default::default()
+            Self::default()
         }
 
         pub fn with_capacity(capacity: usize) -> Self {

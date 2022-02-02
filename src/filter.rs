@@ -21,7 +21,7 @@ macro_rules! filter {
     };
 }
 
-/// macros: __impl_filter_* {{{
+/// macros: `__impl_filter_*` {{{
 macro_rules! __impl_filter {
     (Eq, $type:ident, $name:ident) => {
         __impl_filter_eq!($type, $name);
@@ -409,6 +409,7 @@ impl Filter {
         }
     }
 
+    #[must_use]
     pub fn and(self, mut other: Filter) -> Filter {
         let Filter { mut filters, .. } = self;
         filters.append(&mut other.filters);
@@ -420,6 +421,7 @@ impl Filter {
         }
     }
 
+    #[must_use]
     pub fn order_by(self, other: Filter) -> Filter {
         Filter {
             order_by: other.order_by.or(self.order_by),
@@ -427,6 +429,7 @@ impl Filter {
         }
     }
 
+    #[must_use]
     pub fn limit(self, limit: usize) -> Filter {
         Filter {
             limit: Some(limit),
@@ -434,6 +437,7 @@ impl Filter {
         }
     }
 
+    #[must_use]
     pub fn offset(self, offset: usize) -> Filter {
         Filter {
             offset: Some(offset),

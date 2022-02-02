@@ -4,6 +4,7 @@ macro_rules! option {
     };
     ($(#[$outer:meta])* $name:ident: Into<$T:ty>) => {
         $(#[$outer])*
+        #[must_use]
         pub fn $name<T: Into<$T>>(self, value: T) -> Self {
             Self {
                 $name: Some(value.into()),
@@ -13,6 +14,7 @@ macro_rules! option {
     };
     ($(#[$outer:meta])* $name:ident: $T:ty) => {
         $(#[$outer])*
+        #[must_use]
         pub fn $name(self, value: $T) -> Self {
             Self {
                 $name: Some(value),
@@ -22,6 +24,7 @@ macro_rules! option {
     };
     ($(#[$outer:meta])* $name:ident >> $param:expr) => {
         $(#[$outer])*
+        #[must_use]
         pub fn $name<S: Into<String>>(self, value: S) -> Self {
             let mut params = self.params;
             params.insert($param, value.into());
@@ -30,6 +33,7 @@ macro_rules! option {
     };
     ($(#[$outer:meta])* $name:ident: Into<$T:ty> >> $param:expr) => {
         $(#[$outer])*
+        #[must_use]
         pub fn $name<T: Into<$T>>(self, value: T) -> Self {
             let mut params = self.params;
             params.insert($param, value.into().to_string());
@@ -38,6 +42,7 @@ macro_rules! option {
     };
     ($(#[$outer:meta])* $name:ident: $T:ty >> $param:expr) => {
         $(#[$outer])*
+        #[must_use]
         pub fn $name(self, value: $T) -> Self {
             let mut params = self.params;
             params.insert($param, value.to_string());

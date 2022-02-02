@@ -77,7 +77,7 @@ impl serde::ser::Serialize for Report {
             Resource::Mod(id) => ("mods", id),
             Resource::User(id) => ("users", id),
         };
-        let _type = match self.kind {
+        let kind = match self.kind {
             ReportType::Generic => 0,
             ReportType::DMCA => 1,
             ReportType::NotWorking => 2,
@@ -96,7 +96,7 @@ impl serde::ser::Serialize for Report {
         }
         map.serialize_entry("resource", resource)?;
         map.serialize_entry("id", &id)?;
-        map.serialize_entry("type", &_type)?;
+        map.serialize_entry("type", &kind)?;
         map.serialize_entry("name", &self.name)?;
         map.serialize_entry("summary", &self.summary)?;
 

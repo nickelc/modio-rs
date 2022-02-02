@@ -87,6 +87,7 @@ impl<T: DeserializeOwned + Send> Query<T> {
     /// #     Ok(())
     /// # }
     /// ```
+    #[allow(clippy::iter_not_returning_iterator)]
     pub async fn iter(self) -> Result<impl Stream<Item = Result<T>>> {
         let (st, (total, _)) = stream(self.modio, self.route, self.filter).await?;
         let st = st

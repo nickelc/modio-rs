@@ -89,16 +89,16 @@ pub mod filters {
     /// User event filters and sorting.
     ///
     /// # Filters
-    /// - Id
-    /// - GameId
-    /// - ModId
-    /// - UserId
-    /// - DateAdded
-    /// - EventType
+    /// - `Id`
+    /// - `GameId`
+    /// - `ModId`
+    /// - `UserId`
+    /// - `DateAdded`
+    /// - `EventType`
     ///
     /// # Sorting
-    /// - Id
-    /// - DateAdded
+    /// - `Id`
+    /// - `DateAdded`
     ///
     /// See the [modio docs](https://docs.mod.io/#get-user-events) for more information.
     ///
@@ -132,33 +132,33 @@ pub mod filters {
     /// Subscriptions filters and sorting.
     ///
     /// # Filters
-    /// - Fulltext
-    /// - Id
-    /// - GameId
-    /// - Status
-    /// - Visible
-    /// - SubmittedBy
-    /// - DateAdded
-    /// - DateUpdated
-    /// - DateLive
-    /// - MaturityOption
-    /// - Name
-    /// - NameId
-    /// - Summary
-    /// - Description
-    /// - Homepage
-    /// - Modfile
-    /// - MetadataBlob
-    /// - MetadataKVP
-    /// - Tags
+    /// - `Fulltext`
+    /// - `Id`
+    /// - `GameId`
+    /// - `Status`
+    /// - `Visible`
+    /// - `SubmittedBy`
+    /// - `DateAdded`
+    /// - `DateUpdated`
+    /// - `DateLive`
+    /// - `MaturityOption`
+    /// - `Name`
+    /// - `NameId`
+    /// - `Summary`
+    /// - `Description`
+    /// - `Homepage`
+    /// - `Modfile`
+    /// - `MetadataBlob`
+    /// - `MetadataKVP`
+    /// - `Tags`
     ///
     /// # Sorting
-    /// - Id
-    /// - Name
-    /// - Downloads
-    /// - Popular
-    /// - Ratings
-    /// - Subscribers
+    /// - `Id`
+    /// - `Name`
+    /// - `Downloads`
+    /// - `Popular`
+    /// - `Ratings`
+    /// - `Subscribers`
     ///
     /// See the [mod.io docs](https://docs.mod.io/#get-user-subscriptions) for more information.
     ///
@@ -226,16 +226,16 @@ pub mod filters {
     /// Rating filters and sorting.
     ///
     /// # Filters
-    /// - GameId
-    /// - ModId
-    /// - Rating
-    /// - DateAdded
+    /// - `GameId`
+    /// - `ModId`
+    /// - `Rating`
+    /// - `DateAdded`
     ///
     /// # Sorting
-    /// - GameId
-    /// - ModId
-    /// - Rating
-    /// - DateAdded
+    /// - `GameId`
+    /// - `ModId`
+    /// - `Rating`
+    /// - `DateAdded`
     ///
     /// See the [mod.io docs](https://docs.mod.io/#get-user-ratings) for more information.
     ///

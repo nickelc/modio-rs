@@ -204,8 +204,7 @@ impl ModRef {
             .await
             .map(|_| ())
             .or_else(|err| match (err.kind(), err.error_ref()) {
-                (Kind::Status(StatusCode::BAD_REQUEST), Some(15028)) => Ok(()),
-                (Kind::Status(StatusCode::BAD_REQUEST), Some(15043)) => Ok(()),
+                (Kind::Status(StatusCode::BAD_REQUEST), Some(15028 | 15043)) => Ok(()),
                 _ => Err(err),
             })
     }
@@ -266,18 +265,19 @@ impl Dependencies {
             game_id: self.game_id,
             mod_id: self.mod_id,
         };
-        Query::new(self.modio, route, Default::default())
+        Query::new(self.modio, route, Filter::default())
             .collect()
             .await
     }
 
     /// Provides a stream over all mod dependencies.
+    #[allow(clippy::iter_not_returning_iterator)]
     pub async fn iter(self) -> Result<impl Stream<Item = Result<Dependency>>> {
         let route = Route::GetModDependencies {
             game_id: self.game_id,
             mod_id: self.mod_id,
         };
-        let filter = Default::default();
+        let filter = Filter::default();
         Query::new(self.modio, route, filter).iter().await
     }
 
@@ -328,18 +328,19 @@ impl Tags {
             game_id: self.game_id,
             mod_id: self.mod_id,
         };
-        Query::new(self.modio, route, Default::default())
+        Query::new(self.modio, route, Filter::default())
             .collect()
             .await
     }
 
     /// Provides a stream over all mod tags.
+    #[allow(clippy::iter_not_returning_iterator)]
     pub async fn iter(self) -> Result<impl Stream<Item = Result<Tag>>> {
         let route = Route::GetModTags {
             game_id: self.game_id,
             mod_id: self.mod_id,
         };
-        let filter = Default::default();
+        let filter = Filter::default();
         Query::new(self.modio, route, filter).iter().await
     }
 
@@ -371,33 +372,33 @@ impl Tags {
 /// Mod filters & sorting
 ///
 /// # Filters
-/// - Fulltext
-/// - Id
-/// - GameId
-/// - Status
-/// - Visible
-/// - SubmittedBy
-/// - DateAdded
-/// - DateUpdated
-/// - DateLive
-/// - MaturityOption
-/// - Name
-/// - NameId
-/// - Summary
-/// - Description
-/// - Homepage
-/// - Modfile
-/// - MetadataBlob
-/// - MetadataKVP
-/// - Tags
+/// - `Fulltext`
+/// - `Id`
+/// - `GameId`
+/// - `Status`
+/// - `Visible`
+/// - `SubmittedBy`
+/// - `DateAdded`
+/// - `DateUpdated`
+/// - `DateLive`
+/// - `MaturityOption`
+/// - `Name`
+/// - `NameId`
+/// - `Summary`
+/// - `Description`
+/// - `Homepage`
+/// - `Modfile`
+/// - `MetadataBlob`
+/// - `MetadataKVP`
+/// - `Tags`
 ///
 /// # Sorting
-/// - Id
-/// - Name
-/// - Downloads
-/// - Popular
-/// - Ratings
-/// - Subscribers
+/// - `Id`
+/// - `Name`
+/// - `Downloads`
+/// - `Popular`
+/// - `Ratings`
+/// - `Subscribers`
 ///
 /// See the [modio docs](https://docs.mod.io/#get-mods) for more information.
 ///
@@ -455,15 +456,15 @@ pub mod filters {
     /// Mod event filters and sorting.
     ///
     /// # Filters
-    /// - Id
-    /// - ModId
-    /// - UserId
-    /// - DateAdded
-    /// - EventType
+    /// - `Id`
+    /// - `ModId`
+    /// - `UserId`
+    /// - `DateAdded`
+    /// - `EventType`
     ///
     /// # Sorting
-    /// - Id
-    /// - DateAdded
+    /// - `Id`
+    /// - `DateAdded`
     ///
     /// See the [modio docs](https://docs.mod.io/#events) for more information.
     ///
@@ -493,20 +494,20 @@ pub mod filters {
     /// Mod statistics filters & sorting
     ///
     /// # Filters
-    /// - ModId
-    /// - Popularity
-    /// - Downloads
-    /// - Subscribers
-    /// - RatingsPositive
-    /// - RatingsNegative
+    /// - `ModId`
+    /// - `Popularity`
+    /// - `Downloads`
+    /// - `Subscribers`
+    /// - `RatingsPositive`
+    /// - `RatingsNegative`
     ///
     /// # Sorting
-    /// - ModId
-    /// - Popularity
-    /// - Downloads
-    /// - Subscribers
-    /// - RatingsPositive
-    /// - RatingsNegative
+    /// - `ModId`
+    /// - `Popularity`
+    /// - `Downloads`
+    /// - `Subscribers`
+    /// - `RatingsPositive`
+    /// - `RatingsNegative`
     ///
     /// # Example
     /// ```
@@ -596,6 +597,7 @@ impl AddModOptions {
         }
     }
 
+    #[must_use]
     pub fn visible(self, v: bool) -> Self {
         Self {
             visible: if v {
@@ -614,6 +616,7 @@ impl AddModOptions {
     option!(maturity_option: MaturityOption);
     option!(metadata_blob);
 
+    #[must_use]
     pub fn tags(self, tags: &[String]) -> Self {
         Self {
             tags: Some(tags.to_vec()),
@@ -667,6 +670,7 @@ pub struct EditModOptions {
 impl EditModOptions {
     option!(status: Status >> "status");
 
+    #[must_use]
     pub fn visible(self, v: bool) -> Self {
         let value = if v {
             Visibility::Public
@@ -763,6 +767,7 @@ pub struct AddMediaOptions {
 }
 
 impl AddMediaOptions {
+    #[must_use]
     pub fn logo<P: AsRef<Path>>(self, logo: P) -> Self {
         let logo = logo.as_ref();
         let filename = logo
@@ -776,6 +781,7 @@ impl AddMediaOptions {
         }
     }
 
+    #[must_use]
     pub fn images_zip<P: AsRef<Path>>(self, images: P) -> Self {
         Self {
             images_zip: Some(FileSource::new_from_file(
@@ -787,6 +793,7 @@ impl AddMediaOptions {
         }
     }
 
+    #[must_use]
     pub fn images<P: AsRef<Path>>(self, images: &[P]) -> Self {
         Self {
             images: Some(
@@ -807,6 +814,7 @@ impl AddMediaOptions {
         }
     }
 
+    #[must_use]
     pub fn youtube(self, urls: &[String]) -> Self {
         Self {
             youtube: Some(urls.to_vec()),
@@ -814,6 +822,7 @@ impl AddMediaOptions {
         }
     }
 
+    #[must_use]
     pub fn sketchfab(self, urls: &[String]) -> Self {
         Self {
             sketchfab: Some(urls.to_vec()),
@@ -859,6 +868,7 @@ pub struct DeleteMediaOptions {
 }
 
 impl DeleteMediaOptions {
+    #[must_use]
     pub fn images(self, images: &[String]) -> Self {
         Self {
             images: Some(images.to_vec()),
@@ -866,6 +876,7 @@ impl DeleteMediaOptions {
         }
     }
 
+    #[must_use]
     pub fn youtube(self, urls: &[String]) -> Self {
         Self {
             youtube: Some(urls.to_vec()),
@@ -873,6 +884,7 @@ impl DeleteMediaOptions {
         }
     }
 
+    #[must_use]
     pub fn sketchfab(self, urls: &[String]) -> Self {
         Self {
             sketchfab: Some(urls.to_vec()),

@@ -1,6 +1,7 @@
 use std::env;
 use std::process;
 
+use modio::filter::Filter;
 use modio::{auth::Credentials, Modio};
 
 #[tokio::main]
@@ -27,7 +28,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Get mod with its dependencies and all files
     let deps = modref.dependencies().list().await?;
-    let files = modref.files().search(Default::default()).collect().await?;
+    let files = modref.files().search(Filter::default()).collect().await?;
     let m = modref.get().await?;
 
     println!("{}, {}\n", m.name, m.profile_url);

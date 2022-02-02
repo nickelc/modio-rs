@@ -77,18 +77,18 @@ impl Members {
 /// Team member filters and sorting.
 ///
 /// # Filters
-/// - Fulltext
-/// - Id
-/// - UserId
-/// - Username
-/// - Level
-/// - DateAdded
-/// - Position
+/// - `Fulltext`
+/// - `Id`
+/// - `UserId`
+/// - `Username`
+/// - `Level`
+/// - `DateAdded`
+/// - `Position`
 ///
 /// # Sorting
-/// - Id
-/// - UserId
-/// - Username
+/// - `Id`
+/// - `UserId`
+/// - `Username`
 ///
 /// See [modio docs](https://docs.mod.io/#get-mod-team-members) for more information.
 ///

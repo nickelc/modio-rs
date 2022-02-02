@@ -20,6 +20,7 @@ const TEST_HOST: &str = "https://api.test.mod.io/v1";
 const DEFAULT_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), '/', env!("CARGO_PKG_VERSION"));
 
 /// A `Builder` can be used to create a `Modio` client with custom configuration.
+#[must_use]
 pub struct Builder {
     config: Config,
 }
@@ -27,6 +28,7 @@ pub struct Builder {
 /// Defines the platform from which the client's requests originate. See [`Builder::target_platform`]
 ///
 /// See the [mod.io docs](https://docs.mod.io/#targeting-a-platform) for more information.
+#[derive(Clone, Copy)]
 pub enum TargetPlatform {
     Android,
     Ios,
@@ -47,7 +49,7 @@ impl TargetPlatform {
         "X-Modio-Platform"
     }
 
-    fn as_header_value(&self) -> HeaderValue {
+    fn into_header_value(self) -> HeaderValue {
         match self {
             TargetPlatform::Android => HeaderValue::from_static("Android"),
             TargetPlatform::Ios => HeaderValue::from_static("iOS"),
@@ -67,6 +69,7 @@ impl TargetPlatform {
 /// Defines the portal the player is interaction with. See [`Builder::target_portal`]
 ///
 /// See the [mod.io docs](https://docs.mod.io/#targeting-a-portal) for more information.
+#[derive(Clone, Copy)]
 pub enum TargetPortal {
     Steam,
     GOG,
@@ -85,7 +88,7 @@ impl TargetPortal {
         "X-Modio-Portal"
     }
 
-    fn as_header_value(&self) -> HeaderValue {
+    fn into_header_value(self) -> HeaderValue {
         match self {
             TargetPortal::Steam => HeaderValue::from_static("Steam"),
             TargetPortal::GOG => HeaderValue::from_static("GOG"),
@@ -255,7 +258,7 @@ impl Builder {
     /// See the [mod.io docs](https://docs.mod.io/#targeting-a-platform) for more information.
     pub fn target_platform(mut self, platform: TargetPlatform) -> Builder {
         let name = TargetPlatform::header_name();
-        let value = platform.as_header_value();
+        let value = platform.into_header_value();
         self.config.headers.insert(name, value);
         self
     }
@@ -265,7 +268,7 @@ impl Builder {
     /// See the [mod.io docs](https://docs.mod.io/#targeting-a-portal) for more information.
     pub fn target_portal(mut self, portal: TargetPortal) -> Builder {
         let name = TargetPortal::header_name();
-        let value = portal.as_header_value();
+        let value = portal.into_header_value();
         self.config.headers.insert(name, value);
         self
     }
@@ -324,6 +327,7 @@ impl Modio {
     }
 
     /// Return an endpoint with new credentials.
+    #[must_use]
     pub fn with_credentials<CR>(&self, credentials: CR) -> Self
     where
         CR: Into<Credentials>,
@@ -338,6 +342,7 @@ impl Modio {
     }
 
     /// Return an endpoint with a new token.
+    #[must_use]
     pub fn with_token<T>(&self, token: T) -> Self
     where
         T: Into<Token>,

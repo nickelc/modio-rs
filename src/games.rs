@@ -112,17 +112,18 @@ impl Tags {
         let route = Route::GetGameTags {
             game_id: self.game_id,
         };
-        Query::new(self.modio, route, Default::default())
+        Query::new(self.modio, route, Filter::default())
             .collect()
             .await
     }
 
     /// Provides a stream over all tag options.
+    #[allow(clippy::iter_not_returning_iterator)]
     pub async fn iter(self) -> Result<impl Stream<Item = Result<TagOption>>> {
         let route = Route::GetGameTags {
             game_id: self.game_id,
         };
-        let filter = Default::default();
+        let filter = Filter::default();
         Query::new(self.modio, route, filter).iter().await
     }
 
@@ -152,32 +153,32 @@ impl Tags {
 /// Game filters and sorting.
 ///
 /// # Filters
-/// - Fulltext
-/// - Id
-/// - Status
-/// - SubmittedBy
-/// - DateAdded
-/// - DateUpdated
-/// - DateLive
-/// - Name
-/// - NameId
-/// - Summary
-/// - InstructionsUrl
-/// - UgcName
-/// - PresentationOption
-/// - SubmissionOption
-/// - CurationOption
-/// - CommunityOptions
-/// - RevenueOptions
-/// - ApiAccessOptions
-/// - MaturityOptions
+/// - `Fulltext`
+/// - `Id`
+/// - `Status`
+/// - `SubmittedBy`
+/// - `DateAdded`
+/// - `DateUpdated`
+/// - `DateLive`
+/// - `Name`
+/// - `NameId`
+/// - `Summary`
+/// - `InstructionsUrl`
+/// - `UgcName`
+/// - `PresentationOption`
+/// - `SubmissionOption`
+/// - `CurationOption`
+/// - `CommunityOptions`
+/// - `RevenueOptions`
+/// - `ApiAccessOptions`
+/// - `MaturityOptions`
 ///
 /// # Sorting
-/// - Id
-/// - Status
-/// - Name
-/// - NameId
-/// - DateUpdated
+/// - `Id`
+/// - `Status`
+/// - `Name`
+/// - `NameId`
+/// - `DateUpdated`
 ///
 /// See [modio docs](https://docs.mod.io/#get-games) for more information.
 ///
@@ -327,7 +328,7 @@ impl serde::ser::Serialize for DeleteTagsOptions {
     {
         use serde::ser::SerializeMap;
 
-        let len = self.tags.as_ref().map_or(1, |t| t.len());
+        let len = self.tags.as_ref().map_or(1, Vec::len);
         let mut map = serializer.serialize_map(Some(len + 1))?;
         map.serialize_entry("name", &self.name)?;
         if let Some(ref tags) = self.tags {
@@ -349,6 +350,7 @@ pub struct EditMediaOptions {
 }
 
 impl EditMediaOptions {
+    #[must_use]
     pub fn logo<P: AsRef<Path>>(self, logo: P) -> Self {
         let logo = logo.as_ref();
         let filename = logo
@@ -362,6 +364,7 @@ impl EditMediaOptions {
         }
     }
 
+    #[must_use]
     pub fn icon<P: AsRef<Path>>(self, icon: P) -> Self {
         let icon = icon.as_ref();
         let filename = icon
@@ -375,6 +378,7 @@ impl EditMediaOptions {
         }
     }
 
+    #[must_use]
     pub fn header<P: AsRef<Path>>(self, header: P) -> Self {
         let header = header.as_ref();
         let filename = header
