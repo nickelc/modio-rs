@@ -30,16 +30,6 @@ macro_rules! enum_number {
             }
         }
 
-        impl ::serde::Serialize for $name {
-            fn serialize<S>(&self, serializer: S) -> ::std::result::Result<S::Ok, S::Error>
-            where
-                S: ::serde::Serializer,
-            {
-                // Serialize the enum as a u64.
-                serializer.serialize_u64(*self as u64)
-            }
-        }
-
         impl<'de> ::serde::Deserialize<'de> for $name {
             fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
             where
