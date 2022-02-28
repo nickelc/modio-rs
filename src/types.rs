@@ -76,43 +76,55 @@ macro_rules! enum_number {
 }
 // }}}
 
-// macro: bitflags_serde {{{
-macro_rules! bitflags_serde {
-    ($name:ident, $type:ty) => {
-        impl<'de> ::serde::Deserialize<'de> for $name {
-            fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-            where
-                D: ::serde::Deserializer<'de>,
-            {
-                struct Visitor;
+// macro: bitflags {{{
+macro_rules! bitflags {
+    (
+        $(#[$outer:meta])*
+        $vis:vis struct $BitFlags:ident: $T:ty {
+            $(
+                $(#[$inner:ident $($args:tt)*])*
+                const $Flag:ident = $value:expr;
+            )*
+        }
 
-                impl<'de> ::serde::de::Visitor<'de> for Visitor {
-                    type Value = $name;
-
-                    fn expecting(&self, fmt: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-                        fmt.write_str("positive integer")
-                    }
-
-                    fn visit_u64<E>(self, value: u64) -> ::std::result::Result<$name, E>
-                    where
-                        E: ::serde::de::Error,
-                    {
-                        $name::from_bits(value as $type).ok_or_else(|| {
-                            E::custom(format!("invalid {} value: {}", stringify!($name), value))
-                        })
-                    }
-                }
-
-                deserializer.deserialize_u64(Visitor)
+        $($t:tt)*
+    ) => {
+        bitflags::bitflags! {
+            $(#[$outer])*
+            $vis struct $BitFlags: $T {
+                $(
+                    $(#[$inner $($args)*])*
+                    const $Flag = $value;
+                )*
             }
         }
 
-        impl ::std::fmt::Display for $name {
+        bitflags!(__impl_display $BitFlags);
+        bitflags!(__impl_serde $BitFlags: $T);
+
+        bitflags! {
+            $($t)*
+        }
+    };
+    (__impl_display $BitFlags:ident) => {
+        impl ::std::fmt::Display for $BitFlags {
             fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
                 self.bits.fmt(f)
             }
         }
     };
+    (__impl_serde $BitFlags:ident: $T:tt) => {
+        impl<'de> ::serde::de::Deserialize<'de> for $BitFlags {
+            fn deserialize<D: ::serde::de::Deserializer<'de>>(deserializer: D) -> ::std::result::Result<Self, D::Error> {
+                let value = <$T>::deserialize(deserializer)?;
+                Self::from_bits(value)
+                    .ok_or_else(|| {
+                        ::serde::de::Error::custom(format!("invalid {} value: {}", stringify!($BitFlags), value))
+                    })
+            }
+        }
+    };
+    () => {};
 }
 // }}}
 
@@ -383,7 +395,6 @@ pub mod game {
     use std::collections::HashMap;
     use std::fmt;
 
-    use bitflags::bitflags;
     use serde::Deserialize;
     use url::Url;
 
@@ -477,10 +488,7 @@ pub mod game {
             const DISABLE_SUBSCRIBE = 0b0100;
             const ALL = Self::DISCUSSIONS.bits | Self::GUIDES_NEWS.bits | Self::DISABLE_SUBSCRIBE.bits;
         }
-    }
-    bitflags_serde!(CommunityOptions, u8);
 
-    bitflags! {
         /// Revenue capabilities mods can enable.
         pub struct RevenueOptions: u8 {
             /// Allow mods to be sold.
@@ -493,10 +501,7 @@ pub mod game {
             const SCARCITY  = 0b1000;
             const ALL = Self::SELL.bits | Self::DONATIONS.bits | Self::TRADE.bits | Self::SCARCITY.bits;
         }
-    }
-    bitflags_serde!(RevenueOptions, u8);
 
-    bitflags! {
         /// Level of API access allowed by a game.
         pub struct ApiAccessOptions: u8 {
             /// Allow third parties to access a game's API endpoints.
@@ -506,7 +511,6 @@ pub mod game {
             const ALL = Self::ALLOW_THIRD_PARTY.bits | Self::ALLOW_DIRECT_DOWNLOAD.bits;
         }
     }
-    bitflags_serde!(ApiAccessOptions, u8);
 
     /// See the [Icon Object](https://docs.mod.io/#icon-object) docs for more information.
     #[derive(Debug, Deserialize)]
@@ -587,7 +591,6 @@ pub mod mods {
     use std::collections::HashMap;
     use std::fmt;
 
-    use bitflags::bitflags;
     use serde::{Deserialize, Deserializer};
     use url::Url;
 
@@ -645,7 +648,6 @@ pub mod mods {
             const ALL = Self::ALCOHOL.bits | Self::DRUGS.bits | Self::VIOLENCE.bits | Self::EXPLICIT.bits;
         }
     }
-    bitflags_serde!(MaturityOption, u8);
 
     /// See the [Mod Event Object](https://docs.mod.io/#mod-event-object) docs for more information.
     #[derive(Debug, Deserialize)]
