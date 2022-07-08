@@ -1,6 +1,6 @@
 [package]
 name = "modio"
-version = "0.6.2" # don't forget to update html_root_url
+version = "0.6.3" # don't forget to update html_root_url
 description = "Rust interface for integrating https://mod.io - a modding API for game developers"
 readme = "README.md"
 documentation = "https://docs.rs/modio"

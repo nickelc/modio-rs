@@ -1,4 +1,18 @@
-### v0.6.2
+### v0.6.3
+
+* Fix missing feature for `tokio-util`.
+
+* Add EGS as a service for the terms endpoint.
+
+* Add support for the `X-Modio-Platform`/`X-Modio-Portal` headers.
+
+* Add new `tag_count` field to `TagOption`.
+
+* Add Google auth endpoint.
+
+* Allow mod rating to be reset.
+
+### v0.6.2 (2021-02-13)
 
 * Add support for the new terms endpoint.
 

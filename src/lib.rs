@@ -109,7 +109,7 @@
 //! #    Ok(())
 //! # }
 //! ```
-#![doc(html_root_url = "https://docs.rs/modio/0.6.2")]
+#![doc(html_root_url = "https://docs.rs/modio/0.6.3")]
 #![deny(rust_2018_idioms)]
 #![allow(clippy::upper_case_acronyms)]
 #![cfg_attr(docsrs, deny(broken_intra_doc_links))]
