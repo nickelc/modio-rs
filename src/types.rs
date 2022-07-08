@@ -941,8 +941,9 @@ pub mod mods {
                     metavalue: String,
                 }
 
-                let size = seq.size_hint().unwrap_or_default();
-                let mut map = MetadataMap::with_capacity(size);
+                let mut map = seq
+                    .size_hint()
+                    .map_or_else(MetadataMap::new, MetadataMap::with_capacity);
 
                 while let Some(elem) = seq.next_element::<KV>()? {
                     map.entry(elem.metakey).or_default().push(elem.metavalue);
