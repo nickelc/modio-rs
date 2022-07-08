@@ -271,11 +271,11 @@ pub enum EventType {
 impl fmt::Display for EventType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            EventType::UserTeamJoin => "USER_TEAM_JOIN".fmt(f),
-            EventType::UserTeamLeave => "USER_TEAM_LEAVE".fmt(f),
-            EventType::UserSubscribe => "USER_SUBSCRIBE".fmt(f),
-            EventType::UserUnsubscribe => "USER_UNSUBSCRIBE".fmt(f),
-            EventType::Other(s) => s.fmt(f),
+            EventType::UserTeamJoin => f.write_str("USER_TEAM_JOIN"),
+            EventType::UserTeamLeave => f.write_str("USER_TEAM_LEAVE"),
+            EventType::UserSubscribe => f.write_str("USER_SUBSCRIBE"),
+            EventType::UserUnsubscribe => f.write_str("USER_UNSUBSCRIBE"),
+            EventType::Other(s) => f.write_str(s),
         }
     }
 }
@@ -570,8 +570,8 @@ pub mod game {
     impl fmt::Display for TagType {
         fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
             match *self {
-                TagType::Checkboxes => write!(fmt, "checkboxes"),
-                TagType::Dropdown => write!(fmt, "dropdown"),
+                TagType::Checkboxes => fmt.write_str("checkboxes"),
+                TagType::Dropdown => fmt.write_str("dropdown"),
             }
         }
     }
@@ -676,15 +676,15 @@ pub mod mods {
     impl fmt::Display for EventType {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             match self {
-                EventType::ModfileChanged => "MODFILE_CHANGED".fmt(f),
-                EventType::ModAvailable => "MOD_AVAILABLE".fmt(f),
-                EventType::ModUnavailable => "MOD_UNAVAILABLE".fmt(f),
-                EventType::ModEdited => "MOD_EDITED".fmt(f),
-                EventType::ModDeleted => "MOD_DELETED".fmt(f),
-                EventType::ModTeamChanged => "MOD_TEAM_CHANGED".fmt(f),
-                EventType::ModCommentAdded => "MOD_COMMENT_ADDED".fmt(f),
-                EventType::ModCommentDeleted => "MOD_COMMENT_DELETED".fmt(f),
-                EventType::Other(s) => s.fmt(f),
+                EventType::ModfileChanged => f.write_str("MODFILE_CHANGED"),
+                EventType::ModAvailable => f.write_str("MOD_AVAILABLE"),
+                EventType::ModUnavailable => f.write_str("MOD_UNAVAILABLE"),
+                EventType::ModEdited => f.write_str("MOD_EDITED"),
+                EventType::ModDeleted => f.write_str("MOD_DELETED"),
+                EventType::ModTeamChanged => f.write_str("MOD_TEAM_CHANGED"),
+                EventType::ModCommentAdded => f.write_str("MOD_COMMENT_ADDED"),
+                EventType::ModCommentDeleted => f.write_str("MOD_COMMENT_DELETED"),
+                EventType::Other(s) => f.write_str(s),
             }
         }
     }
