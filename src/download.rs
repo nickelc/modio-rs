@@ -13,7 +13,8 @@ use tokio_util::codec::{BytesCodec, FramedWrite};
 use tracing::debug;
 
 use crate::error::{self, Kind, Result};
-use crate::types::mods::{File, Mod};
+use crate::types::files::File;
+use crate::types::mods::Mod;
 use crate::Modio;
 
 /// A `Downloader` can be used to stream a mod file or save the file to a local file.

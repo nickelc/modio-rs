@@ -9,7 +9,7 @@ use tokio::io::AsyncRead;
 use crate::multipart::FileSource;
 use crate::prelude::*;
 
-pub use crate::types::mods::{Download, File, FileHash};
+pub use crate::types::files::{Download, File, FileHash};
 
 /// Interface for the modfiles of a mod.
 pub struct Files {

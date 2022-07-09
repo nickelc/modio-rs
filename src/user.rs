@@ -1,7 +1,8 @@
 //! User interface
 use crate::prelude::*;
-use crate::types::game::Game;
-use crate::types::mods::{File, Mod};
+use crate::types::files::File;
+use crate::types::games::Game;
+use crate::types::mods::Mod;
 
 pub use crate::types::mods::Rating;
 pub use crate::types::{Avatar, User};

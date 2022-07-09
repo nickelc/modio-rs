@@ -9,7 +9,7 @@ use crate::mods::{ModRef, Mods};
 use crate::multipart::FileSource;
 use crate::prelude::*;
 
-pub use crate::types::game::{
+pub use crate::types::games::{
     ApiAccessOptions, CommunityOptions, CurationOption, Downloads, Game, HeaderImage, Icon,
     MaturityOptions, PresentationOption, RevenueOptions, Statistics, SubmissionOption, TagOption,
     TagType,
