@@ -48,7 +48,7 @@ impl Downloader {
         let out = AsyncFile::create(file).map_err(error::decode).await?;
         let out = BufWriter::with_capacity(512 * 512, out);
         let out = FramedWrite::new(out, BytesCodec::new());
-        let out = out.sink_map_err(error::decode);
+        let out = SinkExt::<Bytes>::sink_map_err(out, error::decode);
         self.stream().forward(out).await
     }
 
