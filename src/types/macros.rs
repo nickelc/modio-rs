@@ -54,58 +54,47 @@ macro_rules! bitflags {
 macro_rules! enum_number {
     (
         $(#[$outer:meta])*
-        pub enum $name:ident {
+        $vis:vis enum $Enum:ident {
             $(
                 $(#[$inner:ident $($args:tt)*])*
-                $variant:ident = $value:expr,
+                $Variant:ident = $value:literal,
             )*
+            _ => Unknown($T:ty),
         }
     ) => {
         $(#[$outer])*
-        #[derive(Clone, Copy)]
-        pub enum $name {
+        $vis enum $Enum {
             $(
                 $(#[$inner $($args)*])*
-                $variant = $value,
+                $Variant,
             )*
+            /// Variant value is unknown.
+            Unknown($T),
         }
 
-        impl ::std::fmt::Display for $name {
+        impl ::std::fmt::Display for $Enum {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-                (*self as u8).fmt(f)
+                <$T>::from(*self).fmt(f)
             }
         }
 
-        impl<'de> ::serde::Deserialize<'de> for $name {
-            fn deserialize<D>(deserializer: D) -> ::std::result::Result<Self, D::Error>
-            where
-                D: ::serde::Deserializer<'de>,
-            {
-                struct Visitor;
-
-                impl<'de> ::serde::de::Visitor<'de> for Visitor {
-                    type Value = $name;
-
-                    fn expecting(&self, fmt: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-                        fmt.write_str("positive integer")
-                    }
-
-                    fn visit_u64<E>(self, value: u64) -> ::std::result::Result<$name, E>
-                    where
-                        E: ::serde::de::Error,
-                    {
-                        match value {
-                            $( $value => Ok($name::$variant), )*
-                            _ => Err(E::custom(format!(
-                                "unknown {} value {}",
-                                stringify!($name),
-                                value
-                            ))),
-                        }
-                    }
+        impl From<$T> for $Enum {
+            fn from(value: $T) -> Self {
+                #[allow(unused_doc_comments)]
+                match value {
+                    $($(#[$inner $($args)*])* $value => Self::$Variant,)*
+                    unknown => Self::Unknown(unknown),
                 }
+            }
+        }
 
-                deserializer.deserialize_u64(Visitor)
+        impl From<$Enum> for $T {
+            fn from(value: $Enum) -> Self {
+                #[allow(unused_doc_comments)]
+                match value {
+                    $($(#[$inner $($args)*])* $Enum::$Variant => $value,)*
+                    $Enum::Unknown(unknown) => unknown,
+                }
             }
         }
     };

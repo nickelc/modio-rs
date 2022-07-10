@@ -127,11 +127,13 @@ pub struct Logo {
 
 enum_number! {
     /// See [Status & Visibility](https://docs.mod.io/#status-amp-visibility) docs for more information.
-    #[derive(Debug)]
+    #[derive(Clone, Copy, Debug, Deserialize)]
+    #[serde(from = "u8")]
     pub enum Status {
         NotAccepted = 0,
         Accepted = 1,
         Deleted = 3,
+        _ => Unknown(u8),
     }
 }
 

@@ -39,29 +39,34 @@ pub struct Game {
 
 enum_number! {
     /// Presentation style used on the mod.io website.
-    #[derive(Debug)]
+    #[derive(Clone, Copy, Debug, Deserialize)]
+    #[serde(from = "u8")]
     pub enum PresentationOption {
         /// Displays mods in a grid.
         GridView = 0,
         /// Displays mods in a table.
         TableView = 1,
+        _ => Unknown(u8),
     }
 }
 
 enum_number! {
     /// Submission process modders must follow.
-    #[derive(Debug)]
+    #[derive(Clone, Copy, Debug, Deserialize)]
+    #[serde(from = "u8")]
     pub enum SubmissionOption {
         /// Mod uploads must occur via the API using a tool by the game developers.
         ApiOnly = 0,
         /// Mod uploads can occur from anywhere, include the website and API.
         Anywhere = 1,
+        _ => Unknown(u8),
     }
 }
 
 enum_number! {
     /// Curation process used to approve mods.
-    #[derive(Debug)]
+    #[derive(Clone, Copy, Debug, Deserialize)]
+    #[serde(from = "u8")]
     pub enum CurationOption {
         /// No curation: Mods are immediately available to play.
         No = 0,
@@ -70,16 +75,19 @@ enum_number! {
         Paid = 1,
         /// Full curation: All mods must be accepted by someone to be listed.
         Full = 2,
+        _ => Unknown(u8),
     }
 }
 
 enum_number! {
     /// Option to allow developers to select if they flag their mods containing mature content.
-    #[derive(Debug)]
+    #[derive(Clone, Copy, Debug, Deserialize)]
+    #[serde(from = "u8")]
     pub enum MaturityOptions {
         NotAllowed = 0,
         /// Allow flagging mods as mature.
         Allowed = 1,
+        _ => Unknown(u8),
     }
 }
 

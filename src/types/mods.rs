@@ -40,10 +40,12 @@ pub struct Mod {
 
 enum_number! {
     /// See [Status & Visibility](https://docs.mod.io/#status-amp-visibility) docs for more information.
-    #[derive(Debug)]
+    #[derive(Clone, Copy, Debug, Deserialize)]
+    #[serde(from = "u8")]
     pub enum Visibility {
         Hidden = 0,
         Public = 1,
+        _ => Unknown(u8),
     }
 }
 
@@ -402,16 +404,18 @@ pub struct TeamMember {
 
 enum_number! {
     /// Defines the role of a team member.
-    #[derive(Debug)]
+    #[derive(Clone, Copy, Debug, Deserialize)]
+    #[serde(from = "u8")]
     pub enum TeamLevel {
         Moderator = 1,
         Creator = 4,
         Admin = 8,
+        _ => Unknown(u8),
     }
 }
 
 impl TeamLevel {
     pub fn value(self) -> u64 {
-        self as u64
+        u8::from(self).into()
     }
 }
