@@ -1,10 +1,11 @@
 use std::collections::HashMap;
 use std::fmt;
 
-use serde::{Deserialize, Deserializer};
+use serde::de::{Deserializer, Visitor};
+use serde::Deserialize;
 use url::Url;
 
-use super::{deserialize_empty_object, NonExhaustive};
+use super::deserialize_empty_object;
 use super::files::File;
 use super::{Logo, Status, User};
 
@@ -73,8 +74,7 @@ pub struct Event {
 }
 
 /// Type of mod event that was triggered.
-#[derive(Debug, PartialEq, Eq, Hash, Deserialize)]
-#[serde(from = "NonExhaustive<KnownEventType>")]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub enum EventType {
     /// Primary file changed, the mod should be updated.
     ModfileChanged,
@@ -96,6 +96,36 @@ pub enum EventType {
     Other(String),
 }
 
+impl<'de> Deserialize<'de> for EventType {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct EventTypeVisitor;
+
+        impl<'de> Visitor<'de> for EventTypeVisitor {
+            type Value = EventType;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                formatter.write_str("mod event type string")
+            }
+
+            fn visit_str<E: serde::de::Error>(self, value: &str) -> Result<Self::Value, E> {
+                match value {
+                    "MODFILE_CHANGED" => Ok(Self::Value::ModfileChanged),
+                    "MOD_AVAILABLE" => Ok(Self::Value::ModAvailable),
+                    "MOD_UNAVAILABLE" => Ok(Self::Value::ModUnavailable),
+                    "MOD_EDITED" => Ok(Self::Value::ModEdited),
+                    "MOD_DELETED" => Ok(Self::Value::ModDeleted),
+                    "MOD_TEAM_CHANGED" => Ok(Self::Value::ModTeamChanged),
+                    "MOD_COMMENT_ADDED" => Ok(Self::Value::ModCommentAdded),
+                    "MOD_COMMENT_DELETED" => Ok(Self::Value::ModCommentDeleted),
+                    _ => Ok(Self::Value::Other(value.to_owned())),
+                }
+            }
+        }
+
+        deserializer.deserialize_str(EventTypeVisitor)
+    }
+}
+
 impl fmt::Display for EventType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -111,49 +141,6 @@ impl fmt::Display for EventType {
         }
     }
 }
-
-// impl #[serde(from = "NonExhaustive<KnowEventType>")] {{{
-#[derive(Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-#[allow(clippy::enum_variant_names)]
-enum KnownEventType {
-    /// Primary file changed, the mod should be updated.
-    ModfileChanged,
-    /// Mod is marked as accepted and public.
-    ModAvailable,
-    /// Mod is marked as not accepted, deleted or hidden.
-    ModUnavailable,
-    /// Mod has been updated.
-    ModEdited,
-    /// Mod has been permanently deleted.
-    ModDeleted,
-    /// User has joined or left the mod team.
-    ModTeamChanged,
-    /// A comment has been published for a mod.
-    ModCommentAdded,
-    /// A comment has been deleted from a mod.
-    ModCommentDeleted,
-}
-
-impl From<NonExhaustive<KnownEventType>> for EventType {
-    fn from(kind: NonExhaustive<KnownEventType>) -> EventType {
-        use KnownEventType::*;
-        use NonExhaustive::*;
-
-        match kind {
-            Known(ModfileChanged) => EventType::ModfileChanged,
-            Known(ModAvailable) => EventType::ModAvailable,
-            Known(ModUnavailable) => EventType::ModUnavailable,
-            Known(ModEdited) => EventType::ModEdited,
-            Known(ModDeleted) => EventType::ModDeleted,
-            Known(ModTeamChanged) => EventType::ModTeamChanged,
-            Known(ModCommentAdded) => EventType::ModCommentAdded,
-            Known(ModCommentDeleted) => EventType::ModCommentDeleted,
-            Unknown(other) => EventType::Other(other),
-        }
-    }
-}
-// }}}
 
 /// See the [Mod Dependency Object](https://docs.mod.io/#mod-dependencies-object) docs for more
 /// information.
@@ -346,7 +333,7 @@ fn deserialize_kvp<'de, D>(deserializer: D) -> Result<MetadataMap, D::Error>
 where
     D: Deserializer<'de>,
 {
-    use serde::de::{SeqAccess, Visitor};
+    use serde::de::SeqAccess;
 
     struct MetadataVisitor;
 

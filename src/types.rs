@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 use std::fmt;
 
-use serde::{Deserialize, Deserializer};
+use serde::de::{Deserializer, Visitor};
+use serde::Deserialize;
 use url::Url;
 
 #[macro_use]
@@ -11,14 +12,6 @@ pub mod auth;
 pub mod files;
 pub mod games;
 pub mod mods;
-
-/// Used by `EventType` enums to catch unsupported event type variants
-#[derive(Deserialize)]
-#[serde(untagged, expecting = "enum type or unknown string")]
-enum NonExhaustive<T> {
-    Known(T),
-    Unknown(String),
-}
 
 /// See the [Access Token Object](https://docs.mod.io/#access-token-object) docs for more
 /// information.
@@ -149,8 +142,7 @@ pub struct Event {
 }
 
 /// Type of user event that was triggered.
-#[derive(Debug, PartialEq, Eq, Hash, Deserialize)]
-#[serde(from = "NonExhaustive<KnownEventType>")]
+#[derive(Debug, PartialEq, Eq, Hash)]
 pub enum EventType {
     /// User has joined a team.
     UserTeamJoin,
@@ -164,6 +156,32 @@ pub enum EventType {
     Other(String),
 }
 
+impl<'de> Deserialize<'de> for EventType {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct EventTypeVisitor;
+
+        impl<'de> Visitor<'de> for EventTypeVisitor {
+            type Value = EventType;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                formatter.write_str("user event type string")
+            }
+
+            fn visit_str<E: serde::de::Error>(self, value: &str) -> Result<Self::Value, E> {
+                match value {
+                    "USER_TEAM_JOIN" => Ok(Self::Value::UserTeamJoin),
+                    "USER_TEAM_LEAVE" => Ok(Self::Value::UserTeamLeave),
+                    "USER_SUBSCRIBE" => Ok(Self::Value::UserSubscribe),
+                    "USER_UNSUBSCRIBE" => Ok(Self::Value::UserUnsubscribe),
+                    _ => Ok(Self::Value::Other(value.to_owned())),
+                }
+            }
+        }
+
+        deserializer.deserialize_str(EventTypeVisitor)
+    }
+}
+
 impl fmt::Display for EventType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -175,37 +193,6 @@ impl fmt::Display for EventType {
         }
     }
 }
-
-// impl #[serde(from = "NonExhaustive<KnowEventType>")] {{{
-#[derive(Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-#[allow(clippy::enum_variant_names)]
-enum KnownEventType {
-    /// User has joined a team.
-    UserTeamJoin,
-    /// User has left a team.
-    UserTeamLeave,
-    /// User has subscribed to a mod.
-    UserSubscribe,
-    /// User has unsubscribed to a mod.
-    UserUnsubscribe,
-}
-
-impl From<NonExhaustive<KnownEventType>> for EventType {
-    fn from(kind: NonExhaustive<KnownEventType>) -> EventType {
-        use KnownEventType::*;
-        use NonExhaustive::*;
-
-        match kind {
-            Known(UserTeamJoin) => EventType::UserTeamJoin,
-            Known(UserTeamLeave) => EventType::UserTeamLeave,
-            Known(UserSubscribe) => EventType::UserSubscribe,
-            Known(UserUnsubscribe) => EventType::UserUnsubscribe,
-            Unknown(other) => EventType::Other(other),
-        }
-    }
-}
-// }}}
 
 /// Deserialize empty objects for optional properties as `None`.
 ///
