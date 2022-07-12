@@ -233,97 +233,186 @@ where
 #[cfg(test)]
 mod tests {
     use serde::Deserialize;
+    use serde_test::{assert_de_tokens, Token};
+
+    use super::{deserialize_empty_object, EventType};
+
+    #[derive(Debug, PartialEq, Deserialize)]
+    struct Game {
+        id: u32,
+        #[serde(default, deserialize_with = "deserialize_empty_object")]
+        header: Option<Header>,
+    }
+
+    #[derive(Debug, PartialEq, Deserialize)]
+    struct Header {
+        filename: String,
+    }
 
     #[test]
-    fn deserialize_empty_object() {
-        #[derive(Deserialize, Debug, PartialEq)]
-        struct Game {
-            id: u32,
-            #[serde(default, deserialize_with = "super::deserialize_empty_object")]
-            header: Option<Header>,
-        }
-
-        #[derive(Deserialize, Debug, PartialEq)]
-        struct Header {
-            filename: String,
-        }
-
-        let s = r#"{"id":1,"header":{"filename":"foobar"}}"#;
-        let value = serde_json::from_str::<Game>(s).unwrap();
-        let expected = Game {
+    fn deserialize_empty_object_full() {
+        let value = Game {
             id: 1,
             header: Some(Header {
                 filename: "foobar".to_string(),
             }),
         };
-        assert_eq!(value, expected);
+        assert_de_tokens(
+            &value,
+            &[
+                Token::Struct {
+                    name: "Game",
+                    len: 2,
+                },
+                Token::Str("id"),
+                Token::U8(1),
+                Token::Str("header"),
+                Token::Struct {
+                    name: "Header",
+                    len: 1,
+                },
+                Token::Str("filename"),
+                Token::Str("foobar"),
+                Token::StructEnd,
+                Token::StructEnd,
+            ],
+        );
+    }
 
-        let s = r#"{"id":1,"header":{}}"#;
-        let value = serde_json::from_str::<Game>(s).unwrap();
-        let expected = Game {
+    #[test]
+    fn deserialize_empty_object_empty() {
+        let value = Game {
             id: 1,
             header: None,
         };
-        assert_eq!(value, expected);
+        assert_de_tokens(
+            &value,
+            &[
+                Token::Struct {
+                    name: "Game",
+                    len: 2,
+                },
+                Token::Str("id"),
+                Token::U8(1),
+                Token::Str("header"),
+                Token::Struct {
+                    name: "Header",
+                    len: 0,
+                },
+                Token::StructEnd,
+                Token::StructEnd,
+            ],
+        );
+    }
 
-        let s = r#"{"id":1,"header":null}"#;
-        let value = serde_json::from_str::<Game>(s).unwrap();
-        let expected = Game {
+    #[test]
+    fn deserialize_empty_object_null() {
+        let value = Game {
             id: 1,
             header: None,
         };
-        assert_eq!(value, expected);
+        assert_de_tokens(
+            &value,
+            &[
+                Token::Struct {
+                    name: "Game",
+                    len: 2,
+                },
+                Token::Str("id"),
+                Token::U8(1),
+                Token::Str("header"),
+                Token::None,
+                Token::StructEnd,
+            ],
+        );
+    }
 
-        let s = r#"{"id":1}"#;
-        let value = serde_json::from_str::<Game>(s).unwrap();
-        let expected = Game {
+    #[test]
+    fn deserialize_empty_object_absent() {
+        let value = Game {
             id: 1,
             header: None,
         };
-        assert_eq!(value, expected);
+        assert_de_tokens(
+            &value,
+            &[
+                Token::Struct {
+                    name: "Game",
+                    len: 1,
+                },
+                Token::Str("id"),
+                Token::U8(1),
+                Token::StructEnd,
+            ],
+        );
+    }
 
-        let s = r#"{"id":1,"header":{"filename":"foobar","id":1}}"#;
-        let value = serde_json::from_str::<Game>(s).unwrap();
-        let expected = Game {
+    #[test]
+    fn deserialize_empty_object_unknown_values() {
+        let value = Game {
             id: 1,
             header: Some(Header {
                 filename: "foobar".to_string(),
             }),
         };
-        assert_eq!(value, expected);
-
-        let s = r#"{"id":1,"header":{"id":1}}"#;
-        let value = serde_json::from_str::<Game>(s).unwrap_err();
-        let expected = "object, empty object or null at line 1 column 26";
-        assert_eq!(format!("{}", value), expected);
+        assert_de_tokens(
+            &value,
+            &[
+                Token::Struct {
+                    name: "Game",
+                    len: 2,
+                },
+                Token::Str("id"),
+                Token::U8(1),
+                Token::Str("header"),
+                Token::Struct {
+                    name: "Header",
+                    len: 1,
+                },
+                Token::Str("filename"),
+                Token::Str("foobar"),
+                Token::Str("id"),
+                Token::U8(2),
+                Token::StructEnd,
+                Token::StructEnd,
+            ],
+        );
     }
 
     #[test]
-    fn unknown_user_event_type() {
-        use super::EventType;
-
-        #[derive(Deserialize)]
-        struct Event {
-            kind: EventType,
-        }
-        let s = r#"{"kind": "UNKNOWN"}"#;
-        let value = serde_json::from_str::<Event>(s).unwrap();
-        let expected = EventType::Other(String::from("UNKNOWN"));
-        assert_eq!(value.kind, expected);
+    fn deserialize_empty_object_missing_field() {
+        serde_test::assert_de_tokens_error::<Game>(
+            &[
+                Token::Struct {
+                    name: "Game",
+                    len: 2,
+                },
+                Token::Str("id"),
+                Token::U8(1),
+                Token::Str("header"),
+                Token::Struct {
+                    name: "Header",
+                    len: 1,
+                },
+                Token::Str("id"),
+                Token::U8(2),
+                Token::StructEnd,
+                Token::StructEnd,
+            ],
+            "object, empty object or null",
+        );
     }
 
     #[test]
-    fn unknown_mod_event_type() {
-        use super::mods::EventType;
-
-        #[derive(Deserialize)]
-        struct Event {
-            kind: EventType,
-        }
-        let s = r#"{"kind": "UNKNOWN"}"#;
-        let value = serde_json::from_str::<Event>(s).unwrap();
-        let expected = EventType::Other(String::from("UNKNOWN"));
-        assert_eq!(value.kind, expected);
+    fn user_event_type_serde() {
+        assert_de_tokens(&EventType::UserTeamJoin, &[Token::Str("USER_TEAM_JOIN")]);
+        assert_de_tokens(&EventType::UserTeamLeave, &[Token::Str("USER_TEAM_LEAVE")]);
+        assert_de_tokens(&EventType::UserSubscribe, &[Token::Str("USER_SUBSCRIBE")]);
+        assert_de_tokens(
+            &EventType::UserUnsubscribe,
+            &[Token::Str("USER_UNSUBSCRIBE")],
+        );
+        assert_de_tokens(&EventType::Other("foo".to_owned()), &[Token::Str("foo")]);
     }
 }
 

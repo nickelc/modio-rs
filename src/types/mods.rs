@@ -406,3 +406,32 @@ impl TeamLevel {
         u8::from(self).into()
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use serde_test::{assert_de_tokens, Token};
+
+    use super::EventType;
+
+    #[test]
+    fn mod_event_type_serde() {
+        assert_de_tokens(&EventType::ModfileChanged, &[Token::Str("MODFILE_CHANGED")]);
+        assert_de_tokens(&EventType::ModAvailable, &[Token::Str("MOD_AVAILABLE")]);
+        assert_de_tokens(&EventType::ModUnavailable, &[Token::Str("MOD_UNAVAILABLE")]);
+        assert_de_tokens(&EventType::ModEdited, &[Token::Str("MOD_EDITED")]);
+        assert_de_tokens(&EventType::ModDeleted, &[Token::Str("MOD_DELETED")]);
+        assert_de_tokens(
+            &EventType::ModTeamChanged,
+            &[Token::Str("MOD_TEAM_CHANGED")],
+        );
+        assert_de_tokens(
+            &EventType::ModCommentAdded,
+            &[Token::Str("MOD_COMMENT_ADDED")],
+        );
+        assert_de_tokens(
+            &EventType::ModCommentDeleted,
+            &[Token::Str("MOD_COMMENT_DELETED")],
+        );
+        assert_de_tokens(&EventType::Other("foo".to_owned()), &[Token::Str("foo")]);
+    }
+}
