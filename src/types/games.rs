@@ -193,7 +193,7 @@ pub enum TagType {
 
 impl fmt::Display for TagType {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        match *self {
+        match self {
             Self::Checkboxes => fmt.write_str("checkboxes"),
             Self::Dropdown => fmt.write_str("dropdown"),
         }

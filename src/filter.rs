@@ -593,7 +593,7 @@ pub enum Operator {
 
 impl fmt::Display for Operator {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
+        match self {
             Self::Equals => "",
             Self::Not => "-not",
             Self::Like => "-lk",
@@ -622,9 +622,9 @@ where
 
 impl<T: fmt::Display> OneOrMany<T> {
     fn to_string(&self) -> OneOrMany<String> {
-        match *self {
-            Self::One(ref s) => OneOrMany::One(s.to_string()),
-            Self::Many(ref s) => {
+        match self {
+            Self::One(s) => OneOrMany::One(s.to_string()),
+            Self::Many(s) => {
                 OneOrMany::Many(s.iter().map(ToString::to_string).collect::<Vec<_>>())
             }
         }
