@@ -594,19 +594,18 @@ pub enum Operator {
 impl fmt::Display for Operator {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Equals => "",
-            Self::Not => "-not",
-            Self::Like => "-lk",
-            Self::NotLike => "-not-lk",
-            Self::In => "-in",
-            Self::NotIn => "-not-in",
-            Self::Min => "-min",
-            Self::Max => "-max",
-            Self::SmallerThan => "-st",
-            Self::GreaterThan => "-gt",
-            Self::BitwiseAnd => "-bitwise-and",
+            Self::Equals => fmt.write_str(""),
+            Self::Not => fmt.write_str("-not"),
+            Self::Like => fmt.write_str("-lk"),
+            Self::NotLike => fmt.write_str("-not-lk"),
+            Self::In => fmt.write_str("-in"),
+            Self::NotIn => fmt.write_str("-not-in"),
+            Self::Min => fmt.write_str("-min"),
+            Self::Max => fmt.write_str("-max"),
+            Self::SmallerThan => fmt.write_str("-st"),
+            Self::GreaterThan => fmt.write_str("-gt"),
+            Self::BitwiseAnd => fmt.write_str("-bitwise-and"),
         }
-        .fmt(fmt)
     }
 }
 
