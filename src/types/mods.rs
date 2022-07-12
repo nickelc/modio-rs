@@ -129,15 +129,15 @@ impl<'de> Deserialize<'de> for EventType {
 impl fmt::Display for EventType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            EventType::ModfileChanged => f.write_str("MODFILE_CHANGED"),
-            EventType::ModAvailable => f.write_str("MOD_AVAILABLE"),
-            EventType::ModUnavailable => f.write_str("MOD_UNAVAILABLE"),
-            EventType::ModEdited => f.write_str("MOD_EDITED"),
-            EventType::ModDeleted => f.write_str("MOD_DELETED"),
-            EventType::ModTeamChanged => f.write_str("MOD_TEAM_CHANGED"),
-            EventType::ModCommentAdded => f.write_str("MOD_COMMENT_ADDED"),
-            EventType::ModCommentDeleted => f.write_str("MOD_COMMENT_DELETED"),
-            EventType::Other(s) => f.write_str(s),
+            Self::ModfileChanged => f.write_str("MODFILE_CHANGED"),
+            Self::ModAvailable => f.write_str("MOD_AVAILABLE"),
+            Self::ModUnavailable => f.write_str("MOD_UNAVAILABLE"),
+            Self::ModEdited => f.write_str("MOD_EDITED"),
+            Self::ModDeleted => f.write_str("MOD_DELETED"),
+            Self::ModTeamChanged => f.write_str("MOD_TEAM_CHANGED"),
+            Self::ModCommentAdded => f.write_str("MOD_COMMENT_ADDED"),
+            Self::ModCommentDeleted => f.write_str("MOD_COMMENT_DELETED"),
+            Self::Other(s) => f.write_str(s),
         }
     }
 }
@@ -246,7 +246,7 @@ impl<'de> Deserialize<'de> for Rating {
                 mod_id,
                 rating: 1,
                 date_added,
-            }) => Ok(Rating::Positive {
+            }) => Ok(Self::Positive {
                 game_id,
                 mod_id,
                 date_added,
@@ -256,7 +256,7 @@ impl<'de> Deserialize<'de> for Rating {
                 mod_id,
                 rating: -1,
                 date_added,
-            }) => Ok(Rating::Negative {
+            }) => Ok(Self::Negative {
                 game_id,
                 mod_id,
                 date_added,
@@ -294,7 +294,7 @@ impl MetadataMap {
     }
 
     pub fn with_capacity(capacity: usize) -> Self {
-        MetadataMap(HashMap::with_capacity(capacity))
+        Self(HashMap::with_capacity(capacity))
     }
 }
 

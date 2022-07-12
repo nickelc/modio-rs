@@ -553,8 +553,8 @@ impl fmt::Display for Sorting {
         use std::fmt::Write;
 
         match self {
-            Sorting::Asc(field) => f.write_str(field),
-            Sorting::Desc(field) => {
+            Self::Asc(field) => f.write_str(field),
+            Self::Desc(field) => {
                 f.write_char('-')?;
                 f.write_str(field)
             }
@@ -594,17 +594,17 @@ pub enum Operator {
 impl fmt::Display for Operator {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            Operator::Equals => "",
-            Operator::Not => "-not",
-            Operator::Like => "-lk",
-            Operator::NotLike => "-not-lk",
-            Operator::In => "-in",
-            Operator::NotIn => "-not-in",
-            Operator::Min => "-min",
-            Operator::Max => "-max",
-            Operator::SmallerThan => "-st",
-            Operator::GreaterThan => "-gt",
-            Operator::BitwiseAnd => "-bitwise-and",
+            Self::Equals => "",
+            Self::Not => "-not",
+            Self::Like => "-lk",
+            Self::NotLike => "-not-lk",
+            Self::In => "-in",
+            Self::NotIn => "-not-in",
+            Self::Min => "-min",
+            Self::Max => "-max",
+            Self::SmallerThan => "-st",
+            Self::GreaterThan => "-gt",
+            Self::BitwiseAnd => "-bitwise-and",
         }
         .fmt(fmt)
     }
@@ -623,8 +623,8 @@ where
 impl<T: fmt::Display> OneOrMany<T> {
     fn to_string(&self) -> OneOrMany<String> {
         match *self {
-            OneOrMany::One(ref s) => OneOrMany::One(s.to_string()),
-            OneOrMany::Many(ref s) => {
+            Self::One(ref s) => OneOrMany::One(s.to_string()),
+            Self::Many(ref s) => {
                 OneOrMany::Many(s.iter().map(ToString::to_string).collect::<Vec<_>>())
             }
         }
@@ -633,13 +633,13 @@ impl<T: fmt::Display> OneOrMany<T> {
 
 impl<T: fmt::Display> From<T> for OneOrMany<T> {
     fn from(from: T) -> OneOrMany<T> {
-        OneOrMany::One(from)
+        Self::One(from)
     }
 }
 
 impl<T: fmt::Display> From<Vec<T>> for OneOrMany<T> {
     fn from(from: Vec<T>) -> OneOrMany<T> {
-        OneOrMany::Many(from)
+        Self::Many(from)
     }
 }
 

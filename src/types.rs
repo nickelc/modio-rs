@@ -185,11 +185,11 @@ impl<'de> Deserialize<'de> for EventType {
 impl fmt::Display for EventType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            EventType::UserTeamJoin => f.write_str("USER_TEAM_JOIN"),
-            EventType::UserTeamLeave => f.write_str("USER_TEAM_LEAVE"),
-            EventType::UserSubscribe => f.write_str("USER_SUBSCRIBE"),
-            EventType::UserUnsubscribe => f.write_str("USER_UNSUBSCRIBE"),
-            EventType::Other(s) => f.write_str(s),
+            Self::UserTeamJoin => f.write_str("USER_TEAM_JOIN"),
+            Self::UserTeamLeave => f.write_str("USER_TEAM_LEAVE"),
+            Self::UserSubscribe => f.write_str("USER_SUBSCRIBE"),
+            Self::UserUnsubscribe => f.write_str("USER_UNSUBSCRIBE"),
+            Self::Other(s) => f.write_str(s),
         }
     }
 }

@@ -51,17 +51,17 @@ impl TargetPlatform {
 
     fn into_header_value(self) -> HeaderValue {
         match self {
-            TargetPlatform::Android => HeaderValue::from_static("Android"),
-            TargetPlatform::Ios => HeaderValue::from_static("iOS"),
-            TargetPlatform::Linux => HeaderValue::from_static("Linux"),
-            TargetPlatform::Mac => HeaderValue::from_static("Mac"),
-            TargetPlatform::Windows => HeaderValue::from_static("Windows"),
-            TargetPlatform::PS4 => HeaderValue::from_static("PS4"),
-            TargetPlatform::PS5 => HeaderValue::from_static("PS5"),
-            TargetPlatform::Switch => HeaderValue::from_static("Switch"),
-            TargetPlatform::Wii => HeaderValue::from_static("Wii"),
-            TargetPlatform::XboxOne => HeaderValue::from_static("XboxOne"),
-            TargetPlatform::XboxSeriesX => HeaderValue::from_static("XboxSeriesX"),
+            Self::Android => HeaderValue::from_static("Android"),
+            Self::Ios => HeaderValue::from_static("iOS"),
+            Self::Linux => HeaderValue::from_static("Linux"),
+            Self::Mac => HeaderValue::from_static("Mac"),
+            Self::Windows => HeaderValue::from_static("Windows"),
+            Self::PS4 => HeaderValue::from_static("PS4"),
+            Self::PS5 => HeaderValue::from_static("PS5"),
+            Self::Switch => HeaderValue::from_static("Switch"),
+            Self::Wii => HeaderValue::from_static("Wii"),
+            Self::XboxOne => HeaderValue::from_static("XboxOne"),
+            Self::XboxSeriesX => HeaderValue::from_static("XboxSeriesX"),
         }
     }
 }
@@ -90,15 +90,15 @@ impl TargetPortal {
 
     fn into_header_value(self) -> HeaderValue {
         match self {
-            TargetPortal::Steam => HeaderValue::from_static("Steam"),
-            TargetPortal::GOG => HeaderValue::from_static("GOG"),
-            TargetPortal::EGS => HeaderValue::from_static("EGS"),
-            TargetPortal::Itchio => HeaderValue::from_static("Itchio"),
-            TargetPortal::Nintendo => HeaderValue::from_static("Nintendo"),
-            TargetPortal::PSN => HeaderValue::from_static("PSN"),
-            TargetPortal::XboxLive => HeaderValue::from_static("XboxLive"),
-            TargetPortal::Apple => HeaderValue::from_static("Apple"),
-            TargetPortal::Google => HeaderValue::from_static("Google"),
+            Self::Steam => HeaderValue::from_static("Steam"),
+            Self::GOG => HeaderValue::from_static("GOG"),
+            Self::EGS => HeaderValue::from_static("EGS"),
+            Self::Itchio => HeaderValue::from_static("Itchio"),
+            Self::Nintendo => HeaderValue::from_static("Nintendo"),
+            Self::PSN => HeaderValue::from_static("PSN"),
+            Self::XboxLive => HeaderValue::from_static("XboxLive"),
+            Self::Apple => HeaderValue::from_static("Apple"),
+            Self::Google => HeaderValue::from_static("Google"),
         }
     }
 }
