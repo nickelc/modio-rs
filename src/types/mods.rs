@@ -93,7 +93,7 @@ pub enum EventType {
     /// A comment has been deleted from a mod.
     ModCommentDeleted,
     /// New event types which are not supported yet.
-    Other(String),
+    Unknown(String),
 }
 
 impl<'de> Deserialize<'de> for EventType {
@@ -117,7 +117,7 @@ impl<'de> Deserialize<'de> for EventType {
                     "MOD_TEAM_CHANGED" => Ok(Self::Value::ModTeamChanged),
                     "MOD_COMMENT_ADDED" => Ok(Self::Value::ModCommentAdded),
                     "MOD_COMMENT_DELETED" => Ok(Self::Value::ModCommentDeleted),
-                    _ => Ok(Self::Value::Other(value.to_owned())),
+                    _ => Ok(Self::Value::Unknown(value.to_owned())),
                 }
             }
         }
@@ -137,7 +137,7 @@ impl fmt::Display for EventType {
             Self::ModTeamChanged => f.write_str("MOD_TEAM_CHANGED"),
             Self::ModCommentAdded => f.write_str("MOD_COMMENT_ADDED"),
             Self::ModCommentDeleted => f.write_str("MOD_COMMENT_DELETED"),
-            Self::Other(s) => f.write_str(s),
+            Self::Unknown(s) => f.write_str(s),
         }
     }
 }
@@ -432,6 +432,6 @@ mod tests {
             &EventType::ModCommentDeleted,
             &[Token::Str("MOD_COMMENT_DELETED")],
         );
-        assert_de_tokens(&EventType::Other("foo".to_owned()), &[Token::Str("foo")]);
+        assert_de_tokens(&EventType::Unknown("foo".to_owned()), &[Token::Str("foo")]);
     }
 }

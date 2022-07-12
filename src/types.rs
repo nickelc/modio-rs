@@ -153,7 +153,7 @@ pub enum EventType {
     /// User has unsubscribed to a mod.
     UserUnsubscribe,
     /// New event types which are not supported yet.
-    Other(String),
+    Unknown(String),
 }
 
 impl<'de> Deserialize<'de> for EventType {
@@ -173,7 +173,7 @@ impl<'de> Deserialize<'de> for EventType {
                     "USER_TEAM_LEAVE" => Ok(Self::Value::UserTeamLeave),
                     "USER_SUBSCRIBE" => Ok(Self::Value::UserSubscribe),
                     "USER_UNSUBSCRIBE" => Ok(Self::Value::UserUnsubscribe),
-                    _ => Ok(Self::Value::Other(value.to_owned())),
+                    _ => Ok(Self::Value::Unknown(value.to_owned())),
                 }
             }
         }
@@ -189,7 +189,7 @@ impl fmt::Display for EventType {
             Self::UserTeamLeave => f.write_str("USER_TEAM_LEAVE"),
             Self::UserSubscribe => f.write_str("USER_SUBSCRIBE"),
             Self::UserUnsubscribe => f.write_str("USER_UNSUBSCRIBE"),
-            Self::Other(s) => f.write_str(s),
+            Self::Unknown(s) => f.write_str(s),
         }
     }
 }
@@ -412,7 +412,7 @@ mod tests {
             &EventType::UserUnsubscribe,
             &[Token::Str("USER_UNSUBSCRIBE")],
         );
-        assert_de_tokens(&EventType::Other("foo".to_owned()), &[Token::Str("foo")]);
+        assert_de_tokens(&EventType::Unknown("foo".to_owned()), &[Token::Str("foo")]);
     }
 }
 
