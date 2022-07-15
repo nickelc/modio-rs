@@ -808,7 +808,7 @@ impl AddMediaOptions {
 
                         FileSource::new_from_file(file, filename, IMAGE_STAR)
                     })
-                    .collect::<Vec<_>>(),
+                    .collect(),
             ),
             ..self
         }
