@@ -127,7 +127,7 @@ bitflags! {
 }
 
 /// See the [Icon Object](https://docs.mod.io/#icon-object) docs for more information.
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 pub struct Icon {
     pub filename: String,
     pub original: Url,
@@ -136,12 +136,33 @@ pub struct Icon {
     pub thumb_256x256: Url,
 }
 
+impl fmt::Debug for Icon {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Icon")
+            .field("filename", &self.filename)
+            .field("original", &self.original.as_str())
+            .field("thumb_64x64", &self.thumb_64x64.as_str())
+            .field("thumb_128x128", &self.thumb_128x128.as_str())
+            .field("thumb_256x256", &self.thumb_256x256.as_str())
+            .finish()
+    }
+}
+
 /// See the [Header Image Object](https://docs.mod.io/#header-image-object) docs for more
 /// information.
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 pub struct HeaderImage {
     pub filename: String,
     pub original: Url,
+}
+
+impl fmt::Debug for HeaderImage {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("HeaderImage")
+            .field("filename", &self.filename)
+            .field("original", &self.original.as_str())
+            .finish()
+    }
 }
 
 /// See the [Game Statistics Object](https://docs.mod.io/#game-stats-object) docs for more

@@ -88,7 +88,7 @@ pub struct Error {
 }
 
 /// See the [User Object](https://docs.mod.io/#user-object) docs for more information.
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 pub struct User {
     pub id: u32,
     pub name_id: String,
@@ -99,8 +99,21 @@ pub struct User {
     pub profile_url: Url,
 }
 
+impl fmt::Debug for User {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("User")
+            .field("id", &self.id)
+            .field("name_id", &self.name_id)
+            .field("username", &self.username)
+            .field("date_online", &self.date_online)
+            .field("avatar", &self.avatar)
+            .field("profile_url", &self.profile_url.as_str())
+            .finish()
+    }
+}
+
 /// See the [Avatar Object](https://docs.mod.io/#avatar-object) docs for more information.
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 pub struct Avatar {
     pub filename: String,
     pub original: Url,
@@ -108,14 +121,36 @@ pub struct Avatar {
     pub thumb_100x100: Url,
 }
 
+impl fmt::Debug for Avatar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Avatar")
+            .field("filename", &self.filename)
+            .field("thumb_50x50", &self.thumb_50x50.as_str())
+            .field("thumb_100x100", &self.thumb_100x100.as_str())
+            .finish()
+    }
+}
+
 /// See the [Logo Object](https://docs.mod.io/#logo-object) docs for more information.
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 pub struct Logo {
     pub filename: String,
     pub original: Url,
     pub thumb_320x180: Url,
     pub thumb_640x360: Url,
     pub thumb_1280x720: Url,
+}
+
+impl fmt::Debug for Logo {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Logo")
+            .field("filename", &self.filename)
+            .field("original", &self.original.as_str())
+            .field("thumb_320x180", &self.thumb_320x180.as_str())
+            .field("thumb_640x360", &self.thumb_640x360.as_str())
+            .field("thumb_1280x720", &self.thumb_1280x720.as_str())
+            .finish()
+    }
 }
 
 enum_number! {

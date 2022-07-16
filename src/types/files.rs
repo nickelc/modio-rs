@@ -1,3 +1,5 @@
+use std::fmt;
+
 use serde::Deserialize;
 use url::Url;
 
@@ -36,8 +38,17 @@ pub struct FileHash {
 }
 
 /// See the [Download Object](https://docs.mod.io/#download-object) docs for more information.
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 pub struct Download {
     pub binary_url: Url,
     pub date_expires: u64,
+}
+
+impl fmt::Debug for Download {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Download")
+            .field("binary_url", &self.binary_url.as_str())
+            .field("date_expires", &self.date_expires)
+            .finish()
+    }
 }

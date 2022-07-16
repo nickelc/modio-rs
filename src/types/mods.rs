@@ -163,11 +163,21 @@ pub struct Media {
 }
 
 /// See the [Image Object](https://docs.mod.io/#image-object) docs for more information.
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 pub struct Image {
     pub filename: String,
     pub original: Url,
     pub thumb_320x180: Url,
+}
+
+impl fmt::Debug for Image {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Image")
+            .field("filename", &self.filename)
+            .field("original", &self.original.as_str())
+            .field("thumb_320x180", &self.thumb_320x180.as_str())
+            .finish()
+    }
 }
 
 /// See the [Statistics Object](https://docs.mod.io/#mod-stats-object) docs for more
