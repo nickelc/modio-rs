@@ -165,6 +165,38 @@ enum_number! {
     }
 }
 
+/// See the [mod.io docs](https://docs.mod.io/#targeting-a-platform) for more information.
+#[derive(Clone, Copy)]
+pub enum TargetPlatform {
+    Android,
+    Ios,
+    Linux,
+    Mac,
+    Windows,
+    PS4,
+    PS5,
+    Switch,
+    XboxOne,
+    XboxSeriesX,
+    Oculus,
+}
+
+/// See the [mod.io docs](https://docs.mod.io/#targeting-a-portal) for more information.
+#[derive(Clone, Copy)]
+pub enum TargetPortal {
+    Steam,
+    GOG,
+    EGS,
+    Itchio,
+    Nintendo,
+    PSN,
+    XboxLive,
+    Apple,
+    Google,
+    Facebook,
+    Discord,
+}
+
 /// See the [User Event Object](https://docs.mod.io/#user-event-object) docs for more information.
 #[derive(Debug, Deserialize)]
 pub struct Event {

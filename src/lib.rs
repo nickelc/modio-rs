@@ -139,11 +139,11 @@ mod routing;
 mod types;
 
 pub use crate::auth::Credentials;
-pub use crate::client::{Builder, Modio, TargetPlatform, TargetPortal};
+pub use crate::client::{Builder, Modio};
 pub use crate::download::DownloadAction;
 pub use crate::error::{Error, Result};
 pub use crate::loader::{Page, Query};
-pub use crate::types::{Deletion, Editing};
+pub use crate::types::{Deletion, Editing, TargetPlatform, TargetPortal};
 
 mod prelude {
     pub use futures_core::Stream;

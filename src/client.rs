@@ -14,6 +14,7 @@ use crate::reports::Reports;
 use crate::request::RequestBuilder;
 use crate::routing::Route;
 use crate::user::Me;
+use crate::{TargetPlatform, TargetPortal};
 
 const DEFAULT_HOST: &str = "https://api.mod.io/v1";
 const TEST_HOST: &str = "https://api.test.mod.io/v1";
@@ -23,24 +24,6 @@ const DEFAULT_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), '/', env!("CARGO_PKG
 #[must_use]
 pub struct Builder {
     config: Config,
-}
-
-/// Defines the platform from which the client's requests originate. See [`Builder::target_platform`]
-///
-/// See the [mod.io docs](https://docs.mod.io/#targeting-a-platform) for more information.
-#[derive(Clone, Copy)]
-pub enum TargetPlatform {
-    Android,
-    Ios,
-    Linux,
-    Mac,
-    Windows,
-    PS4,
-    PS5,
-    Switch,
-    XboxOne,
-    XboxSeriesX,
-    Oculus,
 }
 
 impl TargetPlatform {
@@ -64,24 +47,6 @@ impl TargetPlatform {
             Self::Oculus => HeaderValue::from_static("Oculus"),
         }
     }
-}
-
-/// Defines the portal the player is interaction with. See [`Builder::target_portal`]
-///
-/// See the [mod.io docs](https://docs.mod.io/#targeting-a-portal) for more information.
-#[derive(Clone, Copy)]
-pub enum TargetPortal {
-    Steam,
-    GOG,
-    EGS,
-    Itchio,
-    Nintendo,
-    PSN,
-    XboxLive,
-    Apple,
-    Google,
-    Facebook,
-    Discord,
 }
 
 impl TargetPortal {
