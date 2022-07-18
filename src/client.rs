@@ -40,6 +40,7 @@ pub enum TargetPlatform {
     Switch,
     XboxOne,
     XboxSeriesX,
+    Oculus,
 }
 
 impl TargetPlatform {
@@ -60,6 +61,7 @@ impl TargetPlatform {
             Self::Switch => HeaderValue::from_static("Switch"),
             Self::XboxOne => HeaderValue::from_static("XboxOne"),
             Self::XboxSeriesX => HeaderValue::from_static("XboxSeriesX"),
+            Self::Oculus => HeaderValue::from_static("Oculus"),
         }
     }
 }
