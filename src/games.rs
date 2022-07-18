@@ -11,8 +11,8 @@ use crate::prelude::*;
 
 pub use crate::types::games::{
     ApiAccessOptions, CommunityOptions, CurationOption, Downloads, Game, HeaderImage, Icon,
-    MaturityOptions, PresentationOption, RevenueOptions, Statistics, SubmissionOption, TagOption,
-    TagType,
+    MaturityOptions, Platform, PresentationOption, RevenueOptions, Statistics, SubmissionOption,
+    TagOption, TagType,
 };
 pub use crate::types::Logo;
 pub use crate::types::Status;

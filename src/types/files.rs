@@ -3,6 +3,8 @@ use std::fmt;
 use serde::Deserialize;
 use url::Url;
 
+use crate::TargetPlatform;
+
 /// See the [Modfile Object](https://docs.mod.io/#modfile-object) docs for more information.
 #[derive(Debug, Deserialize)]
 pub struct File {
@@ -18,6 +20,7 @@ pub struct File {
     pub changelog: Option<String>,
     pub metadata_blob: Option<String>,
     pub download: Download,
+    pub platforms: Vec<Platform>,
 }
 
 /// See the [Modfile Object](https://docs.mod.io/#modfile-object) docs for more information.
@@ -50,5 +53,27 @@ impl fmt::Debug for Download {
             .field("binary_url", &self.binary_url.as_str())
             .field("date_expires", &self.date_expires)
             .finish()
+    }
+}
+
+/// See the [Modfile Platform Object](https://docs.mod.io/#modfile-platform-object) docs for more
+/// information.
+#[derive(Debug, Deserialize)]
+pub struct Platform {
+    #[serde(rename = "platform")]
+    pub target: TargetPlatform,
+    pub status: PlatformStatus,
+}
+
+enum_number! {
+    /// See the [Modfile Platform Object](https://docs.mod.io/#modfile-platform-object) docs for
+    /// more information.
+    #[derive(Clone, Copy, Debug, Deserialize)]
+    #[serde(from = "u8")]
+    pub enum PlatformStatus {
+        Pending = 0,
+        Approved = 1,
+        Denied = 2,
+        _ => Unknown(u8),
     }
 }

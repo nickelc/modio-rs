@@ -5,8 +5,8 @@ use serde::de::{Deserializer, Visitor};
 use serde::Deserialize;
 use url::Url;
 
-use super::deserialize_empty_object;
 use super::files::File;
+use super::{deserialize_empty_object, TargetPlatform};
 use super::{Logo, Status, User};
 
 /// See the [Mod Object](https://docs.mod.io/#mod-object) docs for more information.
@@ -37,6 +37,7 @@ pub struct Mod {
     pub metadata: MetadataMap,
     pub tags: Vec<Tag>,
     pub stats: Statistics,
+    pub platforms: Vec<Platform>,
 }
 
 enum_number! {
@@ -278,6 +279,17 @@ impl<'de> Deserialize<'de> for Rating {
             Err(e) => Err(e),
         }
     }
+}
+
+/// See the [Mod Platforms Object](https://docs.mod.io/#mod-platforms-object) docs for more information.
+#[derive(Debug, Deserialize)]
+pub struct Platform {
+    #[serde(rename = "platform")]
+    pub target: TargetPlatform,
+    /// The unique id of the modfile that is currently live on the platform specified in the
+    /// `target` field.
+    #[serde(rename = "modfile_live")]
+    pub modfile_id: u32,
 }
 
 /// See the [Mod Tag Object](https://docs.mod.io/#mod-tag-object) docs for more information.

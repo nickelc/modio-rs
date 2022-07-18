@@ -166,7 +166,8 @@ enum_number! {
 }
 
 /// See the [mod.io docs](https://docs.mod.io/#targeting-a-platform) for more information.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum TargetPlatform {
     Android,
     Ios,
@@ -179,6 +180,30 @@ pub enum TargetPlatform {
     XboxOne,
     XboxSeriesX,
     Oculus,
+}
+
+impl TargetPlatform {
+    pub fn display_name(&self) -> &'static str {
+        match self {
+            Self::Android => "Android",
+            Self::Ios => "iOS",
+            Self::Linux => "Linux",
+            Self::Mac => "Mac",
+            Self::Windows => "Windows",
+            Self::PS4 => "PlayStation 4",
+            Self::PS5 => "PlayStation 5",
+            Self::Switch => "Nintendo Switch",
+            Self::XboxOne => "Xbox One",
+            Self::XboxSeriesX => "Xbox Series X/S",
+            Self::Oculus => "Oculus",
+        }
+    }
+}
+
+impl fmt::Display for TargetPlatform {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.display_name())
+    }
 }
 
 /// See the [mod.io docs](https://docs.mod.io/#targeting-a-portal) for more information.

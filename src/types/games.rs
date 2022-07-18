@@ -4,6 +4,8 @@ use std::fmt;
 use serde::Deserialize;
 use url::Url;
 
+use crate::TargetPlatform;
+
 use super::deserialize_empty_object;
 use super::{Logo, Status, User};
 
@@ -35,6 +37,7 @@ pub struct Game {
     pub instructions_url: Option<Url>,
     pub profile_url: Url,
     pub tag_options: Vec<TagOption>,
+    pub platforms: Vec<Platform>,
 }
 
 enum_number! {
@@ -219,4 +222,12 @@ impl fmt::Display for TagType {
             Self::Dropdown => fmt.write_str("dropdown"),
         }
     }
+}
+
+/// See the [Game Platforms Object](https://docs.mod.io/#game-platforms-object) docs for more information.
+#[derive(Debug, Deserialize)]
+pub struct Platform {
+    #[serde(rename = "platform")]
+    pub target: TargetPlatform,
+    pub moderated: bool,
 }
