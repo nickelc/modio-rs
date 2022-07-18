@@ -38,7 +38,6 @@ pub enum TargetPlatform {
     PS4,
     PS5,
     Switch,
-    Wii,
     XboxOne,
     XboxSeriesX,
 }
@@ -59,7 +58,6 @@ impl TargetPlatform {
             Self::PS4 => HeaderValue::from_static("PS4"),
             Self::PS5 => HeaderValue::from_static("PS5"),
             Self::Switch => HeaderValue::from_static("Switch"),
-            Self::Wii => HeaderValue::from_static("Wii"),
             Self::XboxOne => HeaderValue::from_static("XboxOne"),
             Self::XboxSeriesX => HeaderValue::from_static("XboxSeriesX"),
         }
