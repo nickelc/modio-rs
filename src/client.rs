@@ -80,6 +80,8 @@ pub enum TargetPortal {
     XboxLive,
     Apple,
     Google,
+    Facebook,
+    Discord,
 }
 
 impl TargetPortal {
@@ -99,6 +101,8 @@ impl TargetPortal {
             Self::XboxLive => HeaderValue::from_static("XboxLive"),
             Self::Apple => HeaderValue::from_static("Apple"),
             Self::Google => HeaderValue::from_static("Google"),
+            Self::Facebook => HeaderValue::from_static("Facebook"),
+            Self::Discord => HeaderValue::from_static("Discord"),
         }
     }
 }
