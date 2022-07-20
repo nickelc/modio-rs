@@ -4,10 +4,12 @@ use std::marker::Unpin;
 use std::path::Path;
 
 use mime::APPLICATION_OCTET_STREAM;
+use serde::ser::{Serialize, SerializeMap, Serializer};
 use tokio::io::AsyncRead;
 
 use crate::multipart::FileSource;
 use crate::prelude::*;
+use crate::TargetPlatform;
 
 pub use crate::types::files::{Download, File, FileHash, Platform, PlatformStatus};
 
@@ -105,6 +107,16 @@ impl FileRef {
             file_id: self.id,
         };
         self.modio.request(route).send().await
+    }
+
+    /// Edit the platform status of a modfile. [required: token]
+    pub async fn edit_platform_status(self, options: EditPlatformStatusOptions) -> Result<File> {
+        let route = Route::ManagePlatformStatus {
+            game_id: self.game,
+            mod_id: self.mod_id,
+            file_id: self.id,
+        };
+        self.modio.request(route).form(&options).send().await
     }
 }
 
@@ -258,3 +270,30 @@ impl EditFileOptions {
 }
 
 impl_serialize_params!(EditFileOptions >> params);
+
+pub struct EditPlatformStatusOptions {
+    approved: Vec<TargetPlatform>,
+    denied: Vec<TargetPlatform>,
+}
+
+impl EditPlatformStatusOptions {
+    pub fn new(approved: &[TargetPlatform], denied: &[TargetPlatform]) -> Self {
+        Self {
+            approved: approved.to_vec(),
+            denied: denied.to_vec(),
+        }
+    }
+}
+
+impl Serialize for EditPlatformStatusOptions {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        let mut s = serializer.serialize_map(Some(self.approved.len() + self.denied.len()))?;
+        for target in &self.approved {
+            s.serialize_entry("approved[]", target)?;
+        }
+        for target in &self.denied {
+            s.serialize_entry("denied[]", target)?;
+        }
+        s.end()
+    }
+}

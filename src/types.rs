@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fmt;
 
 use serde::de::{Deserializer, Visitor};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use url::Url;
 
 #[macro_use]
@@ -166,7 +166,7 @@ enum_number! {
 }
 
 /// See the [mod.io docs](https://docs.mod.io/#targeting-a-platform) for more information.
-#[derive(Clone, Copy, Debug, Deserialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum TargetPlatform {
     Android,

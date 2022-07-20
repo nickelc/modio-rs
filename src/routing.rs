@@ -156,6 +156,7 @@ define_routes! {
     { AddFile, POST: "/games/{}/mods/{}/files", [game_id, mod_id], Token },
     { EditFile, PUT: "/games/{}/mods/{}/files/{}", [game_id, mod_id, file_id], Token },
     { DeleteFile, DELETE: "/games/{}/mods/{}/files/{}", [game_id, mod_id, file_id], Token },
+    { ManagePlatformStatus, POST: "/games/{}/mods/{}/files/{}/platforms", [game_id, mod_id, file_id], Token },
     { AuthorizedUser, GET: "/me", Token },
     { UserSubscriptions, GET: "/me/subscribed", Token },
     { UserEvents, GET: "/me/events", Token },
