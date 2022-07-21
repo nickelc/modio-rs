@@ -3,7 +3,6 @@ use std::ffi::OsStr;
 use std::path::Path;
 
 use mime::IMAGE_STAR;
-use url::Url;
 
 use crate::mods::{ModRef, Mods};
 use crate::multipart::FileSource;
@@ -76,12 +75,6 @@ impl GameRef {
     /// Return a reference to an interface that provides access to the tags of a game.
     pub fn tags(&self) -> Tags {
         Tags::new(self.modio.clone(), self.id)
-    }
-
-    /// Edit details for a game. [required: token]
-    pub async fn edit(self, options: EditGameOptions) -> Result<Editing<Game>> {
-        let route = Route::EditGame { game_id: self.id };
-        self.modio.request(route).form(&options).send().await
     }
 
     /// Add new media to a game. [required: token]
@@ -224,30 +217,6 @@ pub mod filters {
     filter!(ApiAccessOptions, API_ACCESS_OPTIONS, "api_access_options", Eq, NotEq, In, Cmp, Bit);
     filter!(MaturityOptions, MATURITY_OPTIONS, "maturity_options", Eq, NotEq, In, Cmp, Bit);
 }
-
-#[derive(Default)]
-pub struct EditGameOptions {
-    params: std::collections::BTreeMap<&'static str, String>,
-}
-
-impl EditGameOptions {
-    option!(status: Status >> "status");
-    option!(name >> "name");
-    option!(name_id >> "name_id");
-    option!(summary >> "summary");
-    option!(instructions >> "instructions");
-    option!(instructions_url: Url >> "instructions_url");
-    option!(ugc_name >> "ugc_name");
-    option!(presentation_option: PresentationOption >> "presentation_option");
-    option!(submission_option: SubmissionOption >> "submission_option");
-    option!(curation_option: CurationOption >> "curation_option");
-    option!(community_options: CommunityOptions >> "community_options");
-    option!(revenue_options: RevenueOptions >> "revenue_options");
-    option!(api_access_options: ApiAccessOptions >> "api_access_options");
-    option!(maturity_options: MaturityOptions >> "maturity_options");
-}
-
-impl_serialize_params!(EditGameOptions >> params);
 
 pub struct AddTagsOptions {
     name: String,
