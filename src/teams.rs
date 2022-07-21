@@ -29,49 +29,6 @@ impl Members {
         };
         Query::new(self.modio.clone(), route, filter)
     }
-
-    /// Add a team member by email. [required: token]
-    #[allow(clippy::should_implement_trait)]
-    pub async fn add(self, options: InviteTeamMemberOptions) -> Result<()> {
-        let route = Route::AddTeamMember {
-            game_id: self.game,
-            mod_id: self.mod_id,
-        };
-        self.modio
-            .request(route)
-            .form(&options)
-            .send::<Message>()
-            .await?;
-
-        Ok(())
-    }
-
-    /// Edit a team member by id. [required: token]
-    pub async fn edit(self, id: u32, options: EditTeamMemberOptions) -> Result<()> {
-        let route = Route::EditTeamMember {
-            game_id: self.game,
-            mod_id: self.mod_id,
-            member_id: id,
-        };
-        self.modio
-            .request(route)
-            .form(&options)
-            .send::<Message>()
-            .await?;
-
-        Ok(())
-    }
-
-    /// Delete a team member by id. [required: token]
-    pub async fn delete(self, id: u32) -> Result<()> {
-        let route = Route::DeleteTeamMember {
-            game_id: self.game,
-            mod_id: self.mod_id,
-            member_id: id,
-        };
-        self.modio.request(route).send().await?;
-        Ok(())
-    }
 }
 
 /// Team member filters and sorting.
@@ -116,36 +73,3 @@ pub mod filters {
     filter!(Level, LEVEL, "level", Eq, NotEq, In, Cmp, OrderBy);
     filter!(Position, POSITION, "position", Eq, NotEq, In, Like, OrderBy);
 }
-
-#[derive(Debug)]
-pub struct InviteTeamMemberOptions {
-    params: std::collections::BTreeMap<&'static str, String>,
-}
-
-impl InviteTeamMemberOptions {
-    pub fn new<T>(email: T, level: TeamLevel) -> InviteTeamMemberOptions
-    where
-        T: Into<String>,
-    {
-        let mut params = std::collections::BTreeMap::new();
-        params.insert("email", email.into());
-        params.insert("level", level.to_string());
-        InviteTeamMemberOptions { params }
-    }
-
-    option!(position >> "position");
-}
-
-impl_serialize_params!(InviteTeamMemberOptions >> params);
-
-#[derive(Debug, Default)]
-pub struct EditTeamMemberOptions {
-    params: std::collections::BTreeMap<&'static str, String>,
-}
-
-impl EditTeamMemberOptions {
-    option!(level: TeamLevel >> "level");
-    option!(position >> "position");
-}
-
-impl_serialize_params!(EditTeamMemberOptions >> params);
