@@ -7,14 +7,13 @@ use url::Url;
 use crate::TargetPlatform;
 
 use super::deserialize_empty_object;
-use super::{Logo, Status, User};
+use super::{Logo, Status};
 
 /// See the [Game Object](https://docs.mod.io/#game-object) docs for more information.
 #[derive(Debug, Deserialize)]
 pub struct Game {
     pub id: u32,
     pub status: Status,
-    pub submitted_by: User,
     pub date_added: u64,
     pub date_updated: u64,
     pub date_live: u64,
