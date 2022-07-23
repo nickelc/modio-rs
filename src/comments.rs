@@ -1,4 +1,9 @@
 //! Mod comments interface
+
+use serde::ser::{SerializeMap, Serializer};
+use serde::Serialize;
+
+use crate::error::Kind;
 use crate::prelude::*;
 pub use crate::types::mods::Comment;
 
@@ -79,6 +84,25 @@ impl Comments {
         };
         self.modio.request(route).send().await
     }
+
+    /// Update the karma for a comment. [required: token]
+    pub async fn karma(self, id: u32, karma: Karma) -> Result<Editing<Comment>> {
+        let route = Route::AddModCommentKarma {
+            game_id: self.game,
+            mod_id: self.mod_id,
+            comment_id: id,
+        };
+        self.modio
+            .request(route)
+            .form(&karma)
+            .send()
+            .await
+            .map(Editing::Entity)
+            .or_else(|e| match (e.kind(), e.error_ref()) {
+                (Kind::Status(StatusCode::FORBIDDEN), Some(15059)) => Ok(Editing::NoChanges),
+                _ => Err(e),
+            })
+    }
 }
 
 /// Comment filters and sorting.
@@ -131,7 +155,21 @@ pub mod filters {
     filter!(Content, CONTENT, "content", Eq, NotEq, Like);
 }
 
-use serde::Serialize;
+pub enum Karma {
+    Positive,
+    Negative,
+}
+
+impl Serialize for Karma {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        let mut s = serializer.serialize_map(Some(1))?;
+        match self {
+            Self::Positive => s.serialize_entry("karma", &1)?,
+            Self::Negative => s.serialize_entry("karma", &-1)?,
+        }
+        s.end()
+    }
+}
 
 #[derive(Serialize)]
 struct CommentOptions {

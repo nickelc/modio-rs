@@ -147,6 +147,7 @@ define_routes! {
     { AddModComment, POST: "/games/{}/mods/{}/comments", [game_id, mod_id], Token },
     { EditModComment, PUT: "/games/{}/mods/{}/comments/{}", [game_id, mod_id, comment_id], Token },
     { DeleteModComment, DELETE: "/games/{}/mods/{}/comments/{}", [game_id, mod_id, comment_id], Token },
+    { AddModCommentKarma, POST: "/games/{}/mods/{}/comments/{}/karma", [game_id, mod_id, comment_id], Token },
     { GetFiles, GET: "/games/{}/mods/{}/files", [game_id, mod_id], Any },
     { GetFile, GET: "/games/{}/mods/{}/files/{}", [game_id, mod_id, file_id], Any },
     { AddFile, POST: "/games/{}/mods/{}/files", [game_id, mod_id], Token },
