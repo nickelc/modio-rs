@@ -16,6 +16,7 @@ pub mod mods;
 /// See the [Access Token Object](https://docs.mod.io/#access-token-object) docs for more
 /// information.
 #[derive(Deserialize)]
+#[non_exhaustive]
 pub struct AccessToken {
     #[serde(rename = "access_token")]
     pub value: String,
@@ -25,6 +26,7 @@ pub struct AccessToken {
 
 /// See the [Message Object](https://docs.mod.io/#message-object) docs for more information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Message {
     pub code: u16,
     pub message: String,
@@ -33,6 +35,7 @@ pub struct Message {
 /// Result type for editing games, mods and files.
 #[derive(Debug, Deserialize)]
 #[serde(untagged, expecting = "edited object or 'no new data' message")]
+#[non_exhaustive]
 pub enum Editing<T> {
     Entity(T),
     /// The request was successful however no new data was submitted.
@@ -43,6 +46,7 @@ pub enum Editing<T> {
 /// Result type for deleting game tag options, mod media, mod tags and mod dependencies.
 #[derive(Debug, Deserialize)]
 #[serde(untagged, expecting = "no content or 'no new data' message")]
+#[non_exhaustive]
 pub enum Deletion {
     Success,
     /// The request was successful however no new data was submitted.
@@ -60,6 +64,7 @@ where
 /// See the [Multiple Item Response](https://docs.mod.io/#response-formats) docs for more
 /// information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct List<T> {
     pub data: Vec<T>,
     #[serde(rename = "result_count")]
@@ -74,12 +79,14 @@ pub struct List<T> {
 
 /// See the [Error Object](https://docs.mod.io/#error-object) docs for more information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct ErrorResponse {
     pub error: Error,
 }
 
 /// See the [Error Object](https://docs.mod.io/#error-object) docs for more information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Error {
     pub code: u16,
     pub error_ref: u16,
@@ -89,6 +96,7 @@ pub struct Error {
 
 /// See the [User Object](https://docs.mod.io/#user-object) docs for more information.
 #[derive(Deserialize)]
+#[non_exhaustive]
 pub struct User {
     pub id: u32,
     pub name_id: String,
@@ -114,6 +122,7 @@ impl fmt::Debug for User {
 
 /// See the [Avatar Object](https://docs.mod.io/#avatar-object) docs for more information.
 #[derive(Deserialize)]
+#[non_exhaustive]
 pub struct Avatar {
     pub filename: String,
     pub original: Url,
@@ -133,6 +142,7 @@ impl fmt::Debug for Avatar {
 
 /// See the [Logo Object](https://docs.mod.io/#logo-object) docs for more information.
 #[derive(Deserialize)]
+#[non_exhaustive]
 pub struct Logo {
     pub filename: String,
     pub original: Url,
@@ -157,6 +167,7 @@ enum_number! {
     /// See [Status & Visibility](https://docs.mod.io/#status-amp-visibility) docs for more information.
     #[derive(Clone, Copy, Debug, Deserialize)]
     #[serde(from = "u8")]
+    #[non_exhaustive]
     pub enum Status {
         NotAccepted = 0,
         Accepted = 1,
@@ -168,6 +179,7 @@ enum_number! {
 /// See the [mod.io docs](https://docs.mod.io/#targeting-a-platform) for more information.
 #[derive(Clone, Copy, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum TargetPlatform {
     Android,
     Ios,
@@ -208,6 +220,7 @@ impl fmt::Display for TargetPlatform {
 
 /// See the [mod.io docs](https://docs.mod.io/#targeting-a-portal) for more information.
 #[derive(Clone, Copy)]
+#[non_exhaustive]
 pub enum TargetPortal {
     Steam,
     GOG,
@@ -224,6 +237,7 @@ pub enum TargetPortal {
 
 /// See the [User Event Object](https://docs.mod.io/#user-event-object) docs for more information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Event {
     pub id: u32,
     pub game_id: u32,
@@ -235,6 +249,7 @@ pub struct Event {
 
 /// Type of user event that was triggered.
 #[derive(Debug, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum EventType {
     /// User has joined a team.
     UserTeamJoin,

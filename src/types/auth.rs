@@ -3,6 +3,7 @@ use url::Url;
 
 /// See the [Terms Object](https://docs.mod.io/#terms-object) docs for more information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Terms {
     pub plaintext: String,
     pub html: String,
@@ -13,6 +14,7 @@ pub struct Terms {
 ///
 /// See the [Terms Object](https://docs.mod.io/#terms-object) docs for more information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Links {
     pub website: Link,
     pub terms: Link,
@@ -24,6 +26,7 @@ pub struct Links {
 ///
 /// See the [Terms Object](https://docs.mod.io/#terms-object) docs for more information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Link {
     pub text: String,
     pub url: Url,

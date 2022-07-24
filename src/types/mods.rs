@@ -11,6 +11,7 @@ use super::{Logo, Status, User};
 
 /// See the [Mod Object](https://docs.mod.io/#mod-object) docs for more information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Mod {
     pub id: u32,
     pub game_id: u32,
@@ -44,6 +45,7 @@ enum_number! {
     /// See [Status & Visibility](https://docs.mod.io/#status-amp-visibility) docs for more information.
     #[derive(Clone, Copy, Debug, Deserialize)]
     #[serde(from = "u8")]
+    #[non_exhaustive]
     pub enum Visibility {
         Hidden = 0,
         Public = 1,
@@ -66,6 +68,7 @@ bitflags! {
 
 /// See the [Mod Event Object](https://docs.mod.io/#mod-event-object) docs for more information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Event {
     pub id: u32,
     pub mod_id: u32,
@@ -76,6 +79,7 @@ pub struct Event {
 
 /// Type of mod event that was triggered.
 #[derive(Debug, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum EventType {
     /// Primary file changed, the mod should be updated.
     ModfileChanged,
@@ -146,6 +150,7 @@ impl fmt::Display for EventType {
 /// See the [Mod Dependency Object](https://docs.mod.io/#mod-dependencies-object) docs for more
 /// information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Dependency {
     pub mod_id: u32,
     pub date_added: u64,
@@ -154,6 +159,7 @@ pub struct Dependency {
 /// See the [Mod Media Object](https://docs.mod.io/#mod-media-object) docs for more
 /// information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Media {
     #[serde(default = "Vec::new")]
     pub youtube: Vec<String>,
@@ -165,6 +171,7 @@ pub struct Media {
 
 /// See the [Image Object](https://docs.mod.io/#image-object) docs for more information.
 #[derive(Deserialize)]
+#[non_exhaustive]
 pub struct Image {
     pub filename: String,
     pub original: Url,
@@ -184,6 +191,7 @@ impl fmt::Debug for Image {
 /// See the [Statistics Object](https://docs.mod.io/#mod-stats-object) docs for more
 /// information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Statistics {
     pub mod_id: u32,
     pub downloads_total: u32,
@@ -197,6 +205,7 @@ pub struct Statistics {
 
 /// Part of [`Statistics`]
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Popularity {
     #[serde(rename = "popularity_rank_position")]
     pub rank_position: u32,
@@ -206,6 +215,7 @@ pub struct Popularity {
 
 /// Part of [`Statistics`]
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Ratings {
     #[serde(rename = "ratings_total")]
     pub total: u32,
@@ -223,6 +233,7 @@ pub struct Ratings {
 
 /// See the [Rating Object](https://docs.mod.io/#rating-object) docs for more information.
 #[derive(Debug)]
+#[non_exhaustive]
 pub enum Rating {
     Positive {
         game_id: u32,
@@ -283,6 +294,7 @@ impl<'de> Deserialize<'de> for Rating {
 
 /// See the [Mod Platforms Object](https://docs.mod.io/#mod-platforms-object) docs for more information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Platform {
     #[serde(rename = "platform")]
     pub target: TargetPlatform,
@@ -294,6 +306,7 @@ pub struct Platform {
 
 /// See the [Mod Tag Object](https://docs.mod.io/#mod-tag-object) docs for more information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Tag {
     pub name: String,
     pub date_added: u64,
@@ -388,6 +401,7 @@ where
 
 /// See the [Comment Object](https://docs.mod.io/#comment-object) docs for more information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Comment {
     pub id: u32,
     pub resource_id: u32,
@@ -402,6 +416,7 @@ pub struct Comment {
 /// See the [Team Member Object](https://docs.mod.io/#team-member-object) docs for more
 /// information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct TeamMember {
     pub id: u32,
     pub user: User,
@@ -414,6 +429,7 @@ enum_number! {
     /// Defines the role of a team member.
     #[derive(Clone, Copy, Debug, Deserialize)]
     #[serde(from = "u8")]
+    #[non_exhaustive]
     pub enum TeamLevel {
         Moderator = 1,
         Creator = 4,

@@ -7,6 +7,7 @@ use crate::TargetPlatform;
 
 /// See the [Modfile Object](https://docs.mod.io/#modfile-object) docs for more information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct File {
     pub id: u32,
     pub mod_id: u32,
@@ -25,6 +26,7 @@ pub struct File {
 
 /// See the [Modfile Object](https://docs.mod.io/#modfile-object) docs for more information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct VirusScan {
     pub date_scanned: u64,
     #[serde(rename = "virus_status")]
@@ -36,12 +38,14 @@ pub struct VirusScan {
 
 /// See the [Filehash Object](https://docs.mod.io/#filehash-object) docs for more information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct FileHash {
     pub md5: String,
 }
 
 /// See the [Download Object](https://docs.mod.io/#download-object) docs for more information.
 #[derive(Deserialize)]
+#[non_exhaustive]
 pub struct Download {
     pub binary_url: Url,
     pub date_expires: u64,
@@ -59,6 +63,7 @@ impl fmt::Debug for Download {
 /// See the [Modfile Platform Object](https://docs.mod.io/#modfile-platform-object) docs for more
 /// information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Platform {
     #[serde(rename = "platform")]
     pub target: TargetPlatform,
@@ -70,6 +75,7 @@ enum_number! {
     /// more information.
     #[derive(Clone, Copy, Debug, Deserialize)]
     #[serde(from = "u8")]
+    #[non_exhaustive]
     pub enum PlatformStatus {
         Pending = 0,
         Approved = 1,

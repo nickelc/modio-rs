@@ -11,6 +11,7 @@ use super::{Logo, Status};
 
 /// See the [Game Object](https://docs.mod.io/#game-object) docs for more information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Game {
     pub id: u32,
     pub status: Status,
@@ -43,6 +44,7 @@ enum_number! {
     /// Presentation style used on the mod.io website.
     #[derive(Clone, Copy, Debug, Deserialize)]
     #[serde(from = "u8")]
+    #[non_exhaustive]
     pub enum PresentationOption {
         /// Displays mods in a grid.
         GridView = 0,
@@ -56,6 +58,7 @@ enum_number! {
     /// Submission process modders must follow.
     #[derive(Clone, Copy, Debug, Deserialize)]
     #[serde(from = "u8")]
+    #[non_exhaustive]
     pub enum SubmissionOption {
         /// Mod uploads must occur via the API using a tool by the game developers.
         ApiOnly = 0,
@@ -69,6 +72,7 @@ enum_number! {
     /// Curation process used to approve mods.
     #[derive(Clone, Copy, Debug, Deserialize)]
     #[serde(from = "u8")]
+    #[non_exhaustive]
     pub enum CurationOption {
         /// No curation: Mods are immediately available to play.
         No = 0,
@@ -85,6 +89,7 @@ enum_number! {
     /// Option to allow developers to select if they flag their mods containing mature content.
     #[derive(Clone, Copy, Debug, Deserialize)]
     #[serde(from = "u8")]
+    #[non_exhaustive]
     pub enum MaturityOptions {
         NotAllowed = 0,
         /// Allow flagging mods as mature.
@@ -130,6 +135,7 @@ bitflags! {
 
 /// See the [Icon Object](https://docs.mod.io/#icon-object) docs for more information.
 #[derive(Deserialize)]
+#[non_exhaustive]
 pub struct Icon {
     pub filename: String,
     pub original: Url,
@@ -153,6 +159,7 @@ impl fmt::Debug for Icon {
 /// See the [Header Image Object](https://docs.mod.io/#header-image-object) docs for more
 /// information.
 #[derive(Deserialize)]
+#[non_exhaustive]
 pub struct HeaderImage {
     pub filename: String,
     pub original: Url,
@@ -170,6 +177,7 @@ impl fmt::Debug for HeaderImage {
 /// See the [Game Statistics Object](https://docs.mod.io/#game-stats-object) docs for more
 /// information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Statistics {
     pub game_id: u32,
     #[serde(rename = "mods_count_total")]
@@ -184,6 +192,7 @@ pub struct Statistics {
 
 /// Part of [`Statistics`]
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Downloads {
     #[serde(rename = "mods_downloads_total")]
     pub total: u32,
@@ -196,6 +205,7 @@ pub struct Downloads {
 /// See the [Game Tag Option Object](https://docs.mod.io/#game-tag-option-object) docs for more
 /// information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct TagOption {
     pub name: String,
     #[serde(rename = "type")]
@@ -209,6 +219,7 @@ pub struct TagOption {
 /// Defines the type of a tag. See [`TagOption`].
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "lowercase")]
+#[non_exhaustive]
 pub enum TagType {
     Checkboxes,
     Dropdown,
@@ -225,6 +236,7 @@ impl fmt::Display for TagType {
 
 /// See the [Game Platforms Object](https://docs.mod.io/#game-platforms-object) docs for more information.
 #[derive(Debug, Deserialize)]
+#[non_exhaustive]
 pub struct Platform {
     #[serde(rename = "platform")]
     pub target: TargetPlatform,
