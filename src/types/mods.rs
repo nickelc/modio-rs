@@ -390,13 +390,12 @@ where
 #[derive(Debug, Deserialize)]
 pub struct Comment {
     pub id: u32,
-    pub mod_id: u32,
+    pub resource_id: u32,
     pub user: User,
     pub date_added: u64,
     pub reply_id: u32,
     pub thread_position: String,
-    pub karma: u32,
-    pub karma_guest: u32,
+    pub karma: i32,
     pub content: String,
 }
 
