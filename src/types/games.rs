@@ -1,12 +1,13 @@
 use std::collections::HashMap;
 use std::fmt;
 
+use serde::de::{Deserializer, IgnoredAny, MapAccess, Visitor};
 use serde::Deserialize;
 use url::Url;
 
 use crate::TargetPlatform;
 
-use super::deserialize_empty_object;
+use super::{deserialize_empty_object, DeserializeField, MissingField};
 use super::{Logo, Status};
 
 /// See the [Game Object](https://docs.mod.io/#game-object) docs for more information.
@@ -176,29 +177,114 @@ impl fmt::Debug for HeaderImage {
 
 /// See the [Game Statistics Object](https://docs.mod.io/#game-stats-object) docs for more
 /// information.
-#[derive(Debug, Deserialize)]
+#[derive(Debug)]
 #[non_exhaustive]
 pub struct Statistics {
     pub game_id: u32,
-    #[serde(rename = "mods_count_total")]
     pub mods_total: u32,
-    #[serde(rename = "mods_subscribers_total")]
     pub subscribers_total: u32,
-    #[serde(flatten)]
     pub downloads: Downloads,
-    #[serde(rename = "date_expires")]
     pub expired_at: u64,
 }
 
+impl<'de> Deserialize<'de> for Statistics {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(Deserialize)]
+        #[serde(field_identifier, rename_all = "snake_case")]
+        enum Field {
+            GameId,
+            ModsCountTotal,
+            ModsSubscribersTotal,
+            ModsDownloadsTotal,
+            ModsDownloadsToday,
+            ModsDownloadsDailyAverage,
+            DateExpires,
+            Other(String),
+        }
+
+        struct StatisticsVisitor;
+
+        impl<'de> Visitor<'de> for StatisticsVisitor {
+            type Value = Statistics;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                formatter.write_str("struct Statistics")
+            }
+
+            fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
+                let mut game_id = None;
+                let mut mods_total = None;
+                let mut subscribers_total = None;
+                let mut downloads_total = None;
+                let mut downloads_today = None;
+                let mut downloads_daily_average = None;
+                let mut expired_at = None;
+
+                while let Some(key) = map.next_key()? {
+                    match key {
+                        Field::GameId => {
+                            game_id.deserialize_value("game_id", &mut map)?;
+                        }
+                        Field::ModsCountTotal => {
+                            mods_total.deserialize_value("mods_count_total", &mut map)?;
+                        }
+                        Field::ModsSubscribersTotal => {
+                            subscribers_total
+                                .deserialize_value("mods_subscribers_total", &mut map)?;
+                        }
+                        Field::ModsDownloadsToday => {
+                            downloads_today.deserialize_value("mods_downloads_today", &mut map)?;
+                        }
+                        Field::ModsDownloadsTotal => {
+                            downloads_total.deserialize_value("mods_downloads_total", &mut map)?;
+                        }
+                        Field::ModsDownloadsDailyAverage => {
+                            downloads_daily_average
+                                .deserialize_value("mods_downloads_daily_average", &mut map)?;
+                        }
+                        Field::DateExpires => {
+                            expired_at.deserialize_value("date_expires", &mut map)?;
+                        }
+                        Field::Other(_) => {
+                            map.next_value::<IgnoredAny>()?;
+                        }
+                    }
+                }
+
+                let game_id = game_id.missing_field("game_id")?;
+                let mods_total = mods_total.missing_field("mods_count_total")?;
+                let subscribers_total =
+                    subscribers_total.missing_field("mods_subscribers_total")?;
+                let downloads_total = downloads_total.missing_field("mods_downloads_total")?;
+                let downloads_today = downloads_today.missing_field("mods_downloads_today")?;
+                let downloads_daily_average =
+                    downloads_daily_average.missing_field("mods_downloads_daily_average")?;
+                let expired_at = expired_at.missing_field("date_expires")?;
+
+                Ok(Statistics {
+                    game_id,
+                    mods_total,
+                    subscribers_total,
+                    downloads: Downloads {
+                        total: downloads_total,
+                        today: downloads_today,
+                        daily_average: downloads_daily_average,
+                    },
+                    expired_at,
+                })
+            }
+        }
+
+        deserializer.deserialize_map(StatisticsVisitor)
+    }
+}
+
 /// Part of [`Statistics`]
-#[derive(Debug, Deserialize)]
+#[derive(Debug)]
 #[non_exhaustive]
 pub struct Downloads {
-    #[serde(rename = "mods_downloads_total")]
     pub total: u32,
-    #[serde(rename = "mods_downloads_today")]
     pub today: u32,
-    #[serde(rename = "mods_downloads_daily_average")]
     pub daily_average: u32,
 }
 

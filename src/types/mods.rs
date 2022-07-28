@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 use std::fmt;
 
-use serde::de::{Deserializer, Visitor};
+use serde::de::{Deserializer, IgnoredAny, MapAccess, Visitor};
 use serde::Deserialize;
 use url::Url;
 
 use super::files::File;
-use super::{deserialize_empty_object, TargetPlatform};
+use super::{deserialize_empty_object, DeserializeField, MissingField, TargetPlatform};
 use super::{Logo, Status, User};
 
 /// See the [Mod Object](https://docs.mod.io/#mod-object) docs for more information.
@@ -190,45 +190,174 @@ impl fmt::Debug for Image {
 
 /// See the [Statistics Object](https://docs.mod.io/#mod-stats-object) docs for more
 /// information.
-#[derive(Debug, Deserialize)]
+#[derive(Debug)]
 #[non_exhaustive]
 pub struct Statistics {
     pub mod_id: u32,
     pub downloads_today: u32,
     pub downloads_total: u32,
     pub subscribers_total: u32,
-    #[serde(flatten)]
     pub popularity: Popularity,
-    #[serde(flatten)]
     pub ratings: Ratings,
     pub date_expires: u64,
 }
 
+impl<'de> Deserialize<'de> for Statistics {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(Deserialize)]
+        #[serde(field_identifier, rename_all = "snake_case")]
+        enum Field {
+            ModId,
+            DownloadsToday,
+            DownloadsTotal,
+            SubscribersTotal,
+            PopularityRankPosition,
+            PopularityRankTotalMods,
+            RatingsTotal,
+            RatingsPositive,
+            RatingsNegative,
+            RatingsPercentagePositive,
+            RatingsWeightedAggregate,
+            RatingsDisplayText,
+            DateExpires,
+            Other(String),
+        }
+
+        struct StatisticsVisitor;
+
+        impl<'de> Visitor<'de> for StatisticsVisitor {
+            type Value = Statistics;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                formatter.write_str("struct Statistics")
+            }
+
+            fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
+                let mut mod_id = None;
+                let mut downloads_today = None;
+                let mut downloads_total = None;
+                let mut subscribers_total = None;
+                let mut rank_position = None;
+                let mut rank_total = None;
+                let mut ratings_total = None;
+                let mut ratings_positive = None;
+                let mut ratings_negative = None;
+                let mut ratings_percentage_positive = None;
+                let mut ratings_weighted_aggregate = None;
+                let mut ratings_display_text = None;
+                let mut date_expires = None;
+
+                while let Some(key) = map.next_key()? {
+                    match key {
+                        Field::ModId => {
+                            mod_id.deserialize_value("mod_id", &mut map)?;
+                        }
+                        Field::DownloadsToday => {
+                            downloads_today.deserialize_value("downloads_today", &mut map)?;
+                        }
+                        Field::DownloadsTotal => {
+                            downloads_total.deserialize_value("downloads_total", &mut map)?;
+                        }
+                        Field::SubscribersTotal => {
+                            subscribers_total.deserialize_value("subscribers_total", &mut map)?;
+                        }
+                        Field::PopularityRankPosition => {
+                            rank_position
+                                .deserialize_value("popularity_rank_position", &mut map)?;
+                        }
+                        Field::PopularityRankTotalMods => {
+                            rank_total.deserialize_value("popularity_rank_total_mods", &mut map)?;
+                        }
+                        Field::RatingsTotal => {
+                            ratings_total.deserialize_value("ratings_total", &mut map)?;
+                        }
+                        Field::RatingsPositive => {
+                            ratings_positive.deserialize_value("ratings_positive", &mut map)?;
+                        }
+                        Field::RatingsNegative => {
+                            ratings_negative.deserialize_value("ratings_negative", &mut map)?;
+                        }
+                        Field::RatingsPercentagePositive => {
+                            ratings_percentage_positive
+                                .deserialize_value("ratings_percentage_positive", &mut map)?;
+                        }
+                        Field::RatingsWeightedAggregate => {
+                            ratings_weighted_aggregate
+                                .deserialize_value("ratings_weighted_aggregate", &mut map)?;
+                        }
+                        Field::RatingsDisplayText => {
+                            ratings_display_text
+                                .deserialize_value("ratings_display_text", &mut map)?;
+                        }
+                        Field::DateExpires => {
+                            date_expires.deserialize_value("date_expires", &mut map)?;
+                        }
+                        Field::Other(_) => {
+                            map.next_value::<IgnoredAny>()?;
+                        }
+                    }
+                }
+
+                let mod_id = mod_id.missing_field("mod_id")?;
+                let downloads_today = downloads_today.missing_field("downloads_today")?;
+                let downloads_total = downloads_total.missing_field("downloads_total")?;
+                let subscribers_total = subscribers_total.missing_field("subscribers_total")?;
+                let rank_position = rank_position.missing_field("popularity_rank_position")?;
+                let rank_total = rank_total.missing_field("popularity_rank_total_mods")?;
+                let ratings_total = ratings_total.missing_field("ratings_total")?;
+                let ratings_positive = ratings_positive.missing_field("ratings_positive")?;
+                let ratings_negative = ratings_negative.missing_field("ratings_negative")?;
+                let ratings_percentage_positive =
+                    ratings_percentage_positive.missing_field("ratings_percentage_positive")?;
+                let ratings_weighted_aggregate =
+                    ratings_weighted_aggregate.missing_field("ratings_weighted_aggregate")?;
+                let ratings_display_text =
+                    ratings_display_text.missing_field("ratings_display_text")?;
+                let date_expires = date_expires.missing_field("date_expires")?;
+
+                Ok(Statistics {
+                    mod_id,
+                    downloads_today,
+                    downloads_total,
+                    subscribers_total,
+                    popularity: Popularity {
+                        rank_position,
+                        rank_total,
+                    },
+                    ratings: Ratings {
+                        total: ratings_total,
+                        positive: ratings_positive,
+                        negative: ratings_negative,
+                        percentage_positive: ratings_percentage_positive,
+                        weighted_aggregate: ratings_weighted_aggregate,
+                        display_text: ratings_display_text,
+                    },
+                    date_expires,
+                })
+            }
+        }
+
+        deserializer.deserialize_map(StatisticsVisitor)
+    }
+}
+
 /// Part of [`Statistics`]
-#[derive(Debug, Deserialize)]
+#[derive(Debug)]
 #[non_exhaustive]
 pub struct Popularity {
-    #[serde(rename = "popularity_rank_position")]
     pub rank_position: u32,
-    #[serde(rename = "popularity_rank_total_mods")]
     pub rank_total: u32,
 }
 
 /// Part of [`Statistics`]
-#[derive(Debug, Deserialize)]
+#[derive(Debug)]
 #[non_exhaustive]
 pub struct Ratings {
-    #[serde(rename = "ratings_total")]
     pub total: u32,
-    #[serde(rename = "ratings_positive")]
     pub positive: u32,
-    #[serde(rename = "ratings_negative")]
     pub negative: u32,
-    #[serde(rename = "ratings_percentage_positive")]
     pub percentage_positive: u32,
-    #[serde(rename = "ratings_weighted_aggregate")]
     pub weighted_aggregate: f32,
-    #[serde(rename = "ratings_display_text")]
     pub display_text: String,
 }
 

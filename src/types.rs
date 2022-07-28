@@ -7,11 +7,14 @@ use url::Url;
 
 #[macro_use]
 mod macros;
+mod utils;
 
 pub mod auth;
 pub mod files;
 pub mod games;
 pub mod mods;
+
+use utils::{DeserializeField, MissingField};
 
 /// See the [Access Token Object](https://docs.mod.io/#access-token-object) docs for more
 /// information.
