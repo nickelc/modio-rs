@@ -194,6 +194,7 @@ impl fmt::Debug for Image {
 #[non_exhaustive]
 pub struct Statistics {
     pub mod_id: u32,
+    pub downloads_today: u32,
     pub downloads_total: u32,
     pub subscribers_total: u32,
     #[serde(flatten)]
