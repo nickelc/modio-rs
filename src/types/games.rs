@@ -37,6 +37,13 @@ pub struct Game {
     pub instructions: Option<String>,
     pub instructions_url: Option<Url>,
     pub profile_url: Url,
+    /// The field is `None` when the game object is fetched from `/me/games`.
+    #[serde(deserialize_with = "deserialize_empty_object")]
+    pub stats: Option<Statistics>,
+    /// The field is `None` when the game object is fetched from `/me/games`.
+    #[serde(deserialize_with = "deserialize_empty_object")]
+    pub theme: Option<Theme>,
+    pub other_urls: Vec<OtherUrl>,
     pub tag_options: Vec<TagOption>,
     pub platforms: Vec<Platform>,
 }
@@ -317,6 +324,33 @@ impl fmt::Display for TagType {
             Self::Checkboxes => fmt.write_str("checkboxes"),
             Self::Dropdown => fmt.write_str("dropdown"),
         }
+    }
+}
+
+/// See the [Theme Object](https://docs.mod.io/#theme-object) docs for more information.
+#[derive(Debug, Deserialize)]
+pub struct Theme {
+    pub primary: String,
+    pub dark: String,
+    pub light: String,
+    pub success: String,
+    pub warning: String,
+    pub danger: String,
+}
+
+/// See the [Game OtherUrls Object](https://docs.mod.io/#game-otherurls-object) docs for more information.
+#[derive(Deserialize)]
+pub struct OtherUrl {
+    pub label: String,
+    pub url: Url,
+}
+
+impl fmt::Debug for OtherUrl {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("OtherUrl")
+            .field("label", &self.label)
+            .field("url", &self.url.as_str())
+            .finish()
     }
 }
 
