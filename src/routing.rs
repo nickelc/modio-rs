@@ -161,6 +161,9 @@ define_routes! {
     { UserMods, GET: "/me/mods", Token },
     { UserFiles, GET: "/me/files", Token },
     { UserRatings, GET: "/me/ratings", Token },
+    { UserMuted, GET: "/me/users/muted", Token },
+    { MuteUser, POST: "/users/{}/mute", [user_id], Token },
+    { UnmuteUser, DELETE: "/users/{}/mute", [user_id], Token },
     { SubmitReport, POST: "/report", Token },
 }
 

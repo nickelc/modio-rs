@@ -75,6 +75,28 @@ impl Me {
     pub fn ratings(self, filter: Filter) -> Query<Rating> {
         Query::new(self.modio, Route::UserRatings, filter)
     }
+
+    /// Get all users muted by the authenticated user. [required: token]
+    pub fn muted_users(self) -> Query<User> {
+        Query::new(self.modio, Route::UserMuted, Filter::default())
+    }
+
+    /// Mute a user. [required: token]
+    ///
+    /// This will prevent mod.io from returning mods authored by the muted user.
+    pub async fn mute_user(self, user_id: u32) -> Result<()> {
+        self.modio.request(Route::MuteUser { user_id }).send().await
+    }
+
+    /// Unmute a previously muted user. [required: token]
+    ///
+    /// This will re-enable mod.io return mods authored by the muted user again.
+    pub async fn unmute_user(self, user_id: u32) -> Result<()> {
+        self.modio
+            .request(Route::UnmuteUser { user_id })
+            .send()
+            .await
+    }
 }
 
 /// Filters for events, subscriptions and ratings.
