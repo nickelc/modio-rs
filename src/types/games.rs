@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fmt;
 
 use serde::de::{Deserializer, IgnoredAny, MapAccess, Visitor};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use url::Url;
 
 use crate::TargetPlatform;
@@ -311,7 +311,7 @@ pub struct TagOption {
 }
 
 /// Defines the type of a tag. See [`TagOption`].
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "lowercase")]
 #[non_exhaustive]
 pub enum TagType {

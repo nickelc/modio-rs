@@ -266,7 +266,7 @@ impl serde::ser::Serialize for AddTagsOptions {
         let len = 3 + usize::from(self.locked) + self.tags.len();
         let mut map = serializer.serialize_map(Some(len))?;
         map.serialize_entry("name", &self.name)?;
-        map.serialize_entry("type", &self.kind.to_string())?;
+        map.serialize_entry("type", &self.kind)?;
         map.serialize_entry("hidden", &self.hidden.to_string())?;
         if self.locked {
             map.serialize_entry("locked", &self.locked)?;
