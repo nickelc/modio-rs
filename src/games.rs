@@ -222,6 +222,7 @@ pub struct AddTagsOptions {
     name: String,
     kind: TagType,
     hidden: bool,
+    locked: bool,
     tags: Vec<String>,
 }
 
@@ -231,6 +232,7 @@ impl AddTagsOptions {
             name: name.into(),
             kind,
             hidden: false,
+            locked: false,
             tags: tags.to_vec(),
         }
     }
@@ -240,7 +242,15 @@ impl AddTagsOptions {
             name: name.into(),
             kind,
             hidden: true,
+            locked: false,
             tags: tags.to_vec(),
+        }
+    }
+
+    pub fn locked(self, value: bool) -> Self {
+        Self {
+            locked: value,
+            ..self
         }
     }
 }
@@ -253,10 +263,14 @@ impl serde::ser::Serialize for AddTagsOptions {
     {
         use serde::ser::SerializeMap;
 
-        let mut map = serializer.serialize_map(Some(self.tags.len() + 3))?;
+        let len = 3 + usize::from(self.locked) + self.tags.len();
+        let mut map = serializer.serialize_map(Some(len))?;
         map.serialize_entry("name", &self.name)?;
         map.serialize_entry("type", &self.kind.to_string())?;
         map.serialize_entry("hidden", &self.hidden.to_string())?;
+        if self.locked {
+            map.serialize_entry("locked", &self.locked)?;
+        }
         for t in &self.tags {
             map.serialize_entry("tags[]", t)?;
         }

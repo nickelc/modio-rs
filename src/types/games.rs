@@ -306,6 +306,7 @@ pub struct TagOption {
     #[serde(rename = "tag_count_map")]
     pub tag_count: HashMap<String, u32>,
     pub hidden: bool,
+    pub locked: bool,
     pub tags: Vec<String>,
 }
 
