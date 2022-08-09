@@ -88,7 +88,7 @@ async fn first() -> Result<()> {
     let first = modio.games().search(Filter::default()).first().await?;
 
     assert!(first.is_some());
-    assert_eq!(1, first.unwrap().id);
+    assert_eq!(2, first.unwrap().id, "id of first item");
     Ok(())
 }
 
@@ -112,9 +112,9 @@ async fn first_page() -> Result<()> {
     let filter = Filter::default();
     let list = modio.games().search(filter).first_page().await?;
 
-    assert_eq!(7, list.len());
-    assert_eq!(1, list[0].id);
-    assert_eq!(51, list[6].id);
+    assert_eq!(7, list.len(), "result count");
+    assert_eq!(2, list[0].id, "id of first item");
+    assert_eq!(63, list[6].id, "id of last item");
     Ok(())
 }
 
@@ -136,9 +136,9 @@ async fn collect() -> Result<()> {
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
     let list = modio.games().search(Filter::default()).collect().await?;
 
-    assert_eq!(31, list.len());
-    assert_eq!(1, list[0].id);
-    assert_eq!(296, list[30].id);
+    assert_eq!(31, list.len(), "result count");
+    assert_eq!(2, list[0].id, "id of first item");
+    assert_eq!(304, list[30].id, "id of last item");
     Ok(())
 }
 
@@ -165,13 +165,23 @@ async fn paged() -> Result<()> {
     let mut total = 0;
     let mut count = 0;
     // First & Last Game ID's of every loaded page result
-    let mut ids = vec![(1, 51), (63, 152), (164, 214), (224, 251), (255, 296)].into_iter();
+    let mut ids = vec![(2, 63), (77, 164), (166, 227), (231, 264), (295, 304)].into_iter();
     let size_hint = iter.size_hint();
 
     while let Ok(Some(list)) = iter.try_next().await {
         if let Some((first, last)) = ids.next() {
-            assert_eq!(list.first().map(|g| g.id), Some(first));
-            assert_eq!(list.last().map(|g| g.id), Some(last));
+            assert_eq!(
+                list.first().map(|g| g.id),
+                Some(first),
+                "id of first item from page {}",
+                count + 1
+            );
+            assert_eq!(
+                list.last().map(|g| g.id),
+                Some(last),
+                "id of last item from page {}",
+                count + 1
+            );
         }
         count += 1;
         total += list.len();
