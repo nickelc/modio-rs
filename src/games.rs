@@ -227,7 +227,7 @@ pub struct AddTagsOptions {
 }
 
 impl AddTagsOptions {
-    pub fn public<S: Into<String>>(name: S, kind: TagType, tags: &[String]) -> Self {
+    pub fn new<S: Into<String>>(name: S, kind: TagType, tags: &[String]) -> Self {
         Self {
             name: name.into(),
             kind,
@@ -237,13 +237,10 @@ impl AddTagsOptions {
         }
     }
 
-    pub fn hidden<S: Into<String>>(name: S, kind: TagType, tags: &[String]) -> Self {
+    pub fn hidden(self, value: bool) -> Self {
         Self {
-            name: name.into(),
-            kind,
-            hidden: true,
-            locked: false,
-            tags: tags.to_vec(),
+            hidden: value,
+            ..self
         }
     }
 
