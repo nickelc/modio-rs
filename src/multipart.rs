@@ -45,7 +45,7 @@ impl From<FileSource> for Part {
     fn from(source: FileSource) -> Part {
         Part::stream(source.body)
             .file_name(source.filename)
-            .mime_str(&source.mime.to_string())
+            .mime_str(source.mime.as_ref())
             .expect("FileSource::into::<Part>()")
     }
 }

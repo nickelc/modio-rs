@@ -11,14 +11,14 @@ use crate::Result;
 pub use crate::types::auth::{Link, Links, Terms};
 
 /// [mod.io](https://mod.io) credentials. API key with optional OAuth2 access token.
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct Credentials {
     pub api_key: String,
     pub token: Option<Token>,
 }
 
 /// Access token and optional Unix timestamp of the date this token will expire.
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct Token {
     pub value: String,
     pub expired_at: Option<u64>,
