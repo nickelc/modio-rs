@@ -1,4 +1,28 @@
-### v0.6.3
+### v0.7.0 (2022-09-01)
+
+* Add support for muting users.
+
+* Update/add fields to several structs.
+  `Game`: +stats +theme +other\_urls
+  `TagOption`: +locked
+  Mod `Statistics`: +downloads\_today
+  Mod `Comment`: +resource\_id -mod\_id -karma\_guest
+
+* Remove the `submitted_by` field from the game object.
+
+* Edit game endpoint is removed.
+
+* Add/edit/delete endpoints for team members are removed.
+
+* Add support for the new `platforms` fields of game, mod and modfile structs.
+
+* Update supported target platforms & portals. (Platform: +Oculus -Wii, Portal: +Facebook +Discord)
+
+* Rename `EventType::Other` enum variants to `Unknown`.
+
+* Preserve values for unknown enum variants.
+
+### v0.6.3 (2022-08-08)
 
 * Fix missing feature for `tokio-util`.
 
