@@ -58,10 +58,10 @@ bitflags! {
     ///
     /// This is only relevant if the parent game allows mods to be labelled as mature.
     pub struct MaturityOption: u8 {
-        const ALCOHOL   = 0b0001;
-        const DRUGS     = 0b0010;
-        const VIOLENCE  = 0b0100;
-        const EXPLICIT  = 0b1000;
+        const ALCOHOL   = 1;
+        const DRUGS     = 2;
+        const VIOLENCE  = 4;
+        const EXPLICIT  = 8;
         const ALL = Self::ALCOHOL.bits | Self::DRUGS.bits | Self::VIOLENCE.bits | Self::EXPLICIT.bits;
     }
 }

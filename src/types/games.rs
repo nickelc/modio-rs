@@ -110,33 +110,33 @@ bitflags! {
     /// Community features enabled on the mod.io website.
     pub struct CommunityOptions: u8 {
         /// Discussion board enabled.
-        const DISCUSSIONS       = 0b0001;
+        const DISCUSSIONS       = 1;
         /// Guides & News enabled.
-        const GUIDES_NEWS       = 0b0010;
+        const GUIDES_NEWS       = 2;
         /// "Subscribe to install" button disabled.
-        const DISABLE_SUBSCRIBE = 0b0100;
+        const DISABLE_SUBSCRIBE = 4;
         const ALL = Self::DISCUSSIONS.bits | Self::GUIDES_NEWS.bits | Self::DISABLE_SUBSCRIBE.bits;
     }
 
     /// Revenue capabilities mods can enable.
     pub struct RevenueOptions: u8 {
         /// Allow mods to be sold.
-        const SELL      = 0b0001;
+        const SELL      = 1;
         /// Allow mods to receive donations.
-        const DONATIONS = 0b0010;
+        const DONATIONS = 2;
         /// Allow mods to be traded.
-        const TRADE     = 0b0100;
+        const TRADE     = 4;
         /// Allow mods to control supply and scarcity.
-        const SCARCITY  = 0b1000;
+        const SCARCITY  = 8;
         const ALL = Self::SELL.bits | Self::DONATIONS.bits | Self::TRADE.bits | Self::SCARCITY.bits;
     }
 
     /// Level of API access allowed by a game.
     pub struct ApiAccessOptions: u8 {
         /// Allow third parties to access a game's API endpoints.
-        const ALLOW_THIRD_PARTY     = 0b0001;
+        const ALLOW_THIRD_PARTY     = 1;
         /// Allow mods to be downloaded directly.
-        const ALLOW_DIRECT_DOWNLOAD = 0b0010;
+        const ALLOW_DIRECT_DOWNLOAD = 2;
         const ALL = Self::ALLOW_THIRD_PARTY.bits | Self::ALLOW_DIRECT_DOWNLOAD.bits;
     }
 }
