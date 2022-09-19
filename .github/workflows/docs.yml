@@ -2,42 +2,44 @@ name: docs
 
 on:
   push:
-    branches:
-      - master
-    tags:
-      - v*
+    branches: [master]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  docs:
-    name: Deploy docs to gh-pages
+  build:
+    name: Build docs
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+      - uses: dtolnay/rust-toolchain@nightly
 
-      - name: Install rust (nightly)
-        uses: hecrj/setup-rust-action@v1
-        with:
-          rust-version: nightly
-
-      - name: Generate docs
+      - name: Build docs
         run: cargo doc --no-deps --all-features
 
       - name: Prepare docs
-        shell: bash -e -O extglob {0}
         run: |
-          DIR=${GITHUB_REF/refs\/+(heads|tags)\//}
-          mkdir -p ./docs/$DIR
-          touch ./docs/.nojekyll
-          echo '<meta http-equiv="refresh" content="0;url=modio/index.html">' > ./docs/$DIR/index.html
-          mv ./target/doc/* ./docs/$DIR/
+          mkdir -p _site/master
+          echo '<meta http-equiv="refresh" content="0;url=master/modio/index.html">' > _site/index.html
+          echo '<meta http-equiv="refresh" content="0;url=modio/index.html">' > _site/master/index.html
+          mv target/doc/* _site/master
 
-      - name: Deploy docs
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          publish_branch: gh-pages
-          publish_dir: ./docs
-          allow_empty_commit: false
-          keep_files: true
+      - uses: actions/upload-pages-artifact@v1
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
