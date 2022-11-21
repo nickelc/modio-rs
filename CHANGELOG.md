@@ -1,3 +1,7 @@
+### v0.7.1 (2022-11-21)
+
+* Make the endpoint & reference types clonable.
+
 ### v0.7.0 (2022-09-01)
 
 * Add support for muting users.
