@@ -17,6 +17,7 @@ pub use crate::types::Logo;
 pub use crate::types::Status;
 
 /// Interface for games.
+#[derive(Clone)]
 pub struct Games {
     modio: Modio,
 }
@@ -40,6 +41,7 @@ impl Games {
 }
 
 /// Reference interface of a game.
+#[derive(Clone)]
 pub struct GameRef {
     modio: Modio,
     id: u32,
@@ -90,6 +92,7 @@ impl GameRef {
 }
 
 /// Interface for tag options.
+#[derive(Clone)]
 pub struct Tags {
     modio: Modio,
     game_id: u32,

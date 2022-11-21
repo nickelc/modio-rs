@@ -14,6 +14,7 @@ use crate::TargetPlatform;
 pub use crate::types::files::{Download, File, FileHash, Platform, PlatformStatus};
 
 /// Interface for the modfiles of a mod.
+#[derive(Clone)]
 pub struct Files {
     modio: Modio,
     game: u32,
@@ -62,6 +63,7 @@ impl Files {
 }
 
 /// Reference interface of a modfile.
+#[derive(Clone)]
 pub struct FileRef {
     modio: Modio,
     game: u32,

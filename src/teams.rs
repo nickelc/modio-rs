@@ -4,6 +4,7 @@ use crate::prelude::*;
 pub use crate::types::mods::{TeamLevel, TeamMember};
 
 /// Interface for the team members of a mod.
+#[derive(Clone)]
 pub struct Members {
     modio: Modio,
     game: u32,

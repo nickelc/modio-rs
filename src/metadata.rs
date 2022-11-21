@@ -5,6 +5,7 @@ use serde::Deserialize;
 use crate::prelude::*;
 pub use crate::types::mods::MetadataMap;
 
+#[derive(Clone)]
 pub struct Metadata {
     modio: Modio,
     game: u32,
