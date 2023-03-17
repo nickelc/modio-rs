@@ -9,6 +9,7 @@ pub use crate::types::{Avatar, User};
 pub use crate::types::{Event, EventType};
 
 /// Interface for resources owned by the authenticated user or is team member of.
+#[derive(Clone)]
 pub struct Me {
     modio: Modio,
 }

@@ -1,6 +1,7 @@
 //! Reports interface
 use crate::prelude::*;
 
+#[derive(Clone)]
 pub struct Reports {
     modio: Modio,
 }

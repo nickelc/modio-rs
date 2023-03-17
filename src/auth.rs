@@ -133,6 +133,7 @@ impl fmt::Display for Error {
 ///     Ok(())
 /// }
 /// ```
+#[derive(Clone)]
 pub struct Auth {
     modio: Modio,
 }
