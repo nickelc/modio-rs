@@ -114,8 +114,14 @@ bitflags! {
         /// Guides & News enabled.
         const GUIDES_NEWS       = 2;
         /// "Subscribe to install" button disabled.
+        #[deprecated(note = "Flag is replaced by `PIN_ON_HOMEPAGE`")]
         const DISABLE_SUBSCRIBE = 4;
-        const ALL = Self::DISCUSSIONS.bits | Self::GUIDES_NEWS.bits | Self::DISABLE_SUBSCRIBE.bits;
+        const PIN_ON_HOMEPAGE   = 4;
+        const SHOW_ON_HOMEPAGE  = 8;
+        const SHOW_MORE_ON_HOMEPAGE = 16;
+        const ALLOW_CHANGE_STATUS   = 32;
+        const ALL = Self::DISCUSSIONS.bits() | Self::GUIDES_NEWS.bits() | Self::PIN_ON_HOMEPAGE.bits()
+            | Self::SHOW_ON_HOMEPAGE.bits() | Self::SHOW_MORE_ON_HOMEPAGE.bits() | Self::ALLOW_CHANGE_STATUS.bits();
     }
 
     /// Revenue capabilities mods can enable.
