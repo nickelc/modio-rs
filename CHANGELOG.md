@@ -1,3 +1,9 @@
+### v0.7.2 (2023-03-17)
+
+- Bump MSRV to 1.60
+- Add new community options for games
+- Add missing `Clone` trait impls
+
 ### v0.7.1 (2022-11-21)
 
 * Make the endpoint & reference types clonable.
