@@ -70,7 +70,7 @@ jobs:
 
       - name: Check minimal versions
         if: matrix.rust == 'nightly'
-        run: cargo clean; cargo update -Z minimal-versions; cargo c
+        run: cargo clean; cargo update -Z minimal-versions; cargo check --no-default-features --features rustls-tls
 
   MSRV:
     runs-on: ubuntu-latest
