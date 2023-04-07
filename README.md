@@ -28,11 +28,7 @@ that facilitates the upload, search, browsing, downloading and trading of mods i
 
 ## Usage
 
-To use `modio`, add this to your `Cargo.toml`
-```toml
-[dependencies]
-modio = "0.7"
-```
+To use `modio`, execute `cargo add modio`.
 
 ### Basic Setup
 ```rust
