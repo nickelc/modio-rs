@@ -22,6 +22,7 @@ pub struct Mod {
     pub date_updated: u64,
     pub date_live: u64,
     pub maturity_option: MaturityOption,
+    pub community_options: CommunityOptions,
     pub monetisation_options: MonetisationOptions,
     pub price: f32,
     pub tax: u32,
@@ -57,6 +58,12 @@ enum_number! {
 }
 
 bitflags! {
+    /// Community options a mod can enable.
+    pub struct CommunityOptions: u8 {
+        /// Comments enabled.
+        const COMMENTS = 1;
+    }
+
     /// Maturity options a mod can be flagged.
     ///
     /// This is only relevant if the parent game allows mods to be labelled as mature.
