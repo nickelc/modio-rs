@@ -41,6 +41,7 @@ impl TargetPlatform {
             Self::Windows => HeaderValue::from_static("Windows"),
             Self::PS4 => HeaderValue::from_static("PS4"),
             Self::PS5 => HeaderValue::from_static("PS5"),
+            Self::Source => HeaderValue::from_static("Source"),
             Self::Switch => HeaderValue::from_static("Switch"),
             Self::XboxOne => HeaderValue::from_static("XboxOne"),
             Self::XboxSeriesX => HeaderValue::from_static("XboxSeriesX"),
