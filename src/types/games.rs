@@ -95,19 +95,6 @@ enum_number! {
     }
 }
 
-enum_number! {
-    /// Option to allow developers to select if they flag their mods containing mature content.
-    #[derive(Clone, Copy, Debug, Deserialize)]
-    #[serde(from = "u8")]
-    #[non_exhaustive]
-    pub enum MaturityOptions {
-        NotAllowed = 0,
-        /// Allow flagging mods as mature.
-        Allowed = 1,
-        _ => Unknown(u8),
-    }
-}
-
 bitflags! {
     /// Community features enabled on the mod.io website.
     pub struct CommunityOptions: u8 {
@@ -155,6 +142,15 @@ bitflags! {
         /// Allow mods to be downloaded directly.
         const ALLOW_DIRECT_DOWNLOAD = 2;
         const ALL = Self::ALLOW_THIRD_PARTY.bits | Self::ALLOW_DIRECT_DOWNLOAD.bits;
+    }
+
+    /// Mature content options.
+    pub struct MaturityOptions: u8 {
+        const NOT_ALLOWED = 0;
+        /// Allow flagging mods as mature.
+        const ALLOWED     = 1;
+        /// The game is for mature audiences only.
+        const ADULT_ONLY  = 2;
     }
 }
 
