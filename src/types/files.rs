@@ -16,6 +16,7 @@ pub struct File {
     pub date_added: u64,
     pub virus_scan: VirusScan,
     pub filesize: u64,
+    pub filesize_uncompressed: u64,
     pub filehash: FileHash,
     pub filename: String,
     pub version: Option<String>,
@@ -38,6 +39,7 @@ impl<'de> Deserialize<'de> for File {
             VirusPositive,
             VirustotalHash,
             Filesize,
+            FilesizeUncompressed,
             Filehash,
             Filename,
             Version,
@@ -66,6 +68,7 @@ impl<'de> Deserialize<'de> for File {
                 let mut virus_result = None;
                 let mut virustotal_hash = None;
                 let mut filesize = None;
+                let mut filesize_uncompressed = None;
                 let mut filehash = None;
                 let mut filename = None;
                 let mut version = None;
@@ -99,6 +102,10 @@ impl<'de> Deserialize<'de> for File {
                         }
                         Field::Filesize => {
                             filesize.deserialize_value("filesize", &mut map)?;
+                        }
+                        Field::FilesizeUncompressed => {
+                            filesize_uncompressed
+                                .deserialize_value("filesize_uncompressed", &mut map)?;
                         }
                         Field::Filehash => {
                             filehash.deserialize_value("filehash", &mut map)?;
@@ -135,6 +142,8 @@ impl<'de> Deserialize<'de> for File {
                 let virus_result = virus_result.missing_field("virus_positive")?;
                 let virustotal_hash = virustotal_hash.missing_field("virustotal_hash")?;
                 let filesize = filesize.missing_field("filesize")?;
+                let filesize_uncompressed =
+                    filesize_uncompressed.missing_field("filesize_uncompressed")?;
                 let filehash = filehash.missing_field("filehash")?;
                 let filename = filename.missing_field("filename")?;
                 let version = version.missing_field("version")?;
@@ -154,6 +163,7 @@ impl<'de> Deserialize<'de> for File {
                         virustotal_hash,
                     },
                     filesize,
+                    filesize_uncompressed,
                     filehash,
                     filename,
                     version,
