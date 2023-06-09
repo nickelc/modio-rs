@@ -142,7 +142,7 @@ async fn request_file(modio: Modio, action: DownloadAction) -> Result<Response> 
             version,
             policy,
         } => {
-            use crate::files::filters::{DateAdded, Version};
+            use crate::files::filters::Version;
             use crate::filter::prelude::*;
             use ResolvePolicy::*;
 
