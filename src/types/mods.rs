@@ -22,6 +22,9 @@ pub struct Mod {
     pub date_updated: u64,
     pub date_live: u64,
     pub maturity_option: MaturityOption,
+    pub monetisation_options: MonetisationOptions,
+    pub price: f32,
+    pub tax: u32,
     pub logo: Logo,
     pub homepage_url: Option<Url>,
     pub name: String,
@@ -63,6 +66,15 @@ bitflags! {
         const VIOLENCE  = 4;
         const EXPLICIT  = 8;
         const ALL = Self::ALCOHOL.bits | Self::DRUGS.bits | Self::VIOLENCE.bits | Self::EXPLICIT.bits;
+    }
+
+    /// Monetisation options of a mod.
+    pub struct MonetisationOptions: u8 {
+        const ENABLED = 1;
+        /// Recognition enabled.
+        const RECOGNITION = 2;
+        /// Marketplace enabled.
+        const MARKETPLACE = 4;
     }
 }
 
