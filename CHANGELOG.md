@@ -1,3 +1,7 @@
+### v0.7.3 (2023-06-09)
+
+- Add new `Source` platform.
+
 ### v0.7.2 (2023-03-17)
 
 - Bump MSRV to 1.60
