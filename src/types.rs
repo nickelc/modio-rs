@@ -166,16 +166,12 @@ impl fmt::Debug for Logo {
     }
 }
 
-enum_number! {
+newtype_enum! {
     /// See [Status & Visibility](https://docs.mod.io/#status-amp-visibility) docs for more information.
-    #[derive(Clone, Copy, Debug, Deserialize)]
-    #[serde(from = "u8")]
-    #[non_exhaustive]
-    pub enum Status {
-        NotAccepted = 0,
-        Accepted = 1,
-        Deleted = 3,
-        _ => Unknown(u8),
+    pub struct Status: u8 {
+        const NOT_ACCEPTED = 0;
+        const ACCEPTED     = 1;
+        const DELETED      = 3;
     }
 }
 

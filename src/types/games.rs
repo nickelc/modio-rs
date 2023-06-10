@@ -50,48 +50,32 @@ pub struct Game {
     pub platforms: Vec<Platform>,
 }
 
-enum_number! {
+newtype_enum! {
     /// Presentation style used on the mod.io website.
-    #[derive(Clone, Copy, Debug, Deserialize)]
-    #[serde(from = "u8")]
-    #[non_exhaustive]
-    pub enum PresentationOption {
+    pub struct PresentationOption: u8 {
         /// Displays mods in a grid.
-        GridView = 0,
+        const GRID_VIEW  = 0;
         /// Displays mods in a table.
-        TableView = 1,
-        _ => Unknown(u8),
+        const TABLE_VIEW = 1;
     }
-}
 
-enum_number! {
     /// Submission process modders must follow.
-    #[derive(Clone, Copy, Debug, Deserialize)]
-    #[serde(from = "u8")]
-    #[non_exhaustive]
-    pub enum SubmissionOption {
+    pub struct SubmissionOption: u8 {
         /// Mod uploads must occur via the API using a tool by the game developers.
-        ApiOnly = 0,
+        const API_ONLY = 0;
         /// Mod uploads can occur from anywhere, include the website and API.
-        Anywhere = 1,
-        _ => Unknown(u8),
+        const ANYWHERE = 1;
     }
-}
 
-enum_number! {
     /// Curation process used to approve mods.
-    #[derive(Clone, Copy, Debug, Deserialize)]
-    #[serde(from = "u8")]
-    #[non_exhaustive]
-    pub enum CurationOption {
+    pub struct CurationOption: u8 {
         /// No curation: Mods are immediately available to play.
-        No = 0,
+        const NO_CURATION = 0;
         /// Paid curation: Mods are immediately to play unless they choose to receive
         /// donations. These mods must be accepted to be listed.
-        Paid = 1,
+        const PAID = 1;
         /// Full curation: All mods must be accepted by someone to be listed.
-        Full = 2,
-        _ => Unknown(u8),
+        const FULL = 2;
     }
 }
 

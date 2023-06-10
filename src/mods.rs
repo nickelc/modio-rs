@@ -605,9 +605,9 @@ impl AddModOptions {
     pub fn visible(self, v: bool) -> Self {
         Self {
             visible: if v {
-                Some(Visibility::Public)
+                Some(Visibility::PUBLIC)
             } else {
-                Some(Visibility::Hidden)
+                Some(Visibility::HIDDEN)
             },
             ..self
         }
@@ -677,9 +677,9 @@ impl EditModOptions {
     #[must_use]
     pub fn visible(self, v: bool) -> Self {
         let value = if v {
-            Visibility::Public
+            Visibility::PUBLIC
         } else {
-            Visibility::Hidden
+            Visibility::HIDDEN
         };
         let mut params = self.params;
         params.insert("visible", value.to_string());

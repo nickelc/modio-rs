@@ -50,54 +50,60 @@ macro_rules! bitflags {
 }
 // }}}
 
-// macro: enum_number {{{
-macro_rules! enum_number {
+// macro: newtype_enum {{{
+macro_rules! newtype_enum {
     (
         $(#[$outer:meta])*
-        $vis:vis enum $Enum:ident {
+        $vis:vis struct $NewtypeEnum:ident: $T:ty {
             $(
-                $(#[$inner:ident $($args:tt)*])*
-                $Variant:ident = $value:literal,
+                $(#[$inner:meta $($args:tt)*])*
+                const $Variant:ident = $value:expr;
             )*
-            _ => Unknown($T:ty),
         }
+
+        $($t:tt)*
     ) => {
         $(#[$outer])*
-        $vis enum $Enum {
+        #[derive(Clone, Copy, Eq, PartialEq, Deserialize)]
+        $vis struct $NewtypeEnum($T);
+
+        impl $NewtypeEnum {
             $(
                 $(#[$inner $($args)*])*
-                $Variant,
+                pub const $Variant: Self = Self($value);
             )*
-            /// Variant value is unknown.
-            Unknown($T),
-        }
 
-        impl ::std::fmt::Display for $Enum {
-            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-                <$T>::from(*self).fmt(f)
+            /// Create a new value from a raw value.
+            pub fn new(raw_value: $T) -> Self {
+                Self(raw_value)
+            }
+
+            /// Retrieve the raw value.
+            pub fn get(self) -> $T {
+                self.0
             }
         }
 
-        impl From<$T> for $Enum {
-            fn from(value: $T) -> Self {
-                #[allow(unused_doc_comments)]
-                match value {
-                    $($(#[$inner $($args)*])* $value => Self::$Variant,)*
-                    unknown => Self::Unknown(unknown),
+        impl std::fmt::Debug for $NewtypeEnum {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                match *self {
+                    $(Self::$Variant => f.write_str(concat!(stringify!($NewtypeEnum), "::", stringify!($Variant))),)*
+                    _ => f.debug_tuple(stringify!($NewtypeEnum)).field(&self.0).finish(),
                 }
             }
         }
 
-        impl From<$Enum> for $T {
-            fn from(value: $Enum) -> Self {
-                #[allow(unused_doc_comments)]
-                match value {
-                    $($(#[$inner $($args)*])* $Enum::$Variant => $value,)*
-                    $Enum::Unknown(unknown) => unknown,
-                }
+        impl std::fmt::Display for $NewtypeEnum {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                std::fmt::Display::fmt(&self.0, f)
             }
+        }
+
+        newtype_enum! {
+            $($t)*
         }
     };
+    () => {};
 }
 // }}}
 

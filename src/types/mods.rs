@@ -45,15 +45,11 @@ pub struct Mod {
     pub platforms: Vec<Platform>,
 }
 
-enum_number! {
+newtype_enum! {
     /// See [Status & Visibility](https://docs.mod.io/#status-amp-visibility) docs for more information.
-    #[derive(Clone, Copy, Debug, Deserialize)]
-    #[serde(from = "u8")]
-    #[non_exhaustive]
-    pub enum Visibility {
-        Hidden = 0,
-        Public = 1,
-        _ => Unknown(u8),
+    pub struct Visibility: u8 {
+        const HIDDEN = 0;
+        const PUBLIC = 1;
     }
 }
 
@@ -574,22 +570,18 @@ pub struct TeamMember {
     pub position: String,
 }
 
-enum_number! {
+newtype_enum! {
     /// Defines the role of a team member.
-    #[derive(Clone, Copy, Debug, Deserialize)]
-    #[serde(from = "u8")]
-    #[non_exhaustive]
-    pub enum TeamLevel {
-        Moderator = 1,
-        Creator = 4,
-        Admin = 8,
-        _ => Unknown(u8),
+    pub struct TeamLevel: u8 {
+        const MODERATOR = 1;
+        const CREATOR   = 4;
+        const ADMIN     = 8;
     }
 }
 
 impl TeamLevel {
     pub fn value(self) -> u64 {
-        u8::from(self).into()
+        u64::from(self.get())
     }
 }
 
