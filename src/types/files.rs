@@ -152,6 +152,7 @@ impl<'de> Deserialize<'de> for File {
                 let download = download.missing_field("download")?;
                 let platforms = platforms.missing_field("platforms")?;
 
+                #[allow(deprecated)]
                 Ok(File {
                     id,
                     mod_id,
@@ -186,6 +187,7 @@ pub struct VirusScan {
     pub date_scanned: u64,
     pub status: u32,
     pub result: u32,
+    #[deprecated(note = "No longer used and will be removed in subsequent API version.")]
     pub virustotal_hash: Option<String>,
 }
 
