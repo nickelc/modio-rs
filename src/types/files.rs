@@ -185,10 +185,29 @@ impl<'de> Deserialize<'de> for File {
 #[non_exhaustive]
 pub struct VirusScan {
     pub date_scanned: u64,
-    pub status: u32,
-    pub result: u32,
+    pub status: VirusStatus,
+    pub result: VirusResult,
     #[deprecated(note = "No longer used and will be removed in subsequent API version.")]
     pub virustotal_hash: Option<String>,
+}
+
+newtype_enum! {
+    /// See the [Modfile Object](https://docs.mod.io/#modfile-object) docs for more information.
+    pub struct VirusStatus: u8 {
+        const NOT_SCANNED       = 0;
+        const SCAN_COMPLETED    = 1;
+        const IN_PROGRESS       = 2;
+        const TOO_LARGE_TO_SCAN = 3;
+        const FILE_NOT_FOUND    = 4;
+        const ERROR_SCANNING    = 5;
+    }
+
+    /// See the [Modfile Object](https://docs.mod.io/#modfile-object) docs for more information.
+    pub struct VirusResult: u8 {
+        const NO_THREATS_DETECTED = 0;
+        const MALICIOUS           = 1;
+        const POTENTIALLY_HARMFUL = 2;
+    }
 }
 
 /// See the [Filehash Object](https://docs.mod.io/#filehash-object) docs for more information.
