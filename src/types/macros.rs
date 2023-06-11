@@ -11,9 +11,12 @@ macro_rules! bitflags {
 
         $($t:tt)*
     ) => {
+        $(#[$outer])*
+        #[derive(Copy, Clone, Eq, PartialEq, Deserialize)]
+        $vis struct $BitFlags($T);
+
         bitflags::bitflags! {
-            $(#[$outer])*
-            $vis struct $BitFlags: $T {
+            impl $BitFlags: $T {
                 $(
                     $(#[$inner $($args)*])*
                     const $Flag = $value;
@@ -21,29 +24,32 @@ macro_rules! bitflags {
             }
         }
 
-        bitflags!(__impl_display $BitFlags);
-        bitflags!(__impl_serde $BitFlags: $T);
+        impl std::fmt::Debug for $BitFlags {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                struct Internal($BitFlags);
+                impl std::fmt::Debug for Internal {
+                    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                        bitflags::parser::to_writer(&self.0, f)
+                    }
+                }
+                let mut tuple = f.debug_tuple(stringify!($BitFlags));
+                if self.is_empty() {
+                    tuple.field(&format_args!("{0:#x}", <$T as bitflags::Bits>::EMPTY));
+                } else {
+                    tuple.field(&Internal(*self));
+                }
+                tuple.finish()
+            }
+        }
+
+        impl ::std::fmt::Display for $BitFlags {
+            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+                self.bits().fmt(f)
+            }
+        }
 
         bitflags! {
             $($t)*
-        }
-    };
-    (__impl_display $BitFlags:ident) => {
-        impl ::std::fmt::Display for $BitFlags {
-            fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
-                self.bits.fmt(f)
-            }
-        }
-    };
-    (__impl_serde $BitFlags:ident: $T:tt) => {
-        impl<'de> ::serde::de::Deserialize<'de> for $BitFlags {
-            fn deserialize<D: ::serde::de::Deserializer<'de>>(deserializer: D) -> ::std::result::Result<Self, D::Error> {
-                let value = <$T>::deserialize(deserializer)?;
-                Self::from_bits(value)
-                    .ok_or_else(|| {
-                        ::serde::de::Error::custom(format!("invalid {} value: {}", stringify!($BitFlags), value))
-                    })
-            }
         }
     };
     () => {};

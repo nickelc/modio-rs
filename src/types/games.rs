@@ -116,7 +116,7 @@ bitflags! {
         const TRADE     = 4;
         /// Allow mods to control supply and scarcity.
         const SCARCITY  = 8;
-        const ALL = Self::SELL.bits | Self::DONATIONS.bits | Self::TRADE.bits | Self::SCARCITY.bits;
+        const ALL = Self::SELL.bits() | Self::DONATIONS.bits() | Self::TRADE.bits() | Self::SCARCITY.bits();
     }
 
     /// Level of API access allowed by a game.
@@ -125,7 +125,7 @@ bitflags! {
         const ALLOW_THIRD_PARTY     = 1;
         /// Allow mods to be downloaded directly.
         const ALLOW_DIRECT_DOWNLOAD = 2;
-        const ALL = Self::ALLOW_THIRD_PARTY.bits | Self::ALLOW_DIRECT_DOWNLOAD.bits;
+        const ALL = Self::ALLOW_THIRD_PARTY.bits() | Self::ALLOW_DIRECT_DOWNLOAD.bits();
     }
 
     /// Mature content options.
