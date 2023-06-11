@@ -11,7 +11,7 @@ use crate::multipart::FileSource;
 use crate::prelude::*;
 use crate::TargetPlatform;
 
-pub use crate::types::files::{Download, File, FileHash, Platform, PlatformStatus};
+pub use crate::types::files::{Download, File, FileHash, Platform, PlatformStatus, VirusScan};
 
 /// Interface for the modfiles of a mod.
 #[derive(Clone)]
