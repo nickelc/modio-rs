@@ -1,3 +1,9 @@
+### v0.7.4 (2023-06-12)
+
+* Export the `VirusScan` struct for mod files.
+* Deprecate virustotal hash string for mod files.
+* Add uncompressed filesize attribute for mod files.
+
 ### v0.7.3 (2023-06-09)
 
 - Add new `Source` platform.
