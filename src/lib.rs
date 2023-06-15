@@ -132,8 +132,8 @@ pub mod user;
 
 mod client;
 mod error;
+mod file_source;
 mod loader;
-mod multipart;
 mod request;
 mod routing;
 mod types;

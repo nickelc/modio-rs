@@ -7,7 +7,7 @@ use mime::APPLICATION_OCTET_STREAM;
 use serde::ser::{Serialize, SerializeMap, Serializer};
 use tokio::io::AsyncRead;
 
-use crate::multipart::FileSource;
+use crate::file_source::FileSource;
 use crate::prelude::*;
 use crate::TargetPlatform;
 

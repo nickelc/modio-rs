@@ -7,9 +7,9 @@ use url::Url;
 
 use crate::comments::Comments;
 use crate::error::Kind;
+use crate::file_source::FileSource;
 use crate::files::{FileRef, Files};
 use crate::metadata::Metadata;
-use crate::multipart::FileSource;
 use crate::prelude::*;
 use crate::teams::Members;
 

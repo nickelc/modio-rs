@@ -4,8 +4,8 @@ use std::path::Path;
 
 use mime::IMAGE_STAR;
 
+use crate::file_source::FileSource;
 use crate::mods::{ModRef, Mods};
-use crate::multipart::FileSource;
 use crate::prelude::*;
 
 pub use crate::types::games::{
