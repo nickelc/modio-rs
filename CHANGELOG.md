@@ -1,3 +1,42 @@
+### v0.8.0 (2023-06-26)
+
+* Update bitflags to allow unsupported flags.
+* Change the game's maturity options into bitflags.
+* Change the virus scan status & result fields into enums.
+* Add community options for mods.
+* Add new monetisation options and deprecate the revenue options.
+* Change number enums to newtypes with associated constants.
+
+```rust
+// Before
+pub enum Visibility {
+    Hidden,
+    Public,
+    Unknown(u8),
+}
+
+impl From<Visibility> for u8 {
+    fn from(vis: Visibility) -> Self {
+        match vis {
+            Visibility::Hidden => 0,
+            Visibility::Public => 1,
+            Visibility::Unknown(value) => value,
+        }
+    }
+}
+
+// After
+pub struct Visibility(u8);
+
+impl Visibility {
+    pub const HIDDEN: Self = Self(0);
+    pub const PUBLIC: Self = Self(1);
+
+    fn new(raw_value: u8) -> Self { Self(raw_value) }
+    fn get(self) -> u8 { self.0 }
+}
+```
+
 ### v0.7.4 (2023-06-12)
 
 * Export the `VirusScan` struct for mod files.
