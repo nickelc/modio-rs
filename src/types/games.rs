@@ -25,8 +25,6 @@ pub struct Game {
     pub community_options: CommunityOptions,
     #[serde(default)]
     pub monetisation_options: MonetisationOptions,
-    #[deprecated(note = "replaced by `monetisation_options`")]
-    pub revenue_options: RevenueOptions,
     pub api_access_options: ApiAccessOptions,
     pub maturity_options: MaturityOptions,
     pub ugc_name: String,
@@ -106,19 +104,6 @@ bitflags! {
         const RECOGNITION = 2;
         /// Marketplace enabled.
         const MARKETPLACE = 4;
-    }
-
-    /// Revenue capabilities mods can enable.
-    pub struct RevenueOptions: u8 {
-        /// Allow mods to be sold.
-        const SELL      = 1;
-        /// Allow mods to receive donations.
-        const DONATIONS = 2;
-        /// Allow mods to be traded.
-        const TRADE     = 4;
-        /// Allow mods to control supply and scarcity.
-        const SCARCITY  = 8;
-        const ALL = Self::SELL.bits() | Self::DONATIONS.bits() | Self::TRADE.bits() | Self::SCARCITY.bits();
     }
 
     /// Level of API access allowed by a game.

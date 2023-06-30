@@ -10,8 +10,8 @@ use crate::prelude::*;
 
 pub use crate::types::games::{
     ApiAccessOptions, CommunityOptions, CurationOption, Downloads, Game, HeaderImage, Icon,
-    MaturityOptions, MonetisationOptions, OtherUrl, Platform, PresentationOption, RevenueOptions,
-    Statistics, SubmissionOption, TagOption, TagType, Theme,
+    MaturityOptions, MonetisationOptions, OtherUrl, Platform, PresentationOption, Statistics,
+    SubmissionOption, TagOption, TagType, Theme,
 };
 pub use crate::types::Logo;
 pub use crate::types::Status;
