@@ -85,9 +85,6 @@ bitflags! {
         const DISCUSSIONS       = 1;
         /// Guides & News enabled.
         const GUIDES_NEWS       = 2;
-        /// "Subscribe to install" button disabled.
-        #[deprecated(note = "Flag is replaced by `PIN_ON_HOMEPAGE`")]
-        const DISABLE_SUBSCRIBE = 4;
         const PIN_ON_HOMEPAGE   = 4;
         const SHOW_ON_HOMEPAGE  = 8;
         const SHOW_MORE_ON_HOMEPAGE = 16;
