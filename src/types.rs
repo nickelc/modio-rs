@@ -173,42 +173,56 @@ newtype_enum! {
         const ACCEPTED     = 1;
         const DELETED      = 3;
     }
-}
 
-/// See the [mod.io docs](https://docs.mod.io/#targeting-a-platform) for more information.
-#[derive(Clone, Copy, Debug, Deserialize, Serialize)]
-#[serde(rename_all = "lowercase")]
-#[non_exhaustive]
-pub enum TargetPlatform {
-    Android,
-    Ios,
-    Linux,
-    Mac,
-    Windows,
-    PS4,
-    PS5,
-    Source,
-    Switch,
-    XboxOne,
-    XboxSeriesX,
-    Oculus,
+    /// See the [mod.io docs](https://docs.mod.io/#targeting-a-platform) for more information.
+    #[derive(Deserialize, Serialize)]
+    pub struct TargetPlatform<16> {
+        const ANDROID       = b"android";
+        const IOS           = b"ios";
+        const LINUX         = b"linux";
+        const MAC           = b"mac";
+        const WINDOWS       = b"windows";
+        const PS4           = b"ps4";
+        const PS5           = b"ps5";
+        const SOURCE        = b"source";
+        const SWITCH        = b"switch";
+        const XBOX_ONE      = b"xboxone";
+        const XBOX_SERIES_X = b"xboxseriesx";
+        const OCULUS        = b"oculus";
+    }
+
+    /// See the [mod.io docs](https://docs.mod.io/#targeting-a-portal) for more information.
+    pub struct TargetPortal<12> {
+        const STEAM     = b"steam";
+        const GOG       = b"gog";
+        const EGS       = b"egs";
+        const ITCHIO    = b"itchio";
+        const NINTENDO  = b"nintendo";
+        const PSN       = b"psn";
+        const XBOX_LIVE = b"xboxlive";
+        const APPLE     = b"apple";
+        const GOOGLE    = b"google";
+        const FACEBOOK  = b"facebook";
+        const DISCORD   = b"discord";
+    }
 }
 
 impl TargetPlatform {
-    pub fn display_name(&self) -> &'static str {
-        match self {
-            Self::Android => "Android",
-            Self::Ios => "iOS",
-            Self::Linux => "Linux",
-            Self::Mac => "Mac",
-            Self::Windows => "Windows",
+    pub fn display_name(&self) -> &str {
+        match *self {
+            Self::ANDROID => "Android",
+            Self::IOS => "iOS",
+            Self::LINUX => "Linux",
+            Self::MAC => "Mac",
+            Self::WINDOWS => "Windows",
             Self::PS4 => "PlayStation 4",
             Self::PS5 => "PlayStation 5",
-            Self::Source => "Source",
-            Self::Switch => "Nintendo Switch",
-            Self::XboxOne => "Xbox One",
-            Self::XboxSeriesX => "Xbox Series X/S",
-            Self::Oculus => "Oculus",
+            Self::SOURCE => "Source",
+            Self::SWITCH => "Nintendo Switch",
+            Self::XBOX_ONE => "Xbox One",
+            Self::XBOX_SERIES_X => "Xbox Series X/S",
+            Self::OCULUS => "Oculus",
+            _ => self.0.as_str(),
         }
     }
 }
@@ -217,23 +231,6 @@ impl fmt::Display for TargetPlatform {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.display_name())
     }
-}
-
-/// See the [mod.io docs](https://docs.mod.io/#targeting-a-portal) for more information.
-#[derive(Clone, Copy)]
-#[non_exhaustive]
-pub enum TargetPortal {
-    Steam,
-    GOG,
-    EGS,
-    Itchio,
-    Nintendo,
-    PSN,
-    XboxLive,
-    Apple,
-    Google,
-    Facebook,
-    Discord,
 }
 
 /// See the [User Event Object](https://docs.mod.io/#user-event-object) docs for more information.
@@ -341,9 +338,9 @@ where
 #[cfg(test)]
 mod tests {
     use serde::Deserialize;
-    use serde_test::{assert_de_tokens, Token};
+    use serde_test::{assert_de_tokens, assert_tokens, Token};
 
-    use super::{deserialize_empty_object, EventType};
+    use super::{deserialize_empty_object, EventType, TargetPlatform};
 
     #[derive(Debug, PartialEq, Deserialize)]
     struct Game {
@@ -521,6 +518,25 @@ mod tests {
             &[Token::Str("USER_UNSUBSCRIBE")],
         );
         assert_de_tokens(&EventType::Unknown("foo".to_owned()), &[Token::Str("foo")]);
+    }
+
+    #[test]
+    fn target_platform_compare() {
+        assert_eq!(TargetPlatform::ANDROID, "ANDROID");
+        assert_eq!("android", TargetPlatform::ANDROID);
+    }
+
+    #[test]
+    fn target_platform_serde() {
+        assert_tokens(
+            &TargetPlatform::ANDROID,
+            &[
+                Token::NewtypeStruct {
+                    name: "TargetPlatform",
+                },
+                Token::Str("android"),
+            ],
+        );
     }
 }
 

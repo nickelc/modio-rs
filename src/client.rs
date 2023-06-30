@@ -26,53 +26,6 @@ pub struct Builder {
     config: Config,
 }
 
-impl TargetPlatform {
-    #[inline]
-    fn header_name() -> &'static str {
-        "X-Modio-Platform"
-    }
-
-    fn into_header_value(self) -> HeaderValue {
-        match self {
-            Self::Android => HeaderValue::from_static("Android"),
-            Self::Ios => HeaderValue::from_static("iOS"),
-            Self::Linux => HeaderValue::from_static("Linux"),
-            Self::Mac => HeaderValue::from_static("Mac"),
-            Self::Windows => HeaderValue::from_static("Windows"),
-            Self::PS4 => HeaderValue::from_static("PS4"),
-            Self::PS5 => HeaderValue::from_static("PS5"),
-            Self::Source => HeaderValue::from_static("Source"),
-            Self::Switch => HeaderValue::from_static("Switch"),
-            Self::XboxOne => HeaderValue::from_static("XboxOne"),
-            Self::XboxSeriesX => HeaderValue::from_static("XboxSeriesX"),
-            Self::Oculus => HeaderValue::from_static("Oculus"),
-        }
-    }
-}
-
-impl TargetPortal {
-    #[inline]
-    fn header_name() -> &'static str {
-        "X-Modio-Portal"
-    }
-
-    fn into_header_value(self) -> HeaderValue {
-        match self {
-            Self::Steam => HeaderValue::from_static("Steam"),
-            Self::GOG => HeaderValue::from_static("GOG"),
-            Self::EGS => HeaderValue::from_static("EGS"),
-            Self::Itchio => HeaderValue::from_static("Itchio"),
-            Self::Nintendo => HeaderValue::from_static("Nintendo"),
-            Self::PSN => HeaderValue::from_static("PSN"),
-            Self::XboxLive => HeaderValue::from_static("XboxLive"),
-            Self::Apple => HeaderValue::from_static("Apple"),
-            Self::Google => HeaderValue::from_static("Google"),
-            Self::Facebook => HeaderValue::from_static("Facebook"),
-            Self::Discord => HeaderValue::from_static("Discord"),
-        }
-    }
-}
-
 struct Config {
     host: Option<String>,
     credentials: Credentials,
@@ -228,9 +181,14 @@ impl Builder {
     ///
     /// See the [mod.io docs](https://docs.mod.io/#targeting-a-platform) for more information.
     pub fn target_platform(mut self, platform: TargetPlatform) -> Builder {
-        let name = TargetPlatform::header_name();
-        let value = platform.into_header_value();
-        self.config.headers.insert(name, value);
+        match HeaderValue::from_str(platform.as_str()) {
+            Ok(value) => {
+                self.config.headers.insert("X-Modio-Platform", value);
+            }
+            Err(e) => {
+                self.config.error = Some(error::builder(e));
+            }
+        }
         self
     }
 
@@ -238,9 +196,14 @@ impl Builder {
     ///
     /// See the [mod.io docs](https://docs.mod.io/#targeting-a-portal) for more information.
     pub fn target_portal(mut self, portal: TargetPortal) -> Builder {
-        let name = TargetPortal::header_name();
-        let value = portal.into_header_value();
-        self.config.headers.insert(name, value);
+        match HeaderValue::from_str(portal.as_str()) {
+            Ok(value) => {
+                self.config.headers.insert("X-Modio-Portal", value);
+            }
+            Err(e) => {
+                self.config.error = Some(error::builder(e));
+            }
+        }
         self
     }
 
