@@ -37,7 +37,6 @@ impl<'de> Deserialize<'de> for File {
             DateScanned,
             VirusStatus,
             VirusPositive,
-            VirustotalHash,
             Filesize,
             FilesizeUncompressed,
             Filehash,
@@ -66,7 +65,6 @@ impl<'de> Deserialize<'de> for File {
                 let mut date_scanned = None;
                 let mut virus_status = None;
                 let mut virus_result = None;
-                let mut virustotal_hash = None;
                 let mut filesize = None;
                 let mut filesize_uncompressed = None;
                 let mut filehash = None;
@@ -96,9 +94,6 @@ impl<'de> Deserialize<'de> for File {
                         }
                         Field::VirusPositive => {
                             virus_result.deserialize_value("virus_positive", &mut map)?;
-                        }
-                        Field::VirustotalHash => {
-                            virustotal_hash.deserialize_value("virustotal_hash", &mut map)?;
                         }
                         Field::Filesize => {
                             filesize.deserialize_value("filesize", &mut map)?;
@@ -140,7 +135,6 @@ impl<'de> Deserialize<'de> for File {
                 let date_scanned = date_scanned.missing_field("date_scanned")?;
                 let virus_status = virus_status.missing_field("virus_status")?;
                 let virus_result = virus_result.missing_field("virus_positive")?;
-                let virustotal_hash = virustotal_hash.missing_field("virustotal_hash")?;
                 let filesize = filesize.missing_field("filesize")?;
                 let filesize_uncompressed =
                     filesize_uncompressed.missing_field("filesize_uncompressed")?;
@@ -152,7 +146,6 @@ impl<'de> Deserialize<'de> for File {
                 let download = download.missing_field("download")?;
                 let platforms = platforms.missing_field("platforms")?;
 
-                #[allow(deprecated)]
                 Ok(File {
                     id,
                     mod_id,
@@ -161,7 +154,6 @@ impl<'de> Deserialize<'de> for File {
                         date_scanned,
                         status: virus_status,
                         result: virus_result,
-                        virustotal_hash,
                     },
                     filesize,
                     filesize_uncompressed,
@@ -187,8 +179,6 @@ pub struct VirusScan {
     pub date_scanned: u64,
     pub status: VirusStatus,
     pub result: VirusResult,
-    #[deprecated(note = "No longer used and will be removed in subsequent API version.")]
-    pub virustotal_hash: Option<String>,
 }
 
 newtype_enum! {
