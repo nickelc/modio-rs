@@ -70,7 +70,7 @@ macro_rules! newtype_enum {
         $($t:tt)*
     ) => {
         $(#[$outer])*
-        #[derive(Clone, Copy, Eq, PartialEq, Deserialize)]
+        #[derive(Clone, Copy, Eq, Hash, PartialEq, Deserialize)]
         $vis struct $NewtypeEnum($T);
 
         impl $NewtypeEnum {
@@ -121,7 +121,7 @@ macro_rules! newtype_enum {
         $($t:tt)*
     ) => {
         $(#[$outer])*
-        #[derive(Clone, Copy, Eq, PartialEq)]
+        #[derive(Clone, Copy, Eq, Hash, PartialEq)]
         $vis struct $NewtypeEnum(crate::types::utils::SmallStr<$LENGTH>);
 
         impl $NewtypeEnum {

@@ -6,7 +6,7 @@ mod smallstr {
     use serde::de::{Deserialize, Deserializer, Error, Visitor};
     use serde::ser::{Serialize, Serializer};
 
-    #[derive(Clone, Copy, Eq, PartialEq)]
+    #[derive(Clone, Copy, Eq, Hash, PartialEq)]
     pub struct SmallStr<const LENGTH: usize> {
         bytes: [u8; LENGTH],
     }
