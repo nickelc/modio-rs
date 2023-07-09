@@ -1,3 +1,5 @@
+//! Model types defining the mod.io API.
+
 use std::collections::HashMap;
 use std::fmt;
 
@@ -280,7 +282,7 @@ impl fmt::Display for EventType {
 /// // And missing fields with `#[serde(default)]`
 /// {"id": 1}
 /// ```
-pub fn deserialize_empty_object<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
+fn deserialize_empty_object<'de, D, T>(deserializer: D) -> Result<Option<T>, D::Error>
 where
     D: Deserializer<'de>,
     T: Deserialize<'de>,

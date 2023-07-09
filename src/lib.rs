@@ -128,6 +128,7 @@ pub mod metadata;
 pub mod mods;
 pub mod reports;
 pub mod teams;
+pub mod types;
 pub mod user;
 
 mod client;
@@ -136,7 +137,6 @@ mod file_source;
 mod loader;
 mod request;
 mod routing;
-mod types;
 
 pub use crate::auth::Credentials;
 pub use crate::client::{Builder, Modio};
