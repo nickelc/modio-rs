@@ -1,5 +1,6 @@
 //! Team members interface
 use crate::prelude::*;
+use crate::types::id::{GameId, ModId};
 
 pub use crate::types::mods::{TeamLevel, TeamMember};
 
@@ -7,12 +8,12 @@ pub use crate::types::mods::{TeamLevel, TeamMember};
 #[derive(Clone)]
 pub struct Members {
     modio: Modio,
-    game: u32,
-    mod_id: u32,
+    game: GameId,
+    mod_id: ModId,
 }
 
 impl Members {
-    pub(crate) fn new(modio: Modio, game: u32, mod_id: u32) -> Self {
+    pub(crate) fn new(modio: Modio, game: GameId, mod_id: ModId) -> Self {
         Self {
             modio,
             game,

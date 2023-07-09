@@ -3,17 +3,18 @@ use futures_util::TryStreamExt;
 use serde::Deserialize;
 
 use crate::prelude::*;
+use crate::types::id::{GameId, ModId};
 pub use crate::types::mods::MetadataMap;
 
 #[derive(Clone)]
 pub struct Metadata {
     modio: Modio,
-    game: u32,
-    mod_id: u32,
+    game: GameId,
+    mod_id: ModId,
 }
 
 impl Metadata {
-    pub(crate) fn new(modio: Modio, game: u32, mod_id: u32) -> Self {
+    pub(crate) fn new(modio: Modio, game: GameId, mod_id: ModId) -> Self {
         Self {
             modio,
             game,

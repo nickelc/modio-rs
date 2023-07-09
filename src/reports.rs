@@ -1,5 +1,6 @@
 //! Reports interface
 use crate::prelude::*;
+use crate::types::id::{GameId, ModId, UserId};
 
 #[derive(Clone)]
 pub struct Reports {
@@ -42,9 +43,9 @@ pub enum ReportType {
 }
 
 pub enum Resource {
-    Game(u32),
-    Mod(u32),
-    User(u32),
+    Game(GameId),
+    Mod(ModId),
+    User(UserId),
 }
 
 impl Report {
@@ -74,9 +75,9 @@ impl serde::ser::Serialize for Report {
         use serde::ser::SerializeMap;
 
         let (resource, id) = match self.resource {
-            Resource::Game(id) => ("games", id),
-            Resource::Mod(id) => ("mods", id),
-            Resource::User(id) => ("users", id),
+            Resource::Game(id) => ("games", id.get()),
+            Resource::Mod(id) => ("mods", id.get()),
+            Resource::User(id) => ("users", id.get()),
         };
         let kind = match self.kind {
             ReportType::Generic => 0,

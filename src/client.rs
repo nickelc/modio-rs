@@ -13,6 +13,7 @@ use crate::mods::ModRef;
 use crate::reports::Reports;
 use crate::request::RequestBuilder;
 use crate::routing::Route;
+use crate::types::id::{GameId, ModId};
 use crate::user::Me;
 use crate::{TargetPlatform, TargetPortal};
 
@@ -304,12 +305,12 @@ impl Modio {
     }
 
     /// Return a reference to a game.
-    pub fn game(&self, game_id: u32) -> GameRef {
+    pub fn game(&self, game_id: GameId) -> GameRef {
         GameRef::new(self.clone(), game_id)
     }
 
     /// Return a reference to a mod.
-    pub fn mod_(&self, game_id: u32, mod_id: u32) -> ModRef {
+    pub fn mod_(&self, game_id: GameId, mod_id: ModId) -> ModRef {
         ModRef::new(self.clone(), game_id, mod_id)
     }
 
@@ -327,21 +328,22 @@ impl Modio {
     /// ```no_run
     /// use futures_util::{future, TryStreamExt};
     /// use modio::download::{DownloadAction, ResolvePolicy};
+    /// use modio::types::id::Id;
     /// # async fn run() -> Result<(), Box<dyn std::error::Error>> {
     /// #    let modio = modio::Modio::new("user-or-game-api-key")?;
     ///
     /// // Download the primary file of a mod.
     /// let action = DownloadAction::Primary {
-    ///     game_id: 5,
-    ///     mod_id: 19,
+    ///     game_id: Id::new(5),
+    ///     mod_id: Id::new(19),
     /// };
     /// modio.download(action).save_to_file("mod.zip").await?;
     ///
     /// // Download the specific file of a mod.
     /// let action = DownloadAction::File {
-    ///     game_id: 5,
-    ///     mod_id: 19,
-    ///     file_id: 101,
+    ///     game_id: Id::new(5),
+    ///     mod_id: Id::new(19),
+    ///     file_id: Id::new(101),
     /// };
     /// modio.download(action).save_to_file("mod.zip").await?;
     ///
@@ -350,8 +352,8 @@ impl Modio {
     /// // Set policy to `ResolvePolicy::Fail` to return with
     /// // `modio::download::Error::MultipleFilesFound` as source error.
     /// let action = DownloadAction::Version {
-    ///     game_id: 5,
-    ///     mod_id: 19,
+    ///     game_id: Id::new(5),
+    ///     mod_id: Id::new(19),
     ///     version: "0.1".to_string(),
     ///     policy: ResolvePolicy::Latest,
     /// };

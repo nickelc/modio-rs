@@ -6,6 +6,7 @@ use serde::Deserialize;
 use url::Url;
 
 use super::files::File;
+use super::id::{CommentId, EventId, FileId, GameId, MemberId, ModId, ResourceId, UserId};
 use super::{deserialize_empty_object, DeserializeField, MissingField, TargetPlatform};
 use super::{Logo, Status, User};
 
@@ -13,8 +14,8 @@ use super::{Logo, Status, User};
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct Mod {
-    pub id: u32,
-    pub game_id: u32,
+    pub id: ModId,
+    pub game_id: GameId,
     pub status: Status,
     pub visible: Visibility,
     pub submitted_by: User,
@@ -87,9 +88,9 @@ bitflags! {
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct Event {
-    pub id: u32,
-    pub mod_id: u32,
-    pub user_id: u32,
+    pub id: EventId,
+    pub mod_id: ModId,
+    pub user_id: UserId,
     pub date_added: u64,
     pub event_type: EventType,
 }
@@ -129,7 +130,7 @@ impl fmt::Display for EventType {
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct Dependency {
-    pub mod_id: u32,
+    pub mod_id: ModId,
     pub date_added: u64,
 }
 
@@ -170,7 +171,7 @@ impl fmt::Debug for Image {
 #[derive(Debug)]
 #[non_exhaustive]
 pub struct Statistics {
-    pub mod_id: u32,
+    pub mod_id: ModId,
     pub downloads_today: u32,
     pub downloads_total: u32,
     pub subscribers_total: u32,
@@ -343,13 +344,13 @@ pub struct Ratings {
 #[non_exhaustive]
 pub enum Rating {
     Positive {
-        game_id: u32,
-        mod_id: u32,
+        game_id: GameId,
+        mod_id: ModId,
         date_added: u64,
     },
     Negative {
-        game_id: u32,
-        mod_id: u32,
+        game_id: GameId,
+        mod_id: ModId,
         date_added: u64,
     },
 }
@@ -363,8 +364,8 @@ impl<'de> Deserialize<'de> for Rating {
 
         #[derive(Deserialize)]
         struct R {
-            game_id: u32,
-            mod_id: u32,
+            game_id: GameId,
+            mod_id: ModId,
             rating: i8,
             date_added: u64,
         }
@@ -408,7 +409,7 @@ pub struct Platform {
     /// The unique id of the modfile that is currently live on the platform specified in the
     /// `target` field.
     #[serde(rename = "modfile_live")]
-    pub modfile_id: u32,
+    pub modfile_id: FileId,
 }
 
 /// See the [Mod Tag Object](https://docs.mod.io/#mod-tag-object) docs for more information.
@@ -510,11 +511,11 @@ where
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct Comment {
-    pub id: u32,
-    pub resource_id: u32,
+    pub id: CommentId,
+    pub resource_id: ResourceId,
     pub user: User,
     pub date_added: u64,
-    pub reply_id: u32,
+    pub reply_id: CommentId,
     pub thread_position: String,
     pub karma: i32,
     pub content: String,
@@ -525,7 +526,7 @@ pub struct Comment {
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct TeamMember {
-    pub id: u32,
+    pub id: MemberId,
     pub user: User,
     pub level: TeamLevel,
     pub date_added: u64,

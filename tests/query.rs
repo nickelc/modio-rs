@@ -4,6 +4,7 @@ use httptest::{matchers::*, responders::*};
 use httptest::{Expectation, Server};
 
 use modio::filter::prelude::*;
+use modio::types::id::Id;
 use modio::{Modio, Result};
 
 macro_rules! expect_requests {
@@ -88,7 +89,7 @@ async fn first() -> Result<()> {
     let first = modio.games().search(Filter::default()).first().await?;
 
     assert!(first.is_some());
-    assert_eq!(2, first.unwrap().id, "id of first item");
+    assert_eq!(Id::new(2), first.unwrap().id, "id of first item");
     Ok(())
 }
 
@@ -113,8 +114,8 @@ async fn first_page() -> Result<()> {
     let list = modio.games().search(filter).first_page().await?;
 
     assert_eq!(7, list.len(), "result count");
-    assert_eq!(2, list[0].id, "id of first item");
-    assert_eq!(51, list[6].id, "id of last item");
+    assert_eq!(Id::new(2), list[0].id, "id of first item");
+    assert_eq!(Id::new(51), list[6].id, "id of last item");
     Ok(())
 }
 
@@ -137,8 +138,8 @@ async fn collect() -> Result<()> {
     let list = modio.games().search(Filter::default()).collect().await?;
 
     assert_eq!(32, list.len(), "result count");
-    assert_eq!(2, list[0].id, "id of first item");
-    assert_eq!(296, list[30].id, "id of last item");
+    assert_eq!(Id::new(2), list[0].id, "id of first item");
+    assert_eq!(Id::new(296), list[30].id, "id of last item");
     Ok(())
 }
 
@@ -169,7 +170,7 @@ async fn paged() -> Result<()> {
     let size_hint = iter.size_hint();
 
     while let Ok(Some(list)) = iter.try_next().await {
-        if let Some((first, last)) = ids.next() {
+        if let Some((first, last)) = ids.next().map(|(i, j)| (Id::new(i), Id::new(j))) {
             assert_eq!(
                 list.first().map(|g| g.id),
                 Some(first),

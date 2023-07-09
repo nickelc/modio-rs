@@ -12,6 +12,7 @@ use crate::files::{FileRef, Files};
 use crate::metadata::Metadata;
 use crate::prelude::*;
 use crate::teams::Members;
+use crate::types::id::{FileId, GameId, ModId};
 
 pub use crate::types::mods::{
     CommunityOptions, Dependency, Event, EventType, Image, MaturityOption, Media, Mod,
@@ -24,11 +25,11 @@ pub use crate::types::Status;
 #[derive(Clone)]
 pub struct Mods {
     modio: Modio,
-    game: u32,
+    game: GameId,
 }
 
 impl Mods {
-    pub(crate) fn new(modio: Modio, game: u32) -> Self {
+    pub(crate) fn new(modio: Modio, game: GameId) -> Self {
         Self { modio, game }
     }
 
@@ -41,7 +42,7 @@ impl Mods {
     }
 
     /// Return a reference to a mod.
-    pub fn get(&self, id: u32) -> ModRef {
+    pub fn get(&self, id: ModId) -> ModRef {
         ModRef::new(self.modio.clone(), self.game, id)
     }
 
@@ -78,12 +79,12 @@ impl Mods {
 #[derive(Clone)]
 pub struct ModRef {
     modio: Modio,
-    game: u32,
-    id: u32,
+    game: GameId,
+    id: ModId,
 }
 
 impl ModRef {
-    pub(crate) fn new(modio: Modio, game: u32, id: u32) -> Self {
+    pub(crate) fn new(modio: Modio, game: GameId, id: ModId) -> Self {
         Self { modio, game, id }
     }
 
@@ -102,7 +103,7 @@ impl ModRef {
     }
 
     /// Return a reference to a file of a mod.
-    pub fn file(&self, id: u32) -> FileRef {
+    pub fn file(&self, id: FileId) -> FileRef {
         FileRef::new(self.modio.clone(), self.game, self.id, id)
     }
 
@@ -249,12 +250,12 @@ impl ModRef {
 #[derive(Clone)]
 pub struct Dependencies {
     modio: Modio,
-    game_id: u32,
-    mod_id: u32,
+    game_id: GameId,
+    mod_id: ModId,
 }
 
 impl Dependencies {
-    fn new(modio: Modio, game_id: u32, mod_id: u32) -> Self {
+    fn new(modio: Modio, game_id: GameId, mod_id: ModId) -> Self {
         Self {
             modio,
             game_id,
@@ -313,12 +314,12 @@ impl Dependencies {
 #[derive(Clone)]
 pub struct Tags {
     modio: Modio,
-    game_id: u32,
-    mod_id: u32,
+    game_id: GameId,
+    mod_id: ModId,
 }
 
 impl Tags {
-    fn new(modio: Modio, game_id: u32, mod_id: u32) -> Self {
+    fn new(modio: Modio, game_id: GameId, mod_id: ModId) -> Self {
         Self {
             modio,
             game_id,
@@ -700,17 +701,17 @@ impl EditModOptions {
 impl_serialize_params!(EditModOptions >> params);
 
 pub struct EditDependenciesOptions {
-    dependencies: Vec<u32>,
+    dependencies: Vec<ModId>,
 }
 
 impl EditDependenciesOptions {
-    pub fn new(dependencies: &[u32]) -> Self {
+    pub fn new(dependencies: &[ModId]) -> Self {
         Self {
             dependencies: dependencies.to_vec(),
         }
     }
 
-    pub fn one(dependency: u32) -> Self {
+    pub fn one(dependency: ModId) -> Self {
         Self {
             dependencies: vec![dependency],
         }

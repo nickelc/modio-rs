@@ -7,12 +7,14 @@ use url::Url;
 use crate::types::{DeserializeField, MissingField};
 use crate::TargetPlatform;
 
+use super::id::{FileId, ModId};
+
 /// See the [Modfile Object](https://docs.mod.io/#modfile-object) docs for more information.
 #[derive(Debug)]
 #[non_exhaustive]
 pub struct File {
-    pub id: u32,
-    pub mod_id: u32,
+    pub id: FileId,
+    pub mod_id: ModId,
     pub date_added: u64,
     pub virus_scan: VirusScan,
     pub filesize: u64,

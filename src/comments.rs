@@ -5,18 +5,19 @@ use serde::Serialize;
 
 use crate::error::Kind;
 use crate::prelude::*;
+use crate::types::id::{CommentId, GameId, ModId};
 pub use crate::types::mods::Comment;
 
 /// Interface for comments of a mod.
 #[derive(Clone)]
 pub struct Comments {
     modio: Modio,
-    game: u32,
-    mod_id: u32,
+    game: GameId,
+    mod_id: ModId,
 }
 
 impl Comments {
-    pub(crate) fn new(modio: Modio, game: u32, mod_id: u32) -> Self {
+    pub(crate) fn new(modio: Modio, game: GameId, mod_id: ModId) -> Self {
         Self {
             modio,
             game,
@@ -36,7 +37,7 @@ impl Comments {
     }
 
     /// Return comment by id.
-    pub async fn get(self, id: u32) -> Result<Comment> {
+    pub async fn get(self, id: CommentId) -> Result<Comment> {
         let route = Route::GetModComment {
             game_id: self.game,
             mod_id: self.mod_id,
@@ -46,7 +47,7 @@ impl Comments {
     }
 
     /// Add a new comment. [required: token]
-    pub async fn add<S>(self, content: S, reply_id: Option<u32>) -> Result<Comment>
+    pub async fn add<S>(self, content: S, reply_id: Option<CommentId>) -> Result<Comment>
     where
         S: Into<String>,
     {
@@ -60,7 +61,7 @@ impl Comments {
     }
 
     /// Edit a comment by id. [required: token]
-    pub async fn edit<S>(self, id: u32, content: S) -> Result<Comment>
+    pub async fn edit<S>(self, id: CommentId, content: S) -> Result<Comment>
     where
         S: Into<String>,
     {
@@ -77,7 +78,7 @@ impl Comments {
     }
 
     /// Delete a comment by id. [required: token]
-    pub async fn delete(self, id: u32) -> Result<()> {
+    pub async fn delete(self, id: CommentId) -> Result<()> {
         let route = Route::DeleteModComment {
             game_id: self.game,
             mod_id: self.mod_id,
@@ -87,7 +88,7 @@ impl Comments {
     }
 
     /// Update the karma for a comment. [required: token]
-    pub async fn karma(self, id: u32, karma: Karma) -> Result<Editing<Comment>> {
+    pub async fn karma(self, id: CommentId, karma: Karma) -> Result<Editing<Comment>> {
         let route = Route::AddModCommentKarma {
             game_id: self.game,
             mod_id: self.mod_id,
@@ -176,5 +177,5 @@ impl Serialize for Karma {
 struct CommentOptions {
     content: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    reply_id: Option<u32>,
+    reply_id: Option<CommentId>,
 }

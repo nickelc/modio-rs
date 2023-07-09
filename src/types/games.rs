@@ -7,6 +7,7 @@ use url::Url;
 
 use crate::TargetPlatform;
 
+use super::id::GameId;
 use super::{deserialize_empty_object, DeserializeField, MissingField};
 use super::{Logo, Status};
 
@@ -14,7 +15,7 @@ use super::{Logo, Status};
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct Game {
-    pub id: u32,
+    pub id: GameId,
     pub status: Status,
     pub date_added: u64,
     pub date_updated: u64,
@@ -168,7 +169,7 @@ impl fmt::Debug for HeaderImage {
 #[derive(Debug)]
 #[non_exhaustive]
 pub struct Statistics {
-    pub game_id: u32,
+    pub game_id: GameId,
     pub mods_total: u32,
     pub subscribers_total: u32,
     pub downloads: Downloads,

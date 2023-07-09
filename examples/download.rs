@@ -4,9 +4,10 @@ use std::process;
 
 use futures_util::TryStreamExt;
 
+use modio::types::id::Id;
 use modio::{auth::Credentials, Modio};
 
-fn prompt(prompt: &str) -> io::Result<u32> {
+fn prompt(prompt: &str) -> io::Result<u64> {
     print!("{}", prompt);
     io::stdout().flush()?;
     let mut buffer = String::new();
@@ -33,8 +34,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Creates a `Modio` endpoint for the test environment.
     let modio = Modio::host(host, creds)?;
 
-    let game_id = prompt("Enter game id: ")?;
-    let mod_id = prompt("Enter mod id: ")?;
+    let game_id = Id::new(prompt("Enter game id: ")?);
+    let mod_id = Id::new(prompt("Enter mod id: ")?);
 
     // Create the call for `/games/{game_id}/mods/{mod_id}` and wait for the result.
     let m = modio.mod_(game_id, mod_id).get().await?;

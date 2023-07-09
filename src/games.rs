@@ -7,6 +7,7 @@ use mime::IMAGE_STAR;
 use crate::file_source::FileSource;
 use crate::mods::{ModRef, Mods};
 use crate::prelude::*;
+use crate::types::id::{GameId, ModId};
 
 pub use crate::types::games::{
     ApiAccessOptions, CommunityOptions, CurationOption, Downloads, Game, HeaderImage, Icon,
@@ -35,7 +36,7 @@ impl Games {
     }
 
     /// Return a reference to a game.
-    pub fn get(&self, id: u32) -> GameRef {
+    pub fn get(&self, id: GameId) -> GameRef {
         GameRef::new(self.modio.clone(), id)
     }
 }
@@ -44,11 +45,11 @@ impl Games {
 #[derive(Clone)]
 pub struct GameRef {
     modio: Modio,
-    id: u32,
+    id: GameId,
 }
 
 impl GameRef {
-    pub(crate) fn new(modio: Modio, id: u32) -> Self {
+    pub(crate) fn new(modio: Modio, id: GameId) -> Self {
         Self { modio, id }
     }
 
@@ -59,7 +60,7 @@ impl GameRef {
     }
 
     /// Return a reference to a mod of a game.
-    pub fn mod_(&self, mod_id: u32) -> ModRef {
+    pub fn mod_(&self, mod_id: ModId) -> ModRef {
         ModRef::new(self.modio.clone(), self.id, mod_id)
     }
 
@@ -95,11 +96,11 @@ impl GameRef {
 #[derive(Clone)]
 pub struct Tags {
     modio: Modio,
-    game_id: u32,
+    game_id: GameId,
 }
 
 impl Tags {
-    fn new(modio: Modio, game_id: u32) -> Self {
+    fn new(modio: Modio, game_id: GameId) -> Self {
         Self { modio, game_id }
     }
 

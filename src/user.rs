@@ -2,6 +2,7 @@
 use crate::prelude::*;
 use crate::types::files::File;
 use crate::types::games::Game;
+use crate::types::id::UserId;
 use crate::types::mods::Mod;
 
 pub use crate::types::mods::Rating;
@@ -85,14 +86,14 @@ impl Me {
     /// Mute a user. [required: token]
     ///
     /// This will prevent mod.io from returning mods authored by the muted user.
-    pub async fn mute_user(self, user_id: u32) -> Result<()> {
+    pub async fn mute_user(self, user_id: UserId) -> Result<()> {
         self.modio.request(Route::MuteUser { user_id }).send().await
     }
 
     /// Unmute a previously muted user. [required: token]
     ///
     /// This will re-enable mod.io return mods authored by the muted user again.
-    pub async fn unmute_user(self, user_id: u32) -> Result<()> {
+    pub async fn unmute_user(self, user_id: UserId) -> Result<()> {
         self.modio
             .request(Route::UnmuteUser { user_id })
             .send()
