@@ -60,13 +60,14 @@ impl<T: DeserializeOwned + Send> Query<T> {
     /// ```no_run
     /// use futures_util::TryStreamExt;
     /// use modio::filter::prelude::*;
+    /// use modio::types::id::Id;
     ///
     /// # use modio::{Credentials, Modio, Result};
     /// #
     /// # async fn run() -> Result<()> {
     /// #     let modio = Modio::new(Credentials::new("apikey"))?;
     /// let filter = Fulltext::eq("soldier");
-    /// let mut st = modio.game(51).mods().search(filter).iter().await?;
+    /// let mut st = modio.game(Id::new(51)).mods().search(filter).iter().await?;
     ///
     /// // Stream of `Mod`
     /// while let Some(mod_) = st.try_next().await? {
@@ -77,7 +78,7 @@ impl<T: DeserializeOwned + Send> Query<T> {
     ///
     /// // Retrieve the first 10 mods. (Default page size is `100`.)
     /// let filter = Fulltext::eq("tftd") + with_limit(10);
-    /// let st = modio.game(51).mods().search(filter).iter().await?;
+    /// let st = modio.game(Id::new(51)).mods().search(filter).iter().await?;
     /// let mut st = st.take(10);
     ///
     /// // Stream of `Mod`
@@ -102,13 +103,19 @@ impl<T: DeserializeOwned + Send> Query<T> {
     /// ```no_run
     /// use futures_util::TryStreamExt;
     /// use modio::filter::prelude::*;
+    /// use modio::types::id::Id;
     ///
     /// # use modio::{Credentials, Modio, Result};
     /// #
     /// # async fn run() -> Result<()> {
     /// #     let modio = Modio::new(Credentials::new("apikey"))?;
     /// let filter = Fulltext::eq("tftd").limit(10);
-    /// let mut st = modio.game(51).mods().search(filter).paged().await?;
+    /// let mut st = modio
+    ///     .game(Id::new(51))
+    ///     .mods()
+    ///     .search(filter)
+    ///     .paged()
+    ///     .await?;
     ///
     /// // Stream of paged results `Page<Mod>` with page size = 10
     /// while let Some(page) = st.try_next().await? {

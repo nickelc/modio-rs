@@ -2,6 +2,8 @@ use std::borrow::Cow;
 
 use reqwest::Method;
 
+use crate::types::id::{CommentId, FileId, GameId, ModId, UserId};
+
 // macro: define_routes {{{
 // Based on https://stackoverflow.com/a/44161783
 macro_rules! define_routes {
@@ -68,7 +70,7 @@ macro_rules! define_routes {
         {
             $rname:ident,
             $method:ident: $path:expr,
-            [$($args:ident),* $(,)*],
+            [$($args:ident: $Type:ty),* $(,)*],
             $required:ident $(,)*
         },
         $($tail:tt)*
@@ -77,7 +79,7 @@ macro_rules! define_routes {
             @parse
             {
                 $($eout)*
-                $rname { $( $args: u32, )* },
+                $rname { $( $args: $Type, )* },
             },
             {
                 $($pout)*
@@ -112,48 +114,48 @@ define_routes! {
     { AuthGoogle, POST: "/external/googleauth", ApiKey },
     { Terms, GET: "/authenticate/terms", ApiKey},
     { GetGames, GET: "/games", Any },
-    { GetGame, GET: "/games/{}", [game_id], Any },
-    { AddGameMedia, POST: "/games/{}/media", [game_id], Token },
-    { GetGameStats, GET: "/games/{}/stats", [game_id], Any },
-    { GetGameTags, GET: "/games/{}/tags", [game_id], Any },
-    { AddGameTags, POST: "/games/{}/tags", [game_id], Token },
-    { DeleteGameTags, DELETE: "/games/{}/tags", [game_id], Token },
-    { GetMods, GET: "/games/{}/mods", [game_id], Any },
-    { GetMod, GET: "/games/{}/mods/{}", [game_id, mod_id], Any },
-    { AddMod, POST: "/games/{}/mods", [game_id], Token },
-    { EditMod, PUT: "/games/{}/mods/{}", [game_id, mod_id], Token },
-    { DeleteMod, DELETE: "/games/{}/mods/{}", [game_id, mod_id], Token },
-    { AddModMedia, POST: "/games/{}/mods/{}/media", [game_id, mod_id], Token },
-    { DeleteModMedia, DELETE: "/games/{}/mods/{}/media", [game_id, mod_id], Token },
-    { Subscribe, POST: "/games/{}/mods/{}/subscribe", [game_id, mod_id], Token },
-    { Unsubscribe, DELETE: "/games/{}/mods/{}/subscribe", [game_id, mod_id], Token },
-    { GetAllModEvents, GET: "/games/{}/mods/events", [game_id], Any },
-    { GetModEvents, GET: "/games/{}/mods/{}/events", [game_id, mod_id], Any },
-    { GetAllModStats, GET: "/games/{}/mods/stats", [game_id], Any },
-    { GetModStats, GET: "/games/{}/mods/{}/stats", [game_id, mod_id], Any },
-    { GetModTags, GET: "/games/{}/mods/{}/tags", [game_id, mod_id], Any },
-    { AddModTags, POST: "/games/{}/mods/{}/tags", [game_id, mod_id], Token },
-    { DeleteModTags, DELETE: "/games/{}/mods/{}/tags", [game_id, mod_id], Token },
-    { RateMod, POST: "/games/{}/mods/{}/ratings", [game_id, mod_id], Token },
-    { GetModMetadata, GET: "/games/{}/mods/{}/metadatakvp", [game_id, mod_id], Any },
-    { AddModMetadata, POST: "/games/{}/mods/{}/metadatakvp", [game_id, mod_id], Token },
-    { DeleteModMetadata, DELETE: "/games/{}/mods/{}/metadatakvp", [game_id, mod_id], Token },
-    { GetModDependencies, GET: "/games/{}/mods/{}/dependencies", [game_id, mod_id], Any },
-    { AddModDependencies, POST: "/games/{}/mods/{}/dependencies", [game_id, mod_id], Token },
-    { DeleteModDependencies, DELETE: "/games/{}/mods/{}/dependencies", [game_id, mod_id], Token },
-    { GetTeamMembers, GET: "/games/{}/mods/{}/team", [game_id, mod_id], Any },
-    { GetModComments, GET: "/games/{}/mods/{}/comments", [game_id, mod_id], Any },
-    { GetModComment, GET: "/games/{}/mods/{}/comments/{}", [game_id, mod_id, comment_id], Any },
-    { AddModComment, POST: "/games/{}/mods/{}/comments", [game_id, mod_id], Token },
-    { EditModComment, PUT: "/games/{}/mods/{}/comments/{}", [game_id, mod_id, comment_id], Token },
-    { DeleteModComment, DELETE: "/games/{}/mods/{}/comments/{}", [game_id, mod_id, comment_id], Token },
-    { AddModCommentKarma, POST: "/games/{}/mods/{}/comments/{}/karma", [game_id, mod_id, comment_id], Token },
-    { GetFiles, GET: "/games/{}/mods/{}/files", [game_id, mod_id], Any },
-    { GetFile, GET: "/games/{}/mods/{}/files/{}", [game_id, mod_id, file_id], Any },
-    { AddFile, POST: "/games/{}/mods/{}/files", [game_id, mod_id], Token },
-    { EditFile, PUT: "/games/{}/mods/{}/files/{}", [game_id, mod_id, file_id], Token },
-    { DeleteFile, DELETE: "/games/{}/mods/{}/files/{}", [game_id, mod_id, file_id], Token },
-    { ManagePlatformStatus, POST: "/games/{}/mods/{}/files/{}/platforms", [game_id, mod_id, file_id], Token },
+    { GetGame, GET: "/games/{}", [game_id: GameId], Any },
+    { AddGameMedia, POST: "/games/{}/media", [game_id: GameId], Token },
+    { GetGameStats, GET: "/games/{}/stats", [game_id: GameId], Any },
+    { GetGameTags, GET: "/games/{}/tags", [game_id: GameId], Any },
+    { AddGameTags, POST: "/games/{}/tags", [game_id: GameId], Token },
+    { DeleteGameTags, DELETE: "/games/{}/tags", [game_id: GameId], Token },
+    { GetMods, GET: "/games/{}/mods", [game_id: GameId], Any },
+    { GetMod, GET: "/games/{}/mods/{}", [game_id: GameId, mod_id: ModId], Any },
+    { AddMod, POST: "/games/{}/mods", [game_id: GameId], Token },
+    { EditMod, PUT: "/games/{}/mods/{}", [game_id: GameId, mod_id: ModId], Token },
+    { DeleteMod, DELETE: "/games/{}/mods/{}", [game_id: GameId, mod_id: ModId], Token },
+    { AddModMedia, POST: "/games/{}/mods/{}/media", [game_id: GameId, mod_id: ModId], Token },
+    { DeleteModMedia, DELETE: "/games/{}/mods/{}/media", [game_id: GameId, mod_id: ModId], Token },
+    { Subscribe, POST: "/games/{}/mods/{}/subscribe", [game_id: GameId, mod_id: ModId], Token },
+    { Unsubscribe, DELETE: "/games/{}/mods/{}/subscribe", [game_id: GameId, mod_id: ModId], Token },
+    { GetAllModEvents, GET: "/games/{}/mods/events", [game_id: GameId], Any },
+    { GetModEvents, GET: "/games/{}/mods/{}/events", [game_id: GameId, mod_id: ModId], Any },
+    { GetAllModStats, GET: "/games/{}/mods/stats", [game_id: GameId], Any },
+    { GetModStats, GET: "/games/{}/mods/{}/stats", [game_id: GameId, mod_id: ModId], Any },
+    { GetModTags, GET: "/games/{}/mods/{}/tags", [game_id: GameId, mod_id: ModId], Any },
+    { AddModTags, POST: "/games/{}/mods/{}/tags", [game_id: GameId, mod_id: ModId], Token },
+    { DeleteModTags, DELETE: "/games/{}/mods/{}/tags", [game_id: GameId, mod_id: ModId], Token },
+    { RateMod, POST: "/games/{}/mods/{}/ratings", [game_id: GameId, mod_id: ModId], Token },
+    { GetModMetadata, GET: "/games/{}/mods/{}/metadatakvp", [game_id: GameId, mod_id: ModId], Any },
+    { AddModMetadata, POST: "/games/{}/mods/{}/metadatakvp", [game_id: GameId, mod_id: ModId], Token },
+    { DeleteModMetadata, DELETE: "/games/{}/mods/{}/metadatakvp", [game_id: GameId, mod_id: ModId], Token },
+    { GetModDependencies, GET: "/games/{}/mods/{}/dependencies", [game_id: GameId, mod_id: ModId], Any },
+    { AddModDependencies, POST: "/games/{}/mods/{}/dependencies", [game_id: GameId, mod_id: ModId], Token },
+    { DeleteModDependencies, DELETE: "/games/{}/mods/{}/dependencies", [game_id: GameId, mod_id: ModId], Token },
+    { GetTeamMembers, GET: "/games/{}/mods/{}/team", [game_id: GameId, mod_id: ModId], Any },
+    { GetModComments, GET: "/games/{}/mods/{}/comments", [game_id: GameId, mod_id: ModId], Any },
+    { GetModComment, GET: "/games/{}/mods/{}/comments/{}", [game_id: GameId, mod_id: ModId, comment_id: CommentId], Any },
+    { AddModComment, POST: "/games/{}/mods/{}/comments", [game_id: GameId, mod_id: ModId], Token },
+    { EditModComment, PUT: "/games/{}/mods/{}/comments/{}", [game_id: GameId, mod_id: ModId, comment_id: CommentId], Token },
+    { DeleteModComment, DELETE: "/games/{}/mods/{}/comments/{}", [game_id: GameId, mod_id: ModId, comment_id: CommentId], Token },
+    { AddModCommentKarma, POST: "/games/{}/mods/{}/comments/{}/karma", [game_id: GameId, mod_id: ModId, comment_id: CommentId], Token },
+    { GetFiles, GET: "/games/{}/mods/{}/files", [game_id: GameId, mod_id: ModId], Any },
+    { GetFile, GET: "/games/{}/mods/{}/files/{}", [game_id: GameId, mod_id: ModId, file_id: FileId], Any },
+    { AddFile, POST: "/games/{}/mods/{}/files", [game_id: GameId, mod_id: ModId], Token },
+    { EditFile, PUT: "/games/{}/mods/{}/files/{}", [game_id: GameId, mod_id: ModId, file_id: FileId], Token },
+    { DeleteFile, DELETE: "/games/{}/mods/{}/files/{}", [game_id: GameId, mod_id: ModId, file_id: FileId], Token },
+    { ManagePlatformStatus, POST: "/games/{}/mods/{}/files/{}/platforms", [game_id: GameId, mod_id: ModId, file_id: FileId], Token },
     { AuthorizedUser, GET: "/me", Token },
     { UserSubscriptions, GET: "/me/subscribed", Token },
     { UserEvents, GET: "/me/events", Token },
@@ -162,14 +164,15 @@ define_routes! {
     { UserFiles, GET: "/me/files", Token },
     { UserRatings, GET: "/me/ratings", Token },
     { UserMuted, GET: "/me/users/muted", Token },
-    { MuteUser, POST: "/users/{}/mute", [user_id], Token },
-    { UnmuteUser, DELETE: "/users/{}/mute", [user_id], Token },
+    { MuteUser, POST: "/users/{}/mute", [user_id: UserId], Token },
+    { UnmuteUser, DELETE: "/users/{}/mute", [user_id: UserId], Token },
     { SubmitReport, POST: "/report", Token },
 }
 
 #[cfg(test)]
 mod tests {
     use super::Route;
+    use crate::types::id::Id;
 
     #[test]
     fn pieces() {
@@ -178,9 +181,9 @@ mod tests {
         assert_eq!(path, "/games");
 
         let route = Route::GetFile {
-            game_id: 1,
-            mod_id: 2,
-            file_id: 3,
+            game_id: Id::new(1),
+            mod_id: Id::new(2),
+            file_id: Id::new(3),
         };
         let (_, path, _) = route.pieces();
         assert_eq!(path, "/games/1/mods/2/files/3");

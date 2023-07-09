@@ -8,6 +8,7 @@ use reqwest::StatusCode;
 
 use crate::auth::Error as AuthError;
 use crate::download::Error as DownloadError;
+use crate::types::id::{FileId, GameId, ModId};
 use crate::types::Error as ModioError;
 
 /// A `Result` alias where the `Err` case is `modio::Error`.
@@ -267,21 +268,21 @@ pub(crate) fn ratelimit(reset: u64) -> Error {
     )
 }
 
-pub(crate) fn download_mod_not_found(game_id: u32, mod_id: u32) -> Error {
+pub(crate) fn download_mod_not_found(game_id: GameId, mod_id: ModId) -> Error {
     Error::new(
         Kind::Download,
         Some(DownloadError::ModNotFound { game_id, mod_id }),
     )
 }
 
-pub(crate) fn download_no_primary(game_id: u32, mod_id: u32) -> Error {
+pub(crate) fn download_no_primary(game_id: GameId, mod_id: ModId) -> Error {
     Error::new(
         Kind::Download,
         Some(DownloadError::NoPrimaryFile { game_id, mod_id }),
     )
 }
 
-pub(crate) fn download_file_not_found(game_id: u32, mod_id: u32, file_id: u32) -> Error {
+pub(crate) fn download_file_not_found(game_id: GameId, mod_id: ModId, file_id: FileId) -> Error {
     Error::new(
         Kind::Download,
         Some(DownloadError::FileNotFound {
@@ -292,7 +293,7 @@ pub(crate) fn download_file_not_found(game_id: u32, mod_id: u32, file_id: u32) -
     )
 }
 
-pub(crate) fn download_multiple_files<S>(game_id: u32, mod_id: u32, version: S) -> Error
+pub(crate) fn download_multiple_files<S>(game_id: GameId, mod_id: ModId, version: S) -> Error
 where
     S: Into<String>,
 {
@@ -306,7 +307,7 @@ where
     )
 }
 
-pub(crate) fn download_version_not_found<S>(game_id: u32, mod_id: u32, version: S) -> Error
+pub(crate) fn download_version_not_found<S>(game_id: GameId, mod_id: ModId, version: S) -> Error
 where
     S: Into<String>,
 {

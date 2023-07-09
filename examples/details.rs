@@ -2,6 +2,7 @@ use std::env;
 use std::process;
 
 use modio::filter::Filter;
+use modio::types::id::Id;
 use modio::{auth::Credentials, Modio};
 
 #[tokio::main]
@@ -24,7 +25,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let modio = Modio::host(host, creds)?;
 
     // OpenXcom: The X-Com Files
-    let modref = modio.mod_(51, 158);
+    let modref = modio.mod_(Id::new(51), Id::new(158));
 
     // Get mod with its dependencies and all files
     let deps = modref.dependencies().list().await?;
@@ -40,10 +41,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         "stats: downloads={} subscribers={}\n",
         m.stats.downloads_total, m.stats.subscribers_total,
     );
-    let primary = m.modfile.as_ref().map(|f| f.id).unwrap_or_default();
+    let primary = m.modfile.as_ref().map(|f| f.id);
     println!("files:");
     for file in files {
-        let primary = if primary == file.id { "*" } else { " " };
+        let primary = if primary == Some(file.id) { "*" } else { " " };
         println!("{} id: {} version: {:?}", primary, file.id, file.version);
     }
     Ok(())

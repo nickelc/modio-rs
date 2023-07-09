@@ -46,12 +46,13 @@
 //! ```no_run
 //! use futures_util::future::try_join3;
 //! use modio::filter::Filter;
+//! use modio::types::id::Id;
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! #    let modio = modio::Modio::new("user-or-game-api-key")?;
 //!
 //! // OpenXcom: The X-Com Files
-//! let modref = modio.mod_(51, 158);
+//! let modref = modio.mod_(Id::new(51), Id::new(158));
 //!
 //! // Get mod with its dependencies and all files
 //! let deps = modref.dependencies().list();
@@ -76,22 +77,23 @@
 //!
 //! ```no_run
 //! use modio::download::{DownloadAction, ResolvePolicy};
+//! use modio::types::id::Id;
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! #    let modio = modio::Modio::new("user-or-game-api-key")?;
 //!
 //! // Download the primary file of a mod.
 //! let action = DownloadAction::Primary {
-//!     game_id: 5,
-//!     mod_id: 19,
+//!     game_id: Id::new(5),
+//!     mod_id: Id::new(19),
 //! };
 //! modio.download(action).save_to_file("mod.zip").await?;
 //!
 //! // Download the specific file of a mod.
 //! let action = DownloadAction::File {
-//!     game_id: 5,
-//!     mod_id: 19,
-//!     file_id: 101,
+//!     game_id: Id::new(5),
+//!     mod_id: Id::new(19),
+//!     file_id: Id::new(101),
 //! };
 //! modio.download(action).save_to_file("mod.zip").await?;
 //!
@@ -100,8 +102,8 @@
 //! // Set policy to `ResolvePolicy::Fail` to return with
 //! // `modio::download::Error::MultipleFilesFound` as source error.
 //! let action = DownloadAction::Version {
-//!     game_id: 5,
-//!     mod_id: 19,
+//!     game_id: Id::new(5),
+//!     mod_id: Id::new(19),
 //!     version: "0.1".to_string(),
 //!     policy: ResolvePolicy::Latest,
 //! };

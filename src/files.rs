@@ -9,6 +9,7 @@ use tokio::io::AsyncRead;
 
 use crate::file_source::FileSource;
 use crate::prelude::*;
+use crate::types::id::{FileId, GameId, ModId};
 use crate::TargetPlatform;
 
 pub use crate::types::files::{
@@ -19,12 +20,12 @@ pub use crate::types::files::{
 #[derive(Clone)]
 pub struct Files {
     modio: Modio,
-    game: u32,
-    mod_id: u32,
+    game: GameId,
+    mod_id: ModId,
 }
 
 impl Files {
-    pub(crate) fn new(modio: Modio, game: u32, mod_id: u32) -> Self {
+    pub(crate) fn new(modio: Modio, game: GameId, mod_id: ModId) -> Self {
         Self {
             modio,
             game,
@@ -45,7 +46,7 @@ impl Files {
     }
 
     /// Return a reference to a file.
-    pub fn get(&self, id: u32) -> FileRef {
+    pub fn get(&self, id: FileId) -> FileRef {
         FileRef::new(self.modio.clone(), self.game, self.mod_id, id)
     }
 
@@ -68,13 +69,13 @@ impl Files {
 #[derive(Clone)]
 pub struct FileRef {
     modio: Modio,
-    game: u32,
-    mod_id: u32,
-    id: u32,
+    game: GameId,
+    mod_id: ModId,
+    id: FileId,
 }
 
 impl FileRef {
-    pub(crate) fn new(modio: Modio, game: u32, mod_id: u32, id: u32) -> Self {
+    pub(crate) fn new(modio: Modio, game: GameId, mod_id: ModId, id: FileId) -> Self {
         Self {
             modio,
             game,

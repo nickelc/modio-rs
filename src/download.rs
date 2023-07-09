@@ -14,6 +14,7 @@ use tracing::debug;
 
 use crate::error::{self, Kind, Result};
 use crate::types::files::File;
+use crate::types::id::{FileId, GameId, ModId};
 use crate::types::mods::Mod;
 use crate::Modio;
 
@@ -33,11 +34,12 @@ impl Downloader {
     ///
     /// # Example
     /// ```no_run
+    /// # use modio::types::id::Id;
     /// # async fn run() -> Result<(), Box<dyn std::error::Error>> {
     /// #     let modio = modio::Modio::new("api-key")?;
     /// let action = modio::DownloadAction::Primary {
-    ///     game_id: 5,
-    ///     mod_id: 19,
+    ///     game_id: Id::new(5),
+    ///     mod_id: Id::new(19),
     /// };
     ///
     /// modio.download(action).save_to_file("mod.zip").await?;
@@ -56,11 +58,12 @@ impl Downloader {
     ///
     /// # Example
     /// ```no_run
+    /// # use modio::types::id::Id;
     /// # async fn run() -> Result<(), Box<dyn std::error::Error>> {
     /// #     let modio = modio::Modio::new("api-key")?;
     /// let action = modio::DownloadAction::Primary {
-    ///     game_id: 5,
-    ///     mod_id: 19,
+    ///     game_id: Id::new(5),
+    ///     mod_id: Id::new(19),
     /// };
     ///
     /// let bytes = modio.download(action).bytes().await?;
@@ -78,11 +81,12 @@ impl Downloader {
     /// ```no_run
     /// use futures_util::TryStreamExt;
     ///
+    /// # use modio::types::id::Id;
     /// # async fn run() -> Result<(), Box<dyn std::error::Error>> {
     /// #     let modio = modio::Modio::new("api-key")?;
     /// let action = modio::DownloadAction::Primary {
-    ///     game_id: 5,
-    ///     mod_id: 19,
+    ///     game_id: Id::new(5),
+    ///     mod_id: Id::new(19),
     /// };
     ///
     /// let mut st = Box::pin(modio.download(action).stream());
@@ -198,19 +202,19 @@ async fn request_file(modio: Modio, action: DownloadAction) -> Result<Response> 
 #[derive(Debug)]
 pub enum DownloadAction {
     /// Download the primary modfile of a mod.
-    Primary { game_id: u32, mod_id: u32 },
+    Primary { game_id: GameId, mod_id: ModId },
     /// Download a specific modfile of a mod.
     File {
-        game_id: u32,
-        mod_id: u32,
-        file_id: u32,
+        game_id: GameId,
+        mod_id: ModId,
+        file_id: FileId,
     },
     /// Download a specific modfile.
     FileObj(Box<File>),
     /// Download a specific version of a mod.
     Version {
-        game_id: u32,
-        mod_id: u32,
+        game_id: GameId,
+        mod_id: ModId,
         version: String,
         policy: ResolvePolicy,
     },
@@ -229,26 +233,26 @@ pub enum ResolvePolicy {
 #[derive(Debug)]
 pub enum Error {
     /// The mod has not found.
-    ModNotFound { game_id: u32, mod_id: u32 },
+    ModNotFound { game_id: GameId, mod_id: ModId },
     /// The mod has no primary file.
-    NoPrimaryFile { game_id: u32, mod_id: u32 },
+    NoPrimaryFile { game_id: GameId, mod_id: ModId },
     /// The specific file of a mod was not found.
     FileNotFound {
-        game_id: u32,
-        mod_id: u32,
-        file_id: u32,
+        game_id: GameId,
+        mod_id: ModId,
+        file_id: FileId,
     },
     /// Multiple files for a given version were found and the policy was set to
     /// [`ResolvePolicy::Fail`].
     MultipleFilesFound {
-        game_id: u32,
-        mod_id: u32,
+        game_id: GameId,
+        mod_id: ModId,
         version: String,
     },
     /// No file for a given version was found.
     VersionNotFound {
-        game_id: u32,
-        mod_id: u32,
+        game_id: GameId,
+        mod_id: ModId,
         version: String,
     },
 }
@@ -320,16 +324,16 @@ impl From<File> for DownloadAction {
     }
 }
 
-/// Convert `(u32, u32)` to [`DownloadAction::Primary`]
-impl From<(u32, u32)> for DownloadAction {
-    fn from((game_id, mod_id): (u32, u32)) -> DownloadAction {
+/// Convert `(GameId, ModId)` to [`DownloadAction::Primary`]
+impl From<(GameId, ModId)> for DownloadAction {
+    fn from((game_id, mod_id): (GameId, ModId)) -> DownloadAction {
         DownloadAction::Primary { game_id, mod_id }
     }
 }
 
-/// Convert `(u32, u32, u32)` to [`DownloadAction::File`]
-impl From<(u32, u32, u32)> for DownloadAction {
-    fn from((game_id, mod_id, file_id): (u32, u32, u32)) -> DownloadAction {
+/// Convert `(GameId, ModId, FileId)` to [`DownloadAction::File`]
+impl From<(GameId, ModId, FileId)> for DownloadAction {
+    fn from((game_id, mod_id, file_id): (GameId, ModId, FileId)) -> DownloadAction {
         DownloadAction::File {
             game_id,
             mod_id,
@@ -338,10 +342,10 @@ impl From<(u32, u32, u32)> for DownloadAction {
     }
 }
 
-/// Convert `(u32, u32, String)` to [`DownloadAction::Version`] with resolve policy
+/// Convert `(GameId, ModId, String)` to [`DownloadAction::Version`] with resolve policy
 /// set to `ResolvePolicy::Latest`
-impl From<(u32, u32, String)> for DownloadAction {
-    fn from((game_id, mod_id, version): (u32, u32, String)) -> DownloadAction {
+impl From<(GameId, ModId, String)> for DownloadAction {
+    fn from((game_id, mod_id, version): (GameId, ModId, String)) -> DownloadAction {
         DownloadAction::Version {
             game_id,
             mod_id,
@@ -351,10 +355,10 @@ impl From<(u32, u32, String)> for DownloadAction {
     }
 }
 
-/// Convert `(u32, u32, &'a str)` to [`DownloadAction::Version`] with resolve policy
+/// Convert `(GameId, ModId, &'a str)` to [`DownloadAction::Version`] with resolve policy
 /// set to `ResolvePolicy::Latest`
-impl<'a> From<(u32, u32, &'a str)> for DownloadAction {
-    fn from((game_id, mod_id, version): (u32, u32, &'a str)) -> DownloadAction {
+impl<'a> From<(GameId, ModId, &'a str)> for DownloadAction {
+    fn from((game_id, mod_id, version): (GameId, ModId, &'a str)) -> DownloadAction {
         DownloadAction::Version {
             game_id,
             mod_id,

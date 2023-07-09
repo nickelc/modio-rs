@@ -14,9 +14,12 @@ mod utils;
 pub mod auth;
 pub mod files;
 pub mod games;
+pub mod id;
 pub mod mods;
 
 use utils::{DeserializeField, MissingField};
+
+use self::id::{EventId, GameId, ModId, UserId};
 
 /// See the [Access Token Object](https://docs.mod.io/#access-token-object) docs for more
 /// information.
@@ -103,7 +106,7 @@ pub struct Error {
 #[derive(Deserialize)]
 #[non_exhaustive]
 pub struct User {
-    pub id: u32,
+    pub id: UserId,
     pub name_id: String,
     pub username: String,
     pub date_online: u32,
@@ -239,10 +242,10 @@ impl fmt::Display for TargetPlatform {
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct Event {
-    pub id: u32,
-    pub game_id: u32,
-    pub mod_id: u32,
-    pub user_id: u32,
+    pub id: EventId,
+    pub game_id: GameId,
+    pub mod_id: ModId,
+    pub user_id: UserId,
     pub date_added: u64,
     pub event_type: EventType,
 }
