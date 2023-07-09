@@ -135,7 +135,7 @@ pub mod filters {
     /// use modio::mods::EventType;
     /// use modio::user::filters::events::EventType as Filter;
     ///
-    /// let filter = Id::gt(1024).and(Filter::eq(EventType::ModfileChanged));
+    /// let filter = Id::gt(1024).and(Filter::eq(EventType::MODFILE_CHANGED));
     /// ```
     pub mod events {
         #[doc(inline)]

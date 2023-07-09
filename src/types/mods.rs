@@ -94,73 +94,33 @@ pub struct Event {
     pub event_type: EventType,
 }
 
-/// Type of mod event that was triggered.
-#[derive(Debug, PartialEq, Eq, Hash)]
-#[non_exhaustive]
-pub enum EventType {
-    /// Primary file changed, the mod should be updated.
-    ModfileChanged,
-    /// Mod is marked as accepted and public.
-    ModAvailable,
-    /// Mod is marked as not accepted, deleted or hidden.
-    ModUnavailable,
-    /// Mod has been updated.
-    ModEdited,
-    /// Mod has been permanently deleted.
-    ModDeleted,
-    /// User has joined or left the mod team.
-    ModTeamChanged,
-    /// A comment has been published for a mod.
-    ModCommentAdded,
-    /// A comment has been deleted from a mod.
-    ModCommentDeleted,
-    /// New event types which are not supported yet.
-    Unknown(String),
-}
-
-impl<'de> Deserialize<'de> for EventType {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        struct EventTypeVisitor;
-
-        impl<'de> Visitor<'de> for EventTypeVisitor {
-            type Value = EventType;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                formatter.write_str("mod event type string")
-            }
-
-            fn visit_str<E: serde::de::Error>(self, value: &str) -> Result<Self::Value, E> {
-                match value {
-                    "MODFILE_CHANGED" => Ok(Self::Value::ModfileChanged),
-                    "MOD_AVAILABLE" => Ok(Self::Value::ModAvailable),
-                    "MOD_UNAVAILABLE" => Ok(Self::Value::ModUnavailable),
-                    "MOD_EDITED" => Ok(Self::Value::ModEdited),
-                    "MOD_DELETED" => Ok(Self::Value::ModDeleted),
-                    "MOD_TEAM_CHANGED" => Ok(Self::Value::ModTeamChanged),
-                    "MOD_COMMENT_ADDED" => Ok(Self::Value::ModCommentAdded),
-                    "MOD_COMMENT_DELETED" => Ok(Self::Value::ModCommentDeleted),
-                    _ => Ok(Self::Value::Unknown(value.to_owned())),
-                }
-            }
-        }
-
-        deserializer.deserialize_str(EventTypeVisitor)
+newtype_enum! {
+    /// Type of mod event that was triggered.
+    #[derive(Deserialize)]
+    #[serde(transparent)]
+    pub struct EventType<24> {
+        /// Primary file changed, the mod should be updated.
+        const MODFILE_CHANGED     = b"MODFILE_CHANGED";
+        /// Mod is marked as accepted and public.
+        const MOD_AVAILABLE       = b"MOD_AVAILABLE";
+        /// Mod is marked as not accepted, deleted or hidden.
+        const MOD_UNAVAILABLE     = b"MOD_UNAVAILABLE";
+        /// Mod has been updated.
+        const MOD_EDITED          = b"MOD_EDITED";
+        /// Mod has been permanently deleted.
+        const MOD_DELETED         = b"MOD_DELETED";
+        /// User has joined or left the mod team.
+        const MOD_TEAM_CHANGED    = b"MOD_TEAM_CHANGED";
+        /// A comment has been published for a mod.
+        const MOD_COMMENT_ADDED   = b"MOD_COMMENT_ADDED";
+        /// A comment has been deleted from a mod.
+        const MOD_COMMENT_DELETED = b"MOD_COMMENT_DELETED";
     }
 }
 
 impl fmt::Display for EventType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::ModfileChanged => f.write_str("MODFILE_CHANGED"),
-            Self::ModAvailable => f.write_str("MOD_AVAILABLE"),
-            Self::ModUnavailable => f.write_str("MOD_UNAVAILABLE"),
-            Self::ModEdited => f.write_str("MOD_EDITED"),
-            Self::ModDeleted => f.write_str("MOD_DELETED"),
-            Self::ModTeamChanged => f.write_str("MOD_TEAM_CHANGED"),
-            Self::ModCommentAdded => f.write_str("MOD_COMMENT_ADDED"),
-            Self::ModCommentDeleted => f.write_str("MOD_COMMENT_DELETED"),
-            Self::Unknown(s) => f.write_str(s),
-        }
+        f.write_str(self.as_str())
     }
 }
 
@@ -595,23 +555,29 @@ mod tests {
 
     #[test]
     fn mod_event_type_serde() {
-        assert_de_tokens(&EventType::ModfileChanged, &[Token::Str("MODFILE_CHANGED")]);
-        assert_de_tokens(&EventType::ModAvailable, &[Token::Str("MOD_AVAILABLE")]);
-        assert_de_tokens(&EventType::ModUnavailable, &[Token::Str("MOD_UNAVAILABLE")]);
-        assert_de_tokens(&EventType::ModEdited, &[Token::Str("MOD_EDITED")]);
-        assert_de_tokens(&EventType::ModDeleted, &[Token::Str("MOD_DELETED")]);
         assert_de_tokens(
-            &EventType::ModTeamChanged,
+            &EventType::MODFILE_CHANGED,
+            &[Token::Str("MODFILE_CHANGED")],
+        );
+        assert_de_tokens(&EventType::MOD_AVAILABLE, &[Token::Str("MOD_AVAILABLE")]);
+        assert_de_tokens(
+            &EventType::MOD_UNAVAILABLE,
+            &[Token::Str("MOD_UNAVAILABLE")],
+        );
+        assert_de_tokens(&EventType::MOD_EDITED, &[Token::Str("MOD_EDITED")]);
+        assert_de_tokens(&EventType::MOD_DELETED, &[Token::Str("MOD_DELETED")]);
+        assert_de_tokens(
+            &EventType::MOD_TEAM_CHANGED,
             &[Token::Str("MOD_TEAM_CHANGED")],
         );
         assert_de_tokens(
-            &EventType::ModCommentAdded,
+            &EventType::MOD_COMMENT_ADDED,
             &[Token::Str("MOD_COMMENT_ADDED")],
         );
         assert_de_tokens(
-            &EventType::ModCommentDeleted,
+            &EventType::MOD_COMMENT_DELETED,
             &[Token::Str("MOD_COMMENT_DELETED")],
         );
-        assert_de_tokens(&EventType::Unknown("foo".to_owned()), &[Token::Str("foo")]);
+        assert_de_tokens(&EventType::from_bytes(b"foo"), &[Token::Str("foo")]);
     }
 }

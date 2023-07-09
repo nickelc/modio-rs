@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fmt;
 
-use serde::de::{Deserializer, Visitor};
+use serde::de::Deserializer;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
@@ -245,57 +245,25 @@ pub struct Event {
     pub event_type: EventType,
 }
 
-/// Type of user event that was triggered.
-#[derive(Debug, PartialEq, Eq, Hash)]
-#[non_exhaustive]
-pub enum EventType {
-    /// User has joined a team.
-    UserTeamJoin,
-    /// User has left a team.
-    UserTeamLeave,
-    /// User has subscribed to a mod.
-    UserSubscribe,
-    /// User has unsubscribed to a mod.
-    UserUnsubscribe,
-    /// New event types which are not supported yet.
-    Unknown(String),
-}
-
-impl<'de> Deserialize<'de> for EventType {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        struct EventTypeVisitor;
-
-        impl<'de> Visitor<'de> for EventTypeVisitor {
-            type Value = EventType;
-
-            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-                formatter.write_str("user event type string")
-            }
-
-            fn visit_str<E: serde::de::Error>(self, value: &str) -> Result<Self::Value, E> {
-                match value {
-                    "USER_TEAM_JOIN" => Ok(Self::Value::UserTeamJoin),
-                    "USER_TEAM_LEAVE" => Ok(Self::Value::UserTeamLeave),
-                    "USER_SUBSCRIBE" => Ok(Self::Value::UserSubscribe),
-                    "USER_UNSUBSCRIBE" => Ok(Self::Value::UserUnsubscribe),
-                    _ => Ok(Self::Value::Unknown(value.to_owned())),
-                }
-            }
-        }
-
-        deserializer.deserialize_str(EventTypeVisitor)
+newtype_enum! {
+    /// Type of user event that was triggered.
+    #[derive(Deserialize)]
+    #[serde(transparent)]
+    pub struct EventType<24> {
+        /// User has joined a team.
+        const USER_TEAM_JOIN   = b"USER_TEAM_JOIN";
+        /// User has left a team.
+        const USER_TEAM_LEAVE  = b"USER_TEAM_LEAVE";
+        /// User has subscribed to a mod.
+        const USER_SUBSCRIBE   = b"USER_SUBSCRIBE";
+        /// User has unsubscribed to a mod.
+        const USER_UNSUBSCRIBE = b"USER_UNSUBSCRIBE";
     }
 }
 
 impl fmt::Display for EventType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::UserTeamJoin => f.write_str("USER_TEAM_JOIN"),
-            Self::UserTeamLeave => f.write_str("USER_TEAM_LEAVE"),
-            Self::UserSubscribe => f.write_str("USER_SUBSCRIBE"),
-            Self::UserUnsubscribe => f.write_str("USER_UNSUBSCRIBE"),
-            Self::Unknown(s) => f.write_str(s),
-        }
+        f.write_str(self.as_str())
     }
 }
 
@@ -510,14 +478,17 @@ mod tests {
 
     #[test]
     fn user_event_type_serde() {
-        assert_de_tokens(&EventType::UserTeamJoin, &[Token::Str("USER_TEAM_JOIN")]);
-        assert_de_tokens(&EventType::UserTeamLeave, &[Token::Str("USER_TEAM_LEAVE")]);
-        assert_de_tokens(&EventType::UserSubscribe, &[Token::Str("USER_SUBSCRIBE")]);
+        assert_de_tokens(&EventType::USER_TEAM_JOIN, &[Token::Str("USER_TEAM_JOIN")]);
         assert_de_tokens(
-            &EventType::UserUnsubscribe,
+            &EventType::USER_TEAM_LEAVE,
+            &[Token::Str("USER_TEAM_LEAVE")],
+        );
+        assert_de_tokens(&EventType::USER_SUBSCRIBE, &[Token::Str("USER_SUBSCRIBE")]);
+        assert_de_tokens(
+            &EventType::USER_UNSUBSCRIBE,
             &[Token::Str("USER_UNSUBSCRIBE")],
         );
-        assert_de_tokens(&EventType::Unknown("foo".to_owned()), &[Token::Str("foo")]);
+        assert_de_tokens(&EventType::from_bytes(b"foo"), &[Token::Str("foo")]);
     }
 
     #[test]
