@@ -4,8 +4,7 @@ use serde::de::{Deserializer, IgnoredAny, MapAccess, Visitor};
 use serde::Deserialize;
 use url::Url;
 
-use crate::types::{DeserializeField, MissingField};
-use crate::TargetPlatform;
+use crate::types::{DeserializeField, MissingField, TargetPlatform};
 
 use super::id::{FileId, ModId};
 

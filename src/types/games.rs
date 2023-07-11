@@ -5,11 +5,9 @@ use serde::de::{Deserializer, IgnoredAny, MapAccess, Visitor};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use crate::TargetPlatform;
-
 use super::id::GameId;
 use super::{deserialize_empty_object, DeserializeField, MissingField};
-use super::{Logo, Status};
+use super::{Logo, Status, TargetPlatform};
 
 /// See the [Game Object](https://docs.mod.io/#game-object) docs for more information.
 #[derive(Debug, Deserialize)]
