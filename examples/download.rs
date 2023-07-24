@@ -49,7 +49,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("filesize: {}", file.filesize);
         println!("reported md5: {}", file.filehash.md5);
 
-        let mut st = Box::pin(modio.download(file).stream());
+        let mut st = Box::pin(modio.download(file).await?.stream());
         while let Some(bytes) = st.try_next().await? {
             size += bytes.len();
             ctx.write_all(&bytes)?;

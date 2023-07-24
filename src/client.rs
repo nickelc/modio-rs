@@ -402,11 +402,11 @@ impl Modio {
     /// #    Ok(())
     /// # }
     /// ```
-    pub fn download<A>(&self, action: A) -> Downloader
+    pub async fn download<A>(&self, action: A) -> Result<Downloader>
     where
         DownloadAction: From<A>,
     {
-        Downloader::new(self.clone(), action.into())
+        Downloader::new(self.clone(), action.into()).await
     }
 
     /// Return a reference to an interface that provides access to resources owned by the user

@@ -19,14 +19,11 @@ use crate::Modio;
 
 /// A `Downloader` can be used to stream a mod file or save the file to a local file.
 /// Constructed with [`Modio::download`].
-pub struct Downloader {
-    modio: Modio,
-    action: DownloadAction,
-}
+pub struct Downloader(Response);
 
 impl Downloader {
-    pub(crate) fn new(modio: Modio, action: DownloadAction) -> Self {
-        Self { modio, action }
+    pub(crate) async fn new(modio: Modio, action: DownloadAction) -> Result<Self> {
+        Ok(Self(request_file(modio, action).await?))
     }
 
     /// Save the mod file to a local file.
@@ -68,8 +65,7 @@ impl Downloader {
     /// # }
     /// ```
     pub async fn bytes(self) -> Result<Bytes> {
-        let resp = request_file(self.modio, self.action).await?;
-        resp.bytes().map_err(error::request).await
+        self.0.bytes().map_err(error::request).await
     }
 
     /// `Stream` of bytes of the mod file.
@@ -93,9 +89,27 @@ impl Downloader {
     /// # }
     /// ```
     pub fn stream(self) -> impl Stream<Item = Result<Bytes>> {
-        request_file(self.modio, self.action)
-            .and_then(|res| async { Ok(res.bytes_stream().map_err(error::request)) })
-            .try_flatten_stream()
+        self.0.bytes_stream().map_err(error::request)
+    }
+
+    /// Get the content length from the mod file response.
+    ///
+    /// # Example
+    /// ```no_run
+    /// # async fn run() -> Result<(), Box<dyn std::error::Error>> {
+    /// #     let modio = modio::Modio::new("api-key")?;
+    /// let action = modio::DownloadAction::Primary {
+    ///     game_id: 5,
+    ///     mod_id: 19,
+    /// };
+    ///
+    /// let content_length = modio.download(action).content_length()
+    ///     .expect("mod file response should have content length");
+    /// #     Ok(())
+    /// # }
+    /// ```
+    pub fn content_length(&self) -> Option<u64> {
+        self.0.content_length()
     }
 }
 
