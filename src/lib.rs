@@ -87,7 +87,11 @@
 //!     game_id: Id::new(5),
 //!     mod_id: Id::new(19),
 //! };
-//! modio.download(action).save_to_file("mod.zip").await?;
+//! modio
+//!     .download(action)
+//!     .await?
+//!     .save_to_file("mod.zip")
+//!     .await?;
 //!
 //! // Download the specific file of a mod.
 //! let action = DownloadAction::File {
@@ -95,7 +99,11 @@
 //!     mod_id: Id::new(19),
 //!     file_id: Id::new(101),
 //! };
-//! modio.download(action).save_to_file("mod.zip").await?;
+//! modio
+//!     .download(action)
+//!     .await?
+//!     .save_to_file("mod.zip")
+//!     .await?;
 //!
 //! // Download the specific version of a mod.
 //! // if multiple files are found then the latest file is downloaded.
@@ -107,7 +115,11 @@
 //!     version: "0.1".to_string(),
 //!     policy: ResolvePolicy::Latest,
 //! };
-//! modio.download(action).save_to_file("mod.zip").await?;
+//! modio
+//!     .download(action)
+//!     .await?
+//!     .save_to_file("mod.zip")
+//!     .await?;
 //! #    Ok(())
 //! # }
 //! ```

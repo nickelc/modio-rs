@@ -114,7 +114,11 @@ let action = DownloadAction::Primary {
     game_id: 5,
     mod_id: 19,
 };
-modio.download(action).save_to_file("mod.zip").await?;
+modio
+    .download(action)
+    .await?
+    .save_to_file("mod.zip")
+    .await?;
 
 // Download the specific file of a mod.
 let action = DownloadAction::File {
@@ -122,7 +126,10 @@ let action = DownloadAction::File {
     mod_id: 19,
     file_id: 101,
 };
-modio.download(action).save_to_file("mod.zip").await?;
+modio
+    .download(action)
+    .await?.save_to_file("mod.zip")
+    .await?;
 
 // Download the specific version of a mod.
 // if multiple files are found then the latest file is downloaded.
@@ -134,7 +141,9 @@ let action = DownloadAction::Version {
     version: "0.1".to_string(),
     policy: ResolvePolicy::Latest,
 };
-modio.download(action)
+modio
+    .download(action)
+    .await?
     .stream()
     .try_for_each(|bytes| {
         println!("bytes: {:?}")

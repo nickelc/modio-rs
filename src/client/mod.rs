@@ -135,7 +135,11 @@ impl Modio {
     ///     game_id: Id::new(5),
     ///     mod_id: Id::new(19),
     /// };
-    /// modio.download(action).save_to_file("mod.zip").await?;
+    /// modio
+    ///     .download(action)
+    ///     .await?
+    ///     .save_to_file("mod.zip")
+    ///     .await?;
     ///
     /// // Download the specific file of a mod.
     /// let action = DownloadAction::File {
@@ -143,7 +147,11 @@ impl Modio {
     ///     mod_id: Id::new(19),
     ///     file_id: Id::new(101),
     /// };
-    /// modio.download(action).save_to_file("mod.zip").await?;
+    /// modio
+    ///     .download(action)
+    ///     .await?
+    ///     .save_to_file("mod.zip")
+    ///     .await?;
     ///
     /// // Download the specific version of a mod.
     /// // if multiple files are found then the latest file is downloaded.
@@ -157,6 +165,7 @@ impl Modio {
     /// };
     /// modio
     ///     .download(action)
+    ///     .await?
     ///     .stream()
     ///     .try_for_each(|bytes| {
     ///         println!("Bytes: {:?}", bytes);
@@ -166,11 +175,11 @@ impl Modio {
     /// #    Ok(())
     /// # }
     /// ```
-    pub fn download<A>(&self, action: A) -> Downloader
+    pub async fn download<A>(&self, action: A) -> Result<Downloader>
     where
         DownloadAction: From<A>,
     {
-        Downloader::new(self.clone(), action.into())
+        Downloader::new(self.clone(), action.into()).await
     }
 
     /// Return a reference to an interface that provides access to resources owned by the user
