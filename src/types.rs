@@ -71,7 +71,7 @@ where
 
 /// See the [Multiple Item Response](https://docs.mod.io/#response-formats) docs for more
 /// information.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, PartialEq, Deserialize)]
 #[non_exhaustive]
 pub struct List<T> {
     pub data: Vec<T>,
