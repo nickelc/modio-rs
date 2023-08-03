@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fmt;
 
-use serde::de::{Deserializer, IgnoredAny, MapAccess, Visitor};
+use serde::de::{Deserializer, IgnoredAny, MapAccess, SeqAccess, Visitor};
 use serde::Deserialize;
 use url::Url;
 
@@ -40,7 +40,7 @@ pub struct Mod {
     #[serde(default, deserialize_with = "deserialize_empty_object")]
     pub modfile: Option<File>,
     pub media: Media,
-    #[serde(rename = "metadata_kvp", deserialize_with = "deserialize_kvp")]
+    #[serde(rename = "metadata_kvp")]
     pub metadata: MetadataMap,
     pub tags: Vec<Tag>,
     pub stats: Statistics,
@@ -428,7 +428,7 @@ impl fmt::Display for Tag {
 
 /// See the [Metadata KVP Object](https://docs.mod.io/#metadata-kvp-object) docs for more
 /// information.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct MetadataMap(HashMap<String, Vec<String>>);
 
 impl MetadataMap {
@@ -457,7 +457,8 @@ impl std::ops::DerefMut for MetadataMap {
 
 /// Deserialize a sequence of key-value objects to a `MetadataMap`.
 ///
-/// Input
+/// ## Input
+///
 /// ```json
 /// [
 ///     {"metakey": "pistol-dmg", "metavalue": "800"},
@@ -465,46 +466,99 @@ impl std::ops::DerefMut for MetadataMap {
 ///     {"metakey": "pistol-dmg", "metavalue": "850"}
 /// ]
 /// ```
-/// Result
-/// ```json
-/// {
-///     "pistol-dmg": ["800", "850"],
-///     "smg-dmg": ["1000"]
-/// }
+///
+/// ## Result
+///
+/// ```text
+/// MetadataMap({
+///     "pistol-dmg": [
+///         "800",
+///         "850",
+///     ],
+///     "smg-dmg": [
+///         "1200",
+///     ],
+/// })
 /// ```
-fn deserialize_kvp<'de, D>(deserializer: D) -> Result<MetadataMap, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    use serde::de::SeqAccess;
-
-    struct MetadataVisitor;
-
-    impl<'de> Visitor<'de> for MetadataVisitor {
-        type Value = MetadataMap;
-
-        fn expecting(&self, fmt: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-            fmt.write_str("metadata kvp")
+impl<'de> Deserialize<'de> for MetadataMap {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(Debug)]
+        enum ListField {
+            Data,
+            Other,
         }
 
-        fn visit_seq<A: SeqAccess<'de>>(self, mut seq: A) -> Result<Self::Value, A::Error> {
-            #[derive(Deserialize)]
-            struct KV {
-                metakey: String,
-                metavalue: String,
-            }
+        impl<'de> Deserialize<'de> for ListField {
+            fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+                struct FieldVisitor;
 
-            let mut map = seq
-                .size_hint()
-                .map_or_else(MetadataMap::new, MetadataMap::with_capacity);
+                impl<'de> Visitor<'de> for FieldVisitor {
+                    type Value = ListField;
 
-            while let Some(elem) = seq.next_element::<KV>()? {
-                map.entry(elem.metakey).or_default().push(elem.metavalue);
+                    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                        formatter.write_str("`data` field")
+                    }
+
+                    fn visit_str<E: serde::de::Error>(self, value: &str) -> Result<Self::Value, E> {
+                        match value {
+                            "data" => Ok(ListField::Data),
+                            _ => Ok(ListField::Other),
+                        }
+                    }
+                }
+
+                deserializer.deserialize_identifier(FieldVisitor)
             }
-            Ok(map)
         }
+
+        struct MetadataVisitor;
+
+        impl<'de> Visitor<'de> for MetadataVisitor {
+            type Value = MetadataMap;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                formatter.write_str("metadata kvp")
+            }
+
+            fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
+                let mut data = None;
+
+                while let Some(key) = map.next_key()? {
+                    match key {
+                        ListField::Data => {
+                            data.deserialize_value("data", &mut map)?;
+                        }
+                        ListField::Other => {
+                            map.next_value::<IgnoredAny>()?;
+                        }
+                    }
+                }
+
+                let map = data.missing_field("data")?;
+                Ok(map)
+            }
+
+            fn visit_seq<A: SeqAccess<'de>>(self, mut seq: A) -> Result<Self::Value, A::Error> {
+                #[derive(Deserialize)]
+                struct Element {
+                    metakey: String,
+                    metavalue: String,
+                }
+
+                let mut map = seq
+                    .size_hint()
+                    .map_or_else(MetadataMap::new, MetadataMap::with_capacity);
+
+                while let Some(Element { metakey, metavalue }) = seq.next_element()? {
+                    map.entry(metakey).or_default().push(metavalue);
+                }
+
+                Ok(map)
+            }
+        }
+
+        deserializer.deserialize_any(MetadataVisitor)
     }
-    deserializer.deserialize_seq(MetadataVisitor)
 }
 
 /// See the [Comment Object](https://docs.mod.io/#comment-object) docs for more information.
@@ -552,7 +606,118 @@ impl TeamLevel {
 mod tests {
     use serde_test::{assert_de_tokens, Token};
 
-    use super::EventType;
+    use super::{EventType, MetadataMap};
+    use crate::types::List;
+
+    #[test]
+    fn metadata_from_result_list_serde() {
+        #[derive(Debug, PartialEq, serde::Deserialize)]
+        struct Entry {
+            metakey: String,
+            metavalue: String,
+        }
+
+        let list = List {
+            data: vec![
+                Entry {
+                    metakey: "foo".to_owned(),
+                    metavalue: "bar".to_owned(),
+                },
+                Entry {
+                    metakey: "foo".to_owned(),
+                    metavalue: "baz".to_owned(),
+                },
+            ],
+            count: 2,
+            offset: 0,
+            limit: 100,
+            total: 2,
+        };
+
+        let mut map = MetadataMap::new();
+        map.entry("foo".to_owned())
+            .or_insert(vec!["bar".to_owned(), "baz".to_owned()]);
+
+        let tokens = &[
+            Token::Struct {
+                name: "List",
+                len: 5,
+            },
+            Token::Str("data"),
+            Token::Seq { len: Some(2) },
+            Token::Map { len: Some(2) },
+            Token::Str("metakey"),
+            Token::Str("foo"),
+            Token::Str("metavalue"),
+            Token::Str("bar"),
+            Token::MapEnd,
+            Token::Map { len: Some(2) },
+            Token::Str("metakey"),
+            Token::Str("foo"),
+            Token::Str("metavalue"),
+            Token::Str("baz"),
+            Token::MapEnd,
+            Token::SeqEnd,
+            Token::Str("result_count"),
+            Token::U64(2),
+            Token::Str("result_offset"),
+            Token::U64(0),
+            Token::Str("result_limit"),
+            Token::U64(100),
+            Token::Str("result_total"),
+            Token::U64(2),
+            Token::StructEnd,
+        ];
+
+        assert_de_tokens(&list, tokens);
+        assert_de_tokens(&map, tokens);
+    }
+
+    #[test]
+    fn metadata_from_mod_serde() {
+        #[derive(Debug, PartialEq, serde::Deserialize)]
+        struct Mod {
+            id: u32,
+            #[serde(rename = "metadata_kvp")]
+            metadata: MetadataMap,
+        }
+
+        let mut map = MetadataMap::new();
+        map.entry("foo".to_owned())
+            .or_insert(vec!["bar".to_owned(), "baz".to_owned()]);
+
+        let mod_ = Mod {
+            id: 2,
+            metadata: map,
+        };
+        assert_de_tokens(
+            &mod_,
+            &[
+                Token::Struct {
+                    name: "Mod",
+                    len: 1,
+                },
+                Token::Str("id"),
+                Token::U32(2),
+                Token::Str("metadata_kvp"),
+                Token::Seq { len: Some(2) },
+                Token::Map { len: Some(2) },
+                Token::Str("metakey"),
+                Token::Str("foo"),
+                Token::Str("metavalue"),
+                Token::Str("bar"),
+                Token::MapEnd,
+                Token::Map { len: Some(2) },
+                Token::Str("metakey"),
+                Token::Str("foo"),
+                Token::Str("metavalue"),
+                Token::Str("baz"),
+                Token::MapEnd,
+                Token::SeqEnd,
+                Token::StructEnd,
+            ],
+        );
+    }
 
     #[test]
     fn mod_event_type_serde() {
