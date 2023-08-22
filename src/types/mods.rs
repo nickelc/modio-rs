@@ -391,10 +391,9 @@ impl<'de> Deserialize<'de> for Rating {
                 mod_id,
                 date_added,
             }),
-            Ok(R { rating, .. }) => Err(D::Error::custom(format!(
-                "invalid rating value: {}",
-                rating,
-            ))),
+            Ok(R { rating, .. }) => {
+                Err(D::Error::custom(format!("invalid rating value: {rating}")))
+            }
             Err(e) => Err(e),
         }
     }

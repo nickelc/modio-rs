@@ -144,7 +144,7 @@ impl fmt::Debug for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.inner.kind {
-            Kind::Auth(ref err) => write!(f, "authentication error: {}", err)?,
+            Kind::Auth(ref err) => write!(f, "authentication error: {err}")?,
             Kind::Builder => f.write_str("builder error")?,
             Kind::Decode => f.write_str("error decoding response body")?,
             Kind::Download => f.write_str("download error")?,
@@ -156,17 +156,17 @@ impl fmt::Display for Error {
                     debug_assert!(code.is_server_error());
                     "HTTP status server error"
                 };
-                write!(f, "{} ({})", prefix, code)?;
+                write!(f, "{prefix} ({code})")?;
             }
             Kind::RateLimit { reset } => {
-                write!(f, "API rate limit reached. Try again in {:?}.", reset)?;
+                write!(f, "API rate limit reached. Try again in {reset:?}.")?;
             }
             Kind::Validation(ref message, ref errors) => {
-                write!(f, "validation failed: '{}' {:?}", message, errors)?;
+                write!(f, "validation failed: '{message}' {errors:?}")?;
             }
         };
         if let Some(ref e) = self.inner.source {
-            write!(f, ": {}", e)?;
+            write!(f, ": {e}")?;
         }
         Ok(())
     }
