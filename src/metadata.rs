@@ -86,7 +86,7 @@ impl serde::ser::Serialize for MetadataMap {
                 map.serialize_entry("metadata[]", k)?;
             }
             for v in vals {
-                map.serialize_entry("metadata[]", &format!("{}:{}", k, v))?;
+                map.serialize_entry("metadata[]", &format!("{k}:{v}"))?;
             }
         }
         map.end()

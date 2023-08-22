@@ -264,8 +264,7 @@ impl fmt::Display for Error {
         match self {
             Error::ModNotFound { game_id, mod_id } => write!(
                 fmt,
-                "Mod {{id: {1}, game_id: {0}}} not found.",
-                game_id, mod_id,
+                "Mod {{id: {mod_id}, game_id: {game_id}}} not found.",
             ),
             Error::FileNotFound {
                 game_id,
@@ -273,8 +272,7 @@ impl fmt::Display for Error {
                 file_id,
             } => write!(
                 fmt,
-                "Mod {{id: {1}, game_id: {0}}}: File {{ id: {2} }} not found.",
-                game_id, mod_id, file_id,
+                "Mod {{id: {mod_id}, game_id: {game_id}}}: File {{ id: {file_id} }} not found.",
             ),
             Error::MultipleFilesFound {
                 game_id,
@@ -282,13 +280,11 @@ impl fmt::Display for Error {
                 version,
             } => write!(
                 fmt,
-                "Mod {{id: {1}, game_id: {0}}}: Multiple files found for version '{2}'.",
-                game_id, mod_id, version,
+                "Mod {{id: {mod_id}, game_id: {game_id}}}: Multiple files found for version '{version}'.",
             ),
             Error::NoPrimaryFile { game_id, mod_id } => write!(
                 fmt,
-                "Mod {{id: {1}, game_id: {0}}} Mod has no primary file.",
-                game_id, mod_id,
+                "Mod {{id: {mod_id}, game_id: {game_id}}} Mod has no primary file.",
             ),
             Error::VersionNotFound {
                 game_id,
@@ -296,8 +292,7 @@ impl fmt::Display for Error {
                 version,
             } => write!(
                 fmt,
-                "Mod {{id: {1}, game_id: {0}}}: No file with version '{2}' found.",
-                game_id, mod_id, version,
+                "Mod {{id: {mod_id}, game_id: {game_id}}}: No file with version '{version}' found.",
             ),
         }
     }

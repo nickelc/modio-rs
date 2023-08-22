@@ -848,7 +848,7 @@ impl From<AddMediaOptions> for Form {
         }
         if let Some(images) = opts.images {
             for (i, image) in images.into_iter().enumerate() {
-                form = form.part(format!("image{}", i), image.into());
+                form = form.part(format!("image{i}"), image.into());
             }
         }
         if let Some(youtube) = opts.youtube {
