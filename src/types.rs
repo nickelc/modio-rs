@@ -21,17 +21,6 @@ use utils::{DeserializeField, MissingField};
 
 use self::id::{EventId, GameId, ModId, UserId};
 
-/// See the [Access Token Object](https://docs.mod.io/#access-token-object) docs for more
-/// information.
-#[derive(Deserialize)]
-#[non_exhaustive]
-pub struct AccessToken {
-    #[serde(rename = "access_token")]
-    pub value: String,
-    #[serde(rename = "date_expires")]
-    pub expired_at: Option<u64>,
-}
-
 /// See the [Message Object](https://docs.mod.io/#message-object) docs for more information.
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]

@@ -4,7 +4,8 @@ use std::error::Error as StdError;
 use std::fmt;
 
 use crate::routing::Route;
-use crate::types::{AccessToken, Message};
+use crate::types::auth::AccessToken;
+use crate::types::Message;
 use crate::Modio;
 use crate::Result;
 
