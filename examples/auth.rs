@@ -23,7 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let modio = Modio::host(host, Credentials::new(api_key))?;
 
-    let terms = modio.auth().terms(None).await?;
+    let terms = modio.auth().terms().await?;
     println!("Terms:\n{}\n", terms.plaintext);
 
     match &*prompt("Accept? [Y/n]: ")? {
