@@ -61,7 +61,7 @@ impl Mods {
     ///
     /// See [Filters and sorting](filters::stats).
     pub fn statistics(self, filter: Filter) -> Query<Statistics> {
-        let route = Route::GetAllModStats { game_id: self.game };
+        let route = Route::GetModsStats { game_id: self.game };
         Query::new(self.modio, route, filter)
     }
 
@@ -70,7 +70,7 @@ impl Mods {
     ///
     /// See [Filters and sorting](filters::events).
     pub fn events(self, filter: Filter) -> Query<Event> {
-        let route = Route::GetAllModEvents { game_id: self.game };
+        let route = Route::GetModsEvents { game_id: self.game };
         Query::new(self.modio, route, filter)
     }
 }
@@ -214,7 +214,7 @@ impl ModRef {
 
     /// Subscribe the authenticated user to a mod. [required: token]
     pub async fn subscribe(self) -> Result<()> {
-        let route = Route::Subscribe {
+        let route = Route::SubscribeToMod {
             game_id: self.game,
             mod_id: self.id,
         };
@@ -231,7 +231,7 @@ impl ModRef {
 
     /// Unsubscribe the authenticated user from a mod. [required: token]
     pub async fn unsubscribe(self) -> Result<()> {
-        let route = Route::Unsubscribe {
+        let route = Route::UnsubscribeFromMod {
             game_id: self.game,
             mod_id: self.id,
         };

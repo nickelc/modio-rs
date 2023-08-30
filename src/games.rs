@@ -32,7 +32,10 @@ impl Games {
     ///
     /// See [Filters and sorting](filters).
     pub fn search(&self, filter: Filter) -> Query<Game> {
-        Query::new(self.modio.clone(), Route::GetGames, filter)
+        let route = Route::GetGames {
+            show_hidden_tags: None,
+        };
+        Query::new(self.modio.clone(), route, filter)
     }
 
     /// Return a reference to a game.
@@ -55,7 +58,10 @@ impl GameRef {
 
     /// Get a reference to the Modio game object that this `GameRef` refers to.
     pub async fn get(self) -> Result<Game> {
-        let route = Route::GetGame { game_id: self.id };
+        let route = Route::GetGame {
+            id: self.id,
+            show_hidden_tags: None,
+        };
         self.modio.request(route).send().await
     }
 

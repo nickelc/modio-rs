@@ -154,7 +154,7 @@ impl Auth {
     /// Request a security code be sent to the email of the user. [required: apikey]
     pub async fn request_code(self, email: &str) -> Result<()> {
         self.modio
-            .request(Route::AuthEmailRequest)
+            .request(Route::OAuthEmailRequest)
             .form(&[("email", email)])
             .send::<Message>()
             .await?;
@@ -166,7 +166,7 @@ impl Auth {
     pub async fn security_code(self, code: &str) -> Result<Credentials> {
         let t = self
             .modio
-            .request(Route::AuthEmailExchange)
+            .request(Route::OAuthEmailResponse)
             .form(&[("security_code", code)])
             .send::<AccessToken>()
             .await?;
@@ -239,7 +239,7 @@ pub struct AuthOptions {
 impl From<OculusOptions> for AuthOptions {
     fn from(options: OculusOptions) -> AuthOptions {
         AuthOptions {
-            route: Route::AuthOculus,
+            route: Route::ExternalAuthMeta,
             params: options.params,
         }
     }
@@ -248,7 +248,7 @@ impl From<OculusOptions> for AuthOptions {
 impl From<SteamOptions> for AuthOptions {
     fn from(options: SteamOptions) -> AuthOptions {
         AuthOptions {
-            route: Route::AuthSteam,
+            route: Route::ExternalAuthSteam,
             params: options.params,
         }
     }
@@ -257,7 +257,7 @@ impl From<SteamOptions> for AuthOptions {
 impl From<SwitchOptions> for AuthOptions {
     fn from(options: SwitchOptions) -> AuthOptions {
         AuthOptions {
-            route: Route::AuthSwitch,
+            route: Route::ExternalAuthSwitch,
             params: options.params,
         }
     }
@@ -266,7 +266,7 @@ impl From<SwitchOptions> for AuthOptions {
 impl From<XboxOptions> for AuthOptions {
     fn from(options: XboxOptions) -> AuthOptions {
         AuthOptions {
-            route: Route::AuthXbox,
+            route: Route::ExternalAuthXbox,
             params: options.params,
         }
     }
@@ -275,7 +275,7 @@ impl From<XboxOptions> for AuthOptions {
 impl From<DiscordOptions> for AuthOptions {
     fn from(options: DiscordOptions) -> AuthOptions {
         AuthOptions {
-            route: Route::AuthDiscord,
+            route: Route::ExternalAuthDiscord,
             params: options.params,
         }
     }
@@ -284,7 +284,7 @@ impl From<DiscordOptions> for AuthOptions {
 impl From<GoogleOptions> for AuthOptions {
     fn from(options: GoogleOptions) -> AuthOptions {
         AuthOptions {
-            route: Route::AuthGoogle,
+            route: Route::ExternalAuthGoogle,
             params: options.params,
         }
     }
