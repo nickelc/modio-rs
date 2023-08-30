@@ -147,24 +147,8 @@ impl Auth {
     /// Get text and links for user agreement and consent prior to authentication. [required: apikey]
     ///
     /// See the [mod.io docs](https://docs.mod.io/#terms) for more information.
-    pub async fn terms(self, service: Option<Service>) -> Result<Terms> {
-        let svc = match service {
-            Some(Service::Steam) => "steam",
-            Some(Service::Gog) => "gog",
-            Some(Service::EGS) => "epic",
-            Some(Service::Itchio) => "itchio",
-            Some(Service::Oculus) => "oculus",
-            Some(Service::Xbox) => "xbox",
-            Some(Service::Switch) => "switch",
-            Some(Service::Discord) => "discord",
-            Some(Service::Google) => "google",
-            _ => "",
-        };
-        self.modio
-            .request(Route::Terms)
-            .form(&[("service", svc)])
-            .send()
-            .await
+    pub async fn terms(self) -> Result<Terms> {
+        self.modio.request(Route::Terms).send().await
     }
 
     /// Request a security code be sent to the email of the user. [required: apikey]
@@ -243,20 +227,6 @@ impl Auth {
             token: Some(token),
         })
     }
-}
-
-/// The 3rd party authentication service that will be used after the user agrees to the terms of
-/// use and consent to an account being created.
-pub enum Service {
-    Steam,
-    Gog,
-    EGS,
-    Itchio,
-    Oculus,
-    Xbox,
-    Switch,
-    Discord,
-    Google,
 }
 
 /// Options for external authentication.
