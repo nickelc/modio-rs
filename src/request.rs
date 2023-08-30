@@ -9,7 +9,7 @@ use url::Url;
 
 use crate::auth::Token;
 use crate::error::{self, Result};
-use crate::routing::{AuthMethod, Route};
+use crate::routing::{Parts, Route};
 use crate::types::ErrorResponse;
 use crate::Modio;
 
@@ -44,9 +44,13 @@ pub struct RequestBuilder {
 
 impl RequestBuilder {
     pub fn new(modio: Modio, route: Route) -> Self {
-        let (method, path, auth_method) = route.pieces();
+        let Parts {
+            method,
+            path,
+            token_required,
+        } = route.into_parts();
 
-        if let (AuthMethod::Token, None) = (&auth_method, &modio.inner.credentials.token) {
+        if let (true, None) = (token_required, &modio.inner.credentials.token) {
             return Self {
                 modio,
                 request: Err(error::token_required()),
@@ -59,8 +63,8 @@ impl RequestBuilder {
             .map(|url| {
                 let mut req = modio.inner.client.request(method, url);
 
-                if let (AuthMethod::Token, Some(Token { value, .. })) =
-                    (&auth_method, &modio.inner.credentials.token)
+                if let (true, Some(Token { value, .. })) =
+                    (token_required, &modio.inner.credentials.token)
                 {
                     req = req.bearer_auth(value);
                 }

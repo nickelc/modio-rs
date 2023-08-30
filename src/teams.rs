@@ -25,7 +25,7 @@ impl Members {
     ///
     /// See [Filters and sorting](filters).
     pub fn search(&self, filter: Filter) -> Query<TeamMember> {
-        let route = Route::GetTeamMembers {
+        let route = Route::GetModTeamMembers {
             game_id: self.game,
             mod_id: self.mod_id,
         };
