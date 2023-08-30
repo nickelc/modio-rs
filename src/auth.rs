@@ -197,13 +197,11 @@ impl Auth {
         })
     }
 
-    /// Authenticate via external services ([Steam], [GOG], [itch.io], [Switch], [Xbox], [Discord], [Oculus], [Google]).
+    /// Authenticate via external services ([Steam], [Switch], [Xbox], [Discord], [Oculus], [Google]).
     ///
     /// See the [mod.io docs](https://docs.mod.io/#authentication-2) for more information.
     ///
     /// [Steam]: SteamOptions
-    /// [GOG]: GalaxyOptions
-    /// [itch.io]: ItchioOptions
     /// [Oculus]: OculusOptions
     /// [Switch]: SwitchOptions
     /// [Xbox]: XboxOptions
@@ -219,16 +217,6 @@ impl Auth {
     /// #   let modio = modio::Modio::new("apikey")?;
     /// use modio::auth::SteamOptions;
     /// let opts = SteamOptions::new("ticket");
-    /// modio.auth().external(opts).await?;
-    ///
-    /// use modio::auth::GalaxyOptions;
-    /// let opts = GalaxyOptions::new("ticket").email("foobar@example.com");
-    /// modio.auth().external(opts).await?;
-    ///
-    /// use modio::auth::ItchioOptions;
-    /// # let now = 1;
-    /// # let two_weeks = 2;
-    /// let opts = ItchioOptions::new("token").expired_at(now + two_weeks);
     /// modio.auth().external(opts).await?;
     /// #   Ok(())
     /// # }
@@ -278,24 +266,6 @@ pub struct AuthOptions {
 }
 
 // impl From<*Options> for AuthOptions {{{
-impl From<GalaxyOptions> for AuthOptions {
-    fn from(options: GalaxyOptions) -> AuthOptions {
-        AuthOptions {
-            route: Route::AuthGog,
-            params: options.params,
-        }
-    }
-}
-
-impl From<ItchioOptions> for AuthOptions {
-    fn from(options: ItchioOptions) -> AuthOptions {
-        AuthOptions {
-            route: Route::AuthItchio,
-            params: options.params,
-        }
-    }
-}
-
 impl From<OculusOptions> for AuthOptions {
     fn from(options: OculusOptions) -> AuthOptions {
         AuthOptions {

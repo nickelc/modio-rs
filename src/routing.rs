@@ -105,8 +105,6 @@ define_routes! {
     { AuthEmailRequest, POST: "/oauth/emailrequest", ApiKey },
     { AuthEmailExchange, POST: "/oauth/emailexchange", ApiKey },
     { AuthSteam, POST: "/external/steamauth", ApiKey },
-    { AuthGog, POST: "/external/galaxyauth", ApiKey },
-    { AuthItchio, POST: "/external/itchioauth", ApiKey },
     { AuthOculus, POST: "/external/oculusauth", ApiKey },
     { AuthSwitch, POST: "/external/switchauth", ApiKey },
     { AuthXbox, POST: "/external/xboxauth", ApiKey },
