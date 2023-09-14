@@ -43,6 +43,7 @@ pub struct Mod {
     #[serde(rename = "metadata_kvp")]
     pub metadata: MetadataMap,
     pub tags: Vec<Tag>,
+    pub dependencies: bool,
     pub stats: Statistics,
     pub platforms: Vec<Platform>,
 }
