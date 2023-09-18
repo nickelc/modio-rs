@@ -1,7 +1,6 @@
 //! Type-safe ID type for each resource.
 
 use std::cmp::Ordering;
-use std::convert::TryFrom;
 use std::fmt::{self, Write};
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
