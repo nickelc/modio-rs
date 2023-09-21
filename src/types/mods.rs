@@ -23,6 +23,7 @@ pub struct Mod {
     pub date_live: u64,
     pub maturity_option: MaturityOption,
     pub community_options: CommunityOptions,
+    #[serde(default)]
     pub monetisation_options: MonetisationOptions,
     pub price: f32,
     pub tax: u32,
@@ -72,6 +73,7 @@ bitflags! {
     }
 
     /// Monetisation options of a mod.
+    #[derive(Default)]
     pub struct MonetisationOptions: u8 {
         const ENABLED = 1;
         /// Recognition enabled.
