@@ -93,6 +93,7 @@ enum TlsBackend {
 }
 
 #[cfg(feature = "__tls")]
+#[allow(clippy::derivable_impls)]
 impl Default for TlsBackend {
     fn default() -> TlsBackend {
         #[cfg(feature = "default-tls")]
