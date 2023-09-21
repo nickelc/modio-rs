@@ -14,8 +14,8 @@ use crate::prelude::*;
 use crate::teams::Members;
 
 pub use crate::types::mods::{
-    Dependency, Event, EventType, Image, MaturityOption, Media, Mod, Platform, Popularity, Ratings,
-    Statistics, Tag, Visibility,
+    CommunityOptions, Dependency, Event, EventType, Image, MaturityOption, Media, Mod,
+    MonetisationOptions, Platform, Popularity, Ratings, Statistics, Tag, Visibility,
 };
 pub use crate::types::Logo;
 pub use crate::types::Status;
