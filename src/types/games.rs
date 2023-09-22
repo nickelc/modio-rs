@@ -81,7 +81,7 @@ newtype_enum! {
 
 bitflags! {
     /// Community features enabled on the mod.io website.
-    pub struct CommunityOptions: u8 {
+    pub struct CommunityOptions: u16 {
         /// Discussion board enabled.
         const DISCUSSIONS       = 1;
         /// Guides & News enabled.
