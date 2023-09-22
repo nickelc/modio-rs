@@ -23,6 +23,7 @@ pub struct Game {
     pub submission_option: SubmissionOption,
     pub curation_option: CurationOption,
     pub community_options: CommunityOptions,
+    #[serde(default)]
     pub monetisation_options: MonetisationOptions,
     #[deprecated(note = "replaced by `monetisation_options`")]
     pub revenue_options: RevenueOptions,
@@ -98,6 +99,7 @@ bitflags! {
     }
 
     /// Monetisation options mods can enable.
+    #[derive(Default)]
     pub struct MonetisationOptions: u8 {
         const ENABLED     = 1;
         /// Recognition enabled.
