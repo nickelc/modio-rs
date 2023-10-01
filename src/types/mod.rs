@@ -1,6 +1,5 @@
 //! Model types defining the mod.io API.
 
-use std::collections::HashMap;
 use std::fmt;
 
 use serde::de::Deserializer;
@@ -82,13 +81,39 @@ pub struct ErrorResponse {
 }
 
 /// See the [Error Object](https://docs.mod.io/#error-object) docs for more information.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, PartialEq, Deserialize)]
 #[non_exhaustive]
 pub struct Error {
     pub code: u16,
     pub error_ref: u16,
     pub message: String,
-    pub errors: Option<HashMap<String, String>>,
+    #[serde(default, deserialize_with = "deserialize_errors")]
+    pub errors: Vec<(String, String)>,
+}
+
+fn deserialize_errors<'de, D: Deserializer<'de>>(
+    deserializer: D,
+) -> Result<Vec<(String, String)>, D::Error> {
+    use serde::de::{MapAccess, Visitor};
+
+    struct MapVisitor;
+    impl<'de> Visitor<'de> for MapVisitor {
+        type Value = Vec<(String, String)>;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+            formatter.write_str("errors map")
+        }
+
+        fn visit_map<A: MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
+            let mut errors = map.size_hint().map_or_else(Vec::new, Vec::with_capacity);
+            while let Some(entry) = map.next_entry()? {
+                errors.push(entry);
+            }
+            Ok(errors)
+        }
+    }
+
+    deserializer.deserialize_map(MapVisitor)
 }
 
 /// See the [User Object](https://docs.mod.io/#user-object) docs for more information.
@@ -302,7 +327,96 @@ mod tests {
     use serde::Deserialize;
     use serde_test::{assert_de_tokens, assert_tokens, Token};
 
-    use super::{deserialize_empty_object, EventType, TargetPlatform};
+    use super::{deserialize_empty_object, Error, EventType, TargetPlatform};
+
+    #[test]
+    fn deserialize_error_no_errors_field() {
+        let value = Error {
+            code: 404,
+            error_ref: 11005,
+            message: "foo".to_owned(),
+            errors: vec![],
+        };
+
+        assert_de_tokens(
+            &value,
+            &[
+                Token::Struct {
+                    name: "Error",
+                    len: 3,
+                },
+                Token::Str("code"),
+                Token::U16(404),
+                Token::Str("error_ref"),
+                Token::U16(11005),
+                Token::Str("message"),
+                Token::Str("foo"),
+                Token::StructEnd,
+            ],
+        );
+    }
+
+    #[test]
+    fn deserialize_error_empty_errors() {
+        let value = Error {
+            code: 404,
+            error_ref: 11005,
+            message: "foo".to_owned(),
+            errors: vec![],
+        };
+
+        assert_de_tokens(
+            &value,
+            &[
+                Token::Struct {
+                    name: "Error",
+                    len: 3,
+                },
+                Token::Str("code"),
+                Token::U16(404),
+                Token::Str("error_ref"),
+                Token::U16(11005),
+                Token::Str("message"),
+                Token::Str("foo"),
+                Token::Str("errors"),
+                Token::Map { len: Some(0) },
+                Token::MapEnd,
+                Token::StructEnd,
+            ],
+        );
+    }
+
+    #[test]
+    fn deserialize_error_with_errors() {
+        let value = Error {
+            code: 404,
+            error_ref: 11005,
+            message: "foo".to_owned(),
+            errors: vec![("foo".to_owned(), "bar".to_owned())],
+        };
+
+        assert_de_tokens(
+            &value,
+            &[
+                Token::Struct {
+                    name: "Error",
+                    len: 3,
+                },
+                Token::Str("code"),
+                Token::U16(404),
+                Token::Str("error_ref"),
+                Token::U16(11005),
+                Token::Str("message"),
+                Token::Str("foo"),
+                Token::Str("errors"),
+                Token::Map { len: Some(1) },
+                Token::Str("foo"),
+                Token::Str("bar"),
+                Token::MapEnd,
+                Token::StructEnd,
+            ],
+        );
+    }
 
     #[derive(Debug, PartialEq, Deserialize)]
     struct Game {

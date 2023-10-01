@@ -1,5 +1,4 @@
 //! Client errors
-use std::collections::HashMap;
 use std::error::Error as StdError;
 use std::fmt;
 use std::time::Duration;
@@ -116,7 +115,7 @@ impl Error {
     }
 
     /// Returns validation message & errors from the response.
-    pub fn validation(&self) -> Option<(&String, &HashMap<String, String>)> {
+    pub fn validation(&self) -> Option<(&String, &Vec<(String, String)>)> {
         match self.inner.kind {
             Kind::Validation(ref msg, ref errors) => Some((msg, errors)),
             _ => None,
@@ -182,7 +181,7 @@ impl StdError for Error {
 pub(crate) enum Kind {
     Auth(AuthError),
     Download,
-    Validation(String, HashMap<String, String>),
+    Validation(String, Vec<(String, String)>),
     RateLimit { reset: Duration },
     Builder,
     Request,
@@ -196,14 +195,12 @@ impl fmt::Display for ModioError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut buf = String::new();
         buf.push_str(&self.message);
-        if let Some(ref errors) = self.errors {
-            for (k, v) in errors {
-                buf.push('\n');
-                buf.push_str("  ");
-                buf.push_str(k);
-                buf.push_str(": ");
-                buf.push_str(v);
-            }
+        for (k, v) in &self.errors {
+            buf.push('\n');
+            buf.push_str("  ");
+            buf.push_str(k);
+            buf.push_str(": ");
+            buf.push_str(v);
         }
         fmt::Display::fmt(&buf, f)
     }
@@ -249,7 +246,7 @@ pub(crate) fn decode<E: Into<BoxError>>(e: E) -> Error {
 pub(crate) fn error_for_status(status: StatusCode, error: ModioError) -> Error {
     match status {
         StatusCode::UNPROCESSABLE_ENTITY => Error::new_error_ref(
-            Kind::Validation(error.message, error.errors.unwrap_or_default()),
+            Kind::Validation(error.message, error.errors),
             error.error_ref,
             None::<Error>,
         ),
