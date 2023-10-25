@@ -111,7 +111,8 @@ async fn request_file(modio: Modio, action: DownloadAction) -> Result<Response> 
                 .get()
                 .map_err(|e| match e.kind() {
                     Kind::Status(StatusCode::NOT_FOUND) => {
-                        error::download_mod_not_found(game_id, mod_id)
+                        let source = Error::ModNotFound { game_id, mod_id };
+                        error::download(source)
                     }
                     _ => e,
                 })
@@ -119,7 +120,8 @@ async fn request_file(modio: Modio, action: DownloadAction) -> Result<Response> 
             if let Some(file) = m.modfile {
                 file.download.binary_url
             } else {
-                return Err(error::download_no_primary(game_id, mod_id));
+                let source = Error::NoPrimaryFile { game_id, mod_id };
+                return Err(error::download(source));
             }
         }
         DownloadAction::FileObj(file) => file.download.binary_url,
@@ -133,7 +135,12 @@ async fn request_file(modio: Modio, action: DownloadAction) -> Result<Response> 
                 .get()
                 .map_err(|e| match e.kind() {
                     Kind::Status(StatusCode::NOT_FOUND) => {
-                        error::download_file_not_found(game_id, mod_id, file_id)
+                        let source = Error::FileNotFound {
+                            game_id,
+                            mod_id,
+                            file_id,
+                        };
+                        error::download(source)
                     }
                     _ => e,
                 })
@@ -160,7 +167,8 @@ async fn request_file(modio: Modio, action: DownloadAction) -> Result<Response> 
                 .first_page()
                 .map_err(|e| match e.kind() {
                     Kind::Status(StatusCode::NOT_FOUND) => {
-                        error::download_mod_not_found(game_id, mod_id)
+                        let source = Error::ModNotFound { game_id, mod_id };
+                        error::download(source)
                     }
                     _ => e,
                 })
@@ -169,19 +177,28 @@ async fn request_file(modio: Modio, action: DownloadAction) -> Result<Response> 
             let (file, error) = match (list.len(), policy) {
                 (0, _) => (
                     None,
-                    Some(error::download_version_not_found(game_id, mod_id, version)),
+                    Some(Error::VersionNotFound {
+                        game_id,
+                        mod_id,
+                        version,
+                    }),
                 ),
                 (1, _) | (_, Latest) => (Some(list.remove(0)), None),
                 (_, Fail) => (
                     None,
-                    Some(error::download_multiple_files(game_id, mod_id, version)),
+                    Some(Error::MultipleFilesFound {
+                        game_id,
+                        mod_id,
+                        version,
+                    }),
                 ),
             };
 
             if let Some(file) = file {
                 file.download.binary_url
             } else {
-                return Err(error.expect("bug in previous match!"));
+                let source = error.expect("bug in previous match!");
+                return Err(error::download(source));
             }
         }
     };
