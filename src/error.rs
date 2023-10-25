@@ -25,30 +25,27 @@ struct Inner {
 }
 
 impl Error {
-    pub(crate) fn new<E>(kind: Kind, source: Option<E>) -> Error
-    where
-        E: Into<BoxError>,
-    {
-        Error {
+    #[inline]
+    pub(crate) fn new(kind: Kind) -> Self {
+        Self {
             inner: Box::new(Inner {
                 kind,
                 error_ref: None,
-                source: source.map(Into::into),
+                source: None,
             }),
         }
     }
 
-    pub(crate) fn new_error_ref<E>(kind: Kind, error_ref: u16, source: Option<E>) -> Error
-    where
-        E: Into<BoxError>,
-    {
-        Error {
-            inner: Box::new(Inner {
-                kind,
-                error_ref: Some(error_ref),
-                source: source.map(Into::into),
-            }),
-        }
+    #[inline]
+    pub(crate) fn with<E: Into<BoxError>>(mut self, source: E) -> Self {
+        self.inner.source = Some(source.into());
+        self
+    }
+
+    #[inline]
+    pub(crate) fn with_error_ref(mut self, error_ref: u16) -> Self {
+        self.inner.error_ref = Some(error_ref);
+        self
     }
 
     /// Returns true if the API key/access token is incorrect, revoked, expired or the request
@@ -216,20 +213,18 @@ impl fmt::Display for ModioError {
 }
 
 pub(crate) fn token_required() -> Error {
-    use AuthError::TokenRequired;
-    Error::new(Kind::Auth(TokenRequired), Some(TokenRequired))
+    Error::new(Kind::Auth(AuthError::TokenRequired)).with(AuthError::TokenRequired)
 }
 
 pub(crate) fn unauthorized(error_ref: u16) -> Error {
-    use AuthError::Unauthorized;
-    Error::new_error_ref(Kind::Auth(Unauthorized), error_ref, Some(Unauthorized))
+    Error::new(Kind::Auth(AuthError::Unauthorized))
+        .with_error_ref(error_ref)
+        .with(AuthError::Unauthorized)
 }
 
 pub(crate) fn terms_required() -> Error {
-    Error::new(
-        Kind::Auth(AuthError::TermsAcceptanceRequired),
-        Some(AuthError::TermsAcceptanceRequired),
-    )
+    Error::new(Kind::Auth(AuthError::TermsAcceptanceRequired))
+        .with(AuthError::TermsAcceptanceRequired)
 }
 
 pub(crate) fn builder_or_request(e: reqwest::Error) -> Error {
@@ -240,43 +235,39 @@ pub(crate) fn builder_or_request(e: reqwest::Error) -> Error {
     }
 }
 
-pub(crate) fn builder<E: Into<BoxError>>(e: E) -> Error {
-    Error::new(Kind::Builder, Some(e))
+pub(crate) fn builder<E: Into<BoxError>>(source: E) -> Error {
+    Error::new(Kind::Builder).with(source)
 }
 
-pub(crate) fn request<E: Into<BoxError>>(e: E) -> Error {
-    Error::new(Kind::Request, Some(e))
+pub(crate) fn request<E: Into<BoxError>>(source: E) -> Error {
+    Error::new(Kind::Request).with(source)
 }
 
-pub(crate) fn decode<E: Into<BoxError>>(e: E) -> Error {
-    Error::new(Kind::Decode, Some(e))
+pub(crate) fn decode<E: Into<BoxError>>(source: E) -> Error {
+    Error::new(Kind::Decode).with(source)
 }
 
 pub(crate) fn error_for_status(status: StatusCode, error: ModioError) -> Error {
     match status {
-        StatusCode::UNPROCESSABLE_ENTITY => Error::new_error_ref(
-            Kind::Validation {
-                message: error.message,
-                errors: error.errors,
-            },
-            error.error_ref,
-            None::<Error>,
-        ),
+        StatusCode::UNPROCESSABLE_ENTITY => Error::new(Kind::Validation {
+            message: error.message,
+            errors: error.errors,
+        })
+        .with_error_ref(error.error_ref),
         StatusCode::UNAUTHORIZED => unauthorized(error.error_ref),
         StatusCode::FORBIDDEN if error.error_ref == 11051 => terms_required(),
-        _ => Error::new_error_ref(Kind::Status(status), error.error_ref, Some(error)),
+        _ => Error::new(Kind::Status(status))
+            .with_error_ref(error.error_ref)
+            .with(error),
     }
 }
 
 pub(crate) fn ratelimit(reset: u64) -> Error {
-    Error::new(
-        Kind::RateLimit {
-            reset: Duration::from_secs(reset * 60),
-        },
-        None::<Error>,
-    )
+    Error::new(Kind::RateLimit {
+        reset: Duration::from_secs(reset * 60),
+    })
 }
 
-pub(crate) fn download<E: Into<BoxError>>(e: E) -> Error {
-    Error::new(Kind::Download, Some(e))
+pub(crate) fn download<E: Into<BoxError>>(source: E) -> Error {
+    Error::new(Kind::Download).with(source)
 }
