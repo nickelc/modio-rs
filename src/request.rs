@@ -17,23 +17,14 @@ use crate::Modio;
 mod headers {
     const X_MODIO_ERROR_REF: &str = "x-modio-error-ref";
     const X_MODIO_REQUEST_ID: &str = "x-modio-request-id";
-    const X_RATELIMIT_LIMIT: &str = "x-ratelimit-limit";
-    const X_RATELIMIT_REMAINING: &str = "x-ratelimit-remaining";
-    const X_RATELIMIT_RETRY_AFTER: &str = "x-ratelimit-retryafter";
 
-    use http::HeaderMap;
+    use http::header::{HeaderMap, RETRY_AFTER};
 
-    pub fn parse_headers(headers: &HeaderMap) -> (Option<u64>, Option<u64>) {
-        fn to_str<'a>(headers: &'a HeaderMap, name: &'static str) -> Option<&'a str> {
-            headers.get(name).and_then(|v| v.to_str().ok())
-        }
-        fn parse<T: std::str::FromStr>(headers: &HeaderMap, name: &'static str) -> Option<T> {
-            to_str(headers, name).and_then(|v| v.parse().ok())
-        }
-
-        let remaining = parse(headers, X_RATELIMIT_REMAINING);
-        let reset_after = parse(headers, X_RATELIMIT_RETRY_AFTER);
-        (remaining, reset_after)
+    pub fn retry_after(headers: &HeaderMap) -> Option<u64> {
+        headers
+            .get(RETRY_AFTER)
+            .and_then(|v| v.to_str().ok())
+            .and_then(|v| v.parse().ok())
     }
 }
 
@@ -119,10 +110,10 @@ impl RequestBuilder {
 
         let status = response.status();
 
-        let (remaining, reset) = if status.is_success() {
-            (None, None)
+        let retry_after = if status.is_success() {
+            None
         } else {
-            headers::parse_headers(response.headers())
+            headers::retry_after(response.headers())
         };
 
         trace!("response headers: {:?}", response.headers());
@@ -140,16 +131,13 @@ impl RequestBuilder {
             serde_json::from_str("null").map_err(error::decode)
         } else if status.is_success() {
             serde_json::from_slice(&body).map_err(error::decode)
+        } else if let Some(retry_after) = retry_after {
+            debug!("ratelimit reached: retry after {retry_after} seconds");
+            Err(error::ratelimit(retry_after))
         } else {
-            match (remaining, reset) {
-                (Some(0), Some(reset)) => {
-                    debug!("ratelimit reached: reset in {} seconds", reset);
-                    Err(error::ratelimit(reset))
-                }
-                _ => serde_json::from_slice::<ErrorResponse>(&body)
-                    .map(|mer| Err(error::error_for_status(status, mer.error)))
-                    .map_err(error::decode)?,
-            }
+            serde_json::from_slice::<ErrorResponse>(&body)
+                .map(|mer| Err(error::error_for_status(status, mer.error)))
+                .map_err(error::decode)?
         }
     }
 }

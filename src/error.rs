@@ -155,8 +155,8 @@ impl fmt::Display for Error {
                 };
                 write!(f, "{prefix} ({code})")?;
             }
-            Kind::RateLimit { reset } => {
-                write!(f, "API rate limit reached. Try again in {reset:?}.")?;
+            Kind::RateLimit { retry_after } => {
+                write!(f, "API rate limit reached. Try again in {retry_after:?}.")?;
             }
             Kind::Validation {
                 ref message,
@@ -187,7 +187,7 @@ pub(crate) enum Kind {
         errors: Vec<(String, String)>,
     },
     RateLimit {
-        reset: Duration,
+        retry_after: Duration,
     },
     Builder,
     Request,
@@ -262,9 +262,9 @@ pub(crate) fn error_for_status(status: StatusCode, error: ModioError) -> Error {
     }
 }
 
-pub(crate) fn ratelimit(reset: u64) -> Error {
+pub(crate) fn ratelimit(retry_after: u64) -> Error {
     Error::new(Kind::RateLimit {
-        reset: Duration::from_secs(reset * 60),
+        retry_after: Duration::from_secs(retry_after),
     })
 }
 
