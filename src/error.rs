@@ -91,7 +91,7 @@ impl Error {
 
     /// Returns true if the error contains validation errors.
     pub fn is_validation(&self) -> bool {
-        matches!(self.inner.kind, Kind::Validation(_, _))
+        matches!(self.inner.kind, Kind::Validation { .. })
     }
 
     /// Returns true if the error is related to serialization.
@@ -117,7 +117,10 @@ impl Error {
     /// Returns validation message & errors from the response.
     pub fn validation(&self) -> Option<(&String, &Vec<(String, String)>)> {
         match self.inner.kind {
-            Kind::Validation(ref msg, ref errors) => Some((msg, errors)),
+            Kind::Validation {
+                ref message,
+                ref errors,
+            } => Some((message, errors)),
             _ => None,
         }
     }
@@ -160,7 +163,10 @@ impl fmt::Display for Error {
             Kind::RateLimit { reset } => {
                 write!(f, "API rate limit reached. Try again in {reset:?}.")?;
             }
-            Kind::Validation(ref message, ref errors) => {
+            Kind::Validation {
+                ref message,
+                ref errors,
+            } => {
                 write!(f, "validation failed: '{message}' {errors:?}")?;
             }
         };
@@ -181,8 +187,13 @@ impl StdError for Error {
 pub(crate) enum Kind {
     Auth(AuthError),
     Download,
-    Validation(String, Vec<(String, String)>),
-    RateLimit { reset: Duration },
+    Validation {
+        message: String,
+        errors: Vec<(String, String)>,
+    },
+    RateLimit {
+        reset: Duration,
+    },
     Builder,
     Request,
     Decode,
@@ -246,7 +257,10 @@ pub(crate) fn decode<E: Into<BoxError>>(e: E) -> Error {
 pub(crate) fn error_for_status(status: StatusCode, error: ModioError) -> Error {
     match status {
         StatusCode::UNPROCESSABLE_ENTITY => Error::new_error_ref(
-            Kind::Validation(error.message, error.errors),
+            Kind::Validation {
+                message: error.message,
+                errors: error.errors,
+            },
             error.error_ref,
             None::<Error>,
         ),
