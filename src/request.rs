@@ -142,7 +142,7 @@ impl RequestBuilder {
             serde_json::from_slice(&body).map_err(error::decode)
         } else {
             match (remaining, reset) {
-                (Some(remaining), Some(reset)) if remaining == 0 => {
+                (Some(0), Some(reset)) => {
                     debug!("ratelimit reached: reset in {} seconds", reset);
                     Err(error::ratelimit(reset))
                 }
