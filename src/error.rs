@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use reqwest::StatusCode;
 
-use crate::types::Error as ModioError;
+use crate::types::Error as ApiError;
 
 /// A `Result` alias where the `Err` case is `modio::Error`.
 pub type Result<T, E = Error> = std::result::Result<T, E>;
@@ -75,8 +75,8 @@ impl Error {
     }
 
     /// Returns true if the error was generated from a response.
-    pub fn is_status(&self) -> bool {
-        matches!(self.inner.kind, Kind::Status(_))
+    pub fn is_response(&self) -> bool {
+        matches!(self.inner.kind, Kind::Response { .. })
     }
 
     /// Returns true if the error contains validation errors.
@@ -89,6 +89,14 @@ impl Error {
         matches!(self.inner.kind, Kind::Decode)
     }
 
+    /// Returns the API error if the error was generated from a response.
+    pub fn api_error(&self) -> Option<&ApiError> {
+        match &self.inner.kind {
+            Kind::Response { error, .. } => Some(error),
+            _ => None,
+        }
+    }
+
     /// Returns modio's error reference code.
     ///
     /// See the [Error Codes](https://docs.mod.io/#error-codes) docs for more information.
@@ -99,7 +107,7 @@ impl Error {
     /// Returns status code if the error was generated from a response.
     pub fn status(&self) -> Option<StatusCode> {
         match self.inner.kind {
-            Kind::Status(code) => Some(code),
+            Kind::Response { status, .. } => Some(status),
             _ => None,
         }
     }
@@ -142,14 +150,14 @@ impl fmt::Display for Error {
             Kind::Decode => f.write_str("error decoding response body")?,
             Kind::Download => f.write_str("download error")?,
             Kind::Request => f.write_str("http request error")?,
-            Kind::Status(code) => {
-                let prefix = if code.is_client_error() {
+            Kind::Response { status, .. } => {
+                let prefix = if status.is_client_error() {
                     "HTTP status client error"
                 } else {
-                    debug_assert!(code.is_server_error());
+                    debug_assert!(status.is_server_error());
                     "HTTP status server error"
                 };
-                write!(f, "{prefix} ({code})")?;
+                write!(f, "{prefix} ({status})")?;
             }
             Kind::RateLimit { retry_after } => {
                 write!(f, "API rate limit reached. Try again in {retry_after:?}.")?;
@@ -192,37 +200,15 @@ pub(crate) enum Kind {
     },
     Builder,
     Request,
+    Response {
+        status: StatusCode,
+        error: ApiError,
+    },
     Decode,
-    Status(StatusCode),
-}
-
-impl StdError for ModioError {}
-
-impl fmt::Display for ModioError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut buf = String::new();
-        buf.push_str(&self.message);
-        for (k, v) in &self.errors {
-            buf.push('\n');
-            buf.push_str("  ");
-            buf.push_str(k);
-            buf.push_str(": ");
-            buf.push_str(v);
-        }
-        fmt::Display::fmt(&buf, f)
-    }
 }
 
 pub(crate) fn token_required() -> Error {
     Error::new(Kind::TokenRequired)
-}
-
-pub(crate) fn unauthorized(error_ref: u16) -> Error {
-    Error::new(Kind::Unauthorized).with_error_ref(error_ref)
-}
-
-pub(crate) fn terms_required() -> Error {
-    Error::new(Kind::TermsAcceptanceRequired)
 }
 
 pub(crate) fn builder_or_request(e: reqwest::Error) -> Error {
@@ -245,19 +231,18 @@ pub(crate) fn decode<E: Into<BoxError>>(source: E) -> Error {
     Error::new(Kind::Decode).with(source)
 }
 
-pub(crate) fn error_for_status(status: StatusCode, error: ModioError) -> Error {
-    match status {
-        StatusCode::UNPROCESSABLE_ENTITY => Error::new(Kind::Validation {
+pub(crate) fn error_for_status(status: StatusCode, error: ApiError) -> Error {
+    let error_ref = error.error_ref;
+    let kind = match status {
+        StatusCode::UNPROCESSABLE_ENTITY => Kind::Validation {
             message: error.message,
             errors: error.errors,
-        })
-        .with_error_ref(error.error_ref),
-        StatusCode::UNAUTHORIZED => unauthorized(error.error_ref),
-        StatusCode::FORBIDDEN if error.error_ref == 11051 => terms_required(),
-        _ => Error::new(Kind::Status(status))
-            .with_error_ref(error.error_ref)
-            .with(error),
-    }
+        },
+        StatusCode::UNAUTHORIZED => Kind::Unauthorized,
+        StatusCode::FORBIDDEN if error_ref == 11051 => Kind::TermsAcceptanceRequired,
+        _ => Kind::Response { status, error },
+    };
+    Error::new(kind).with_error_ref(error_ref)
 }
 
 pub(crate) fn ratelimit(retry_after: u64) -> Error {
