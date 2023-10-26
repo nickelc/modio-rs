@@ -5,7 +5,6 @@ use std::time::Duration;
 
 use reqwest::StatusCode;
 
-use crate::auth::Error as AuthError;
 use crate::types::Error as ModioError;
 
 /// A `Result` alias where the `Err` case is `modio::Error`.
@@ -51,17 +50,13 @@ impl Error {
     /// Returns true if the API key/access token is incorrect, revoked, expired or the request
     /// needs a different authentication method.
     pub fn is_auth(&self) -> bool {
-        matches!(
-            self.inner.kind,
-            Kind::Auth(AuthError::Unauthorized | AuthError::TokenRequired)
-        )
+        matches!(self.inner.kind, Kind::Unauthorized | Kind::TokenRequired)
     }
 
     /// Returns true if the acceptance of the Terms of Use is required before continuing external
     /// authorization.
     pub fn is_terms_acceptance_required(&self) -> bool {
-        use AuthError::TermsAcceptanceRequired;
-        matches!(self.inner.kind, Kind::Auth(TermsAcceptanceRequired))
+        matches!(self.inner.kind, Kind::TermsAcceptanceRequired)
     }
 
     /// Returns true if the error is from a type Builder.
@@ -141,7 +136,9 @@ impl fmt::Debug for Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self.inner.kind {
-            Kind::Auth(ref err) => write!(f, "authentication error: {err}")?,
+            Kind::Unauthorized => f.write_str("unauthorized")?,
+            Kind::TokenRequired => f.write_str("access token is required")?,
+            Kind::TermsAcceptanceRequired => f.write_str("terms acceptance is required")?,
             Kind::Builder => f.write_str("builder error")?,
             Kind::Decode => f.write_str("error decoding response body")?,
             Kind::Download => f.write_str("download error")?,
@@ -180,7 +177,12 @@ impl StdError for Error {
 
 #[derive(Debug)]
 pub(crate) enum Kind {
-    Auth(AuthError),
+    /// API key/access token is incorrect, revoked or expired.
+    Unauthorized,
+    /// Access token is required to perform the action.
+    TokenRequired,
+    /// The acceptance of the Terms of Use is required.
+    TermsAcceptanceRequired,
     Download,
     Validation {
         message: String,
@@ -213,18 +215,15 @@ impl fmt::Display for ModioError {
 }
 
 pub(crate) fn token_required() -> Error {
-    Error::new(Kind::Auth(AuthError::TokenRequired)).with(AuthError::TokenRequired)
+    Error::new(Kind::TokenRequired)
 }
 
 pub(crate) fn unauthorized(error_ref: u16) -> Error {
-    Error::new(Kind::Auth(AuthError::Unauthorized))
-        .with_error_ref(error_ref)
-        .with(AuthError::Unauthorized)
+    Error::new(Kind::Unauthorized).with_error_ref(error_ref)
 }
 
 pub(crate) fn terms_required() -> Error {
-    Error::new(Kind::Auth(AuthError::TermsAcceptanceRequired))
-        .with(AuthError::TermsAcceptanceRequired)
+    Error::new(Kind::TermsAcceptanceRequired)
 }
 
 pub(crate) fn builder_or_request(e: reqwest::Error) -> Error {

@@ -1,6 +1,5 @@
 //! Authentication Flow interface
 use std::collections::BTreeMap;
-use std::error::Error as StdError;
 use std::fmt;
 
 use crate::routing::Route;
@@ -75,29 +74,6 @@ impl From<String> for Credentials {
 impl From<(String, String)> for Credentials {
     fn from((api_key, token): (String, String)) -> Credentials {
         Credentials::with_token(api_key, token)
-    }
-}
-
-/// Authentication error
-#[derive(Debug)]
-pub enum Error {
-    /// API key/access token is incorrect, revoked or expired.
-    Unauthorized,
-    /// Access token is required to perform the action.
-    TokenRequired,
-    /// The acceptance of the Terms of Use is required.
-    TermsAcceptanceRequired,
-}
-
-impl StdError for Error {}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Error::Unauthorized => f.write_str("Unauthorized"),
-            Error::TokenRequired => f.write_str("Access token is required"),
-            Error::TermsAcceptanceRequired => f.write_str("Terms acceptance is required"),
-        }
     }
 }
 
