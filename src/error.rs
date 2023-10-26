@@ -121,6 +121,9 @@ impl fmt::Debug for Error {
         let mut builder = f.debug_struct("modio::Error");
 
         builder.field("kind", &self.inner.kind);
+        if let Some(ref error_ref) = self.inner.error_ref {
+            builder.field("error_ref", error_ref);
+        }
 
         if let Some(ref source) = self.inner.source {
             builder.field("source", source);
