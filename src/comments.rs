@@ -3,7 +3,6 @@
 use serde::ser::{SerializeMap, Serializer};
 use serde::Serialize;
 
-use crate::error::Kind;
 use crate::prelude::*;
 use crate::types::id::{CommentId, GameId, ModId};
 pub use crate::types::mods::Comment;
@@ -100,8 +99,8 @@ impl Comments {
             .send()
             .await
             .map(Editing::Entity)
-            .or_else(|e| match (e.kind(), e.error_ref()) {
-                (Kind::Status(StatusCode::FORBIDDEN), Some(15059)) => Ok(Editing::NoChanges),
+            .or_else(|e| match (e.status(), e.error_ref()) {
+                (Some(StatusCode::FORBIDDEN), Some(15059)) => Ok(Editing::NoChanges),
                 _ => Err(e),
             })
     }

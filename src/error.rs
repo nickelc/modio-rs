@@ -114,10 +114,6 @@ impl Error {
             _ => None,
         }
     }
-
-    pub(crate) fn kind(&self) -> &Kind {
-        &self.inner.kind
-    }
 }
 
 impl fmt::Debug for Error {

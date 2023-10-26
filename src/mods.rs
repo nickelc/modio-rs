@@ -6,7 +6,6 @@ use mime::{APPLICATION_OCTET_STREAM, IMAGE_STAR};
 use url::Url;
 
 use crate::comments::Comments;
-use crate::error::Kind;
 use crate::file_source::FileSource;
 use crate::files::{FileRef, Files};
 use crate::metadata::Metadata;
@@ -206,8 +205,8 @@ impl ModRef {
             .send::<Message>()
             .await
             .map(|_| ())
-            .or_else(|err| match (err.kind(), err.error_ref()) {
-                (Kind::Status(StatusCode::BAD_REQUEST), Some(15028 | 15043)) => Ok(()),
+            .or_else(|err| match (err.status(), err.error_ref()) {
+                (Some(StatusCode::BAD_REQUEST), Some(15028 | 15043)) => Ok(()),
                 _ => Err(err),
             })
     }
@@ -223,8 +222,8 @@ impl ModRef {
             .send::<Mod>()
             .await
             .map(|_| ())
-            .or_else(|err| match (err.kind(), err.error_ref()) {
-                (Kind::Status(StatusCode::BAD_REQUEST), Some(15004)) => Ok(()),
+            .or_else(|err| match (err.status(), err.error_ref()) {
+                (Some(StatusCode::BAD_REQUEST), Some(15004)) => Ok(()),
                 _ => Err(err),
             })
     }
@@ -235,14 +234,12 @@ impl ModRef {
             game_id: self.game,
             mod_id: self.id,
         };
-        self.modio
-            .request(route)
-            .send()
-            .await
-            .or_else(|err| match (err.kind(), err.error_ref()) {
-                (Kind::Status(StatusCode::BAD_REQUEST), Some(15005)) => Ok(()),
+        self.modio.request(route).send().await.or_else(|err| {
+            match (err.status(), err.error_ref()) {
+                (Some(StatusCode::BAD_REQUEST), Some(15005)) => Ok(()),
                 _ => Err(err),
-            })
+            }
+        })
     }
 }
 

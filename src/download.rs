@@ -12,7 +12,7 @@ use tokio::io::BufWriter;
 use tokio_util::codec::{BytesCodec, FramedWrite};
 use tracing::debug;
 
-use crate::error::{self, Kind, Result};
+use crate::error::{self, Result};
 use crate::types::files::File;
 use crate::types::id::{FileId, GameId, ModId};
 use crate::types::mods::Mod;
@@ -109,8 +109,8 @@ async fn request_file(modio: Modio, action: DownloadAction) -> Result<Response> 
             let modref = modio.mod_(game_id, mod_id);
             let m = modref
                 .get()
-                .map_err(|e| match e.kind() {
-                    Kind::Status(StatusCode::NOT_FOUND) => {
+                .map_err(|e| match e.status() {
+                    Some(StatusCode::NOT_FOUND) => {
                         let source = Error::ModNotFound { game_id, mod_id };
                         error::download(source)
                     }
@@ -133,8 +133,8 @@ async fn request_file(modio: Modio, action: DownloadAction) -> Result<Response> 
             let fileref = modio.mod_(game_id, mod_id).file(file_id);
             let file = fileref
                 .get()
-                .map_err(|e| match e.kind() {
-                    Kind::Status(StatusCode::NOT_FOUND) => {
+                .map_err(|e| match e.status() {
+                    Some(StatusCode::NOT_FOUND) => {
                         let source = Error::FileNotFound {
                             game_id,
                             mod_id,
@@ -165,8 +165,8 @@ async fn request_file(modio: Modio, action: DownloadAction) -> Result<Response> 
             let mut list = files
                 .search(filter)
                 .first_page()
-                .map_err(|e| match e.kind() {
-                    Kind::Status(StatusCode::NOT_FOUND) => {
+                .map_err(|e| match e.status() {
+                    Some(StatusCode::NOT_FOUND) => {
                         let source = Error::ModNotFound { game_id, mod_id };
                         error::download(source)
                     }
