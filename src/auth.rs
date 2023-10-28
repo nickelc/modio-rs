@@ -78,7 +78,7 @@ impl From<(String, String)> for Credentials {
 }
 
 /// Authentication Flow interface to retrieve access tokens. See the [mod.io Authentication
-/// docs](https://docs.mod.io/#authenticate-via-email) for more information.
+/// docs](https://docs.mod.io/#email-exchange) for more information.
 ///
 /// # Example
 /// ```no_run
@@ -269,7 +269,7 @@ impl From<GoogleOptions> for AuthOptions {
 
 /// Authentication options for an encrypted gog app ticket.
 ///
-/// See the [mod.io docs](https://docs.mod.io/#authenticate-via-gog-galaxy) for more information.
+/// See the [mod.io docs](https://docs.mod.io/#gog-galaxy) for more information.
 pub struct GalaxyOptions {
     params: BTreeMap<&'static str, String>,
 }
@@ -295,7 +295,7 @@ impl GalaxyOptions {
 
 /// Authentication options for an itch.io JWT token.
 ///
-/// See the [mod.io docs](https://docs.mod.io/#authenticate-via-itch-io) for more information.
+/// See the [mod.io docs](https://docs.mod.io/#itch-io) for more information.
 pub struct ItchioOptions {
     params: BTreeMap<&'static str, String>,
 }
@@ -321,7 +321,7 @@ impl ItchioOptions {
 
 /// Authentication options for an Oculus user.
 ///
-/// See the [mod.io docs](https://docs.mod.io/#authenticate-via-oculus) for more information.
+/// See the [mod.io docs](https://docs.mod.io/#meta-quest) for more information.
 pub struct OculusOptions {
     params: BTreeMap<&'static str, String>,
 }
@@ -361,7 +361,7 @@ impl OculusOptions {
 
 /// Authentication options for an encrypted steam app ticket.
 ///
-/// See the [mod.io docs](https://docs.mod.io/#authenticate-via-steam) for more information.
+/// See the [mod.io docs](https://docs.mod.io/#steam) for more information.
 pub struct SteamOptions {
     params: BTreeMap<&'static str, String>,
 }
@@ -387,7 +387,7 @@ impl SteamOptions {
 
 /// Authentication options for the NSA ID token.
 ///
-/// See the [mod.io docs](https://docs.mod.io/#authenticate-via-switch) for more information.
+/// See the [mod.io docs](https://docs.mod.io/#nintendo-switch) for more information.
 pub struct SwitchOptions {
     params: BTreeMap<&'static str, String>,
 }
@@ -413,7 +413,7 @@ impl SwitchOptions {
 
 /// Authentication options for an Xbox Live token.
 ///
-/// See the [mod.io docs](https://docs.mod.io/#authenticate-via-xbox-live) for more information.
+/// See the [mod.io docs](https://docs.mod.io/#xbox-live) for more information.
 pub struct XboxOptions {
     params: BTreeMap<&'static str, String>,
 }
@@ -439,7 +439,7 @@ impl XboxOptions {
 
 /// Authentication options for an Discord token.
 ///
-/// See the [mod.io docs](https://docs.mod.io/#authenticate-via-discord) for more information.
+/// See the [mod.io docs](https://docs.mod.io/#discord) for more information.
 pub struct DiscordOptions {
     params: BTreeMap<&'static str, String>,
 }
@@ -465,7 +465,7 @@ impl DiscordOptions {
 
 /// Authentication options for an Google token.
 ///
-/// See the [mod.io docs](https://docs.mod.io/#authenticate-via-google) for more information.
+/// See the [mod.io docs](https://docs.mod.io/#google) for more information.
 pub struct GoogleOptions {
     params: BTreeMap<&'static str, String>,
 }

@@ -7,9 +7,9 @@
 //!
 //! To access the API authentication is required and can be done via several ways:
 //!
-//! - Request an [API key (Read-only)](https://mod.io/apikey)
-//! - Manually create an [OAuth 2 Access Token (Read + Write)](https://mod.io/oauth)
-//! - [Email Authentication Flow](auth/struct.Auth.html#example) to create an OAuth 2 Access Token
+//! - Request an [API key (Read-only)](https://mod.io/me/access)
+//! - Manually create an [OAuth 2 Access Token (Read + Write)](https://mod.io/me/access#oauth)
+//! - [Email Authentication Flow](auth::Auth#example) to create an OAuth 2 Access Token
 //! (Read + Write)
 //! - [External Authentication](auth::Auth::external) to create an OAuth 2 Access Token (Read + Write)
 //! automatically on platforms such as Steam, GOG, itch.io, Switch, Xbox, Discord and Oculus.
