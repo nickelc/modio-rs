@@ -193,6 +193,15 @@ impl ModRef {
         self.modio.request(route).form(&options).send().await
     }
 
+    /// Reorder images, sketchfab or youtube links from a mod profile. [required: token]
+    pub async fn reorder_media(self, options: ReorderMediaOptions) -> Result<()> {
+        let route = Route::ReorderModMedia {
+            game_id: self.game,
+            mod_id: self.id,
+        };
+        self.modio.request(route).form(&options).send().await
+    }
+
     /// Submit a positive or negative rating for a mod. [required: token]
     pub async fn rate(self, rating: Rating) -> Result<()> {
         let route = Route::RateMod {
@@ -897,6 +906,70 @@ impl DeleteMediaOptions {
 
 #[doc(hidden)]
 impl serde::ser::Serialize for DeleteMediaOptions {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::ser::Serializer,
+    {
+        use serde::ser::SerializeMap;
+
+        let len = self.images.as_ref().map(Vec::len).unwrap_or_default()
+            + self.youtube.as_ref().map(Vec::len).unwrap_or_default()
+            + self.sketchfab.as_ref().map(Vec::len).unwrap_or_default();
+        let mut map = serializer.serialize_map(Some(len))?;
+        if let Some(ref images) = self.images {
+            for e in images {
+                map.serialize_entry("images[]", e)?;
+            }
+        }
+        if let Some(ref urls) = self.youtube {
+            for e in urls {
+                map.serialize_entry("youtube[]", e)?;
+            }
+        }
+        if let Some(ref urls) = self.sketchfab {
+            for e in urls {
+                map.serialize_entry("sketchfab[]", e)?;
+            }
+        }
+        map.end()
+    }
+}
+
+#[derive(Default)]
+pub struct ReorderMediaOptions {
+    images: Option<Vec<String>>,
+    youtube: Option<Vec<String>>,
+    sketchfab: Option<Vec<String>>,
+}
+
+impl ReorderMediaOptions {
+    #[must_use]
+    pub fn images(self, images: &[String]) -> Self {
+        Self {
+            images: Some(images.to_vec()),
+            ..self
+        }
+    }
+
+    #[must_use]
+    pub fn youtube(self, urls: &[String]) -> Self {
+        Self {
+            youtube: Some(urls.to_vec()),
+            ..self
+        }
+    }
+
+    #[must_use]
+    pub fn sketchfab(self, urls: &[String]) -> Self {
+        Self {
+            sketchfab: Some(urls.to_vec()),
+            ..self
+        }
+    }
+}
+
+#[doc(hidden)]
+impl serde::ser::Serialize for ReorderMediaOptions {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
     where
         S: serde::ser::Serializer,
