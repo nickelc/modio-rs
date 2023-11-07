@@ -151,6 +151,20 @@ impl Tags {
         };
         self.modio.request(route).form(&options).send().await
     }
+
+    /// Rename an existing tag, updating all mods in the progress. [required: token]
+    pub async fn rename(self, from: String, to: String) -> Result<()> {
+        let route = Route::RenameGameTags {
+            game_id: self.game_id,
+        };
+        self.modio
+            .request(route)
+            .form(&[("from", from), ("to", to)])
+            .send()
+            .await?;
+
+        Ok(())
+    }
 }
 
 /// Game filters and sorting.

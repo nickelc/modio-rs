@@ -187,7 +187,6 @@ pub enum Route {
         game_id: GameId,
         mod_id: ModId,
     },
-    #[allow(dead_code)]
     RenameGameTags {
         game_id: GameId,
     },
