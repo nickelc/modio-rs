@@ -182,7 +182,6 @@ pub enum Route {
     },
     OAuthEmailRequest,
     OAuthEmailResponse,
-    #[allow(dead_code)]
     OAuthLogout,
     RateMod {
         game_id: GameId,

@@ -203,6 +203,16 @@ impl Auth {
             token: Some(token),
         })
     }
+
+    /// Logout by revoking the current access token.
+    pub async fn logout(self) -> Result<()> {
+        self.modio
+            .request(Route::OAuthLogout)
+            .send::<Message>()
+            .await?;
+
+        Ok(())
+    }
 }
 
 /// Options for external authentication.
