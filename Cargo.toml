@@ -14,7 +14,6 @@ include = ["src/**/*", "LICENSE-*", "README.md", "CHANGELOG.md"]
 [dependencies]
 bitflags = "2.3.1"
 bytes = "1.0"
-futures-core = "0.3.4"
 futures-util = { version = "0.3.4", features = ["sink"] }
 http = "0.2"
 mime = "0.3"

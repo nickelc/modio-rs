@@ -4,8 +4,7 @@ use std::fmt;
 use std::path::Path;
 
 use bytes::Bytes;
-use futures_core::Stream;
-use futures_util::{SinkExt, StreamExt, TryFutureExt, TryStreamExt};
+use futures_util::{SinkExt, Stream, StreamExt, TryFutureExt, TryStreamExt};
 use reqwest::{Method, Response, StatusCode};
 use tokio::fs::File as AsyncFile;
 use tokio::io::BufWriter;

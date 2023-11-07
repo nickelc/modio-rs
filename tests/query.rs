@@ -1,5 +1,4 @@
-use futures_core::Stream;
-use futures_util::TryStreamExt;
+use futures_util::{Stream, TryStreamExt};
 use httptest::{matchers::*, responders::*};
 use httptest::{Expectation, Server};
 
