@@ -160,7 +160,7 @@ pub use crate::loader::{Page, Query};
 pub use crate::types::{Deletion, Editing, TargetPlatform, TargetPortal};
 
 mod prelude {
-    pub use futures_core::Stream;
+    pub use futures_util::Stream;
     pub use reqwest::multipart::Form;
     pub use reqwest::StatusCode;
 

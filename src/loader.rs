@@ -2,9 +2,8 @@ use std::marker::PhantomData;
 use std::pin::Pin;
 use std::task::{Context, Poll};
 
-use futures_core::Stream;
 use futures_util::future::Either;
-use futures_util::{stream, StreamExt, TryStreamExt};
+use futures_util::{stream, Stream, StreamExt, TryStreamExt};
 use pin_project_lite::pin_project;
 use serde::de::DeserializeOwned;
 

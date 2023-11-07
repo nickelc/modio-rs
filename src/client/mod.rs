@@ -120,7 +120,7 @@ impl Modio {
     ///
     /// [`Downloader`]: crate::download::Downloader
     /// [`modio::download::Error`]: crate::download::Error
-    /// [`Stream`]: futures_core::Stream
+    /// [`Stream`]: futures_util::Stream
     ///
     /// # Example
     /// ```no_run
