@@ -342,4 +342,6 @@ pub struct Platform {
     #[serde(rename = "platform")]
     pub target: TargetPlatform,
     pub moderated: bool,
+    /// Indicates if users can upload files for this platform.
+    pub locked: bool,
 }
