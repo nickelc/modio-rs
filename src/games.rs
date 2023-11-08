@@ -11,8 +11,8 @@ use crate::types::id::{GameId, ModId};
 
 pub use crate::types::games::{
     ApiAccessOptions, CommunityOptions, CurationOption, Downloads, Game, HeaderImage, Icon,
-    MaturityOptions, MonetisationOptions, OtherUrl, Platform, PresentationOption, Statistics,
-    SubmissionOption, TagOption, TagType, Theme,
+    MaturityOptions, OtherUrl, Platform, PresentationOption, Statistics, SubmissionOption,
+    TagOption, TagType, Theme,
 };
 pub use crate::types::Logo;
 pub use crate::types::Status;
