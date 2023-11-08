@@ -22,8 +22,6 @@ pub struct Game {
     pub submission_option: SubmissionOption,
     pub curation_option: CurationOption,
     pub community_options: CommunityOptions,
-    #[serde(default)]
-    pub monetisation_options: MonetisationOptions,
     pub api_access_options: ApiAccessOptions,
     pub maturity_options: MaturityOptions,
     pub ugc_name: String,
@@ -90,16 +88,6 @@ bitflags! {
         const ALLOW_CHANGE_STATUS   = 32;
         const ALL = Self::DISCUSSIONS.bits() | Self::GUIDES_NEWS.bits() | Self::PIN_ON_HOMEPAGE.bits()
             | Self::SHOW_ON_HOMEPAGE.bits() | Self::SHOW_MORE_ON_HOMEPAGE.bits() | Self::ALLOW_CHANGE_STATUS.bits();
-    }
-
-    /// Monetisation options mods can enable.
-    #[derive(Default)]
-    pub struct MonetisationOptions: u8 {
-        const ENABLED     = 1;
-        /// Recognition enabled.
-        const RECOGNITION = 2;
-        /// Marketplace enabled.
-        const MARKETPLACE = 4;
     }
 
     /// Level of API access allowed by a game.

@@ -14,8 +14,8 @@ use crate::teams::Members;
 use crate::types::id::{FileId, GameId, ModId};
 
 pub use crate::types::mods::{
-    CommunityOptions, Dependency, Event, EventType, Image, MaturityOption, Media, Mod,
-    MonetisationOptions, Platform, Popularity, Ratings, Statistics, Tag, Visibility,
+    CommunityOptions, Dependency, Event, EventType, Image, MaturityOption, Media, Mod, Platform,
+    Popularity, Ratings, Statistics, Tag, Visibility,
 };
 pub use crate::types::Logo;
 pub use crate::types::Status;
