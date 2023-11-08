@@ -1,3 +1,17 @@
+### v0.8.3 (2023-10-02)
+
+* Move `serde_test` to dev dependencies.
+
+### v0.8.2 (2023-09-22)
+
+* Add workaround for renamed `monetisation_options` field.
+* Increase size of community options for games.
+
+### v0.8.1 (2023-09-21)
+
+* Add workaround for missing `monetisation_options` field for mods.
+* Export missing bitflags options for games and mods.
+
 ### v0.8.0 (2023-06-26)
 
 * Update bitflags to allow unsupported flags.
