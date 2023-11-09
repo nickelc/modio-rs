@@ -584,12 +584,6 @@ newtype_enum! {
     }
 }
 
-impl TeamLevel {
-    pub fn value(self) -> u64 {
-        u64::from(self.get())
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use serde_test::{assert_de_tokens, Token};
