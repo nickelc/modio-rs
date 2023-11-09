@@ -1,3 +1,28 @@
+### v0.9.0 (2023-11-09)
+
+* Add method to retrieve the content length for the download request.\
+  The download request is now started when calling `Modio::download(action).await?`.
+* Add support for reordering mod media files & links.
+* Add support for renaming tags.
+* Add support for revoking the current access token.
+* Add new `locked` field to game's platform object.
+* Expose the returned API error from response as getter.
+* Use the `retry-after` http header for rate limit checking.
+* Map validation errors as a Vec of tupled strings instead of HashMap.
+* Add new `dependencies` field to indicate if a mod has dependencies.
+* Remove the `service` parameter from the terms endpoint.
+* Remove unsupported authentication endpoints for GOG and itch.io.
+* Move the `AccessToken` struct into the `types::auth` module.
+* Introduce type-safe ID type for resource (games, mods, files, etc.).\
+  The `Id<T>` newtype wraps each resource ID as non-zero u64.
+* Change string enums to newtypes with associated constants.
+* Make the `types` module public.
+* Remove deprecated & unstable items:
+    * `virustotal_hash` field from mods.
+    * `revenue_options` field from games.
+    * deprecated flags from `community_options`.
+    * `MonetisationOptions` from games and mods.
+
 ### v0.8.3 (2023-10-02)
 
 * Move `serde_test` to dev dependencies.
