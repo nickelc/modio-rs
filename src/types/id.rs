@@ -4,7 +4,8 @@ use std::cmp::Ordering;
 use std::fmt::{self, Write};
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
-use std::num::{NonZeroU64, TryFromIntError};
+use std::num::{NonZeroU64, ParseIntError, TryFromIntError};
+use std::str::FromStr;
 
 /// ID with a game marker.
 pub type GameId = Id<marker::GameMarker>;
@@ -216,6 +217,14 @@ impl<T> TryFrom<u64> for Id<T> {
     }
 }
 
+impl<T> FromStr for Id<T> {
+    type Err = ParseIntError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        NonZeroU64::from_str(s).map(Self::from_nonzero)
+    }
+}
+
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 impl<'de, T> Deserialize<'de> for Id<T> {
@@ -227,5 +236,23 @@ impl<'de, T> Deserialize<'de> for Id<T> {
 impl<T> Serialize for Id<T> {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         self.value.serialize(serializer)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
+
+    use super::marker::*;
+    use super::Id;
+
+    #[test]
+    fn from_str() {
+        assert_eq!(
+            Id::<GameMarker>::new(123),
+            Id::<GameMarker>::from_str("123").unwrap()
+        );
+        assert!(Id::<GameMarker>::from_str("0").is_err());
+        assert!(Id::<GameMarker>::from_str("123a").is_err());
     }
 }
