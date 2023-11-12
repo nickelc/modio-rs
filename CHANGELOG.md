@@ -1,3 +1,7 @@
+### v0.9.1 (2023-11-12)
+
+* Implement `std::str::FromStr` for `Id<T>`.
+
 ### v0.9.0 (2023-11-09)
 
 * Add method to retrieve the content length for the download request.\
