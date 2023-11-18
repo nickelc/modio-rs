@@ -105,6 +105,18 @@ macro_rules! newtype_enum {
             }
         }
 
+        impl From<$T> for $NewtypeEnum {
+            fn from(value: $T) -> Self {
+                Self(value)
+            }
+        }
+
+        impl From<$NewtypeEnum> for $T {
+            fn from(value: $NewtypeEnum) -> $T {
+                value.get()
+            }
+        }
+
         newtype_enum! {
             $($t)*
         }
