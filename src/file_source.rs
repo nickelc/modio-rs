@@ -1,4 +1,3 @@
-use std::marker::Unpin;
 use std::path::Path;
 
 use futures_util::TryFutureExt;

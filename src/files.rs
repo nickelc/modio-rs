@@ -1,6 +1,5 @@
 //! Modfile interface
 use std::ffi::OsStr;
-use std::marker::Unpin;
 use std::path::Path;
 
 use mime::APPLICATION_OCTET_STREAM;

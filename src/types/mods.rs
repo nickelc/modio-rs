@@ -187,6 +187,7 @@ impl<'de> Deserialize<'de> for Statistics {
             RatingsWeightedAggregate,
             RatingsDisplayText,
             DateExpires,
+            #[allow(dead_code)]
             Other(String),
         }
 

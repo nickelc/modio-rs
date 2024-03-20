@@ -174,6 +174,7 @@ impl<'de> Deserialize<'de> for Statistics {
             ModsDownloadsToday,
             ModsDownloadsDailyAverage,
             DateExpires,
+            #[allow(dead_code)]
             Other(String),
         }
 

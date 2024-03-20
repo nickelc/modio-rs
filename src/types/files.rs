@@ -47,6 +47,7 @@ impl<'de> Deserialize<'de> for File {
             MetadataBlob,
             Download,
             Platforms,
+            #[allow(dead_code)]
             Other(String),
         }
 
