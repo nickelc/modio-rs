@@ -1,3 +1,8 @@
+### v0.10.0 (2024-03-21)
+
+* Update `reqwest` to 0.12
+* Implement `From` trait for newtype integer enums
+
 ### v0.9.1 (2023-11-12)
 
 * Implement `std::str::FromStr` for `Id<T>`.
