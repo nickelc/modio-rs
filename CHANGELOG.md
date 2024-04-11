@@ -1,3 +1,7 @@
+### v0.10.1 (2024-04-11)
+
+* Fix wrong API endpoint url for the security code exchange
+
 ### v0.10.0 (2024-03-21)
 
 * Update `reqwest` to 0.12
