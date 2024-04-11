@@ -181,7 +181,7 @@ pub enum Route {
         user_id: UserId,
     },
     OAuthEmailRequest,
-    OAuthEmailResponse,
+    OAuthEmailExchange,
     OAuthLogout,
     RateMod {
         game_id: GameId,
@@ -275,7 +275,7 @@ impl Route {
             | Self::ManagePlatformStatus { .. }
             | Self::MuteUser { .. }
             | Self::OAuthEmailRequest
-            | Self::OAuthEmailResponse
+            | Self::OAuthEmailExchange
             | Self::OAuthLogout
             | Self::RateMod { .. }
             | Self::SubmitReport { .. }
@@ -329,7 +329,7 @@ impl Route {
             | Self::GetModTags { .. }
             | Self::GetModTeamMembers { .. }
             | Self::OAuthEmailRequest
-            | Self::OAuthEmailResponse
+            | Self::OAuthEmailExchange
             | Self::Terms => false,
             Self::AddFile { .. }
             | Self::AddGameMedia { .. }
@@ -549,7 +549,7 @@ impl fmt::Display for Route {
                 path!(f; "/users/", user_id, "/mute")
             }
             Self::OAuthEmailRequest => f.write_str("/oauth/emailrequest"),
-            Self::OAuthEmailResponse => f.write_str("/oauth/emailresponse"),
+            Self::OAuthEmailExchange => f.write_str("/oauth/emailexchange"),
             Self::OAuthLogout => f.write_str("/oauth/logout"),
             Self::RateMod { game_id, mod_id } => {
                 path!(f; "/games/", game_id, "/mods/", mod_id, "/ratings")
@@ -1059,10 +1059,10 @@ mod tests {
     }
 
     #[test]
-    fn oauth_email_response() {
-        let route = Route::OAuthEmailResponse;
+    fn oauth_email_exchange() {
+        let route = Route::OAuthEmailExchange;
 
-        assert_eq!(route.to_string(), "/oauth/emailresponse");
+        assert_eq!(route.to_string(), "/oauth/emailexchange");
     }
 
     #[test]

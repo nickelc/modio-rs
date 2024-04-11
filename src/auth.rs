@@ -142,7 +142,7 @@ impl Auth {
     pub async fn security_code(self, code: &str) -> Result<Credentials> {
         let t = self
             .modio
-            .request(Route::OAuthEmailResponse)
+            .request(Route::OAuthEmailExchange)
             .form(&[("security_code", code)])
             .send::<AccessToken>()
             .await?;
