@@ -86,6 +86,14 @@ bitflags! {
         const SHOW_ON_HOMEPAGE  = 8;
         const SHOW_MORE_ON_HOMEPAGE = 16;
         const ALLOW_CHANGE_STATUS   = 32;
+        /// Previews enabled (Game must be hidden).
+        const PREVIEWS = 64;
+        /// Preview URLs enabled (Previews must be enabled).
+        const PREVIEW_URLS = 128;
+        /// Allow negative ratings
+        const NEGATIVE_RATINGS = 256;
+        /// Allow mods to be edited via web.
+        const WEB_EDIT_MODS = 512;
     }
 
     /// Level of API access allowed by a game.

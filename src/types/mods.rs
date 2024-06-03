@@ -56,9 +56,15 @@ newtype_enum! {
 
 bitflags! {
     /// Community options a mod can enable.
-    pub struct CommunityOptions: u8 {
+    pub struct CommunityOptions: u16 {
         /// Comments enabled.
         const COMMENTS = 1;
+        /// Previews enabled.
+        const PREVIEWS = 64;
+        /// Preview URLs enabled.
+        const PREVIEW_URLS = 128;
+        /// Allow mod dependencies
+        const ALLOW_DEPENDENCIES = 1024;
     }
 
     /// Maturity options a mod can be flagged.
