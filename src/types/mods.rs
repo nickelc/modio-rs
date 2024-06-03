@@ -69,7 +69,6 @@ bitflags! {
         const DRUGS     = 2;
         const VIOLENCE  = 4;
         const EXPLICIT  = 8;
-        const ALL = Self::ALCOHOL.bits() | Self::DRUGS.bits() | Self::VIOLENCE.bits() | Self::EXPLICIT.bits();
     }
 }
 

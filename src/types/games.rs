@@ -86,8 +86,6 @@ bitflags! {
         const SHOW_ON_HOMEPAGE  = 8;
         const SHOW_MORE_ON_HOMEPAGE = 16;
         const ALLOW_CHANGE_STATUS   = 32;
-        const ALL = Self::DISCUSSIONS.bits() | Self::GUIDES_NEWS.bits() | Self::PIN_ON_HOMEPAGE.bits()
-            | Self::SHOW_ON_HOMEPAGE.bits() | Self::SHOW_MORE_ON_HOMEPAGE.bits() | Self::ALLOW_CHANGE_STATUS.bits();
     }
 
     /// Level of API access allowed by a game.
@@ -96,7 +94,6 @@ bitflags! {
         const ALLOW_THIRD_PARTY     = 1;
         /// Allow mods to be downloaded directly.
         const ALLOW_DIRECT_DOWNLOAD = 2;
-        const ALL = Self::ALLOW_THIRD_PARTY.bits() | Self::ALLOW_DIRECT_DOWNLOAD.bits();
     }
 
     /// Mature content options.
