@@ -1,3 +1,8 @@
+### v0.11.0 (2024-06-04)
+
+* Remove `ALL` constants from bitflags, use the `all()` method instead.
+* Add new community options for games and mod objects.
+
 ### v0.10.1 (2024-04-11)
 
 * Fix wrong API endpoint url for the security code exchange
