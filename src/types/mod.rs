@@ -123,7 +123,7 @@ pub struct User {
     pub id: UserId,
     pub name_id: String,
     pub username: String,
-    pub date_online: u32,
+    pub date_online: Timestamp,
     #[serde(default, deserialize_with = "deserialize_empty_object")]
     pub avatar: Option<Avatar>,
     pub profile_url: Url,
@@ -260,7 +260,7 @@ pub struct Event {
     pub game_id: GameId,
     pub mod_id: ModId,
     pub user_id: UserId,
-    pub date_added: u64,
+    pub date_added: Timestamp,
     pub event_type: EventType,
 }
 
@@ -319,6 +319,17 @@ where
         Ok(Helper::Data(data)) => Ok(Some(data)),
         Ok(_) => Ok(None),
         Err(e) => Err(e),
+    }
+}
+
+/// Repesentation of a Unix timestamp.
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Deserialize, Serialize)]
+pub struct Timestamp(i64);
+
+impl Timestamp {
+    /// Get the Unix timestamp in seconds.
+    pub const fn as_secs(self) -> i64 {
+        self.0
     }
 }
 

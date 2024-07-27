@@ -8,7 +8,7 @@ use url::Url;
 use super::files::File;
 use super::id::{CommentId, EventId, FileId, GameId, MemberId, ModId, ResourceId, UserId};
 use super::{deserialize_empty_object, DeserializeField, MissingField, TargetPlatform};
-use super::{Logo, Status, User};
+use super::{Logo, Status, Timestamp, User};
 
 /// See the [Mod Object](https://docs.mod.io/#mod-object) docs for more information.
 #[derive(Debug, Deserialize)]
@@ -19,9 +19,9 @@ pub struct Mod {
     pub status: Status,
     pub visible: Visibility,
     pub submitted_by: User,
-    pub date_added: u64,
-    pub date_updated: u64,
-    pub date_live: u64,
+    pub date_added: Timestamp,
+    pub date_updated: Timestamp,
+    pub date_live: Timestamp,
     pub maturity_option: MaturityOption,
     pub community_options: CommunityOptions,
     pub price: f32,
@@ -85,7 +85,7 @@ pub struct Event {
     pub id: EventId,
     pub mod_id: ModId,
     pub user_id: UserId,
-    pub date_added: u64,
+    pub date_added: Timestamp,
     pub event_type: EventType,
 }
 
@@ -125,7 +125,7 @@ impl fmt::Display for EventType {
 #[non_exhaustive]
 pub struct Dependency {
     pub mod_id: ModId,
-    pub date_added: u64,
+    pub date_added: Timestamp,
 }
 
 /// See the [Mod Media Object](https://docs.mod.io/#mod-media-object) docs for more
@@ -171,7 +171,7 @@ pub struct Statistics {
     pub subscribers_total: u32,
     pub popularity: Popularity,
     pub ratings: Ratings,
-    pub date_expires: u64,
+    pub date_expires: Timestamp,
 }
 
 impl<'de> Deserialize<'de> for Statistics {
@@ -341,12 +341,12 @@ pub enum Rating {
     Positive {
         game_id: GameId,
         mod_id: ModId,
-        date_added: u64,
+        date_added: Timestamp,
     },
     Negative {
         game_id: GameId,
         mod_id: ModId,
-        date_added: u64,
+        date_added: Timestamp,
     },
 }
 
@@ -362,7 +362,7 @@ impl<'de> Deserialize<'de> for Rating {
             game_id: GameId,
             mod_id: ModId,
             rating: i8,
-            date_added: u64,
+            date_added: Timestamp,
         }
 
         match R::deserialize(deserializer) {
@@ -411,7 +411,7 @@ pub struct Platform {
 #[non_exhaustive]
 pub struct Tag {
     pub name: String,
-    pub date_added: u64,
+    pub date_added: Timestamp,
 }
 
 impl fmt::Display for Tag {
@@ -562,7 +562,7 @@ pub struct Comment {
     pub id: CommentId,
     pub resource_id: ResourceId,
     pub user: User,
-    pub date_added: u64,
+    pub date_added: Timestamp,
     pub reply_id: CommentId,
     pub thread_position: String,
     pub karma: i32,
@@ -577,7 +577,7 @@ pub struct TeamMember {
     pub id: MemberId,
     pub user: User,
     pub level: TeamLevel,
-    pub date_added: u64,
+    pub date_added: Timestamp,
     pub position: String,
 }
 

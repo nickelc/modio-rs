@@ -4,7 +4,7 @@ use std::fmt;
 
 use crate::routing::Route;
 use crate::types::auth::AccessToken;
-use crate::types::Message;
+use crate::types::{Message, Timestamp};
 use crate::Modio;
 use crate::Result;
 
@@ -21,7 +21,7 @@ pub struct Credentials {
 #[derive(Clone, Eq, PartialEq)]
 pub struct Token {
     pub value: String,
-    pub expired_at: Option<u64>,
+    pub expired_at: Option<Timestamp>,
 }
 
 impl fmt::Debug for Credentials {

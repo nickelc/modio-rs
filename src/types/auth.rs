@@ -1,6 +1,8 @@
 use serde::Deserialize;
 use url::Url;
 
+use super::Timestamp;
+
 /// See the [Access Token Object](https://docs.mod.io/#access-token-object) docs for more
 /// information.
 #[derive(Deserialize)]
@@ -9,7 +11,7 @@ pub struct AccessToken {
     #[serde(rename = "access_token")]
     pub value: String,
     #[serde(rename = "date_expires")]
-    pub expired_at: Option<u64>,
+    pub expired_at: Option<Timestamp>,
 }
 
 /// See the [Terms Object](https://docs.mod.io/#terms-object) docs for more information.

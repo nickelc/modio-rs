@@ -7,7 +7,7 @@ use url::Url;
 
 use super::id::GameId;
 use super::{deserialize_empty_object, DeserializeField, MissingField};
-use super::{Logo, Status, TargetPlatform};
+use super::{Logo, Status, TargetPlatform, Timestamp};
 
 /// See the [Game Object](https://docs.mod.io/#game-object) docs for more information.
 #[derive(Debug, Deserialize)]
@@ -15,9 +15,9 @@ use super::{Logo, Status, TargetPlatform};
 pub struct Game {
     pub id: GameId,
     pub status: Status,
-    pub date_added: u64,
-    pub date_updated: u64,
-    pub date_live: u64,
+    pub date_added: Timestamp,
+    pub date_updated: Timestamp,
+    pub date_live: Timestamp,
     pub presentation_option: PresentationOption,
     pub submission_option: SubmissionOption,
     pub curation_option: CurationOption,
@@ -164,7 +164,7 @@ pub struct Statistics {
     pub mods_total: u32,
     pub subscribers_total: u32,
     pub downloads: Downloads,
-    pub expired_at: u64,
+    pub expired_at: Timestamp,
 }
 
 impl<'de> Deserialize<'de> for Statistics {

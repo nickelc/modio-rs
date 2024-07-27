@@ -7,6 +7,7 @@ use url::Url;
 use crate::types::{DeserializeField, MissingField, TargetPlatform};
 
 use super::id::{FileId, ModId};
+use super::Timestamp;
 
 /// See the [Modfile Object](https://docs.mod.io/#modfile-object) docs for more information.
 #[derive(Debug)]
@@ -14,7 +15,7 @@ use super::id::{FileId, ModId};
 pub struct File {
     pub id: FileId,
     pub mod_id: ModId,
-    pub date_added: u64,
+    pub date_added: Timestamp,
     pub virus_scan: VirusScan,
     pub filesize: u64,
     pub filesize_uncompressed: u64,
@@ -178,7 +179,7 @@ impl<'de> Deserialize<'de> for File {
 #[derive(Debug)]
 #[non_exhaustive]
 pub struct VirusScan {
-    pub date_scanned: u64,
+    pub date_scanned: Timestamp,
     pub status: VirusStatus,
     pub result: VirusResult,
 }
@@ -214,7 +215,7 @@ pub struct FileHash {
 #[non_exhaustive]
 pub struct Download {
     pub binary_url: Url,
-    pub date_expires: u64,
+    pub date_expires: Timestamp,
 }
 
 impl fmt::Debug for Download {
