@@ -160,7 +160,7 @@ impl Tags {
         self.modio
             .request(route)
             .form(&[("from", from), ("to", to)])
-            .send()
+            .send::<()>()
             .await?;
 
         Ok(())
