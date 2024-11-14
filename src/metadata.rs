@@ -1,6 +1,6 @@
 //! Mod metadata KVP interface
 use futures_util::TryStreamExt;
-use serde::Deserialize;
+use serde_derive::Deserialize;
 
 use crate::prelude::*;
 use crate::types::id::{GameId, ModId};

@@ -225,7 +225,8 @@ impl<T> FromStr for Id<T> {
     }
 }
 
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::de::{Deserialize, Deserializer};
+use serde::ser::{Serialize, Serializer};
 
 impl<'de, T> Deserialize<'de> for Id<T> {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {

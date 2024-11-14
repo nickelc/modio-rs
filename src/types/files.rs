@@ -1,7 +1,7 @@
 use std::fmt;
 
-use serde::de::{Deserializer, IgnoredAny, MapAccess, Visitor};
-use serde::Deserialize;
+use serde::de::{Deserialize, Deserializer, IgnoredAny, MapAccess, Visitor};
+use serde_derive::Deserialize;
 use url::Url;
 
 use crate::types::{DeserializeField, MissingField, TargetPlatform};

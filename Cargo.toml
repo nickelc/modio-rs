@@ -19,7 +19,8 @@ http = "1.1"
 mime = "0.3"
 pin-project-lite = "0.2"
 reqwest = { version = "0.12", default-features = false, features = ["multipart", "stream"] }
-serde = { version = "1.0.122", features = ["derive"] }
+serde = "1.0.215"
+serde_derive = "1.0.215"
 serde_json = "1.0"
 tokio = { version = "1.6.1", default-features = false, features = ["fs"] }
 tokio-util = { version = "0.7", features = ["codec", "io"] }

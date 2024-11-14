@@ -2,8 +2,8 @@
 
 use std::fmt;
 
-use serde::de::Deserializer;
-use serde::{Deserialize, Serialize};
+use serde::de::{Deserialize, Deserializer};
+use serde_derive::{Deserialize, Serialize};
 use url::Url;
 
 #[macro_use]
@@ -335,7 +335,7 @@ impl Timestamp {
 
 #[cfg(test)]
 mod tests {
-    use serde::Deserialize;
+    use serde_derive::Deserialize;
     use serde_test::{assert_de_tokens, assert_tokens, Token};
 
     use super::{deserialize_empty_object, Error, EventType, TargetPlatform};

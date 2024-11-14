@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::fmt;
 
-use serde::de::{Deserializer, IgnoredAny, MapAccess, Visitor};
-use serde::{Deserialize, Serialize};
+use serde::de::{Deserialize, Deserializer, IgnoredAny, MapAccess, Visitor};
+use serde_derive::{Deserialize, Serialize};
 use url::Url;
 
 use super::id::GameId;

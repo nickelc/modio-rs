@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::fmt;
 
-use serde::de::{Deserializer, IgnoredAny, MapAccess, SeqAccess, Visitor};
-use serde::Deserialize;
+use serde::de::{Deserialize, Deserializer, IgnoredAny, MapAccess, SeqAccess, Visitor};
+use serde_derive::Deserialize;
 use url::Url;
 
 use super::files::File;
@@ -599,7 +599,7 @@ mod tests {
 
     #[test]
     fn metadata_from_result_list_serde() {
-        #[derive(Debug, PartialEq, serde::Deserialize)]
+        #[derive(Debug, PartialEq, serde_derive::Deserialize)]
         struct Entry {
             metakey: String,
             metavalue: String,
@@ -663,7 +663,7 @@ mod tests {
 
     #[test]
     fn metadata_from_mod_serde() {
-        #[derive(Debug, PartialEq, serde::Deserialize)]
+        #[derive(Debug, PartialEq, serde_derive::Deserialize)]
         struct Mod {
             id: u32,
             #[serde(rename = "metadata_kvp")]

@@ -1,7 +1,7 @@
 //! Mod comments interface
 
-use serde::ser::{SerializeMap, Serializer};
-use serde::Serialize;
+use serde::ser::{Serialize, SerializeMap, Serializer};
+use serde_derive::Serialize;
 
 use crate::prelude::*;
 use crate::types::id::{CommentId, GameId, ModId};
