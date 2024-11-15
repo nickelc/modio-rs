@@ -6,7 +6,7 @@ use serde_derive::{Deserialize, Serialize};
 use url::Url;
 
 use super::id::GameId;
-use super::{deserialize_empty_object, DeserializeField, MissingField};
+use super::{deserialize_empty_object, utils, DeserializeField, MissingField};
 use super::{Logo, Status, TargetPlatform, Timestamp};
 
 /// See the [Game Object](https://docs.mod.io/#game-object) docs for more information.
@@ -33,7 +33,9 @@ pub struct Game {
     pub name_id: String,
     pub summary: String,
     pub instructions: Option<String>,
+    #[serde(with = "utils::url::opt")]
     pub instructions_url: Option<Url>,
+    #[serde(with = "utils::url")]
     pub profile_url: Url,
     /// The field is `None` when the game object is fetched from `/me/games`.
     #[serde(deserialize_with = "deserialize_empty_object")]
@@ -119,9 +121,13 @@ bitflags! {
 #[non_exhaustive]
 pub struct Icon {
     pub filename: String,
+    #[serde(with = "utils::url")]
     pub original: Url,
+    #[serde(with = "utils::url")]
     pub thumb_64x64: Url,
+    #[serde(with = "utils::url")]
     pub thumb_128x128: Url,
+    #[serde(with = "utils::url")]
     pub thumb_256x256: Url,
 }
 
@@ -143,6 +149,7 @@ impl fmt::Debug for Icon {
 #[non_exhaustive]
 pub struct HeaderImage {
     pub filename: String,
+    #[serde(with = "utils::url")]
     pub original: Url,
 }
 
@@ -317,6 +324,7 @@ pub struct Theme {
 #[derive(Deserialize)]
 pub struct OtherUrl {
     pub label: String,
+    #[serde(with = "utils::url")]
     pub url: Url,
 }
 

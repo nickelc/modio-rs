@@ -126,6 +126,7 @@ pub struct User {
     pub date_online: Timestamp,
     #[serde(default, deserialize_with = "deserialize_empty_object")]
     pub avatar: Option<Avatar>,
+    #[serde(with = "utils::url")]
     pub profile_url: Url,
 }
 
@@ -147,8 +148,11 @@ impl fmt::Debug for User {
 #[non_exhaustive]
 pub struct Avatar {
     pub filename: String,
+    #[serde(with = "utils::url")]
     pub original: Url,
+    #[serde(with = "utils::url")]
     pub thumb_50x50: Url,
+    #[serde(with = "utils::url")]
     pub thumb_100x100: Url,
 }
 
@@ -167,9 +171,13 @@ impl fmt::Debug for Avatar {
 #[non_exhaustive]
 pub struct Logo {
     pub filename: String,
+    #[serde(with = "utils::url")]
     pub original: Url,
+    #[serde(with = "utils::url")]
     pub thumb_320x180: Url,
+    #[serde(with = "utils::url")]
     pub thumb_640x360: Url,
+    #[serde(with = "utils::url")]
     pub thumb_1280x720: Url,
 }
 

@@ -7,7 +7,7 @@ use url::Url;
 use crate::types::{DeserializeField, MissingField, TargetPlatform};
 
 use super::id::{FileId, ModId};
-use super::Timestamp;
+use super::{utils, Timestamp};
 
 /// See the [Modfile Object](https://docs.mod.io/#modfile-object) docs for more information.
 #[derive(Debug)]
@@ -214,6 +214,7 @@ pub struct FileHash {
 #[derive(Deserialize)]
 #[non_exhaustive]
 pub struct Download {
+    #[serde(with = "utils::url")]
     pub binary_url: Url,
     pub date_expires: Timestamp,
 }

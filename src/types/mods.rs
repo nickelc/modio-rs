@@ -7,7 +7,7 @@ use url::Url;
 
 use super::files::File;
 use super::id::{CommentId, EventId, FileId, GameId, MemberId, ModId, ResourceId, UserId};
-use super::{deserialize_empty_object, DeserializeField, MissingField, TargetPlatform};
+use super::{deserialize_empty_object, utils, DeserializeField, MissingField, TargetPlatform};
 use super::{Logo, Status, Timestamp, User};
 
 /// See the [Mod Object](https://docs.mod.io/#mod-object) docs for more information.
@@ -27,6 +27,7 @@ pub struct Mod {
     pub price: f32,
     pub tax: u32,
     pub logo: Logo,
+    #[serde(with = "utils::url::opt")]
     pub homepage_url: Option<Url>,
     pub name: String,
     pub name_id: String,
@@ -34,6 +35,7 @@ pub struct Mod {
     pub description: Option<String>,
     pub description_plaintext: Option<String>,
     pub metadata_blob: Option<String>,
+    #[serde(with = "utils::url")]
     pub profile_url: Url,
     #[serde(default, deserialize_with = "deserialize_empty_object")]
     pub modfile: Option<File>,
@@ -146,7 +148,9 @@ pub struct Media {
 #[non_exhaustive]
 pub struct Image {
     pub filename: String,
+    #[serde(with = "utils::url")]
     pub original: Url,
+    #[serde(with = "utils::url")]
     pub thumb_320x180: Url,
 }
 

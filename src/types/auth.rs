@@ -1,7 +1,7 @@
 use serde_derive::Deserialize;
 use url::Url;
 
-use super::Timestamp;
+use super::{utils, Timestamp};
 
 /// See the [Access Token Object](https://docs.mod.io/#access-token-object) docs for more
 /// information.
@@ -42,6 +42,7 @@ pub struct Links {
 #[non_exhaustive]
 pub struct Link {
     pub text: String,
+    #[serde(with = "utils::url")]
     pub url: Url,
     pub required: bool,
 }

@@ -76,6 +76,64 @@ mod smallstr {
 }
 pub use smallstr::SmallStr;
 
+pub mod url {
+    use std::fmt;
+
+    use serde::de::{Deserializer, Error, Visitor};
+    use url::Url;
+
+    struct UrlVisitor;
+
+    impl Visitor<'_> for UrlVisitor {
+        type Value = Url;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+            formatter.write_str("a string representing an URL")
+        }
+
+        fn visit_str<E: Error>(self, s: &str) -> Result<Self::Value, E> {
+            Url::parse(s).map_err(|err| Error::custom(format!("{err}: {s:?}")))
+        }
+    }
+
+    pub fn deserialize<'de, D: Deserializer<'de>>(deserializer: D) -> Result<Url, D::Error> {
+        deserializer.deserialize_any(UrlVisitor)
+    }
+
+    pub mod opt {
+        use std::fmt;
+
+        use serde::de::{Deserializer, Error, Visitor};
+        use url::Url;
+
+        struct UrlVisitor;
+
+        impl<'de> Visitor<'de> for UrlVisitor {
+            type Value = Option<Url>;
+
+            fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+                formatter.write_str("an optional string representing an URL")
+            }
+
+            fn visit_some<D: Deserializer<'de>>(self, d: D) -> Result<Self::Value, D::Error> {
+                d.deserialize_any(super::UrlVisitor).map(Some)
+            }
+
+            fn visit_none<E: Error>(self) -> Result<Self::Value, E> {
+                Ok(None)
+            }
+
+            fn visit_unit<E: Error>(self) -> Result<Self::Value, E> {
+                Ok(None)
+            }
+        }
+
+        pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<Option<Url>, D::Error> {
+            d.deserialize_option(UrlVisitor)
+        }
+    }
+}
+
 pub trait DeserializeField<T: DeserializeOwned> {
     fn deserialize_value<'de, A: MapAccess<'de>>(
         &mut self,
