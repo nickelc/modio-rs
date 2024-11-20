@@ -160,6 +160,7 @@ impl fmt::Debug for Avatar {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Avatar")
             .field("filename", &self.filename)
+            .field("original", &self.original.as_str())
             .field("thumb_50x50", &self.thumb_50x50.as_str())
             .field("thumb_100x100", &self.thumb_100x100.as_str())
             .finish()
