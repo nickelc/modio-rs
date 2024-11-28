@@ -48,7 +48,7 @@ mod smallstr {
         fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
             struct StrVisitor<const LENGTH: usize>;
 
-            impl<'de, const LENGTH: usize> Visitor<'de> for StrVisitor<LENGTH> {
+            impl<const LENGTH: usize> Visitor<'_> for StrVisitor<LENGTH> {
                 type Value = SmallStr<LENGTH>;
 
                 fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {

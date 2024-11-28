@@ -9,10 +9,9 @@
 //!
 //! - Request an [API key (Read-only)](https://mod.io/me/access)
 //! - Manually create an [OAuth 2 Access Token (Read + Write)](https://mod.io/me/access#oauth)
-//! - [Email Authentication Flow](auth::Auth#example) to create an OAuth 2 Access Token
-//! (Read + Write)
+//! - [Email Authentication Flow](auth::Auth#example) to create an OAuth 2 Access Token (Read + Write)
 //! - [External Authentication](auth::Auth::external) to create an OAuth 2 Access Token (Read + Write)
-//! automatically on platforms such as Steam, GOG, itch.io, Switch, Xbox, Discord and Oculus.
+//!   automatically on platforms such as Steam, GOG, itch.io, Switch, Xbox, Discord and Oculus.
 //!
 //! # Rate Limiting
 //!
