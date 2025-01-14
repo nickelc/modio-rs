@@ -4,7 +4,7 @@ use std::cmp::Ordering;
 use std::fmt::{self, Write};
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
-use std::num::{NonZeroU64, ParseIntError, TryFromIntError};
+use std::num::{NonZeroI64, NonZeroU64, ParseIntError, TryFromIntError};
 use std::str::FromStr;
 
 /// ID with a game marker.
@@ -208,6 +208,16 @@ impl<T> From<NonZeroU64> for Id<T> {
     }
 }
 
+impl<T> TryFrom<i64> for Id<T> {
+    type Error = TryFromIntError;
+
+    fn try_from(value: i64) -> Result<Self, Self::Error> {
+        let value = NonZeroI64::try_from(value)?;
+        let value = NonZeroU64::try_from(value)?;
+        Ok(Self::from_nonzero(value))
+    }
+}
+
 impl<T> TryFrom<u64> for Id<T> {
     type Error = TryFromIntError;
 
@@ -255,5 +265,15 @@ mod tests {
         );
         assert!(Id::<GameMarker>::from_str("0").is_err());
         assert!(Id::<GameMarker>::from_str("123a").is_err());
+    }
+
+    #[test]
+    fn try_from() {
+        assert!(Id::<GameMarker>::try_from(-123i64).is_err());
+        assert!(Id::<GameMarker>::try_from(0i64).is_err());
+        assert_eq!(123u64, Id::<GameMarker>::try_from(123i64).unwrap());
+
+        assert!(Id::<GameMarker>::try_from(0u64).is_err());
+        assert_eq!(123u64, Id::<GameMarker>::try_from(123u64).unwrap());
     }
 }
