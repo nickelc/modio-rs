@@ -8,7 +8,7 @@ authors = ["Constantin Nickel <constantin.nickel@gmail.com>"]
 keywords = ["modio", "client"]
 categories = ["api-bindings", "web-programming::http-client"]
 edition = "2021"
-rust-version = "1.64"
+rust-version = "1.71"
 include = ["src/**/*", "LICENSE-*", "README.md", "CHANGELOG.md"]
 
 [dependencies]

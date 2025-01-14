@@ -16,7 +16,7 @@
 [master-docs-url]: https://nickelc.github.io/modio-rs/master/
 [workflow-badge]: https://github.com/nickelc/modio-rs/workflows/ci/badge.svg
 [actions-url]: https://github.com/nickelc/modio-rs/actions
-[rust-version]: https://img.shields.io/badge/rust-1.64.0%2B-lightgrey.svg?logo=rust
+[rust-version]: https://img.shields.io/badge/rust-1.71.0%2B-lightgrey.svg?logo=rust
 
 `modio` provides a set of building blocks for interacting with the [mod.io](https://mod.io) API.
 
