@@ -1,3 +1,8 @@
+### v0.12.0 (2025-01-18)
+
+* Implement `TryFrom<i64>` for `Id<T>` type.
+* Introduce `Timestamp` newtype the Unix timestamp fields.
+
 ### v0.11.0 (2024-06-04)
 
 * Remove `ALL` constants from bitflags, use the `all()` method instead.
