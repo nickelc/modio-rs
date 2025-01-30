@@ -101,6 +101,9 @@ bitflags! {
         const NEGATIVE_RATINGS = 256;
         /// Allow mods to be edited via web.
         const WEB_EDIT_MODS = 512;
+        const ALLOW_MOD_DEPENDENCIES = 1024;
+        /// Allow comments on guides.
+        const ALLOW_GUIDE_COMMENTS   = 2048;
     }
 
     /// Level of API access allowed by a game.
