@@ -20,6 +20,7 @@ pub struct Game {
     pub date_live: Timestamp,
     pub presentation_option: PresentationOption,
     pub submission_option: SubmissionOption,
+    pub dependency_option: DependencyOption,
     pub curation_option: CurationOption,
     pub community_options: CommunityOptions,
     pub api_access_options: ApiAccessOptions,
@@ -63,6 +64,18 @@ newtype_enum! {
         const API_ONLY = 0;
         /// Mod uploads can occur from anywhere, include the website and API.
         const ANYWHERE = 1;
+    }
+
+    /// Dependency option for a game.
+    pub struct DependencyOption: u8 {
+        /// Disallow mod dependencies.
+        const DISALLOWED     = 0;
+        /// Allow mod dependencies, mods must opt in.
+        const OPT_IN         = 1;
+        /// Allow mod dependencies, mods must opt out.
+        const OPT_OUT        = 2;
+        /// Allow mod dependencies with no restrictions.
+        const NO_RESTRICTION = 3;
     }
 
     /// Curation process used to approve mods.
