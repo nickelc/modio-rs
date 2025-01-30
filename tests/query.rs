@@ -136,9 +136,9 @@ async fn collect() -> Result<()> {
     let modio = Modio::host(server.url_str("/v1"), "foobar")?;
     let list = modio.games().search(Filter::default()).collect().await?;
 
-    assert_eq!(32, list.len(), "result count");
+    assert_eq!(33, list.len(), "result count");
     assert_eq!(Id::new(2), list[0].id, "id of first item");
-    assert_eq!(Id::new(296), list[30].id, "id of last item");
+    assert_eq!(Id::new(295), list[30].id, "id of last item");
     Ok(())
 }
 
@@ -165,7 +165,7 @@ async fn paged() -> Result<()> {
     let mut total = 0;
     let mut count = 0;
     // First & Last Game ID's of every loaded page result
-    let mut ids = vec![(2, 51), (63, 152), (164, 224), (227, 263), (264, 304)].into_iter();
+    let mut ids = vec![(2, 51), (63, 139), (152, 214), (224, 254), (263, 304)].into_iter();
     let size_hint = iter.size_hint();
 
     while let Ok(Some(list)) = iter.try_next().await {
@@ -188,7 +188,7 @@ async fn paged() -> Result<()> {
     }
 
     assert_eq!(count, 5);
-    assert_eq!(total, 32);
+    assert_eq!(total, 33);
     assert_eq!((count, None), size_hint);
     Ok(())
 }
@@ -208,7 +208,7 @@ async fn iter() -> Result<()> {
         count += 1;
     }
 
-    assert_eq!(count, 32);
+    assert_eq!(count, 33);
     assert_eq!((count, None), size_hint);
     Ok(())
 }
