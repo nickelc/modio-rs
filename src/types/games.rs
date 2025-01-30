@@ -81,9 +81,14 @@ bitflags! {
     /// Community features enabled on the mod.io website.
     pub struct CommunityOptions: u16 {
         /// Discussion board enabled.
+        #[deprecated(note = "Flag is replaced by `ALLOW_COMMENTS`")]
         const DISCUSSIONS       = 1;
+        /// Allow comments on mods.
+        const ALLOW_COMMENTS    = 1;
         /// Guides & News enabled.
+        #[deprecated(note = "Flag is replaced by `ALLOW_GUIDES`")]
         const GUIDES_NEWS       = 2;
+        const ALLOW_GUIDES      = 2;
         const PIN_ON_HOMEPAGE   = 4;
         const SHOW_ON_HOMEPAGE  = 8;
         const SHOW_MORE_ON_HOMEPAGE = 16;
