@@ -104,6 +104,12 @@ bitflags! {
         const ALLOW_THIRD_PARTY     = 1;
         /// Allow mods to be downloaded directly.
         const ALLOW_DIRECT_DOWNLOAD = 2;
+        /// Checks authorization on the mods to be downloaded directly (if enabled the consuming
+        /// application must send the user's bearer token)
+        const CHECK_AUTHORIZATION = 4;
+        /// Checks ownerchip on the mods to be downloaded directly (if enabled the consuming
+        /// application must send the user's bearer token)
+        const CHECK_OWNERSHIP = 8;
     }
 
     /// Mature content options.
