@@ -1,3 +1,10 @@
+### v0.12.1 (2025-01-31)
+
+* Fix external links to mod.io's REST API docs.
+* Add new dependency option for games.
+* Add new community options for games and deprecated renamed flags.
+* Add new API access options flags.
+
 ### v0.12.0 (2025-01-18)
 
 * Implement `TryFrom<i64>` for `Id<T>` type.
