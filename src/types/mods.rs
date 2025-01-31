@@ -10,7 +10,7 @@ use super::id::{CommentId, EventId, FileId, GameId, MemberId, ModId, ResourceId,
 use super::{deserialize_empty_object, utils, DeserializeField, MissingField, TargetPlatform};
 use super::{Logo, Status, Timestamp, User};
 
-/// See the [Mod Object](https://docs.mod.io/#mod-object) docs for more information.
+/// See the [Mod Object](https://docs.mod.io/restapiref/#mod-object) docs for more information.
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct Mod {
@@ -49,7 +49,7 @@ pub struct Mod {
 }
 
 newtype_enum! {
-    /// See [Status & Visibility](https://docs.mod.io/#status-amp-visibility) docs for more information.
+    /// See [Status & Visibility](https://docs.mod.io/restapiref/#status-amp-visibility) docs for more information.
     pub struct Visibility: u8 {
         const HIDDEN = 0;
         const PUBLIC = 1;
@@ -80,7 +80,7 @@ bitflags! {
     }
 }
 
-/// See the [Mod Event Object](https://docs.mod.io/#mod-event-object) docs for more information.
+/// See the [Mod Event Object](https://docs.mod.io/restapiref/#mod-event-object) docs for more information.
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct Event {
@@ -121,7 +121,7 @@ impl fmt::Display for EventType {
     }
 }
 
-/// See the [Mod Dependency Object](https://docs.mod.io/#mod-dependencies-object) docs for more
+/// See the [Mod Dependency Object](https://docs.mod.io/restapiref/#mod-dependencies-object) docs for more
 /// information.
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
@@ -130,7 +130,7 @@ pub struct Dependency {
     pub date_added: Timestamp,
 }
 
-/// See the [Mod Media Object](https://docs.mod.io/#mod-media-object) docs for more
+/// See the [Mod Media Object](https://docs.mod.io/restapiref/#mod-media-object) docs for more
 /// information.
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
@@ -143,7 +143,7 @@ pub struct Media {
     pub images: Vec<Image>,
 }
 
-/// See the [Image Object](https://docs.mod.io/#image-object) docs for more information.
+/// See the [Image Object](https://docs.mod.io/restapiref/#image-object) docs for more information.
 #[derive(Deserialize)]
 #[non_exhaustive]
 pub struct Image {
@@ -164,7 +164,7 @@ impl fmt::Debug for Image {
     }
 }
 
-/// See the [Statistics Object](https://docs.mod.io/#mod-stats-object) docs for more
+/// See the [Statistics Object](https://docs.mod.io/restapiref/#mod-stats-object) docs for more
 /// information.
 #[derive(Debug)]
 #[non_exhaustive]
@@ -338,7 +338,7 @@ pub struct Ratings {
     pub display_text: String,
 }
 
-/// See the [Rating Object](https://docs.mod.io/#rating-object) docs for more information.
+/// See the [Rating Object](https://docs.mod.io/restapiref/#rating-object) docs for more information.
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum Rating {
@@ -398,7 +398,7 @@ impl<'de> Deserialize<'de> for Rating {
     }
 }
 
-/// See the [Mod Platforms Object](https://docs.mod.io/#mod-platforms-object) docs for more information.
+/// See the [Mod Platforms Object](https://docs.mod.io/restapiref/#mod-platforms-object) docs for more information.
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct Platform {
@@ -410,7 +410,7 @@ pub struct Platform {
     pub modfile_id: FileId,
 }
 
-/// See the [Mod Tag Object](https://docs.mod.io/#mod-tag-object) docs for more information.
+/// See the [Mod Tag Object](https://docs.mod.io/restapiref/#mod-tag-object) docs for more information.
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct Tag {
@@ -424,7 +424,7 @@ impl fmt::Display for Tag {
     }
 }
 
-/// See the [Metadata KVP Object](https://docs.mod.io/#metadata-kvp-object) docs for more
+/// See the [Metadata KVP Object](https://docs.mod.io/restapiref/#metadata-kvp-object) docs for more
 /// information.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct MetadataMap(HashMap<String, Vec<String>>);
@@ -559,7 +559,7 @@ impl<'de> Deserialize<'de> for MetadataMap {
     }
 }
 
-/// See the [Comment Object](https://docs.mod.io/#comment-object) docs for more information.
+/// See the [Comment Object](https://docs.mod.io/restapiref/#comment-object) docs for more information.
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct Comment {
@@ -573,7 +573,7 @@ pub struct Comment {
     pub content: String,
 }
 
-/// See the [Team Member Object](https://docs.mod.io/#team-member-object) docs for more
+/// See the [Team Member Object](https://docs.mod.io/restapiref/#team-member-object) docs for more
 /// information.
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]

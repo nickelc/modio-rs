@@ -125,7 +125,7 @@ pub mod filters {
     /// - `Id`
     /// - `DateAdded`
     ///
-    /// See the [modio docs](https://docs.mod.io/#get-user-events) for more information.
+    /// See the [modio docs](https://docs.mod.io/restapiref/#get-user-events) for more information.
     ///
     /// By default this returns up to `100` items. You can limit the result by using `limit` and
     /// `offset`.
@@ -185,7 +185,7 @@ pub mod filters {
     /// - `Ratings`
     /// - `Subscribers`
     ///
-    /// See the [mod.io docs](https://docs.mod.io/#get-user-subscriptions) for more information.
+    /// See the [mod.io docs](https://docs.mod.io/restapiref/#get-user-subscriptions) for more information.
     ///
     /// By default this returns up to `100` items. you can limit the result by using `limit` and
     /// `offset`.
@@ -262,7 +262,7 @@ pub mod filters {
     /// - `Rating`
     /// - `DateAdded`
     ///
-    /// See the [mod.io docs](https://docs.mod.io/#get-user-ratings) for more information.
+    /// See the [mod.io docs](https://docs.mod.io/restapiref/#get-user-ratings) for more information.
     ///
     /// By default this returns up to `100` items. You can limit the result by using `limit` and
     /// `offset`.

@@ -146,7 +146,7 @@ impl FileRef {
 /// - `DateAdded`
 /// - `Version`
 ///
-/// See [modio docs](https://docs.mod.io/#get-modfiles) for more information.
+/// See [modio docs](https://docs.mod.io/restapiref/#get-modfiles) for more information.
 ///
 /// By default this returns up to `100` items. You can limit the result by using `limit` and
 /// `offset`.

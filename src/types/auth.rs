@@ -3,7 +3,7 @@ use url::Url;
 
 use super::{utils, Timestamp};
 
-/// See the [Access Token Object](https://docs.mod.io/#access-token-object) docs for more
+/// See the [Access Token Object](https://docs.mod.io/restapiref/#access-token-object) docs for more
 /// information.
 #[derive(Deserialize)]
 #[non_exhaustive]
@@ -14,7 +14,7 @@ pub struct AccessToken {
     pub expired_at: Option<Timestamp>,
 }
 
-/// See the [Terms Object](https://docs.mod.io/#terms-object) docs for more information.
+/// See the [Terms Object](https://docs.mod.io/restapiref/#terms-object) docs for more information.
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct Terms {
@@ -25,7 +25,7 @@ pub struct Terms {
 
 /// Part of [`Terms`]
 ///
-/// See the [Terms Object](https://docs.mod.io/#terms-object) docs for more information.
+/// See the [Terms Object](https://docs.mod.io/restapiref/#terms-object) docs for more information.
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct Links {
@@ -37,7 +37,7 @@ pub struct Links {
 
 /// Part of [`Terms`]
 ///
-/// See the [Terms Object](https://docs.mod.io/#terms-object) docs for more information.
+/// See the [Terms Object](https://docs.mod.io/restapiref/#terms-object) docs for more information.
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct Link {

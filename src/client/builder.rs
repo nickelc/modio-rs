@@ -170,7 +170,7 @@ impl Builder {
 
     /// Set the target platform.
     ///
-    /// See the [mod.io docs](https://docs.mod.io/#targeting-a-platform) for more information.
+    /// See the [mod.io docs](https://docs.mod.io/restapiref/#targeting-a-platform) for more information.
     pub fn target_platform(mut self, platform: TargetPlatform) -> Builder {
         match HeaderValue::from_str(platform.as_str()) {
             Ok(value) => {
@@ -185,7 +185,7 @@ impl Builder {
 
     /// Set the target portal.
     ///
-    /// See the [mod.io docs](https://docs.mod.io/#targeting-a-portal) for more information.
+    /// See the [mod.io docs](https://docs.mod.io/restapiref/#targeting-a-portal) for more information.
     pub fn target_portal(mut self, portal: TargetPortal) -> Builder {
         match HeaderValue::from_str(portal.as_str()) {
             Ok(value) => {

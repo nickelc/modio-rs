@@ -197,7 +197,7 @@ impl Tags {
 /// - `NameId`
 /// - `DateUpdated`
 ///
-/// See [modio docs](https://docs.mod.io/#get-games) for more information.
+/// See [modio docs](https://docs.mod.io/restapiref/#get-games) for more information.
 ///
 /// By default this returns up to `100` items. You can limit the result by using `limit` and
 /// `offset`.

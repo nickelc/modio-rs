@@ -42,7 +42,7 @@ impl Modio {
         Builder::new(credentials)
     }
 
-    /// Create an endpoint to [https://api.mod.io/v1](https://docs.mod.io/#mod-io-api-v1).
+    /// Create an endpoint to [https://api.mod.io/v1](https://docs.mod.io/restapiref/#mod-io-api-v1).
     pub fn new<C>(credentials: C) -> Result<Self>
     where
         C: Into<Credentials>,

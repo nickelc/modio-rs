@@ -9,7 +9,7 @@ use super::id::GameId;
 use super::{deserialize_empty_object, utils, DeserializeField, MissingField};
 use super::{Logo, Status, TargetPlatform, Timestamp};
 
-/// See the [Game Object](https://docs.mod.io/#game-object) docs for more information.
+/// See the [Game Object](https://docs.mod.io/restapiref/#game-object) docs for more information.
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct Game {
@@ -143,7 +143,7 @@ bitflags! {
     }
 }
 
-/// See the [Icon Object](https://docs.mod.io/#icon-object) docs for more information.
+/// See the [Icon Object](https://docs.mod.io/restapiref/#icon-object) docs for more information.
 #[derive(Deserialize)]
 #[non_exhaustive]
 pub struct Icon {
@@ -170,7 +170,7 @@ impl fmt::Debug for Icon {
     }
 }
 
-/// See the [Header Image Object](https://docs.mod.io/#header-image-object) docs for more
+/// See the [Header Image Object](https://docs.mod.io/restapiref/#header-image-object) docs for more
 /// information.
 #[derive(Deserialize)]
 #[non_exhaustive]
@@ -189,7 +189,7 @@ impl fmt::Debug for HeaderImage {
     }
 }
 
-/// See the [Game Statistics Object](https://docs.mod.io/#game-stats-object) docs for more
+/// See the [Game Statistics Object](https://docs.mod.io/restapiref/#game-stats-object) docs for more
 /// information.
 #[derive(Debug)]
 #[non_exhaustive]
@@ -303,7 +303,7 @@ pub struct Downloads {
     pub daily_average: u32,
 }
 
-/// See the [Game Tag Option Object](https://docs.mod.io/#game-tag-option-object) docs for more
+/// See the [Game Tag Option Object](https://docs.mod.io/restapiref/#game-tag-option-object) docs for more
 /// information.
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
@@ -336,7 +336,7 @@ impl fmt::Display for TagType {
     }
 }
 
-/// See the [Theme Object](https://docs.mod.io/#theme-object) docs for more information.
+/// See the [Theme Object](https://docs.mod.io/restapiref/#theme-object) docs for more information.
 #[derive(Debug, Deserialize)]
 pub struct Theme {
     pub primary: String,
@@ -347,7 +347,7 @@ pub struct Theme {
     pub danger: String,
 }
 
-/// See the [Game OtherUrls Object](https://docs.mod.io/#game-otherurls-object) docs for more information.
+/// See the [Game OtherUrls Object](https://docs.mod.io/restapiref/#game-otherurls-object) docs for more information.
 #[derive(Deserialize)]
 pub struct OtherUrl {
     pub label: String,
@@ -364,7 +364,7 @@ impl fmt::Debug for OtherUrl {
     }
 }
 
-/// See the [Game Platforms Object](https://docs.mod.io/#game-platforms-object) docs for more information.
+/// See the [Game Platforms Object](https://docs.mod.io/restapiref/#game-platforms-object) docs for more information.
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct Platform {

@@ -99,7 +99,7 @@ impl Error {
 
     /// Returns modio's error reference code.
     ///
-    /// See the [Error Codes](https://docs.mod.io/#error-codes) docs for more information.
+    /// See the [Error Codes](https://docs.mod.io/restapiref/#error-codes) docs for more information.
     pub fn error_ref(&self) -> Option<u16> {
         self.inner.error_ref
     }

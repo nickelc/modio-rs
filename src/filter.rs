@@ -564,7 +564,7 @@ impl fmt::Display for Sorting {
 
 /// Filter operators of mod.io.
 ///
-/// See [mod.io docs](https://docs.mod.io/#filtering) for more information.
+/// See [mod.io docs](https://docs.mod.io/restapiref/#filtering) for more information.
 #[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub enum Operator {
     /// Equal to (`id=1`)

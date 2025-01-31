@@ -9,7 +9,7 @@ use crate::types::{DeserializeField, MissingField, TargetPlatform};
 use super::id::{FileId, ModId};
 use super::{utils, Timestamp};
 
-/// See the [Modfile Object](https://docs.mod.io/#modfile-object) docs for more information.
+/// See the [Modfile Object](https://docs.mod.io/restapiref/#modfile-object) docs for more information.
 #[derive(Debug)]
 #[non_exhaustive]
 pub struct File {
@@ -175,7 +175,7 @@ impl<'de> Deserialize<'de> for File {
     }
 }
 
-/// See the [Modfile Object](https://docs.mod.io/#modfile-object) docs for more information.
+/// See the [Modfile Object](https://docs.mod.io/restapiref/#modfile-object) docs for more information.
 #[derive(Debug)]
 #[non_exhaustive]
 pub struct VirusScan {
@@ -185,7 +185,7 @@ pub struct VirusScan {
 }
 
 newtype_enum! {
-    /// See the [Modfile Object](https://docs.mod.io/#modfile-object) docs for more information.
+    /// See the [Modfile Object](https://docs.mod.io/restapiref/#modfile-object) docs for more information.
     pub struct VirusStatus: u8 {
         const NOT_SCANNED       = 0;
         const SCAN_COMPLETED    = 1;
@@ -195,7 +195,7 @@ newtype_enum! {
         const ERROR_SCANNING    = 5;
     }
 
-    /// See the [Modfile Object](https://docs.mod.io/#modfile-object) docs for more information.
+    /// See the [Modfile Object](https://docs.mod.io/restapiref/#modfile-object) docs for more information.
     pub struct VirusResult: u8 {
         const NO_THREATS_DETECTED = 0;
         const MALICIOUS           = 1;
@@ -203,14 +203,14 @@ newtype_enum! {
     }
 }
 
-/// See the [Filehash Object](https://docs.mod.io/#filehash-object) docs for more information.
+/// See the [Filehash Object](https://docs.mod.io/restapiref/#filehash-object) docs for more information.
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct FileHash {
     pub md5: String,
 }
 
-/// See the [Download Object](https://docs.mod.io/#download-object) docs for more information.
+/// See the [Download Object](https://docs.mod.io/restapiref/#download-object) docs for more information.
 #[derive(Deserialize)]
 #[non_exhaustive]
 pub struct Download {
@@ -228,7 +228,7 @@ impl fmt::Debug for Download {
     }
 }
 
-/// See the [Modfile Platform Object](https://docs.mod.io/#modfile-platform-object) docs for more
+/// See the [Modfile Platform Object](https://docs.mod.io/restapiref/#modfile-platform-object) docs for more
 /// information.
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
@@ -239,7 +239,7 @@ pub struct Platform {
 }
 
 newtype_enum! {
-    /// See the [Modfile Platform Object](https://docs.mod.io/#modfile-platform-object) docs for
+    /// See the [Modfile Platform Object](https://docs.mod.io/restapiref/#modfile-platform-object) docs for
     /// more information.
     pub struct PlatformStatus: u8 {
         const PENDING  = 0;

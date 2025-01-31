@@ -38,7 +38,7 @@
 //! ```
 //!
 //! For testing purposes use [`Modio::host`] to create a client for the
-//! mod.io [test environment](https://docs.mod.io/#testing).
+//! mod.io [test environment](https://docs.mod.io/restapiref/#testing).
 //!
 //! # Example: Chaining api requests
 //!

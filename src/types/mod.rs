@@ -20,7 +20,7 @@ use utils::{DeserializeField, MissingField};
 
 use self::id::{EventId, GameId, ModId, UserId};
 
-/// See the [Message Object](https://docs.mod.io/#message-object) docs for more information.
+/// See the [Message Object](https://docs.mod.io/restapiref/#message-object) docs for more information.
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct Message {
@@ -57,7 +57,7 @@ where
     Message::deserialize(deserializer).map(|_| ())
 }
 
-/// See the [Multiple Item Response](https://docs.mod.io/#response-formats) docs for more
+/// See the [Multiple Item Response](https://docs.mod.io/restapiref/#response-formats) docs for more
 /// information.
 #[derive(Debug, PartialEq, Deserialize)]
 #[non_exhaustive]
@@ -73,14 +73,14 @@ pub struct List<T> {
     pub offset: u32,
 }
 
-/// See the [Error Object](https://docs.mod.io/#error-object) docs for more information.
+/// See the [Error Object](https://docs.mod.io/restapiref/#error-object) docs for more information.
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct ErrorResponse {
     pub error: Error,
 }
 
-/// See the [Error Object](https://docs.mod.io/#error-object) docs for more information.
+/// See the [Error Object](https://docs.mod.io/restapiref/#error-object) docs for more information.
 #[derive(Debug, PartialEq, Deserialize)]
 #[non_exhaustive]
 pub struct Error {
@@ -116,7 +116,7 @@ fn deserialize_errors<'de, D: Deserializer<'de>>(
     deserializer.deserialize_map(MapVisitor)
 }
 
-/// See the [User Object](https://docs.mod.io/#user-object) docs for more information.
+/// See the [User Object](https://docs.mod.io/restapiref/#user-object) docs for more information.
 #[derive(Deserialize)]
 #[non_exhaustive]
 pub struct User {
@@ -143,7 +143,7 @@ impl fmt::Debug for User {
     }
 }
 
-/// See the [Avatar Object](https://docs.mod.io/#avatar-object) docs for more information.
+/// See the [Avatar Object](https://docs.mod.io/restapiref/#avatar-object) docs for more information.
 #[derive(Deserialize)]
 #[non_exhaustive]
 pub struct Avatar {
@@ -167,7 +167,7 @@ impl fmt::Debug for Avatar {
     }
 }
 
-/// See the [Logo Object](https://docs.mod.io/#logo-object) docs for more information.
+/// See the [Logo Object](https://docs.mod.io/restapiref/#logo-object) docs for more information.
 #[derive(Deserialize)]
 #[non_exhaustive]
 pub struct Logo {
@@ -195,14 +195,14 @@ impl fmt::Debug for Logo {
 }
 
 newtype_enum! {
-    /// See [Status & Visibility](https://docs.mod.io/#status-amp-visibility) docs for more information.
+    /// See [Status & Visibility](https://docs.mod.io/restapiref/#status-amp-visibility) docs for more information.
     pub struct Status: u8 {
         const NOT_ACCEPTED = 0;
         const ACCEPTED     = 1;
         const DELETED      = 3;
     }
 
-    /// See the [mod.io docs](https://docs.mod.io/#targeting-a-platform) for more information.
+    /// See the [mod.io docs](https://docs.mod.io/restapiref/#targeting-a-platform) for more information.
     #[derive(Deserialize, Serialize)]
     pub struct TargetPlatform<16> {
         const ANDROID       = b"android";
@@ -219,7 +219,7 @@ newtype_enum! {
         const OCULUS        = b"oculus";
     }
 
-    /// See the [mod.io docs](https://docs.mod.io/#targeting-a-portal) for more information.
+    /// See the [mod.io docs](https://docs.mod.io/restapiref/#targeting-a-portal) for more information.
     pub struct TargetPortal<12> {
         const STEAM     = b"steam";
         const GOG       = b"gog";
@@ -261,7 +261,7 @@ impl fmt::Display for TargetPlatform {
     }
 }
 
-/// See the [User Event Object](https://docs.mod.io/#user-event-object) docs for more information.
+/// See the [User Event Object](https://docs.mod.io/restapiref/#user-event-object) docs for more information.
 #[derive(Debug, Deserialize)]
 #[non_exhaustive]
 pub struct Event {
