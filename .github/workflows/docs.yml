@@ -30,7 +30,7 @@ jobs:
           echo '<meta http-equiv="refresh" content="0;url=modio/index.html">' > _site/master/index.html
           mv target/doc/* _site/master
 
-      - uses: actions/upload-pages-artifact@v1
+      - uses: actions/upload-pages-artifact@v3
 
   deploy:
     name: Deploy to GitHub Pages
@@ -44,4 +44,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4
