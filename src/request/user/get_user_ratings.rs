@@ -5,6 +5,7 @@ use crate::request::{Filter, Output, RequestBuilder, Route};
 use crate::response::ResponseFuture;
 use crate::types::mods::Rating;
 use crate::types::List;
+use crate::util::{Paginate, Paginator};
 
 /// Get all mod ratings submitted by the authenticated user.
 pub struct GetUserRatings<'a> {
@@ -37,5 +38,15 @@ impl IntoFuture for GetUserRatings<'_> {
             Ok(req) => self.http.request(req),
             Err(err) => ResponseFuture::failed(err),
         }
+    }
+}
+
+impl<'a> Paginate<'a> for GetUserRatings<'a> {
+    type Output = Rating;
+
+    fn paged(&'a self) -> Paginator<'a, Self::Output> {
+        let route = Route::UserRatings;
+
+        Paginator::new(self.http, route, self.filter.clone())
     }
 }

@@ -6,6 +6,7 @@ use crate::response::ResponseFuture;
 use crate::types::id::{GameId, ModId};
 use crate::types::mods::Dependency;
 use crate::types::List;
+use crate::util::{Paginate, Paginator};
 
 /// Get all dependencies a mod has selected.
 pub struct GetModDependencies<'a> {
@@ -40,5 +41,18 @@ impl IntoFuture for GetModDependencies<'_> {
             Ok(req) => self.http.request(req),
             Err(err) => ResponseFuture::failed(err),
         }
+    }
+}
+
+impl<'a> Paginate<'a> for GetModDependencies<'a> {
+    type Output = Dependency;
+
+    fn paged(&'a self) -> Paginator<'a, Self::Output> {
+        let route = Route::GetModDependencies {
+            game_id: self.game_id,
+            mod_id: self.mod_id,
+            recursive: self.recursive,
+        };
+        Paginator::new(self.http, route, None)
     }
 }

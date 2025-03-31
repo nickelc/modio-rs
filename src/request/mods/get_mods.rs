@@ -6,6 +6,7 @@ use crate::response::ResponseFuture;
 use crate::types::id::GameId;
 use crate::types::mods::Mod;
 use crate::types::List;
+use crate::util::{Paginate, Paginator};
 
 /// Get all mods for a game.
 pub struct GetMods<'a> {
@@ -48,5 +49,16 @@ impl IntoFuture for GetMods<'_> {
             Ok(req) => self.http.request(req),
             Err(err) => ResponseFuture::failed(err),
         }
+    }
+}
+
+impl<'a> Paginate<'a> for GetMods<'a> {
+    type Output = Mod;
+
+    fn paged(&'a self) -> Paginator<'a, Self::Output> {
+        let route = Route::GetMods {
+            game_id: self.game_id,
+        };
+        Paginator::new(self.http, route, self.filter.clone())
     }
 }

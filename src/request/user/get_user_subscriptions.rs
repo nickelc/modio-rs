@@ -5,6 +5,7 @@ use crate::request::{Filter, Output, RequestBuilder, Route};
 use crate::response::ResponseFuture;
 use crate::types::mods::Mod;
 use crate::types::List;
+use crate::util::{Paginate, Paginator};
 
 /// Get all mod the authenticated user is subscribed to.
 pub struct GetUserSubscriptions<'a> {
@@ -37,5 +38,15 @@ impl IntoFuture for GetUserSubscriptions<'_> {
             Ok(req) => self.http.request(req),
             Err(err) => ResponseFuture::failed(err),
         }
+    }
+}
+
+impl<'a> Paginate<'a> for GetUserSubscriptions<'a> {
+    type Output = Mod;
+
+    fn paged(&'a self) -> Paginator<'a, Self::Output> {
+        let route = Route::UserSubscriptions;
+
+        Paginator::new(self.http, route, self.filter.clone())
     }
 }

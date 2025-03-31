@@ -5,6 +5,7 @@ use crate::request::{Filter, Output, RequestBuilder, Route};
 use crate::response::ResponseFuture;
 use crate::types::files::File;
 use crate::types::List;
+use crate::util::{Paginate, Paginator};
 
 /// Get all modfiles the authenticated user uploaded.
 pub struct GetUserFiles<'a> {
@@ -37,5 +38,15 @@ impl IntoFuture for GetUserFiles<'_> {
             Ok(req) => self.http.request(req),
             Err(err) => ResponseFuture::failed(err),
         }
+    }
+}
+
+impl<'a> Paginate<'a> for GetUserFiles<'a> {
+    type Output = File;
+
+    fn paged(&'a self) -> Paginator<'a, Self::Output> {
+        let route = Route::UserFiles;
+
+        Paginator::new(self.http, route, self.filter.clone())
     }
 }

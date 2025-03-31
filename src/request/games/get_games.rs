@@ -5,6 +5,7 @@ use crate::request::{Filter, Output, RequestBuilder, Route};
 use crate::response::ResponseFuture;
 use crate::types::games::Game;
 use crate::types::List;
+use crate::util::{Paginate, Paginator};
 
 /// Get all games.
 pub struct GetGames<'a> {
@@ -53,5 +54,16 @@ impl IntoFuture for GetGames<'_> {
             Ok(req) => self.http.request(req),
             Err(err) => ResponseFuture::failed(err),
         }
+    }
+}
+
+impl<'a> Paginate<'a> for GetGames<'a> {
+    type Output = Game;
+
+    fn paged(&'a self) -> Paginator<'a, Self::Output> {
+        let route = Route::GetGames {
+            show_hidden_tags: self.show_hidden_tags,
+        };
+        Paginator::new(self.http, route, self.filter.clone())
     }
 }

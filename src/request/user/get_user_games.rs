@@ -5,6 +5,7 @@ use crate::request::{Filter, Output, RequestBuilder, Route};
 use crate::response::ResponseFuture;
 use crate::types::games::Game;
 use crate::types::List;
+use crate::util::{Paginate, Paginator};
 
 /// Get all games the authenticated user added or is a team member of.
 pub struct GetUserGames<'a> {
@@ -37,5 +38,15 @@ impl IntoFuture for GetUserGames<'_> {
             Ok(req) => self.http.request(req),
             Err(err) => ResponseFuture::failed(err),
         }
+    }
+}
+
+impl<'a> Paginate<'a> for GetUserGames<'a> {
+    type Output = Game;
+
+    fn paged(&'a self) -> Paginator<'a, Self::Output> {
+        let route = Route::UserGames;
+
+        Paginator::new(self.http, route, self.filter.clone())
     }
 }

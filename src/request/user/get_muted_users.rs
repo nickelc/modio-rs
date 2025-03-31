@@ -4,6 +4,7 @@ use crate::client::Client;
 use crate::request::{Filter, Output, RequestBuilder, Route};
 use crate::response::ResponseFuture;
 use crate::types::{List, User};
+use crate::util::{Paginate, Paginator};
 
 /// Get all users muted by the authenticated user.
 pub struct GetMutedUsers<'a> {
@@ -36,5 +37,15 @@ impl IntoFuture for GetMutedUsers<'_> {
             Ok(req) => self.http.request(req),
             Err(err) => ResponseFuture::failed(err),
         }
+    }
+}
+
+impl<'a> Paginate<'a> for GetMutedUsers<'a> {
+    type Output = User;
+
+    fn paged(&'a self) -> Paginator<'a, Self::Output> {
+        let route = Route::UserMuted;
+
+        Paginator::new(self.http, route, self.filter.clone())
     }
 }

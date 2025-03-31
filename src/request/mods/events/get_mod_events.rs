@@ -6,6 +6,7 @@ use crate::response::ResponseFuture;
 use crate::types::id::{GameId, ModId};
 use crate::types::mods::Event;
 use crate::types::List;
+use crate::util::{Paginate, Paginator};
 
 /// Get the event log for a mod.
 pub struct GetModEvents<'a> {
@@ -51,5 +52,17 @@ impl IntoFuture for GetModEvents<'_> {
             Ok(req) => self.http.request(req),
             Err(err) => ResponseFuture::failed(err),
         }
+    }
+}
+
+impl<'a> Paginate<'a> for GetModEvents<'a> {
+    type Output = Event;
+
+    fn paged(&'a self) -> Paginator<'a, Self::Output> {
+        let route = Route::GetModEvents {
+            game_id: self.game_id,
+            mod_id: self.mod_id,
+        };
+        Paginator::new(self.http, route, self.filter.clone())
     }
 }

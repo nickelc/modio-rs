@@ -5,6 +5,7 @@ use crate::request::{Filter, Output, RequestBuilder, Route};
 use crate::response::ResponseFuture;
 use crate::types::mods::Mod;
 use crate::types::List;
+use crate::util::{Paginate, Paginator};
 
 /// Get all mods the authenticated user added or is a team member of.
 pub struct GetUserMods<'a> {
@@ -37,5 +38,15 @@ impl IntoFuture for GetUserMods<'_> {
             Ok(req) => self.http.request(req),
             Err(err) => ResponseFuture::failed(err),
         }
+    }
+}
+
+impl<'a> Paginate<'a> for GetUserMods<'a> {
+    type Output = Mod;
+
+    fn paged(&'a self) -> Paginator<'a, Self::Output> {
+        let route = Route::UserMods;
+
+        Paginator::new(self.http, route, self.filter.clone())
     }
 }

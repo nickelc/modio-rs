@@ -6,6 +6,7 @@ use crate::response::ResponseFuture;
 use crate::types::files::File;
 use crate::types::id::{GameId, ModId};
 use crate::types::List;
+use crate::util::{Paginate, Paginator};
 
 /// Get all files that are published for a mod.
 pub struct GetFiles<'a> {
@@ -51,5 +52,17 @@ impl IntoFuture for GetFiles<'_> {
             Ok(req) => self.http.request(req),
             Err(err) => ResponseFuture::failed(err),
         }
+    }
+}
+
+impl<'a> Paginate<'a> for GetFiles<'a> {
+    type Output = File;
+
+    fn paged(&'a self) -> Paginator<'a, Self::Output> {
+        let route = Route::GetFiles {
+            game_id: self.game_id,
+            mod_id: self.mod_id,
+        };
+        Paginator::new(self.http, route, self.filter.clone())
     }
 }

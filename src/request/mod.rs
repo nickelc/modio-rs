@@ -9,7 +9,8 @@ use crate::response::Response;
 
 use self::body::Body;
 use self::multipart::Form;
-use self::routing::{Parts, Route};
+use self::routing::Parts;
+pub(crate) use self::routing::Route;
 
 pub use self::filter::Filter;
 pub use self::submit_report::SubmitReport;
