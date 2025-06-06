@@ -1,3 +1,7 @@
+### v0.13.0 (2025-06-06)
+
+* Increase size of community options for the new undocumented flags.
+
 ### v0.12.1 (2025-01-31)
 
 * Fix external links to mod.io's REST API docs.
