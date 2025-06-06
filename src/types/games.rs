@@ -92,7 +92,7 @@ newtype_enum! {
 
 bitflags! {
     /// Community features enabled on the mod.io website.
-    pub struct CommunityOptions: u16 {
+    pub struct CommunityOptions: u32 {
         /// Discussion board enabled.
         #[deprecated(note = "Flag is replaced by `ALLOW_COMMENTS`")]
         const DISCUSSIONS       = 1;
