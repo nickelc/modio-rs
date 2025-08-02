@@ -242,8 +242,9 @@ newtype_enum! {
     /// See the [Modfile Platform Object](https://docs.mod.io/restapiref/#modfile-platform-object) docs for
     /// more information.
     pub struct PlatformStatus: u8 {
-        const PENDING  = 0;
-        const APPROVED = 1;
-        const DENIED   = 2;
+        const PENDING   = 0;
+        const APPROVED  = 1;
+        const DENIED    = 2;
+        const TARGETTED = 3;
     }
 }
