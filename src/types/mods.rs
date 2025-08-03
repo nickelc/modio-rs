@@ -24,6 +24,7 @@ pub struct Mod {
     pub date_live: Timestamp,
     pub maturity_option: MaturityOption,
     pub community_options: CommunityOptions,
+    pub credit_options: CreditOptions,
     pub price: f32,
     pub tax: u32,
     pub logo: Logo,
@@ -77,6 +78,22 @@ bitflags! {
         const DRUGS     = 2;
         const VIOLENCE  = 4;
         const EXPLICIT  = 8;
+    }
+
+    /// Credit options a mod can enable.
+    pub struct CreditOptions: u16 {
+        const SHOW_CREDITS_SECTION               = 1;
+        /// Mark with original or permitted assets.
+        const MARK_WITH_ORIGNAL_PERMITTED_ASSETS = 2;
+        const ALLOW_REDISTRIBUTION_WITH_CREDIT   = 4;
+        const ALLOW_PORTING_WITH_CREDIT          = 8;
+        const ALLOW_PATCHING_WITHOUT_CREDIT      = 16;
+        const ALLOW_PATCHING_WITH_CREDIT         = 32;
+        const ALLOW_PATCHING_WITH_PERMISSION     = 64;
+        const ALLOW_REPACKING_WITHOUT_CREDIT     = 128;
+        const ALLOW_REPACKING_WITH_CREDIT        = 256;
+        const ALLOW_REPACKING_WITH_PERMISSION    = 512;
+        const ALLOW_USERS_TO_RESELL              = 1024;
     }
 }
 

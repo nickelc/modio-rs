@@ -14,8 +14,8 @@ use crate::teams::Members;
 use crate::types::id::{FileId, GameId, ModId};
 
 pub use crate::types::mods::{
-    CommunityOptions, Dependency, Event, EventType, Image, MaturityOption, Media, Mod, Platform,
-    Popularity, Ratings, Statistics, Tag, Visibility,
+    CommunityOptions, CreditOptions, Dependency, Event, EventType, Image, MaturityOption, Media,
+    Mod, Platform, Popularity, Ratings, Statistics, Tag, Visibility,
 };
 pub use crate::types::Logo;
 pub use crate::types::Status;
@@ -576,6 +576,7 @@ pub struct AddModOptions {
     stock: Option<u32>,
     maturity_option: Option<MaturityOption>,
     community_options: Option<CommunityOptions>,
+    credit_options: Option<CreditOptions>,
     metadata_blob: Option<String>,
     tags: Option<Vec<String>>,
 }
@@ -605,6 +606,7 @@ impl AddModOptions {
             stock: None,
             maturity_option: None,
             community_options: None,
+            credit_options: None,
             metadata_blob: None,
             tags: None,
         }
@@ -628,6 +630,7 @@ impl AddModOptions {
     option!(stock: u32);
     option!(maturity_option: MaturityOption);
     option!(community_options: CommunityOptions);
+    option!(credit_options: CreditOptions);
     option!(metadata_blob);
 
     #[must_use]
@@ -666,6 +669,9 @@ impl From<AddModOptions> for Form {
         }
         if let Some(community_options) = opts.community_options {
             form = form.text("community_options", community_options.to_string());
+        }
+        if let Some(credit_options) = opts.credit_options {
+            form = form.text("credit_options", credit_options.to_string());
         }
         if let Some(metadata_blob) = opts.metadata_blob {
             form = form.text("metadata_blob", metadata_blob);
@@ -708,6 +714,7 @@ impl EditModOptions {
     option!(stock >> "stock");
     option!(maturity_option: MaturityOption >> "maturity_option");
     option!(community_options: CommunityOptions >> "community_options");
+    option!(credit_options: CreditOptions >> "credit_options");
     option!(metadata_blob >> "metadata_blob");
 }
 
