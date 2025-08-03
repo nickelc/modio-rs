@@ -53,10 +53,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let mut st = Box::pin(modio.download(file).await?.stream());
         while let Some(bytes) = st.try_next().await? {
             size += bytes.len();
-            ctx.write_all(&bytes)?;
+            ctx.consume(bytes);
         }
 
-        println!("computed md5: {:x}", ctx.compute());
+        println!("computed md5: {:x}", ctx.finalize());
         println!("downloaded size: {}", size);
     } else {
         println!("The mod has no files.");

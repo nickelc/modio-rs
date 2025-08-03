@@ -30,7 +30,7 @@ url = "2.5.4"
 [dev-dependencies]
 dotenv = "0.15.0"
 httptest = "0.16.1"
-md5 = "0.7.0"
+md5 = "0.8.0"
 serde_test = "1.0.177"
 tokio = { version = "1.43.0", features = ["full"] }
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
