@@ -575,6 +575,7 @@ pub struct AddModOptions {
     homepage_url: Option<Url>,
     stock: Option<u32>,
     maturity_option: Option<MaturityOption>,
+    community_options: Option<CommunityOptions>,
     metadata_blob: Option<String>,
     tags: Option<Vec<String>>,
 }
@@ -603,6 +604,7 @@ impl AddModOptions {
             homepage_url: None,
             stock: None,
             maturity_option: None,
+            community_options: None,
             metadata_blob: None,
             tags: None,
         }
@@ -625,6 +627,7 @@ impl AddModOptions {
     option!(homepage_url: Url);
     option!(stock: u32);
     option!(maturity_option: MaturityOption);
+    option!(community_options: CommunityOptions);
     option!(metadata_blob);
 
     #[must_use]
@@ -660,6 +663,9 @@ impl From<AddModOptions> for Form {
         }
         if let Some(maturity_option) = opts.maturity_option {
             form = form.text("maturity_option", maturity_option.to_string());
+        }
+        if let Some(community_options) = opts.community_options {
+            form = form.text("community_options", community_options.to_string());
         }
         if let Some(metadata_blob) = opts.metadata_blob {
             form = form.text("metadata_blob", metadata_blob);
@@ -701,6 +707,7 @@ impl EditModOptions {
     option!(homepage_url: Url >> "homepage_url");
     option!(stock >> "stock");
     option!(maturity_option: MaturityOption >> "maturity_option");
+    option!(community_options: CommunityOptions >> "community_options");
     option!(metadata_blob >> "metadata_blob");
 }
 
