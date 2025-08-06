@@ -1,4 +1,4 @@
-### v0.13.1 (2025-07-06)
+### v0.13.1 (2025-08-06)
 
 * Add new credit options for mods.
 * Add missing community options when adding & editing mods.
