@@ -1,3 +1,9 @@
+### v0.13.1 (2025-07-06)
+
+* Add new credit options for mods.
+* Add missing community options when adding & editing mods.
+* Add new platform status variant.
+
 ### v0.13.0 (2025-06-06)
 
 * Increase size of community options for the new undocumented flags.
