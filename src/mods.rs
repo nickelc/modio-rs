@@ -784,6 +784,7 @@ impl serde::ser::Serialize for EditTagsOptions {
 
 #[derive(Default)]
 pub struct AddMediaOptions {
+    sync: Option<bool>,
     logo: Option<FileSource>,
     images_zip: Option<FileSource>,
     images: Option<Vec<FileSource>>,
@@ -792,6 +793,14 @@ pub struct AddMediaOptions {
 }
 
 impl AddMediaOptions {
+    #[must_use]
+    pub fn sync(self, value: bool) -> Self {
+        Self {
+            sync: Some(value),
+            ..self
+        }
+    }
+
     #[must_use]
     pub fn logo<P: AsRef<Path>>(self, logo: P) -> Self {
         let logo = logo.as_ref();
@@ -860,6 +869,9 @@ impl AddMediaOptions {
 impl From<AddMediaOptions> for Form {
     fn from(opts: AddMediaOptions) -> Form {
         let mut form = Form::new();
+        if let Some(sync) = opts.sync {
+            form = form.text("sync", sync.to_string());
+        }
         if let Some(logo) = opts.logo {
             form = form.part("logo", logo.into());
         }
