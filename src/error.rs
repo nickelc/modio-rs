@@ -1,9 +1,8 @@
 //! Client errors
-use std::error::Error as StdError;
 use std::fmt;
 use std::time::Duration;
 
-use reqwest::StatusCode;
+use http::StatusCode;
 
 use crate::types::Error as ApiError;
 
@@ -15,7 +14,7 @@ pub struct Error {
     inner: Box<Inner>,
 }
 
-type BoxError = Box<dyn StdError + Send + Sync>;
+type BoxError = Box<dyn std::error::Error + Send + Sync>;
 
 struct Inner {
     kind: Kind,
@@ -64,7 +63,7 @@ impl Error {
         matches!(self.inner.kind, Kind::Builder)
     }
 
-    /// Returns true if the error is from a [`DownloadAction`](crate::download::DownloadAction).
+    /// Returns true if the error is from a [`DownloadAction`](crate::client::download::DownloadAction).
     pub fn is_download(&self) -> bool {
         matches!(self.inner.kind, Kind::Download)
     }
@@ -82,11 +81,6 @@ impl Error {
     /// Returns true if the error contains validation errors.
     pub fn is_validation(&self) -> bool {
         matches!(self.inner.kind, Kind::Validation { .. })
-    }
-
-    /// Returns true if the error is related to serialization.
-    pub fn is_decode(&self) -> bool {
-        matches!(self.inner.kind, Kind::Decode)
     }
 
     /// Returns the API error if the error was generated from a response.
@@ -147,9 +141,9 @@ impl fmt::Display for Error {
             Kind::TokenRequired => f.write_str("access token is required")?,
             Kind::TermsAcceptanceRequired => f.write_str("terms acceptance is required")?,
             Kind::Builder => f.write_str("builder error")?,
-            Kind::Decode => f.write_str("error decoding response body")?,
             Kind::Download => f.write_str("download error")?,
             Kind::Request => f.write_str("http request error")?,
+            Kind::Service => f.write_str("service request error")?,
             Kind::Response { status, .. } => {
                 let prefix = if status.is_client_error() {
                     "HTTP status client error"
@@ -176,8 +170,8 @@ impl fmt::Display for Error {
     }
 }
 
-impl StdError for Error {
-    fn source(&self) -> Option<&(dyn StdError + 'static)> {
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         self.inner.source.as_ref().map(|e| &**e as _)
     }
 }
@@ -200,23 +194,15 @@ pub(crate) enum Kind {
     },
     Builder,
     Request,
+    Service,
     Response {
         status: StatusCode,
         error: ApiError,
     },
-    Decode,
 }
 
 pub(crate) fn token_required() -> Error {
     Error::new(Kind::TokenRequired)
-}
-
-pub(crate) fn builder_or_request(e: reqwest::Error) -> Error {
-    if e.is_builder() {
-        builder(e)
-    } else {
-        request(e)
-    }
 }
 
 pub(crate) fn builder<E: Into<BoxError>>(source: E) -> Error {
@@ -227,8 +213,8 @@ pub(crate) fn request<E: Into<BoxError>>(source: E) -> Error {
     Error::new(Kind::Request).with(source)
 }
 
-pub(crate) fn decode<E: Into<BoxError>>(source: E) -> Error {
-    Error::new(Kind::Decode).with(source)
+pub(crate) fn service<E: Into<BoxError>>(source: E) -> Error {
+    Error::new(Kind::Service).with(source)
 }
 
 pub(crate) fn error_for_status(status: StatusCode, error: ApiError) -> Error {

@@ -1,196 +1,130 @@
-use std::sync::Arc;
+use http::header::{HeaderMap, HeaderValue, USER_AGENT};
+use http::uri::Authority;
 
-use http::header::USER_AGENT;
-use http::header::{HeaderMap, HeaderValue};
-use reqwest::{Client, ClientBuilder, Proxy};
-
-use crate::auth::Credentials;
-use crate::error::{self, Error, Result};
+use crate::error::{self, Error};
 use crate::types::id::{GameId, UserId};
-use crate::{TargetPlatform, TargetPortal};
+use crate::types::{TargetPlatform, TargetPortal};
 
-use super::{ClientRef, Modio};
-use super::{DEFAULT_AGENT, DEFAULT_HOST, TEST_HOST};
+use super::{Client, DEFAULT_HOST, HDR_X_MODIO_PLATFORM, HDR_X_MODIO_PORTAL, TEST_HOST};
 
-/// A `Builder` can be used to create a `Modio` client with custom configuration.
-#[must_use]
+use super::service::Svc;
+
+/// A builder for [`Client`].
 pub struct Builder {
-    config: Config,
-}
-
-struct Config {
-    host: Option<String>,
-    credentials: Credentials,
-    builder: Option<ClientBuilder>,
+    host: Option<Box<str>>,
+    api_key: Box<str>,
+    token: Option<Box<str>>,
     headers: HeaderMap,
-    proxies: Vec<Proxy>,
-    #[cfg(feature = "__tls")]
-    tls: TlsBackend,
     error: Option<Error>,
 }
 
-#[cfg(feature = "__tls")]
-enum TlsBackend {
-    #[cfg(feature = "default-tls")]
-    Default,
-    #[cfg(feature = "rustls-tls")]
-    Rustls,
-}
-
-#[cfg(feature = "__tls")]
-#[allow(clippy::derivable_impls)]
-impl Default for TlsBackend {
-    fn default() -> TlsBackend {
-        #[cfg(feature = "default-tls")]
-        {
-            TlsBackend::Default
-        }
-        #[cfg(all(feature = "rustls-tls", not(feature = "default-tls")))]
-        {
-            TlsBackend::Rustls
-        }
-    }
-}
-
 impl Builder {
-    /// Constructs a new `Builder`.
-    ///
-    /// This is the same as `Modio::builder(credentials)`.
-    pub fn new<C: Into<Credentials>>(credentials: C) -> Builder {
-        Builder {
-            config: Config {
-                host: None,
-                credentials: credentials.into(),
-                builder: None,
-                headers: HeaderMap::new(),
-                proxies: Vec::new(),
-                #[cfg(feature = "__tls")]
-                tls: TlsBackend::default(),
-                error: None,
-            },
+    /// Create a new builder with an API key.
+    pub fn new(api_key: String) -> Self {
+        Self {
+            host: None,
+            api_key: api_key.into_boxed_str(),
+            token: None,
+            headers: HeaderMap::new(),
+            error: None,
         }
     }
 
-    /// Returns a `Modio` client that uses this `Builder` configuration.
-    pub fn build(self) -> Result<Modio> {
-        let config = self.config;
-
-        if let Some(e) = config.error {
+    /// Build the [`Client`].
+    pub fn build(self) -> Result<Client, Error> {
+        if let Some(e) = self.error {
             return Err(e);
         }
 
-        let host = config.host.unwrap_or_else(|| DEFAULT_HOST.to_string());
-        let credentials = config.credentials;
+        let http = Svc::new();
 
-        let client = {
-            let mut builder = {
-                let builder = config.builder.unwrap_or_else(Client::builder);
-                #[cfg(feature = "__tls")]
-                match config.tls {
-                    #[cfg(feature = "default-tls")]
-                    TlsBackend::Default => builder.use_native_tls(),
-                    #[cfg(feature = "rustls-tls")]
-                    TlsBackend::Rustls => builder.use_rustls_tls(),
-                }
+        let host = self.host.unwrap_or_else(|| Box::from(DEFAULT_HOST));
 
-                #[cfg(not(feature = "__tls"))]
-                builder
-            };
-
-            let mut headers = config.headers;
-            if !headers.contains_key(USER_AGENT) {
-                headers.insert(USER_AGENT, HeaderValue::from_static(DEFAULT_AGENT));
-            }
-
-            for proxy in config.proxies {
-                builder = builder.proxy(proxy);
-            }
-
-            builder
-                .default_headers(headers)
-                .build()
-                .map_err(error::builder)?
-        };
-
-        Ok(Modio {
-            inner: Arc::new(ClientRef {
-                host,
-                client,
-                credentials,
-            }),
+        Ok(Client {
+            http,
+            host,
+            api_key: self.api_key,
+            token: self.token,
+            headers: self.headers,
         })
     }
 
-    /// Configure the underlying `reqwest` client using `reqwest::ClientBuilder`.
-    pub fn client<F>(mut self, f: F) -> Builder
-    where
-        F: FnOnce(ClientBuilder) -> ClientBuilder,
-    {
-        self.config.builder = Some(f(Client::builder()));
+    /// Set the token to use for HTTP requests.
+    pub fn token(mut self, token: String) -> Self {
+        self.token = Some(create_token(token));
         self
     }
 
-    /// Set the mod.io API host to "https://g-{id}.modapi.io/v1".
+    /// Use the default mod.io API host (`"api.mod.io"`).
+    pub fn use_default_env(mut self) -> Self {
+        self.host = Some(Box::from(DEFAULT_HOST));
+        self
+    }
+
+    /// Use the mod.io API test host (`"api.test.mod.io"`).
+    pub fn use_test_env(mut self) -> Self {
+        self.host = Some(Box::from(TEST_HOST));
+        self
+    }
+
+    /// Set the mod.io API host to "g-{id}.modapi.io".
     pub fn game_host(mut self, game_id: GameId) -> Self {
-        self.config.host = Some(format!("https://g-{game_id}.modapi.io/v1"));
+        self.host = Some(format!("g-{game_id}.modapi.io").into_boxed_str());
         self
     }
 
-    /// Set the mod.io API host to "https://u-{id}.modapi.io/v1".
+    /// Set the mod.io API host to "u-{id}.modapi.io".
     pub fn user_host(mut self, user_id: UserId) -> Self {
-        self.config.host = Some(format!("https://u-{user_id}.modapi.io/v1"));
+        self.host = Some(format!("u-{user_id}.modapi.io").into_boxed_str());
         self
     }
 
-    /// Set the mod.io api host.
+    /// Set the mod.io API host.
     ///
-    /// Defaults to `"https://api.mod.io/v1"`
-    pub fn host<S: Into<String>>(mut self, host: S) -> Builder {
-        self.config.host = Some(host.into());
-        self
-    }
-
-    /// Use the mod.io api test host.
-    pub fn use_test(mut self) -> Builder {
-        self.config.host = Some(TEST_HOST.into());
+    /// Defaults to `"api.mod.io"` if not set.
+    pub fn host<V>(mut self, host: V) -> Self
+    where
+        V: TryInto<Authority>,
+        V::Error: Into<http::Error>,
+    {
+        match host.try_into() {
+            Ok(host) => {
+                self.host = Some(Box::from(host.as_str()));
+            }
+            Err(err) => {
+                self.error = Some(error::builder(err.into()));
+            }
+        }
         self
     }
 
     /// Set the user agent used for every request.
-    ///
-    /// Defaults to `"modio/{version}"`
-    pub fn user_agent<V>(mut self, value: V) -> Builder
+    pub fn user_agent<V>(mut self, value: V) -> Self
     where
         V: TryInto<HeaderValue>,
         V::Error: Into<http::Error>,
     {
         match value.try_into() {
             Ok(value) => {
-                self.config.headers.insert(USER_AGENT, value);
+                self.headers.insert(USER_AGENT, value);
             }
-            Err(e) => {
-                self.config.error = Some(error::builder(e.into()));
+            Err(err) => {
+                self.error = Some(error::builder(err.into()));
             }
         }
-        self
-    }
-
-    /// Add a `Proxy` to the list of proxies the client will use.
-    pub fn proxy(mut self, proxy: Proxy) -> Builder {
-        self.config.proxies.push(proxy);
         self
     }
 
     /// Set the target platform.
     ///
     /// See the [mod.io docs](https://docs.mod.io/restapiref/#targeting-a-platform) for more information.
-    pub fn target_platform(mut self, platform: TargetPlatform) -> Builder {
+    pub fn target_platform(mut self, platform: TargetPlatform) -> Self {
         match HeaderValue::from_str(platform.as_str()) {
             Ok(value) => {
-                self.config.headers.insert("X-Modio-Platform", value);
+                self.headers.insert(HDR_X_MODIO_PLATFORM, value);
             }
-            Err(e) => {
-                self.config.error = Some(error::builder(e));
+            Err(err) => {
+                self.error = Some(error::builder(err));
             }
         }
         self
@@ -199,29 +133,33 @@ impl Builder {
     /// Set the target portal.
     ///
     /// See the [mod.io docs](https://docs.mod.io/restapiref/#targeting-a-portal) for more information.
-    pub fn target_portal(mut self, portal: TargetPortal) -> Builder {
+    pub fn target_portal(mut self, portal: TargetPortal) -> Self {
         match HeaderValue::from_str(portal.as_str()) {
             Ok(value) => {
-                self.config.headers.insert("X-Modio-Portal", value);
+                self.headers.insert(HDR_X_MODIO_PORTAL, value);
             }
-            Err(e) => {
-                self.config.error = Some(error::builder(e));
+            Err(err) => {
+                self.error = Some(error::builder(err));
             }
         }
         self
     }
+}
 
-    /// Use native TLS backend.
-    #[cfg(feature = "default-tls")]
-    pub fn use_default_tls(mut self) -> Builder {
-        self.config.tls = TlsBackend::Default;
-        self
+pub(super) fn create_token(mut token: String) -> Box<str> {
+    if !token.starts_with("Bearer ") {
+        token.insert_str(0, "Bearer ");
     }
+    token.into_boxed_str()
+}
 
-    /// Use rustls TLS backend.
-    #[cfg(feature = "rustls-tls")]
-    pub fn use_rustls_tls(mut self) -> Builder {
-        self.config.tls = TlsBackend::Rustls;
-        self
+#[cfg(test)]
+mod tests {
+    use super::create_token;
+
+    #[test]
+    fn test_create_token() {
+        assert_eq!("Bearer token", &*create_token("token".to_owned()));
+        assert_eq!("Bearer token", &*create_token("Bearer token".to_owned()));
     }
 }

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fmt;
 
 use serde::de::{Deserialize, Deserializer, IgnoredAny, MapAccess, SeqAccess, Visitor};
-use serde_derive::Deserialize;
+use serde_derive::{Deserialize, Serialize};
 use url::Url;
 
 use super::files::File;
@@ -59,6 +59,7 @@ newtype_enum! {
 
 bitflags! {
     /// Community options a mod can enable.
+    #[derive(Serialize)]
     pub struct CommunityOptions: u16 {
         /// Comments enabled.
         const COMMENTS = 1;
@@ -73,6 +74,7 @@ bitflags! {
     /// Maturity options a mod can be flagged.
     ///
     /// This is only relevant if the parent game allows mods to be labelled as mature.
+    #[derive(Serialize)]
     pub struct MaturityOption: u8 {
         const ALCOHOL   = 1;
         const DRUGS     = 2;
@@ -81,6 +83,7 @@ bitflags! {
     }
 
     /// Credit options a mod can enable.
+    #[derive(Serialize)]
     pub struct CreditOptions: u16 {
         const SHOW_CREDITS_SECTION               = 1;
         /// Mark with original or permitted assets.

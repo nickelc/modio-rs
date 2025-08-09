@@ -9,8 +9,9 @@
 //!
 //! - Request an [API key (Read-only)](https://mod.io/me/access)
 //! - Manually create an [OAuth 2 Access Token (Read + Write)](https://mod.io/me/access#oauth)
-//! - [Email Authentication Flow](auth::Auth#example) to create an OAuth 2 Access Token (Read + Write)
-//! - [External Authentication](auth::Auth::external) to create an OAuth 2 Access Token (Read + Write)
+//! - [Email Authentication Flow](Client::request_token) to create an OAuth 2 Access Token
+//!   (Read + Write)
+//! - [External Authentication](Client::external_auth) to create an OAuth 2 Access Token (Read + Write)
 //!   automatically on platforms such as Steam, GOG, itch.io, Switch, Xbox, Discord and Oculus.
 //!
 //! # Rate Limiting
@@ -25,11 +26,11 @@
 //! # Example: Basic setup
 //!
 //! ```no_run
-//! use modio::{Credentials, Modio};
+//! use modio::Client;
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     let modio = Modio::new(Credentials::new("user-or-game-api-key"))?;
+//!     let modio = Client::builder(std::env::var("MODIO_API_KEY")?).build()?;
 //!
 //!     // create some tasks and execute them
 //!     // let result = task.await?;
@@ -37,35 +38,37 @@
 //! }
 //! ```
 //!
-//! For testing purposes use [`Modio::host`] to create a client for the
+//! For testing purposes use [`Builder::host`] to create a client for the
 //! mod.io [test environment](https://docs.mod.io/restapiref/#testing).
+//!
+//! [`Builder::host`]: crate::client::Builder::host
 //!
 //! # Example: Chaining api requests
 //!
 //! ```no_run
-//! use futures_util::future::try_join3;
-//! use modio::filter::Filter;
-//! use modio::types::id::Id;
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! #    let modio = modio::Modio::new("user-or-game-api-key")?;
+//! #    let modio = modio::Client::builder(std::env::var("MODIO_API_KEY")?).build()?;
+//! use modio::types::id::Id;
 //!
 //! // OpenXcom: The X-Com Files
-//! let modref = modio.mod_(Id::new(51), Id::new(158));
+//! let (game_id, mod_id) = (Id::new(51), Id::new(158));
+//! let resp = modio.get_mod(game_id, mod_id).await?;
+//! let mod_ = resp.data().await?;
 //!
 //! // Get mod with its dependencies and all files
-//! let deps = modref.dependencies().list();
-//! let files = modref.files().search(Filter::default()).collect();
-//! let mod_ = modref.get();
+//! let resp = modio.get_mod_dependencies(game_id, mod_id).await?;
+//! let deps = resp.data().await?;
 //!
-//! let (m, deps, files) = try_join3(mod_, deps, files).await?;
+//! let resp = modio.get_files(game_id, mod_id).await?;
+//! let files = resp.data().await?;
 //!
-//! println!("{}", m.name);
+//! println!("{}", mod_.name);
 //! println!(
 //!     "deps: {:?}",
-//!     deps.into_iter().map(|d| d.mod_id).collect::<Vec<_>>()
+//!     deps.data.into_iter().map(|d| d.mod_id).collect::<Vec<_>>()
 //! );
-//! for file in files {
+//! for file in files.data {
 //!     println!("file id: {} version: {:?}", file.id, file.version);
 //! }
 //! #    Ok(())
@@ -75,22 +78,18 @@
 //! # Example: Downloading mods
 //!
 //! ```no_run
-//! use modio::download::{DownloadAction, ResolvePolicy};
-//! use modio::types::id::Id;
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! #    let modio = modio::Modio::new("user-or-game-api-key")?;
+//! #    let modio = modio::Client::builder(std::env::var("MODIO_API_KEY")?).build()?;
+//! use modio::client::download::{DownloadAction, ResolvePolicy};
+//! use modio::types::id::Id;
 //!
 //! // Download the primary file of a mod.
 //! let action = DownloadAction::Primary {
 //!     game_id: Id::new(5),
 //!     mod_id: Id::new(19),
 //! };
-//! modio
-//!     .download(action)
-//!     .await?
-//!     .save_to_file("mod.zip")
-//!     .await?;
+//! modio.download(action).save_to_file("mod.zip").await?;
 //!
 //! // Download the specific file of a mod.
 //! let action = DownloadAction::File {
@@ -98,11 +97,7 @@
 //!     mod_id: Id::new(19),
 //!     file_id: Id::new(101),
 //! };
-//! modio
-//!     .download(action)
-//!     .await?
-//!     .save_to_file("mod.zip")
-//!     .await?;
+//! modio.download(action).save_to_file("mod.zip").await?;
 //!
 //! // Download the specific version of a mod.
 //! // if multiple files are found then the latest file is downloaded.
@@ -114,11 +109,7 @@
 //!     version: "0.1".to_string(),
 //!     policy: ResolvePolicy::Latest,
 //! };
-//! modio
-//!     .download(action)
-//!     .await?
-//!     .save_to_file("mod.zip")
-//!     .await?;
+//! modio.download(action).save_to_file("mod.zip").await?;
 //! #    Ok(())
 //! # }
 //! ```
@@ -126,57 +117,19 @@
 #![deny(rust_2018_idioms)]
 #![deny(rustdoc::broken_intra_doc_links)]
 #![allow(clippy::upper_case_acronyms)]
+#![allow(
+    clippy::module_name_repetitions,
+    clippy::must_use_candidate,
+    clippy::return_self_not_must_use,
+    clippy::too_many_lines
+)]
 
-#[macro_use]
-mod macros;
-
-pub mod auth;
-#[macro_use]
-pub mod filter;
-pub mod comments;
-pub mod download;
-pub mod files;
-pub mod games;
-pub mod metadata;
-pub mod mods;
-pub mod reports;
-pub mod teams;
+pub mod client;
+pub mod request;
+pub mod response;
 pub mod types;
-pub mod user;
 
-mod client;
 mod error;
-mod file_source;
-mod loader;
-mod request;
-mod routing;
 
-pub use crate::auth::Credentials;
-pub use crate::client::{Builder, Modio};
-pub use crate::download::DownloadAction;
+pub use crate::client::Client;
 pub use crate::error::{Error, Result};
-pub use crate::loader::{Page, Query};
-pub use crate::types::{Deletion, Editing, TargetPlatform, TargetPortal};
-
-mod prelude {
-    pub use futures_util::Stream;
-    pub use reqwest::multipart::Form;
-    pub use reqwest::StatusCode;
-
-    pub use crate::filter::Filter;
-    pub use crate::loader::Query;
-    pub use crate::routing::Route;
-    pub use crate::types::Message;
-    pub use crate::{Deletion, Editing, Modio, Result};
-}
-
-/// Re-exports of the used reqwest types.
-#[doc(hidden)]
-pub mod lib {
-    pub use reqwest::header;
-    pub use reqwest::redirect::Policy;
-    pub use reqwest::ClientBuilder;
-    #[cfg(feature = "__tls")]
-    pub use reqwest::{Certificate, Identity};
-    pub use reqwest::{Proxy, Url};
-}

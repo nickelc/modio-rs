@@ -65,11 +65,14 @@ jobs:
       - name: Check no default features
         run: cargo check --examples --tests --no-default-features
 
-      - name: Check `rustls-tls` feature
-        run: cargo check --examples --tests --no-default-features --features rustls-tls
+      - name: Check `rustls-webpki-roots` feature
+        run: cargo check --examples --tests --no-default-features --features rustls-webpki-roots
 
-      - name: Check `default-tls` and `rustls-tls` feature
-        run: cargo check --examples --tests --features rustls-tls
+      - name: Check `native-tls` feature
+        run: cargo check --examples --tests --no-default-features --features native-tls
+
+      - name: Check `default-tls` and `native-tls` feature
+        run: cargo check --examples --tests --features native-tls
 
       - name: Tests
         run: cargo test --all-features
@@ -97,7 +100,7 @@ jobs:
         uses: taiki-e/install-action@cargo-minimal-versions
 
       - name: Check minimal versions
-        run: cargo minimal-versions check --no-default-features --features rustls-tls
+        run: cargo minimal-versions check --no-default-features --features rustls-webpki-roots
 
   MSRV:
     runs-on: ubuntu-latest

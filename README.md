@@ -16,7 +16,7 @@
 [master-docs-url]: https://nickelc.github.io/modio-rs/master/
 [workflow-badge]: https://github.com/nickelc/modio-rs/workflows/ci/badge.svg
 [actions-url]: https://github.com/nickelc/modio-rs/actions
-[rust-version]: https://img.shields.io/badge/rust-1.82.0%2B-lightgrey.svg?logo=rust
+[rust-version]: https://img.shields.io/badge/rust-1.83.0%2B-lightgrey.svg?logo=rust
 
 `modio` provides a set of building blocks for interacting with the [mod.io](https://mod.io) API.
 
@@ -32,13 +32,14 @@ To use `modio`, execute `cargo add modio`.
 
 ### Basic Setup
 ```rust
-use modio::{Credentials, Modio, Result};
+use std::env;
+use modio::Client;
 
 #[tokio::main]
-async fn main() -> Result<()> {
-    let modio = Modio::new(
-        Credentials::new("user-or-game-apikey"),
-    )?;
+async fn main() -> Result<(), Box<std::error::Error>> {
+    let client = Client::builder(env::var("MODIO_API_KEY")?)
+        .token(env::var("MODIO_TOKEN")?)
+        .build()?;
 
     // create some tasks and execute them
     // let result = task.await?;
@@ -49,107 +50,79 @@ async fn main() -> Result<()> {
 ### Authentication
 ```rust
 // Request a security code be sent to the email address.
-modio.auth().request_code("john@example.com").await?;
+client.request_code("john@example.com").await?;
 
 // Wait for the 5-digit security code
-let token = modio.auth().security_code("QWERT").await?;
+let response = client.request_token("QWERT").await?;
+let token = response.data().await?;
 
-// Create an endpoint with the new credentials
-let modio = modio.with_credentials(token);
+// Create an endpoint with the new token
+let client = client.with_token(token.value);
 ```
 See [full example](examples/auth.rs).
 
 ### Games
 ```rust
-use modio::filter::prelude::*;
+use modio::request::filter::prelude::*;
 
 // List games with filter `name_id = "0ad"`
-let games = modio.games().search(NameId::eq("0ad")).collect().await?;
+let response = client.get_games().filter(NameId::eq("0ad")).await?;
+let list = response.data().await?;
 ```
 
 ### Mods
 ```rust
-use modio::filter::prelude::*;
+use modio::request::filter::prelude::*;
 
 // List all mods for 0 A.D.
-let mods = modio.game(5).mods().search(Filter::default()).collect().await?;
+let response = client.get_mods(Id::new(5)).await?;
+let mods = response.data().await?;
 
 // Get the details of the `balancing-mod` mod
-let balancing_mod = modio.mod_(5, 110).get().await?;
-```
-
-### Streaming search result
-```rust
-use futures::TryStreamExt;
-
-let filter = Fulltext::eq("tftd").limit(10);
-let mut st = modio.game(51).mods().search(filter).paged().await?;
-let (_page_count, _) = st.size_hint();
-
-// Stream of paged results `Page<Mod>` with page size = 10
-while let Some(page) = st.try_next().await? {
-    println!("Page {}/{} - Items #{}", page.current(), page.page_count(), page.len());
-    for item in page {
-        println!("  {}. {}", item.id, item.name);
-    }
-}
-
-let filter = Fulltext::eq("soldier");
-let mut st = modio.game(51).mods().search(filter).iter().await?;
-let (_total, _) = st.size_hint();
-
-// Stream of `Mod`
-while let Some(mod_) = st.try_next().await? {
-    println!("{}. {}", mod_.id, mod_.name);
-}
+let response = client.get_mod(Id::new(5), Id::new(110)).await?;
+let balancing_mod = response.data().await?;
 ```
 
 ### Download
 ```rust
-use future_util::{future, TryStreamExt};
-use modio::download::{ResolvePolicy, DownloadAction};
+use modio::client::download::{ResolvePolicy, DownloadAction};
 
 // Download the primary file of a mod.
 let action = DownloadAction::Primary {
-    game_id: 5,
-    mod_id: 19,
+    game_id: Id::new(5),
+    mod_id: Id::new(19),
 };
 modio
     .download(action)
-    .await?
     .save_to_file("mod.zip")
     .await?;
 
 // Download the specific file of a mod.
 let action = DownloadAction::File {
-    game_id: 5,
-    mod_id: 19,
-    file_id: 101,
+    game_id: Id::new(5),
+    mod_id: Id::new(19),
+    file_id: Id::new(101),
 };
 modio
     .download(action)
-    .await?.save_to_file("mod.zip")
+    .save_to_file("mod.zip")
     .await?;
 
 // Download the specific version of a mod.
 // if multiple files are found then the latest file is downloaded.
-// Set policy to `ResolvePolicy::Fail` to return with `modio::download::Error::MultipleFilesFound`
+// Set policy to `ResolvePolicy::Fail` to return with `modio::client::download::Error::MultipleFilesFound`
 // as source error.
 let action = DownloadAction::Version {
-    game_id: 5,
-    mod_id: 19,
+    game_id: Id::new(5),
+    mod_id: Id::new(19),
     version: "0.1".to_string(),
     policy: ResolvePolicy::Latest,
 };
-modio
-    .download(action)
-    .await?
-    .stream()
-    .try_for_each(|bytes| {
-        println!("bytes: {:?}")
-        future::ok(())
-    })
-    .await?;
+let mut chunked = client.download(action).chunked().await?;
+while let Some(chunk) = chunked.data().await {
+    let chunk = chunk?;
+    println!("bytes: {:?}", chunk);
+}
 ```
 
 ### Examples

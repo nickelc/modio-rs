@@ -1,9 +1,8 @@
 use std::env;
 use std::process;
 
-use modio::filter::Filter;
 use modio::types::id::Id;
-use modio::{auth::Credentials, Modio};
+use modio::Client;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -11,31 +10,36 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
 
     // Fetch the access token / api key from the environment of the current process.
-    let creds = match (env::var("MODIO_TOKEN"), env::var("MODIO_API_KEY")) {
-        (Ok(token), Ok(apikey)) => Credentials::with_token(apikey, token),
-        (_, Ok(apikey)) => Credentials::new(apikey),
+    let client = match (env::var("MODIO_API_KEY"), env::var("MODIO_TOKEN")) {
+        (Ok(api_key), Ok(token)) => Client::builder(api_key).token(token),
+        (_, Ok(api_key)) => Client::builder(api_key),
         _ => {
             eprintln!("missing MODIO_TOKEN or MODIO_API_KEY environment variable");
             process::exit(1);
         }
     };
-    let host = env::var("MODIO_HOST").unwrap_or_else(|_| "https://api.test.mod.io/v1".to_string());
+    let host = env::var("MODIO_HOST").unwrap_or_else(|_| "api.test.mod.io".to_string());
 
     // Creates a `Modio` endpoint for the test environment.
-    let modio = Modio::host(host, creds)?;
+    let client = client.host(host).build()?;
 
     // OpenXcom: The X-Com Files
-    let modref = modio.mod_(Id::new(51), Id::new(158));
+    let (game_id, mod_id) = (Id::new(51), Id::new(158));
 
     // Get mod with its dependencies and all files
-    let deps = modref.dependencies().list().await?;
-    let files = modref.files().search(Filter::default()).collect().await?;
-    let m = modref.get().await?;
+    let resp = client.get_mod(game_id, mod_id).await?;
+    let m = resp.data().await?;
+
+    let resp = client.get_mod_dependencies(game_id, mod_id).await?;
+    let deps = resp.data().await?;
+
+    let resp = client.get_files(game_id, mod_id).await?;
+    let files = resp.data().await?;
 
     println!("{}, {}\n", m.name, m.profile_url);
     println!(
         "deps: {:?}",
-        deps.into_iter().map(|d| d.mod_id).collect::<Vec<_>>()
+        deps.data.into_iter().map(|d| d.mod_id).collect::<Vec<_>>()
     );
     println!(
         "stats: downloads={} subscribers={}\n",
@@ -43,7 +47,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
     let primary = m.modfile.as_ref().map(|f| f.id);
     println!("files:");
-    for file in files {
+    for file in files.data {
         let primary = if primary == Some(file.id) { "*" } else { " " };
         println!("{} id: {} version: {:?}", primary, file.id, file.version);
     }

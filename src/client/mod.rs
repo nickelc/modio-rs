@@ -1,199 +1,208 @@
-use std::sync::Arc;
+//! HTTP client for the mod.io API.
 
-use reqwest::Client;
+use http::header::{Entry, HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
+use http::uri::Uri;
+use serde::ser::Serialize;
 
-use crate::auth::{Auth, Credentials, Token};
-use crate::download::{DownloadAction, Downloader};
-use crate::error::Result;
-use crate::games::{GameRef, Games};
-use crate::mods::ModRef;
-use crate::reports::Reports;
-use crate::request::RequestBuilder;
-use crate::routing::Route;
-use crate::types::id::{GameId, ModId};
-use crate::user::Me;
+use crate::error::{self, Error};
+use crate::request::{Filter, Request, TokenRequired};
+use crate::response::ResponseFuture;
+
+pub mod download;
 
 mod builder;
+mod conn;
+mod methods;
 
-pub use builder::Builder;
+pub(crate) mod service;
 
-const DEFAULT_HOST: &str = "https://api.mod.io/v1";
-const TEST_HOST: &str = "https://api.test.mod.io/v1";
-const DEFAULT_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), '/', env!("CARGO_PKG_VERSION"));
+pub use self::builder::Builder;
 
-/// Endpoint interface to interacting with the [mod.io](https://mod.io) API.
-#[derive(Clone, Debug)]
-pub struct Modio {
-    pub(crate) inner: Arc<ClientRef>,
+pub const DEFAULT_HOST: &str = "api.mod.io";
+pub const TEST_HOST: &str = "api.test.mod.io";
+const API_VERSION: u8 = 1;
+
+const HDR_X_MODIO_PLATFORM: &str = "X-Modio-Platform";
+const HDR_X_MODIO_PORTAL: &str = "X-Modio-Portal";
+const HDR_FORM_URLENCODED: HeaderValue =
+    HeaderValue::from_static("application/x-www-form-urlencoded");
+
+/// HTTP client for the mod.io API.
+pub struct Client {
+    http: service::Svc,
+    host: Box<str>,
+    api_key: Box<str>,
+    token: Option<Box<str>>,
+    headers: HeaderMap,
 }
 
-#[derive(Debug)]
-pub(crate) struct ClientRef {
-    pub(crate) host: String,
-    pub(crate) client: Client,
-    pub(crate) credentials: Credentials,
-}
-
-impl Modio {
-    /// Constructs a new `Builder` to configure a `Modio` client.
-    ///
-    /// This is the same as `Builder::new(credentials)`.
-    pub fn builder<C: Into<Credentials>>(credentials: C) -> Builder {
-        Builder::new(credentials)
+impl Client {
+    /// Create a new builder with an API key.
+    pub fn builder(api_key: String) -> Builder {
+        Builder::new(api_key)
     }
 
-    /// Create an endpoint to [https://api.mod.io/v1](https://docs.mod.io/restapiref/#mod-io-api-v1).
-    pub fn new<C>(credentials: C) -> Result<Self>
-    where
-        C: Into<Credentials>,
-    {
-        Builder::new(credentials).build()
+    /// Retrieve the API key used by the client.
+    pub fn api_key(&self) -> &str {
+        &self.api_key
     }
 
-    /// Create an endpoint to a different host.
-    pub fn host<H, C>(host: H, credentials: C) -> Result<Self>
-    where
-        H: Into<String>,
-        C: Into<Credentials>,
-    {
-        Builder::new(credentials).host(host).build()
+    /// Retrieve the token used by the client.
+    pub fn token(&self) -> Option<&str> {
+        self.token.as_ref().and_then(|s| s.strip_prefix("Bearer "))
     }
 
-    /// Return an endpoint with new credentials.
-    #[must_use]
-    pub fn with_credentials<CR>(&self, credentials: CR) -> Self
-    where
-        CR: Into<Credentials>,
-    {
+    /// Create a new client from the current instance with the given token.
+    pub fn with_token(&self, token: String) -> Self {
         Self {
-            inner: Arc::new(ClientRef {
-                host: self.inner.host.clone(),
-                client: self.inner.client.clone(),
-                credentials: credentials.into(),
-            }),
+            http: self.http.clone(),
+            host: self.host.clone(),
+            api_key: self.api_key.clone(),
+            token: Some(builder::create_token(token)),
+            headers: self.headers.clone(),
         }
     }
 
-    /// Return an endpoint with a new token.
-    #[must_use]
-    pub fn with_token<T>(&self, token: T) -> Self
-    where
-        T: Into<Token>,
-    {
-        Self {
-            inner: Arc::new(ClientRef {
-                host: self.inner.host.clone(),
-                client: self.inner.client.clone(),
-                credentials: Credentials {
-                    api_key: self.inner.credentials.api_key.clone(),
-                    token: Some(token.into()),
-                },
-            }),
+    pub(crate) fn raw_request(&self, req: Request) -> service::ResponseFuture {
+        self.http.request(req)
+    }
+
+    pub(crate) fn request<T>(&self, req: Request) -> ResponseFuture<T> {
+        match self.try_request(req) {
+            Ok(fut) => fut,
+            Err(err) => ResponseFuture::failed(err),
         }
     }
 
-    /// Return a reference to an interface for requesting access tokens.
-    pub fn auth(&self) -> Auth {
-        Auth::new(self.clone())
+    fn try_request<T>(&self, req: Request) -> Result<ResponseFuture<T>, Error> {
+        let (mut parts, body) = req.into_parts();
+
+        let mut uri = UriBuilder::new(&self.host, &parts.uri);
+
+        let token_required = parts.extensions.get();
+        match (token_required, &self.token) {
+            (Some(TokenRequired(false)) | None, _) => {
+                uri.api_key(&self.api_key);
+            }
+            (Some(TokenRequired(true)), Some(token)) => match HeaderValue::from_str(token) {
+                Ok(mut value) => {
+                    value.set_sensitive(true);
+                    parts.headers.insert(AUTHORIZATION, value);
+                }
+                Err(e) => return Err(error::request(e)),
+            },
+            (Some(TokenRequired(true)), None) => return Err(error::token_required()),
+        }
+
+        if let Some(filter) = parts.extensions.get::<Filter>() {
+            uri.filter(filter)?;
+        }
+
+        parts.uri = uri.build()?;
+
+        for (key, value) in &self.headers {
+            if let Entry::Vacant(entry) = parts.headers.entry(key) {
+                entry.insert(value.clone());
+            }
+        }
+
+        if let Entry::Vacant(entry) = parts.headers.entry(CONTENT_TYPE) {
+            entry.insert(HDR_FORM_URLENCODED);
+        }
+
+        let fut = self.http.request(Request::from_parts(parts, body));
+
+        Ok(ResponseFuture::new(fut))
+    }
+}
+
+struct UriBuilder<'a> {
+    serializer: form_urlencoded::Serializer<'a, String>,
+}
+
+impl<'a> UriBuilder<'a> {
+    fn new(host: &'a str, path: &'a Uri) -> UriBuilder<'a> {
+        let mut uri = format!("https://{host}/v{API_VERSION}{path}");
+
+        let query_start = if let Some(start) = uri.find('?') {
+            start
+        } else {
+            uri.push('?');
+            uri.len()
+        };
+
+        Self {
+            serializer: form_urlencoded::Serializer::for_suffix(uri, query_start),
+        }
     }
 
-    /// Return a reference to an interface that provides access to game information.
-    pub fn games(&self) -> Games {
-        Games::new(self.clone())
+    fn api_key(&mut self, value: &str) {
+        self.serializer.append_pair("api_key", value);
     }
 
-    /// Return a reference to a game.
-    pub fn game(&self, game_id: GameId) -> GameRef {
-        GameRef::new(self.clone(), game_id)
+    fn filter(&mut self, filter: &Filter) -> Result<(), Error> {
+        filter
+            .serialize(serde_urlencoded::Serializer::new(&mut self.serializer))
+            .map_err(error::request)?;
+
+        Ok(())
     }
 
-    /// Return a reference to a mod.
-    pub fn mod_(&self, game_id: GameId, mod_id: ModId) -> ModRef {
-        ModRef::new(self.clone(), game_id, mod_id)
+    fn build(mut self) -> Result<Uri, Error> {
+        self.serializer
+            .finish()
+            .trim_end_matches('?')
+            .parse()
+            .map_err(error::request)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn basic_uri() {
+        let path = Uri::from_static("/games/1/mods/2");
+        let uri = UriBuilder::new(DEFAULT_HOST, &path);
+
+        let uri = uri.build().unwrap();
+        assert_eq!("https://api.mod.io/v1/games/1/mods/2", uri);
     }
 
-    /// Returns [`Downloader`] for saving to file or retrieving
-    /// the data via [`Stream`].
-    ///
-    /// The download fails with [`modio::download::Error`] as source
-    /// if a primary file, a specific file or a specific version is not found.
-    ///
-    /// [`Downloader`]: crate::download::Downloader
-    /// [`modio::download::Error`]: crate::download::Error
-    /// [`Stream`]: futures_util::Stream
-    ///
-    /// # Example
-    /// ```no_run
-    /// use futures_util::{future, TryStreamExt};
-    /// use modio::download::{DownloadAction, ResolvePolicy};
-    /// use modio::types::id::Id;
-    /// # async fn run() -> Result<(), Box<dyn std::error::Error>> {
-    /// #    let modio = modio::Modio::new("user-or-game-api-key")?;
-    ///
-    /// // Download the primary file of a mod.
-    /// let action = DownloadAction::Primary {
-    ///     game_id: Id::new(5),
-    ///     mod_id: Id::new(19),
-    /// };
-    /// modio
-    ///     .download(action)
-    ///     .await?
-    ///     .save_to_file("mod.zip")
-    ///     .await?;
-    ///
-    /// // Download the specific file of a mod.
-    /// let action = DownloadAction::File {
-    ///     game_id: Id::new(5),
-    ///     mod_id: Id::new(19),
-    ///     file_id: Id::new(101),
-    /// };
-    /// modio
-    ///     .download(action)
-    ///     .await?
-    ///     .save_to_file("mod.zip")
-    ///     .await?;
-    ///
-    /// // Download the specific version of a mod.
-    /// // if multiple files are found then the latest file is downloaded.
-    /// // Set policy to `ResolvePolicy::Fail` to return with
-    /// // `modio::download::Error::MultipleFilesFound` as source error.
-    /// let action = DownloadAction::Version {
-    ///     game_id: Id::new(5),
-    ///     mod_id: Id::new(19),
-    ///     version: "0.1".to_string(),
-    ///     policy: ResolvePolicy::Latest,
-    /// };
-    /// modio
-    ///     .download(action)
-    ///     .await?
-    ///     .stream()
-    ///     .try_for_each(|bytes| {
-    ///         println!("Bytes: {:?}", bytes);
-    ///         future::ok(())
-    ///     })
-    ///     .await?;
-    /// #    Ok(())
-    /// # }
-    /// ```
-    pub async fn download<A>(&self, action: A) -> Result<Downloader>
-    where
-        DownloadAction: From<A>,
-    {
-        Downloader::new(self.clone(), action.into()).await
+    #[test]
+    fn uri_with_api_key() {
+        let path = Uri::from_static("/games/1/mods/2");
+        let mut uri = UriBuilder::new(DEFAULT_HOST, &path);
+
+        uri.api_key("FOOBAR");
+
+        let uri = uri.build().unwrap();
+        assert_eq!("https://api.mod.io/v1/games/1/mods/2?api_key=FOOBAR", uri);
     }
 
-    /// Return a reference to an interface that provides access to resources owned by the user
-    /// associated with the current authentication credentials.
-    pub fn user(&self) -> Me {
-        Me::new(self.clone())
+    #[test]
+    fn uri_with_filter() {
+        let path = Uri::from_static("/games/1/mods/2");
+        let mut uri = UriBuilder::new(DEFAULT_HOST, &path);
+
+        uri.filter(&Filter::with_limit(123)).unwrap();
+
+        let uri = uri.build().unwrap();
+        assert_eq!("https://api.mod.io/v1/games/1/mods/2?_limit=123", uri);
     }
 
-    /// Return a reference to an interface to report games, mods and users.
-    pub fn reports(&self) -> Reports {
-        Reports::new(self.clone())
-    }
+    #[test]
+    fn uri_with_path_and_query() {
+        let path = Uri::from_static("/games/1/mods/2?foo=bar");
+        let mut uri = UriBuilder::new(DEFAULT_HOST, &path);
 
-    pub(crate) fn request(&self, route: Route) -> RequestBuilder {
-        RequestBuilder::new(self.clone(), route)
+        uri.filter(&Filter::with_limit(123)).unwrap();
+
+        let uri = uri.build().unwrap();
+        assert_eq!(
+            "https://api.mod.io/v1/games/1/mods/2?foo=bar&_limit=123",
+            uri
+        );
     }
 }

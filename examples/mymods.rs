@@ -1,8 +1,8 @@
 use std::env;
 use std::process;
 
-use modio::filter::prelude::*;
-use modio::{auth::Credentials, Modio};
+use modio::request::filter::prelude::*;
+use modio::Client;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -10,17 +10,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
 
     // Fetch the access token / api key from the environment of the current process.
-    let creds = match (env::var("MODIO_TOKEN"), env::var("MODIO_API_KEY")) {
-        (Ok(token), Ok(apikey)) => Credentials::with_token(apikey, token),
+    let (api_key, token) = match (env::var("MODIO_API_KEY"), env::var("MODIO_TOKEN")) {
+        (Ok(api_key), Ok(token)) => (api_key, token),
         _ => {
             eprintln!("missing MODIO_TOKEN and MODIO_API_KEY environment variable");
             process::exit(1);
         }
     };
-    let host = env::var("MODIO_HOST").unwrap_or_else(|_| "https://api.test.mod.io/v1".to_string());
+    let host = env::var("MODIO_HOST").unwrap_or_else(|_| "api.test.mod.io".to_string());
 
-    // Creates a `Modio` endpoint for the test environment.
-    let modio = Modio::host(host, creds)?;
+    let client = Client::builder(api_key).token(token).host(host).build()?;
 
     // Create a mod filter for `id` in (1043, 1041), limited to 30 results
     // and ordered by `id` desc.
@@ -30,7 +29,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .order_by(Id::desc());
 
     // Create the call for `/me/mods` and wait for the result.
-    for mod_ in modio.user().mods(filter).collect().await? {
+    let list = client.get_user_mods().filter(filter).await?.data().await?;
+    for mod_ in list.data {
         println!("{:#?}", mod_);
     }
     Ok(())

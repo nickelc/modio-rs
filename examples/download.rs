@@ -2,10 +2,8 @@ use std::env;
 use std::io::{self, Write};
 use std::process;
 
-use futures_util::TryStreamExt;
-
 use modio::types::id::Id;
-use modio::{auth::Credentials, Modio};
+use modio::Client;
 
 fn prompt(prompt: &str) -> io::Result<u64> {
     print!("{}", prompt);
@@ -21,24 +19,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
 
     // Fetch the access token / api key from the environment of the current process.
-    let creds = match (env::var("MODIO_TOKEN"), env::var("MODIO_API_KEY")) {
-        (Ok(token), Ok(apikey)) => Credentials::with_token(apikey, token),
-        (_, Ok(apikey)) => Credentials::new(apikey),
+    let client = match (env::var("MODIO_API_KEY"), env::var("MODIO_TOKEN")) {
+        (Ok(api_key), Ok(token)) => Client::builder(api_key).token(token),
+        (_, Ok(api_key)) => Client::builder(api_key),
         _ => {
             eprintln!("missing MODIO_TOKEN or MODIO_API_KEY environment variable");
             process::exit(1);
         }
     };
-    let host = env::var("MODIO_HOST").unwrap_or_else(|_| "https://api.test.mod.io/v1".to_string());
+    let host = env::var("MODIO_HOST").unwrap_or_else(|_| "api.test.mod.io".to_string());
 
     // Creates a `Modio` endpoint for the test environment.
-    let modio = Modio::host(host, creds)?;
+    let client = client.host(host).build()?;
 
     let game_id = Id::new(prompt("Enter game id: ")?);
     let mod_id = Id::new(prompt("Enter mod id: ")?);
 
     // Create the call for `/games/{game_id}/mods/{mod_id}` and wait for the result.
-    let m = modio.mod_(game_id, mod_id).get().await?;
+    let resp = client.get_mod(game_id, mod_id).await?;
+    let m = resp.data().await?;
     if let Some(file) = m.modfile {
         // Download the file and calculate its md5 digest.
         let mut ctx = md5::Context::new();
@@ -50,8 +49,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("filesize: {}", file.filesize);
         println!("reported md5: {}", file.filehash.md5);
 
-        let mut st = Box::pin(modio.download(file).await?.stream());
-        while let Some(bytes) = st.try_next().await? {
+        let mut chunked = client.download(file).chunked().await?;
+        while let Some(bytes) = chunked.data().await {
+            let bytes = bytes?;
             size += bytes.len();
             ctx.consume(bytes);
         }
