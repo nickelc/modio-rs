@@ -1,9 +1,9 @@
 use std::future::IntoFuture;
 
-use serde::ser::{Serialize, SerializeMap, Serializer};
+use serde_derive::Serialize;
 
 use crate::client::Client;
-use crate::request::{Output, RequestBuilder, Route};
+use crate::request::{ArrayParams, Output, RequestBuilder, Route};
 use crate::response::{NoContent, ResponseFuture};
 use crate::types::id::{GameId, ModId};
 
@@ -15,10 +15,28 @@ pub struct DeleteModMedia<'a> {
     fields: DeleteModMediaFields<'a>,
 }
 
+#[derive(Serialize)]
 struct DeleteModMediaFields<'a> {
-    images: Option<&'a [&'a str]>,
-    youtube: Option<&'a [&'a str]>,
-    sketchfab: Option<&'a [&'a str]>,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    images: Option<ArrayParams<'a, &'a str>>,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    youtube: Option<ArrayParams<'a, &'a str>>,
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    sketchfab: Option<ArrayParams<'a, &'a str>>,
+}
+
+impl<'a> DeleteModMediaFields<'a> {
+    const fn set_images(&mut self, images: &'a [&'a str]) {
+        self.images = Some(ArrayParams::new("images[]", images));
+    }
+
+    const fn set_youtube(&mut self, youtube: &'a [&'a str]) {
+        self.youtube = Some(ArrayParams::new("youtube[]", youtube));
+    }
+
+    const fn set_sketchfab(&mut self, sketchfab: &'a [&'a str]) {
+        self.sketchfab = Some(ArrayParams::new("sketchfab[]", sketchfab));
+    }
 }
 
 impl<'a> DeleteModMedia<'a> {
@@ -36,17 +54,17 @@ impl<'a> DeleteModMedia<'a> {
     }
 
     pub const fn images(mut self, images: &'a [&'a str]) -> Self {
-        self.fields.images = Some(images);
+        self.fields.set_images(images);
         self
     }
 
     pub const fn youtube(mut self, youtube: &'a [&'a str]) -> Self {
-        self.fields.youtube = Some(youtube);
+        self.fields.set_youtube(youtube);
         self
     }
 
     pub const fn sketchfab(mut self, sketchfab: &'a [&'a str]) -> Self {
-        self.fields.sketchfab = Some(sketchfab);
+        self.fields.set_sketchfab(sketchfab);
         self
     }
 }
@@ -67,30 +85,42 @@ impl IntoFuture for DeleteModMedia<'_> {
     }
 }
 
-impl Serialize for DeleteModMediaFields<'_> {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let len = self.images.as_ref().map(|s| s.len()).unwrap_or_default()
-            + self.youtube.as_ref().map(|s| s.len()).unwrap_or_default()
-            + self.sketchfab.as_ref().map(|s| s.len()).unwrap_or_default();
+#[cfg(test)]
+mod tests {
+    use serde_test::{assert_ser_tokens, Token};
 
-        let mut map = serializer.serialize_map(Some(len))?;
+    use super::DeleteModMediaFields;
 
-        if let Some(images) = self.images {
-            for e in images {
-                map.serialize_entry("images[]", e)?;
-            }
-        }
-        if let Some(youtube) = self.youtube {
-            for e in youtube {
-                map.serialize_entry("youtube[]", e)?;
-            }
-        }
-        if let Some(sketchfab) = self.sketchfab {
-            for e in sketchfab {
-                map.serialize_entry("sketchfab[]", e)?;
-            }
-        }
+    #[test]
+    pub fn serialize_fields() {
+        let mut fields = DeleteModMediaFields {
+            images: None,
+            youtube: None,
+            sketchfab: None,
+        };
+        fields.set_images(&["aaa", "bbb"]);
+        fields.set_sketchfab(&["ccc", "ddd"]);
 
-        map.end()
+        assert_ser_tokens(
+            &fields,
+            &[
+                Token::Map { len: None },
+                Token::Str("images[]"),
+                Token::Str("aaa"),
+                Token::Str("images[]"),
+                Token::Str("bbb"),
+                Token::Str("sketchfab[]"),
+                Token::Str("ccc"),
+                Token::Str("sketchfab[]"),
+                Token::Str("ddd"),
+                Token::MapEnd,
+            ],
+        );
+
+        let qs = serde_urlencoded::to_string(&fields).unwrap();
+        assert_eq!(
+            "images%5B%5D=aaa&images%5B%5D=bbb&sketchfab%5B%5D=ccc&sketchfab%5B%5D=ddd",
+            qs
+        );
     }
 }

@@ -1,9 +1,9 @@
 use std::future::IntoFuture;
 
-use serde::ser::{Serialize, SerializeMap, Serializer};
+use serde_derive::Serialize;
 
 use crate::client::Client;
-use crate::request::{Output, RequestBuilder, Route};
+use crate::request::{ArrayParams, Output, RequestBuilder, Route};
 use crate::response::{NoContent, ResponseFuture};
 use crate::types::id::{GameId, ModId};
 
@@ -15,8 +15,18 @@ pub struct DeleteModTags<'a> {
     fields: DeleteModTagsFields<'a>,
 }
 
+#[derive(Serialize)]
 struct DeleteModTagsFields<'a> {
-    tags: &'a [&'a str],
+    #[serde(flatten)]
+    tags: ArrayParams<'a, &'a str>,
+}
+
+impl<'a> DeleteModTagsFields<'a> {
+    const fn new(tags: &'a [&'a str]) -> Self {
+        Self {
+            tags: ArrayParams::new("tags[]", tags),
+        }
+    }
 }
 
 impl<'a> DeleteModTags<'a> {
@@ -30,7 +40,7 @@ impl<'a> DeleteModTags<'a> {
             http,
             game_id,
             mod_id,
-            fields: DeleteModTagsFields { tags },
+            fields: DeleteModTagsFields::new(tags),
         }
     }
 }
@@ -51,12 +61,29 @@ impl IntoFuture for DeleteModTags<'_> {
     }
 }
 
-impl Serialize for DeleteModTagsFields<'_> {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let mut map = serializer.serialize_map(Some(self.tags.len()))?;
-        for t in self.tags {
-            map.serialize_entry("tags[]", t)?;
-        }
-        map.end()
+#[cfg(test)]
+mod tests {
+    use serde_test::{assert_ser_tokens, Token};
+
+    use super::DeleteModTagsFields;
+
+    #[test]
+    pub fn serialize_fields() {
+        let fields = DeleteModTagsFields::new(&["aaa", "bbb"]);
+
+        assert_ser_tokens(
+            &fields,
+            &[
+                Token::Map { len: None },
+                Token::Str("tags[]"),
+                Token::Str("aaa"),
+                Token::Str("tags[]"),
+                Token::Str("bbb"),
+                Token::MapEnd,
+            ],
+        );
+
+        let qs = serde_urlencoded::to_string(&fields).unwrap();
+        assert_eq!("tags%5B%5D=aaa&tags%5B%5D=bbb", qs);
     }
 }

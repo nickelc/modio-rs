@@ -1,9 +1,9 @@
 use std::future::IntoFuture;
 
-use serde::ser::{Serialize, SerializeMap, Serializer};
+use serde_derive::Serialize;
 
 use crate::client::Client;
-use crate::request::{Output, RequestBuilder, Route};
+use crate::request::{ArrayParams, Output, RequestBuilder, Route};
 use crate::response::ResponseFuture;
 use crate::types::id::{GameId, ModId};
 use crate::types::Message;
@@ -16,9 +16,21 @@ pub struct AddModDependencies<'a> {
     fields: AddModDependenciesFields<'a>,
 }
 
+#[derive(Serialize)]
 struct AddModDependenciesFields<'a> {
-    dependencies: &'a [ModId],
+    #[serde(flatten)]
+    dependencies: ArrayParams<'a, ModId>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     sync: Option<bool>,
+}
+
+impl<'a> AddModDependenciesFields<'a> {
+    const fn new(deps: &'a [ModId]) -> Self {
+        Self {
+            dependencies: ArrayParams::new("dependencies[]", deps),
+            sync: None,
+        }
+    }
 }
 
 impl<'a> AddModDependencies<'a> {
@@ -32,10 +44,7 @@ impl<'a> AddModDependencies<'a> {
             http,
             game_id,
             mod_id,
-            fields: AddModDependenciesFields {
-                dependencies: deps,
-                sync: None,
-            },
+            fields: AddModDependenciesFields::new(deps),
         }
     }
 
@@ -62,15 +71,34 @@ impl IntoFuture for AddModDependencies<'_> {
     }
 }
 
-impl Serialize for AddModDependenciesFields<'_> {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let mut map = serializer.serialize_map(Some(self.dependencies.len()))?;
-        for dep in self.dependencies {
-            map.serialize_entry("dependencies[]", dep)?;
-        }
-        if let Some(sync) = self.sync {
-            map.serialize_entry("sync", &sync)?;
-        }
-        map.end()
+#[cfg(test)]
+mod tests {
+    use serde_test::{assert_ser_tokens, Token};
+
+    use super::{AddModDependenciesFields, ModId};
+
+    #[test]
+    pub fn serialize_fields() {
+        let deps = [ModId::new(1), ModId::new(2)];
+        let mut fields = AddModDependenciesFields::new(&deps);
+        fields.sync = Some(true);
+
+        assert_ser_tokens(
+            &fields,
+            &[
+                Token::Map { len: None },
+                Token::Str("dependencies[]"),
+                Token::U64(1),
+                Token::Str("dependencies[]"),
+                Token::U64(2),
+                Token::Str("sync"),
+                Token::Some,
+                Token::Bool(true),
+                Token::MapEnd,
+            ],
+        );
+
+        let qs = serde_urlencoded::to_string(&fields).unwrap();
+        assert_eq!("dependencies%5B%5D=1&dependencies%5B%5D=2&sync=true", qs);
     }
 }

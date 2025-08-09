@@ -1,9 +1,9 @@
 use std::future::IntoFuture;
 
-use serde::ser::{Serialize, SerializeMap, Serializer};
+use serde_derive::Serialize;
 
 use crate::client::Client;
-use crate::request::{Output, RequestBuilder, Route};
+use crate::request::{ArrayParams, Output, RequestBuilder, Route};
 use crate::response::ResponseFuture;
 use crate::types::games::TagType;
 use crate::types::id::GameId;
@@ -16,12 +16,29 @@ pub struct AddGameTags<'a> {
     fields: AddGameTagsFields<'a>,
 }
 
+#[derive(Serialize)]
 struct AddGameTagsFields<'a> {
     name: &'a str,
+    #[serde(rename = "type")]
     kind: TagType,
+    #[serde(skip_serializing_if = "Option::is_none")]
     hidden: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     locked: Option<bool>,
-    tags: &'a [&'a str],
+    #[serde(flatten)]
+    tags: ArrayParams<'a, &'a str>,
+}
+
+impl<'a> AddGameTagsFields<'a> {
+    const fn new(name: &'a str, kind: TagType, tags: &'a [&'a str]) -> Self {
+        Self {
+            name,
+            kind,
+            hidden: None,
+            locked: None,
+            tags: ArrayParams::new("tags[]", tags),
+        }
+    }
 }
 
 impl<'a> AddGameTags<'a> {
@@ -35,13 +52,7 @@ impl<'a> AddGameTags<'a> {
         Self {
             http,
             game_id,
-            fields: AddGameTagsFields {
-                name,
-                kind,
-                hidden: None,
-                locked: None,
-                tags,
-            },
+            fields: AddGameTagsFields::new(name, kind, tags),
         }
     }
 
@@ -71,24 +82,36 @@ impl IntoFuture for AddGameTags<'_> {
     }
 }
 
-impl Serialize for AddGameTagsFields<'_> {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let len = 2
-            + usize::from(self.hidden.is_some())
-            + usize::from(self.locked.is_some())
-            + self.tags.len();
-        let mut map = serializer.serialize_map(Some(len))?;
-        map.serialize_entry("name", &self.name)?;
-        map.serialize_entry("type", &self.kind)?;
-        if let Some(hidden) = self.hidden {
-            map.serialize_entry("hidden", &hidden)?;
-        }
-        if let Some(locked) = self.locked {
-            map.serialize_entry("locked", &locked)?;
-        }
-        for t in self.tags {
-            map.serialize_entry("tags[]", t)?;
-        }
-        map.end()
+#[cfg(test)]
+mod tests {
+    use serde_test::{assert_ser_tokens, Token};
+
+    use super::{AddGameTagsFields, TagType};
+
+    #[test]
+    pub fn serialize_fields() {
+        let fields = AddGameTagsFields::new("aaa", TagType::Checkboxes, &["bbb", "ccc"]);
+
+        assert_ser_tokens(
+            &fields,
+            &[
+                Token::Map { len: None },
+                Token::Str("name"),
+                Token::Str("aaa"),
+                Token::Str("type"),
+                Token::UnitVariant {
+                    name: "TagType",
+                    variant: "checkboxes",
+                },
+                Token::Str("tags[]"),
+                Token::Str("bbb"),
+                Token::Str("tags[]"),
+                Token::Str("ccc"),
+                Token::MapEnd,
+            ],
+        );
+
+        let qs = serde_urlencoded::to_string(&fields).unwrap();
+        assert_eq!("name=aaa&type=checkboxes&tags%5B%5D=bbb&tags%5B%5D=ccc", qs);
     }
 }

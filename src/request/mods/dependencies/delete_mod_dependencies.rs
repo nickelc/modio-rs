@@ -1,9 +1,9 @@
 use std::future::IntoFuture;
 
-use serde::ser::{Serialize, SerializeMap, Serializer};
+use serde_derive::Serialize;
 
 use crate::client::Client;
-use crate::request::{Output, RequestBuilder, Route};
+use crate::request::{ArrayParams, Output, RequestBuilder, Route};
 use crate::response::{NoContent, ResponseFuture};
 use crate::types::id::{GameId, ModId};
 
@@ -15,8 +15,18 @@ pub struct DeleteModDependencies<'a> {
     fields: DeleteModDependenciesFields<'a>,
 }
 
+#[derive(Serialize)]
 struct DeleteModDependenciesFields<'a> {
-    dependencies: &'a [ModId],
+    #[serde(flatten)]
+    dependencies: ArrayParams<'a, ModId>,
+}
+
+impl<'a> DeleteModDependenciesFields<'a> {
+    const fn new(deps: &'a [ModId]) -> Self {
+        Self {
+            dependencies: ArrayParams::new("dependencies[]", deps),
+        }
+    }
 }
 
 impl<'a> DeleteModDependencies<'a> {
@@ -30,7 +40,7 @@ impl<'a> DeleteModDependencies<'a> {
             http,
             game_id,
             mod_id,
-            fields: DeleteModDependenciesFields { dependencies: deps },
+            fields: DeleteModDependenciesFields::new(deps),
         }
     }
 }
@@ -51,12 +61,30 @@ impl IntoFuture for DeleteModDependencies<'_> {
     }
 }
 
-impl Serialize for DeleteModDependenciesFields<'_> {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let mut map = serializer.serialize_map(Some(self.dependencies.len()))?;
-        for dep in self.dependencies {
-            map.serialize_entry("dependencies[]", dep)?;
-        }
-        map.end()
+#[cfg(test)]
+mod tests {
+    use serde_test::{assert_ser_tokens, Token};
+
+    use super::{DeleteModDependenciesFields, ModId};
+
+    #[test]
+    pub fn serialize_fields() {
+        let deps = [ModId::new(1), ModId::new(2)];
+        let fields = DeleteModDependenciesFields::new(&deps);
+
+        assert_ser_tokens(
+            &fields,
+            &[
+                Token::Map { len: None },
+                Token::Str("dependencies[]"),
+                Token::U64(1),
+                Token::Str("dependencies[]"),
+                Token::U64(2),
+                Token::MapEnd,
+            ],
+        );
+
+        let qs = serde_urlencoded::to_string(&fields).unwrap();
+        assert_eq!("dependencies%5B%5D=1&dependencies%5B%5D=2", qs);
     }
 }

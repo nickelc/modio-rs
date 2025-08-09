@@ -11,6 +11,7 @@ use self::body::Body;
 use self::multipart::Form;
 use self::routing::Parts;
 pub(crate) use self::routing::Route;
+use self::util::ArrayParams;
 
 pub use self::filter::Filter;
 pub use self::submit_report::SubmitReport;
@@ -19,6 +20,7 @@ pub(crate) mod body;
 mod multipart;
 mod routing;
 mod submit_report;
+mod util;
 
 pub mod auth;
 #[macro_use]

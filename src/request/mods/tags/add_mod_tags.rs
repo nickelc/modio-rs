@@ -1,9 +1,9 @@
 use std::future::IntoFuture;
 
-use serde::ser::{Serialize, SerializeMap, Serializer};
+use serde_derive::Serialize;
 
 use crate::client::Client;
-use crate::request::{Output, RequestBuilder, Route};
+use crate::request::{ArrayParams, Output, RequestBuilder, Route};
 use crate::response::ResponseFuture;
 use crate::types::id::{GameId, ModId};
 use crate::types::Message;
@@ -16,8 +16,18 @@ pub struct AddModTags<'a> {
     fields: AddModTagsFields<'a>,
 }
 
+#[derive(Serialize)]
 struct AddModTagsFields<'a> {
-    tags: &'a [&'a str],
+    #[serde(flatten)]
+    tags: ArrayParams<'a, &'a str>,
+}
+
+impl<'a> AddModTagsFields<'a> {
+    const fn new(tags: &'a [&'a str]) -> Self {
+        Self {
+            tags: ArrayParams::new("tags[]", tags),
+        }
+    }
 }
 
 impl<'a> AddModTags<'a> {
@@ -31,7 +41,7 @@ impl<'a> AddModTags<'a> {
             http,
             game_id,
             mod_id,
-            fields: AddModTagsFields { tags },
+            fields: AddModTagsFields::new(tags),
         }
     }
 }
@@ -52,12 +62,29 @@ impl IntoFuture for AddModTags<'_> {
     }
 }
 
-impl Serialize for AddModTagsFields<'_> {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let mut map = serializer.serialize_map(Some(self.tags.len()))?;
-        for t in self.tags {
-            map.serialize_entry("tags[]", t)?;
-        }
-        map.end()
+#[cfg(test)]
+mod tests {
+    use serde_test::{assert_ser_tokens, Token};
+
+    use super::AddModTagsFields;
+
+    #[test]
+    pub fn serialize_fields() {
+        let fields = AddModTagsFields::new(&["aaa", "bbb"]);
+
+        assert_ser_tokens(
+            &fields,
+            &[
+                Token::Map { len: None },
+                Token::Str("tags[]"),
+                Token::Str("aaa"),
+                Token::Str("tags[]"),
+                Token::Str("bbb"),
+                Token::MapEnd,
+            ],
+        );
+
+        let qs = serde_urlencoded::to_string(&fields).unwrap();
+        assert_eq!("tags%5B%5D=aaa&tags%5B%5D=bbb", qs);
     }
 }
