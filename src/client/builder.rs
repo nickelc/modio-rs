@@ -6,6 +6,7 @@ use reqwest::{Client, ClientBuilder, Proxy};
 
 use crate::auth::Credentials;
 use crate::error::{self, Error, Result};
+use crate::types::id::{GameId, UserId};
 use crate::{TargetPlatform, TargetPortal};
 
 use super::{ClientRef, Modio};
@@ -126,6 +127,18 @@ impl Builder {
         F: FnOnce(ClientBuilder) -> ClientBuilder,
     {
         self.config.builder = Some(f(Client::builder()));
+        self
+    }
+
+    /// Set the mod.io API host to "https://g-{id}.modapi.io/v1".
+    pub fn game_host(mut self, game_id: GameId) -> Self {
+        self.config.host = Some(format!("https://g-{game_id}.modapi.io/v1"));
+        self
+    }
+
+    /// Set the mod.io API host to "https://u-{id}.modapi.io/v1".
+    pub fn user_host(mut self, user_id: UserId) -> Self {
+        self.config.host = Some(format!("https://u-{user_id}.modapi.io/v1"));
         self
     }
 
