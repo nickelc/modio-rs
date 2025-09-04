@@ -1,3 +1,8 @@
+### v0.13.2 (2025-09-04)
+
+* Add methods to setup the client with a game/user specific API host.
+* Add `sync` option for uploading mod media files.
+
 ### v0.13.1 (2025-08-06)
 
 * Add new credit options for mods.
