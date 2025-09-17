@@ -1,5 +1,5 @@
 //! Filtering and sorting
-use std::collections::BTreeSet;
+use std::collections::BTreeMap;
 use std::fmt;
 
 macro_rules! filter {
@@ -354,7 +354,7 @@ pub fn custom_order_by_desc<S: Into<String>>(name: S) -> Filter {
 
 #[derive(Clone, Default)]
 pub struct Filter {
-    filters: BTreeSet<FilterEntry>,
+    filters: BTreeMap<(String, Operator), OneOrMany<String>>,
     order_by: Option<Sorting>,
     limit: Option<usize>,
     offset: Option<usize>,
@@ -367,8 +367,8 @@ impl Filter {
         T: fmt::Display,
         V: Into<OneOrMany<T>>,
     {
-        let mut filters = BTreeSet::new();
-        filters.insert(FilterEntry::new(name.into(), op, value.into().to_string()));
+        let mut filters = BTreeMap::new();
+        filters.insert((name.into(), op), value.into().to_string());
         Filter {
             filters,
             ..Default::default()
@@ -473,8 +473,8 @@ impl serde::ser::Serialize for Filter {
     {
         use serde::ser::SerializeMap;
 
-        let map_filters = |f: &FilterEntry| {
-            let value = match f.value {
+        let map_filters = |((name, op), value): (&(_, _), &OneOrMany<String>)| {
+            let value = match value {
                 OneOrMany::One(ref v) => v.to_string(),
                 OneOrMany::Many(ref v) => v
                     .iter()
@@ -482,7 +482,7 @@ impl serde::ser::Serialize for Filter {
                     .collect::<Vec<_>>()
                     .join(","),
             };
-            (format!("{}{}", f.name, f.op), value)
+            (format!("{name}{op}"), value)
         };
 
         let len = self.filters.len()
@@ -506,41 +506,6 @@ impl serde::ser::Serialize for Filter {
         map.end()
     }
 }
-
-#[derive(Clone)]
-struct FilterEntry {
-    name: String,
-    op: Operator,
-    value: OneOrMany<String>,
-}
-
-impl FilterEntry {
-    fn new(name: String, op: Operator, value: OneOrMany<String>) -> FilterEntry {
-        FilterEntry { name, op, value }
-    }
-}
-
-// impl PartialEq, Eq, PartialOrd, Ord for FilterEntry {{{
-impl std::cmp::Eq for FilterEntry {}
-
-impl PartialEq for FilterEntry {
-    fn eq(&self, other: &FilterEntry) -> bool {
-        matches!(self.cmp(other), std::cmp::Ordering::Equal)
-    }
-}
-
-impl Ord for FilterEntry {
-    fn cmp(&self, other: &FilterEntry) -> std::cmp::Ordering {
-        self.name.cmp(&other.name).then(self.op.cmp(&other.op))
-    }
-}
-
-impl PartialOrd for FilterEntry {
-    fn partial_cmp(&self, other: &FilterEntry) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-// }}}
 
 #[derive(Clone)]
 enum Sorting {
