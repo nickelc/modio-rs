@@ -473,26 +473,31 @@ impl serde::ser::Serialize for Filter {
     {
         use serde::ser::SerializeMap;
 
-        let map_filters = |((name, op), value): (&(_, _), &OneOrMany<String>)| {
-            let value = match value {
-                OneOrMany::One(ref v) => v.to_string(),
-                OneOrMany::Many(ref v) => v
-                    .iter()
-                    .map(ToString::to_string)
-                    .collect::<Vec<_>>()
-                    .join(","),
-            };
-            (format!("{name}{op}"), value)
-        };
-
         let len = self.filters.len()
             + self.limit.as_ref().map(|_| 1).unwrap_or_default()
             + self.offset.as_ref().map(|_| 1).unwrap_or_default()
             + self.order_by.as_ref().map(|_| 1).unwrap_or_default();
 
         let mut map = serializer.serialize_map(Some(len))?;
-        for (k, v) in self.filters.iter().map(map_filters) {
-            map.serialize_entry(&k, &v)?;
+        for ((name, op), value) in &self.filters {
+            map.serialize_key(&format!("{name}{op}"))?;
+            match value {
+                OneOrMany::One(v) => map.serialize_value(v)?,
+                OneOrMany::Many(v) => {
+                    let mut iter = v.iter().peekable();
+                    let mut value = String::new();
+
+                    while let Some(s) = iter.next() {
+                        value.push_str(s);
+
+                        if iter.peek().is_some() {
+                            value.push(',');
+                        }
+                    }
+
+                    map.serialize_value(&value)?;
+                }
+            }
         }
         if let Some(ref limit) = self.limit {
             map.serialize_entry("_limit", limit)?;
