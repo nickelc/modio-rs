@@ -1,3 +1,8 @@
+### v0.13.3 (2025-09-17)
+
+* Replace code that relies on undocumented behavior of `{BTreeMap,BTreeSet}::append`.
+* Reduce allocation during filter serialization.
+
 ### v0.13.2 (2025-09-04)
 
 * Add methods to setup the client with a game/user specific API host.

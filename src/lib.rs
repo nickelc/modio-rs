@@ -122,7 +122,7 @@
 //! #    Ok(())
 //! # }
 //! ```
-#![doc(html_root_url = "https://docs.rs/modio/0.13.2")]
+#![doc(html_root_url = "https://docs.rs/modio/0.13.3")]
 #![deny(rust_2018_idioms)]
 #![deny(rustdoc::broken_intra_doc_links)]
 #![allow(clippy::upper_case_acronyms)]
