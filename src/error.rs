@@ -63,11 +63,6 @@ impl Error {
         matches!(self.inner.kind, Kind::Builder)
     }
 
-    /// Returns true if the error is from a [`DownloadAction`](crate::client::download::DownloadAction).
-    pub fn is_download(&self) -> bool {
-        matches!(self.inner.kind, Kind::Download)
-    }
-
     /// Returns true if the rate limit associated with credentials has been exhausted.
     pub fn is_ratelimited(&self) -> bool {
         matches!(self.inner.kind, Kind::RateLimit { .. })
@@ -141,7 +136,6 @@ impl fmt::Display for Error {
             Kind::TokenRequired => f.write_str("access token is required")?,
             Kind::TermsAcceptanceRequired => f.write_str("terms acceptance is required")?,
             Kind::Builder => f.write_str("builder error")?,
-            Kind::Download => f.write_str("download error")?,
             Kind::Request => f.write_str("http request error")?,
             Kind::Service => f.write_str("service request error")?,
             Kind::Response { status, .. } => {
@@ -184,7 +178,6 @@ pub(crate) enum Kind {
     TokenRequired,
     /// The acceptance of the Terms of Use is required.
     TermsAcceptanceRequired,
-    Download,
     Validation {
         message: String,
         errors: Vec<(String, String)>,
@@ -235,8 +228,4 @@ pub(crate) fn ratelimit(retry_after: u64) -> Error {
     Error::new(Kind::RateLimit {
         retry_after: Duration::from_secs(retry_after),
     })
-}
-
-pub(crate) fn download<E: Into<BoxError>>(source: E) -> Error {
-    Error::new(Kind::Download).with(source)
 }

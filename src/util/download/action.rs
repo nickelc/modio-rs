@@ -28,9 +28,9 @@ pub enum DownloadAction {
 pub enum ResolvePolicy {
     /// Download the latest file.
     Latest,
-    /// Return with [`Error::MultipleFilesFound`] as source error.
+    /// Fail with [`ErrorKind::MultipleFilesFound`] as error kind.
     ///
-    /// [`Error::MultipleFilesFound`]: super::Error
+    /// [`ErrorKind::MultipleFilesFound`]: super::ErrorKind::MultipleFilesFound
     Fail,
 }
 

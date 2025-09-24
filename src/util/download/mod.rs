@@ -16,27 +16,28 @@ mod error;
 mod info;
 
 pub use action::{DownloadAction, ResolvePolicy};
-pub use error::Error;
+pub use error::{Error, ErrorKind};
 pub use info::Info;
 
 use crate::client::service::{Body, Response};
 use crate::request::body::Body as RequestBody;
 use crate::Client;
 
-impl Client {
+/// Extention trait for downloading mod files.
+pub trait Download: private::Sealed {
     /// Returns [`Downloader`] for saving to file or retrieving the data chunked as `Bytes`.
     ///
-    /// The download fails with [`modio::client::download::Error`] as source if a primary file, a
+    /// The download fails with [`modio::util::download::Error`] as source if a primary file, a
     /// specific file or a specific version is not found.
     ///
-    /// [`Downloader`]: crate::client::download::Downloader
-    /// [`modio::client::download::Error`]: crate::client::download::Error
+    /// [`Downloader`]: crate::util::download::Downloader
+    /// [`modio::util::download::Error`]: crate::util::download::Error
     ///
     /// # Example
     ///
     /// ```no_run
-    /// use modio::client::download::{DownloadAction, ResolvePolicy};
     /// use modio::types::id::Id;
+    /// use modio::util::download::{Download, DownloadAction, ResolvePolicy};
     /// # async fn run() -> Result<(), Box<dyn std::error::Error>> {
     /// #    let modio = modio::Client::builder("user-or-game-api-key".to_owned()).build()?;
     ///
@@ -73,7 +74,13 @@ impl Client {
     /// #    Ok(())
     /// # }
     /// ```
-    pub fn download<A>(&self, action: A) -> Downloader<'_, Init<'_>>
+    fn download<A>(&self, action: A) -> Downloader<'_, Init<'_>>
+    where
+        DownloadAction: From<A>;
+}
+
+impl Download for Client {
+    fn download<A>(&self, action: A) -> Downloader<'_, Init<'_>>
     where
         DownloadAction: From<A>,
     {
@@ -82,7 +89,7 @@ impl Client {
 }
 
 /// A `Downloader` can be used to stream a mod file or save the file to a local file.
-/// Constructed with [`Client::download`].
+/// Constructed with [`Download::download`].
 pub struct Downloader<'a, State> {
     state: State,
     phantom: PhantomData<fn(&'a State) -> State>,
@@ -110,9 +117,10 @@ impl<'a> Downloader<'a, Init<'a>> {
     /// # Example
     /// ```no_run
     /// # use modio::types::id::Id;
+    /// # use modio::util::Download;
     /// # async fn run() -> Result<(), Box<dyn std::error::Error>> {
     /// #     let modio = modio::Client::builder("api-key".to_owned()).build()?;
-    /// let action = modio::client::download::DownloadAction::Primary {
+    /// let action = modio::util::download::DownloadAction::Primary {
     ///     game_id: Id::new(5),
     ///     mod_id: Id::new(19),
     /// };
@@ -124,15 +132,15 @@ impl<'a> Downloader<'a, Init<'a>> {
     /// #     Ok(())
     /// # }
     /// ```
-    pub async fn chunked(self) -> Result<Downloader<'a, Chunked>, crate::error::Error> {
+    pub async fn chunked(self) -> Result<Downloader<'a, Chunked>, Error> {
         let Init { http, action } = self.state;
         let info = info::download_info(http, action).await?;
 
         let req = http::Request::get(info.download_url.as_str())
             .body(RequestBody::empty())
-            .map_err(crate::error::download)?;
+            .map_err(Error::request)?;
 
-        let response = http.raw_request(req).await?;
+        let response = http.raw_request(req).await.map_err(Error::request)?;
 
         Ok(Downloader {
             state: Chunked::new(info, response),
@@ -145,9 +153,10 @@ impl<'a> Downloader<'a, Init<'a>> {
     /// # Example
     /// ```no_run
     /// # use modio::types::id::Id;
+    /// # use modio::util::Download;
     /// # async fn run() -> Result<(), Box<dyn std::error::Error>> {
     /// #     let modio = modio::Client::builder("api-key".to_owned()).build()?;
-    /// let action = modio::client::download::DownloadAction::Primary {
+    /// let action = modio::util::download::DownloadAction::Primary {
     ///     game_id: Id::new(5),
     ///     mod_id: Id::new(19),
     /// };
@@ -156,16 +165,18 @@ impl<'a> Downloader<'a, Init<'a>> {
     /// #     Ok(())
     /// # }
     /// ```
-    pub async fn save_to_file(self, path: impl AsRef<Path>) -> Result<(), crate::error::Error> {
+    pub async fn save_to_file(self, path: impl AsRef<Path>) -> Result<(), Error> {
         let mut chunked = self.chunked().await?;
 
-        let out = File::create(path).await.map_err(crate::error::download)?;
+        let out = File::create(path)
+            .await
+            .map_err(|err| Error::new(ErrorKind::Io).with(err))?;
         let mut out = BufWriter::with_capacity(512 * 512, out);
 
         while let Some(chunk) = chunked.data().await {
             out.write_all(&chunk?)
                 .await
-                .map_err(crate::error::download)?;
+                .map_err(|err| Error::new(ErrorKind::Io).with(err))?;
         }
         Ok(())
     }
@@ -202,9 +213,9 @@ impl Downloader<'_, Chunked> {
         &self.state.headers
     }
 
-    pub async fn data(&mut self) -> Option<Result<Bytes, crate::error::Error>> {
+    pub async fn data(&mut self) -> Option<Result<Bytes, Error>> {
         let chunk = self.state.body.next().await;
-        chunk.map(|c| c.map_err(crate::error::request))
+        chunk.map(|c| c.map_err(Error::body))
     }
 }
 
@@ -222,4 +233,12 @@ impl fmt::Debug for Downloader<'_, Chunked> {
             .field("info", &self.state.info)
             .finish_non_exhaustive()
     }
+}
+
+mod private {
+    use crate::client::Client;
+
+    pub trait Sealed {}
+
+    impl Sealed for Client {}
 }

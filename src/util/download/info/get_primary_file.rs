@@ -5,14 +5,13 @@ use std::task::{ready, Context, Poll};
 use futures_util::future::Either;
 use http::StatusCode;
 
-use crate::client::download::Error as DownloadError;
 use crate::client::Client;
-use crate::error::{self, Error};
 use crate::request::mods::GetMod;
 use crate::response::{DataFuture, ResponseFuture};
 use crate::types::files::File;
 use crate::types::id::{GameId, ModId};
 use crate::types::mods::Mod;
+use crate::util::download::{Error, ErrorKind};
 
 pin_project_lite::pin_project! {
     pub struct GetPrimaryFile {
@@ -41,26 +40,26 @@ impl Future for GetPrimaryFile {
         loop {
             match this.future.as_mut().as_pin_mut() {
                 Either::Left(fut) => {
-                    let resp = ready!(fut.poll(cx))?;
+                    let resp = ready!(fut.poll(cx)).map_err(Error::request)?;
 
                     if resp.status() == StatusCode::NOT_FOUND {
-                        let err = DownloadError::ModNotFound {
+                        let kind = ErrorKind::ModNotFound {
                             game_id: *this.game_id,
                             mod_id: *this.mod_id,
                         };
-                        return Poll::Ready(Err(error::download(err)));
+                        return Poll::Ready(Err(Error::new(kind)));
                     }
                     this.future.set(Either::Right(resp.data()));
                 }
                 Either::Right(fut) => {
-                    let mod_ = ready!(fut.poll(cx)).map_err(error::download)?;
+                    let mod_ = ready!(fut.poll(cx)).map_err(Error::body)?;
 
                     let Some(file) = mod_.modfile else {
-                        let err = DownloadError::NoPrimaryFile {
+                        let kind = ErrorKind::NoPrimaryFile {
                             game_id: *this.game_id,
                             mod_id: *this.mod_id,
                         };
-                        return Poll::Ready(Err(error::download(err)));
+                        return Poll::Ready(Err(Error::new(kind)));
                     };
 
                     return Poll::Ready(Ok(file));

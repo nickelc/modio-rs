@@ -3,6 +3,7 @@ use std::io::{self, Write};
 use std::process;
 
 use modio::types::id::Id;
+use modio::util::Download;
 use modio::Client;
 
 fn prompt(prompt: &str) -> io::Result<u64> {

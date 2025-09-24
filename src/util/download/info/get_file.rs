@@ -5,13 +5,12 @@ use std::task::{ready, Context, Poll};
 use futures_util::future::Either;
 use http::StatusCode;
 
-use crate::client::download::Error as DownloadError;
 use crate::client::Client;
-use crate::error::{self, Error};
 use crate::request::files::GetFile as GetModFile;
 use crate::response::{DataFuture, ResponseFuture};
 use crate::types::files::File;
 use crate::types::id::{FileId, GameId, ModId};
+use crate::util::download::{Error, ErrorKind};
 
 pin_project_lite::pin_project! {
     pub struct GetFile {
@@ -42,20 +41,20 @@ impl Future for GetFile {
         loop {
             match this.future.as_mut().as_pin_mut() {
                 Either::Left(fut) => {
-                    let resp = ready!(fut.poll(cx))?;
+                    let resp = ready!(fut.poll(cx)).map_err(Error::request)?;
 
                     if resp.status() == StatusCode::NOT_FOUND {
-                        let err = DownloadError::FileNotFound {
+                        let kind = ErrorKind::FileNotFound {
                             game_id: *this.game_id,
                             mod_id: *this.mod_id,
                             file_id: *this.file_id,
                         };
-                        return Poll::Ready(Err(error::download(err)));
+                        return Poll::Ready(Err(Error::new(kind)));
                     }
                     this.future.set(Either::Right(resp.data()));
                 }
                 Either::Right(fut) => {
-                    return fut.poll(cx).map_err(error::download);
+                    return fut.poll(cx).map_err(Error::body);
                 }
             }
         }

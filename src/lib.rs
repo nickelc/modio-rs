@@ -81,8 +81,8 @@
 //! # #[tokio::main]
 //! # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! #    let modio = modio::Client::builder(std::env::var("MODIO_API_KEY")?).build()?;
-//! use modio::client::download::{DownloadAction, ResolvePolicy};
 //! use modio::types::id::Id;
+//! use modio::util::download::{Download, DownloadAction, ResolvePolicy};
 //!
 //! // Download the primary file of a mod.
 //! let action = DownloadAction::Primary {

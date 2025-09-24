@@ -6,12 +6,11 @@ use std::task::{ready, Context, Poll};
 use pin_project_lite::pin_project;
 use url::Url;
 
-use crate::error::Error;
 use crate::types::files::File;
 use crate::types::id::FileId;
 use crate::Client;
 
-use super::DownloadAction;
+use super::{DownloadAction, Error};
 
 mod get_file;
 mod get_file_by_version;

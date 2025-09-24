@@ -5,9 +5,7 @@ use std::task::{ready, Context, Poll};
 use futures_util::future::Either;
 use http::StatusCode;
 
-use crate::client::download::{Error as DownloadError, ResolvePolicy};
 use crate::client::Client;
-use crate::error::{self, Error};
 use crate::request::files::filters::Version;
 use crate::request::files::GetFiles;
 use crate::request::filter::prelude::*;
@@ -15,6 +13,7 @@ use crate::response::{DataFuture, ResponseFuture};
 use crate::types::files::File;
 use crate::types::id::{GameId, ModId};
 use crate::types::List;
+use crate::util::download::{Error, ErrorKind, ResolvePolicy};
 
 pin_project_lite::pin_project! {
     pub struct GetFileByVersion {
@@ -61,14 +60,14 @@ impl Future for GetFileByVersion {
         loop {
             match this.future.as_mut().as_pin_mut() {
                 Either::Left(fut) => {
-                    let resp = ready!(fut.poll(cx))?;
+                    let resp = ready!(fut.poll(cx)).map_err(Error::request)?;
 
                     if resp.status() == StatusCode::NOT_FOUND {
-                        let err = DownloadError::ModNotFound {
+                        let kind = ErrorKind::ModNotFound {
                             game_id: *this.game_id,
                             mod_id: *this.mod_id,
                         };
-                        return Poll::Ready(Err(error::download(err)));
+                        return Poll::Ready(Err(Error::new(kind)));
                     }
 
                     this.future.set(Either::Right(resp.data()));
@@ -76,27 +75,27 @@ impl Future for GetFileByVersion {
                 Either::Right(fut) => {
                     let mut list = match fut.poll(cx) {
                         Poll::Ready(Ok(list)) => list.data,
-                        Poll::Ready(Err(err)) => return Poll::Ready(Err(error::download(err))),
+                        Poll::Ready(Err(err)) => return Poll::Ready(Err(Error::body(err))),
                         Poll::Pending => return Poll::Pending,
                     };
 
                     let result = match (list.len(), &this.policy) {
                         (1, _) | (_, ResolvePolicy::Latest) => Ok(list.remove(0)),
                         (0, _) => Err({
-                            let err = DownloadError::VersionNotFound {
+                            let kind = ErrorKind::VersionNotFound {
                                 game_id: *this.game_id,
                                 mod_id: *this.mod_id,
                                 version: this.version.clone(),
                             };
-                            error::download(err)
+                            Error::new(kind)
                         }),
                         (_, ResolvePolicy::Fail) => Err({
-                            let err = DownloadError::MultipleFilesFound {
+                            let kind = ErrorKind::MultipleFilesFound {
                                 game_id: *this.game_id,
                                 mod_id: *this.mod_id,
                                 version: this.version.clone(),
                             };
-                            error::download(err)
+                            Error::new(kind)
                         }),
                     };
 

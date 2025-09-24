@@ -8,8 +8,6 @@ use crate::error::{self, Error};
 use crate::request::{Filter, Request, TokenRequired};
 use crate::response::ResponseFuture;
 
-pub mod download;
-
 mod builder;
 mod conn;
 mod methods;

@@ -85,7 +85,7 @@ let balancing_mod = response.data().await?;
 
 ### Download
 ```rust
-use modio::client::download::{ResolvePolicy, DownloadAction};
+use modio::util::download::{Download, DownloadAction, ResolvePolicy};
 
 // Download the primary file of a mod.
 let action = DownloadAction::Primary {
@@ -110,8 +110,8 @@ modio
 
 // Download the specific version of a mod.
 // if multiple files are found then the latest file is downloaded.
-// Set policy to `ResolvePolicy::Fail` to return with `modio::client::download::Error::MultipleFilesFound`
-// as source error.
+// Set policy to `ResolvePolicy::Fail` to return with `modio::util::download::ErrorKind::MultipleFilesFound`
+// as error kind.
 let action = DownloadAction::Version {
     game_id: Id::new(5),
     mod_id: Id::new(19),
