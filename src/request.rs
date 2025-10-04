@@ -48,7 +48,7 @@ impl RequestBuilder {
             };
         }
 
-        let url = format!("{}{}", modio.inner.host, path);
+        let url = format!("{}{path}", modio.inner.host);
         let params = [("api_key", &modio.inner.credentials.api_key)];
         let request = Url::parse_with_params(&url, &params)
             .map(|url| {
@@ -121,9 +121,10 @@ impl RequestBuilder {
         let body = response.bytes().map_err(error::request).await?;
 
         if level_enabled!(tracing::Level::TRACE) {
-            match std::str::from_utf8(&body) {
-                Ok(s) => trace!("status: {}, response: {}", status, s),
-                Err(_) => trace!("status: {}, response: {:?}", status, body),
+            if let Ok(s) = std::str::from_utf8(&body) {
+                trace!("status: {status}, response: {s}");
+            } else {
+                trace!("status: {status}, response: {body:?}");
             }
         }
 

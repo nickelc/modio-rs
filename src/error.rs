@@ -168,7 +168,7 @@ impl fmt::Display for Error {
             } => {
                 write!(f, "validation failed: '{message}' {errors:?}")?;
             }
-        };
+        }
         if let Some(ref e) = self.inner.source {
             write!(f, ": {e}")?;
         }
