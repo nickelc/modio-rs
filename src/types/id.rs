@@ -4,7 +4,7 @@ use std::cmp::Ordering;
 use std::fmt::{self, Write};
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
-use std::num::{NonZeroI64, NonZeroU64, ParseIntError, TryFromIntError};
+use std::num::{NonZero, ParseIntError, TryFromIntError};
 use std::str::FromStr;
 
 /// ID with a game marker.
@@ -66,11 +66,11 @@ pub mod marker {
 #[repr(transparent)]
 pub struct Id<T> {
     phantom: PhantomData<fn(T) -> T>,
-    value: NonZeroU64,
+    value: NonZero<u64>,
 }
 
 impl<T> Id<T> {
-    const fn from_nonzero(value: NonZeroU64) -> Self {
+    const fn from_nonzero(value: NonZero<u64>) -> Self {
         Self {
             phantom: PhantomData,
             value,
@@ -109,7 +109,7 @@ impl<T> Id<T> {
 
     /// Create a new ID if the given value is not zero.
     pub const fn new_checked(value: u64) -> Option<Self> {
-        if let Some(value) = NonZeroU64::new(value) {
+        if let Some(value) = NonZero::new(value) {
             Some(Self::from_nonzero(value))
         } else {
             None
@@ -202,8 +202,8 @@ impl<T> From<Id<T>> for u64 {
     }
 }
 
-impl<T> From<NonZeroU64> for Id<T> {
-    fn from(value: NonZeroU64) -> Self {
+impl<T> From<NonZero<u64>> for Id<T> {
+    fn from(value: NonZero<u64>) -> Self {
         Self::from_nonzero(value)
     }
 }
@@ -212,8 +212,8 @@ impl<T> TryFrom<i64> for Id<T> {
     type Error = TryFromIntError;
 
     fn try_from(value: i64) -> Result<Self, Self::Error> {
-        let value = NonZeroI64::try_from(value)?;
-        let value = NonZeroU64::try_from(value)?;
+        let value = NonZero::try_from(value)?;
+        let value = NonZero::try_from(value)?;
         Ok(Self::from_nonzero(value))
     }
 }
@@ -222,7 +222,7 @@ impl<T> TryFrom<u64> for Id<T> {
     type Error = TryFromIntError;
 
     fn try_from(value: u64) -> Result<Self, Self::Error> {
-        let value = NonZeroU64::try_from(value)?;
+        let value = NonZero::try_from(value)?;
         Ok(Id::from_nonzero(value))
     }
 }
@@ -231,7 +231,7 @@ impl<T> FromStr for Id<T> {
     type Err = ParseIntError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        NonZeroU64::from_str(s).map(Self::from_nonzero)
+        NonZero::from_str(s).map(Self::from_nonzero)
     }
 }
 
@@ -240,7 +240,7 @@ use serde::ser::{Serialize, Serializer};
 
 impl<'de, T> Deserialize<'de> for Id<T> {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        NonZeroU64::deserialize(deserializer).map(Self::from_nonzero)
+        NonZero::deserialize(deserializer).map(Self::from_nonzero)
     }
 }
 
