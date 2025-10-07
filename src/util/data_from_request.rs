@@ -138,6 +138,12 @@ mod private {
     impl Sealed for files::GetFile<'_> {}
     impl Sealed for files::GetFiles<'_> {}
     impl Sealed for files::ManagePlatformStatus<'_> {}
+    impl Sealed for files::multipart::AddMultipartUploadFile<'_> {}
+    impl<S> Sealed for files::multipart::AddMultipartUploadPart<'_, S> {}
+    impl Sealed for files::multipart::CompleteMultipartUploadSession<'_> {}
+    impl Sealed for files::multipart::CreateMultipartUploadSession<'_> {}
+    impl Sealed for files::multipart::GetMultipartUploadParts<'_> {}
+    impl Sealed for files::multipart::GetMultipartUploadSessions<'_> {}
 
     impl Sealed for user::GetAuthenticatedUser<'_> {}
     impl Sealed for user::GetMutedUsers<'_> {}

@@ -1,4 +1,5 @@
 pub mod download;
+pub mod upload;
 
 mod data_from_request;
 mod pagination;

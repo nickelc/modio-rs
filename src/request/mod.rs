@@ -1,6 +1,8 @@
 //! Typed request builders for the different endpoints.
 
-use http::header::{HeaderValue, CONTENT_LENGTH, CONTENT_TYPE};
+use bytes::Bytes;
+use futures_util::TryStream;
+use http::header::{HeaderName, HeaderValue, CONTENT_LENGTH, CONTENT_TYPE};
 use http::request::Builder;
 use serde::ser::Serialize;
 
@@ -56,6 +58,18 @@ impl RequestBuilder {
         }
     }
 
+    pub fn header<K, V>(self, key: K, value: V) -> Self
+    where
+        K: TryInto<HeaderName>,
+        <K as TryInto<HeaderName>>::Error: Into<http::Error>,
+        V: TryInto<HeaderValue>,
+        <V as TryInto<HeaderValue>>::Error: Into<http::Error>,
+    {
+        Self {
+            inner: self.inner.header(key, value),
+        }
+    }
+
     pub fn filter(self, filter: Filter) -> Self {
         Self {
             inner: self.inner.extension(filter),
@@ -64,6 +78,15 @@ impl RequestBuilder {
 
     pub fn empty(self) -> Result<Request, Error> {
         build(self.inner, Body::empty())
+    }
+
+    pub fn stream<S>(self, stream: S) -> Result<Request, Error>
+    where
+        S: TryStream + Send + 'static,
+        S::Ok: Into<Bytes>,
+        S::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+    {
+        build(self.inner, Body::from_stream(stream))
     }
 
     pub fn form<T: Serialize>(self, form: &T) -> Result<Request, Error> {

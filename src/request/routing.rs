@@ -2,6 +2,7 @@ use std::fmt;
 
 use http::{Method, Uri};
 
+use crate::types::files::multipart::UploadId;
 use crate::types::id::{CommentId, FileId, GameId, ModId, UserId};
 
 #[derive(Clone, Copy, Debug)]
@@ -40,6 +41,20 @@ pub enum Route {
         game_id: GameId,
         mod_id: ModId,
     },
+    AddMultipartUploadPart {
+        game_id: GameId,
+        mod_id: ModId,
+        upload_id: UploadId,
+    },
+    CompleteMultipartUploadSession {
+        game_id: GameId,
+        mod_id: ModId,
+        upload_id: UploadId,
+    },
+    CreateMultipartUploadSession {
+        game_id: GameId,
+        mod_id: ModId,
+    },
     DeleteFile {
         game_id: GameId,
         mod_id: ModId,
@@ -72,6 +87,11 @@ pub enum Route {
     DeleteModTags {
         game_id: GameId,
         mod_id: ModId,
+    },
+    DeleteMultipartUploadSession {
+        game_id: GameId,
+        mod_id: ModId,
+        upload_id: UploadId,
     },
     EditFile {
         game_id: GameId,
@@ -166,6 +186,15 @@ pub enum Route {
     GetModsStats {
         game_id: GameId,
     },
+    GetMultipartUploadParts {
+        game_id: GameId,
+        mod_id: ModId,
+        upload_id: UploadId,
+    },
+    GetMultipartUploadSessions {
+        game_id: GameId,
+        mod_id: ModId,
+    },
     ManagePlatformStatus {
         game_id: GameId,
         mod_id: ModId,
@@ -245,6 +274,8 @@ impl Route {
             | Self::GetModStats { .. }
             | Self::GetModTags { .. }
             | Self::GetModTeamMembers { .. }
+            | Self::GetMultipartUploadParts { .. }
+            | Self::GetMultipartUploadSessions { .. }
             | Self::Terms
             | Self::UserAuthenticated
             | Self::UserEvents
@@ -262,6 +293,8 @@ impl Route {
             | Self::AddModMedia { .. }
             | Self::AddModMetadata { .. }
             | Self::AddModTags { .. }
+            | Self::CompleteMultipartUploadSession { .. }
+            | Self::CreateMultipartUploadSession { .. }
             | Self::ExternalAuthDiscord
             | Self::ExternalAuthEpic
             | Self::ExternalAuthGoogle
@@ -281,7 +314,8 @@ impl Route {
             | Self::SubscribeToMod { .. }
             | Self::UpdateModCommentKarma { .. }
             | Self::UserMuted => Method::POST,
-            Self::EditMod { .. }
+            Self::AddMultipartUploadPart { .. }
+            | Self::EditMod { .. }
             | Self::EditModComment { .. }
             | Self::EditFile { .. }
             | Self::RenameGameTags { .. }
@@ -294,6 +328,7 @@ impl Route {
             | Self::DeleteModMedia { .. }
             | Self::DeleteModMetadata { .. }
             | Self::DeleteModTags { .. }
+            | Self::DeleteMultipartUploadSession { .. }
             | Self::UnmuteUser { .. }
             | Self::UnsubscribeFromMod { .. } => Method::DELETE,
         }
@@ -340,6 +375,9 @@ impl Route {
             | Self::AddModMedia { .. }
             | Self::AddModMetadata { .. }
             | Self::AddModTags { .. }
+            | Self::AddMultipartUploadPart { .. }
+            | Self::CompleteMultipartUploadSession { .. }
+            | Self::CreateMultipartUploadSession { .. }
             | Self::DeleteFile { .. }
             | Self::DeleteGameTags { .. }
             | Self::DeleteMod { .. }
@@ -348,9 +386,12 @@ impl Route {
             | Self::DeleteModMedia { .. }
             | Self::DeleteModMetadata { .. }
             | Self::DeleteModTags { .. }
+            | Self::DeleteMultipartUploadSession { .. }
             | Self::EditFile { .. }
             | Self::EditMod { .. }
             | Self::EditModComment { .. }
+            | Self::GetMultipartUploadParts { .. }
+            | Self::GetMultipartUploadSessions { .. }
             | Self::ManagePlatformStatus { .. }
             | Self::MuteUser { .. }
             | Self::OAuthLogout
@@ -453,6 +494,36 @@ impl fmt::Display for Path {
             | Route::DeleteModTags { game_id, mod_id }
             | Route::GetModTags { game_id, mod_id } => {
                 path!(f; "/games/", game_id, "/mods/", mod_id, "/tags")
+            }
+            Route::AddMultipartUploadPart {
+                game_id,
+                mod_id,
+                upload_id,
+            }
+            | Route::DeleteMultipartUploadSession {
+                game_id,
+                mod_id,
+                upload_id,
+            }
+            | Route::GetMultipartUploadParts {
+                game_id,
+                mod_id,
+                upload_id,
+            } => {
+                path!(f; "/games/", game_id, "/mods/", mod_id, "/files/multipart?upload_id=", upload_id)
+            }
+            Route::GetMultipartUploadSessions { game_id, mod_id } => {
+                path!(f; "/games/", game_id, "/mods/", mod_id, "/files/multipart/sessions")
+            }
+            Route::CompleteMultipartUploadSession {
+                game_id,
+                mod_id,
+                upload_id,
+            } => {
+                path!(f; "/games/", game_id, "/mods/", mod_id, "/files/multipart/complete?upload_id=", upload_id)
+            }
+            Route::CreateMultipartUploadSession { game_id, mod_id } => {
+                path!(f; "/games/", game_id, "/mods/", mod_id, "/files/multipart")
             }
             Route::DeleteFile {
                 game_id,
@@ -701,6 +772,44 @@ mod tests {
     }
 
     #[test]
+    fn add_multipart_upload_part() {
+        let route = Route::AddMultipartUploadPart {
+            game_id: GAME_ID,
+            mod_id: MOD_ID,
+            upload_id: UploadId::nil(),
+        };
+
+        assert_eq!(
+            Path(route).to_string(),
+            "/games/1/mods/2/files/multipart?upload_id=00000000-0000-0000-0000-000000000000"
+        );
+    }
+
+    #[test]
+    fn complete_multipart_upload_session() {
+        let route = Route::CompleteMultipartUploadSession {
+            game_id: GAME_ID,
+            mod_id: MOD_ID,
+            upload_id: UploadId::nil(),
+        };
+
+        assert_eq!(
+            Path(route).to_string(),
+            "/games/1/mods/2/files/multipart/complete?upload_id=00000000-0000-0000-0000-000000000000"
+        );
+    }
+
+    #[test]
+    fn create_multipart_upload_session() {
+        let route = Route::CreateMultipartUploadSession {
+            game_id: GAME_ID,
+            mod_id: MOD_ID,
+        };
+
+        assert_eq!(Path(route).to_string(), "/games/1/mods/2/files/multipart");
+    }
+
+    #[test]
     fn delete_file() {
         let route = Route::DeleteFile {
             game_id: GAME_ID,
@@ -777,6 +886,20 @@ mod tests {
         };
 
         assert_eq!(Path(route).to_string(), "/games/1/mods/2/tags");
+    }
+
+    #[test]
+    fn delete_multipart_upload_session() {
+        let route = Route::DeleteMultipartUploadSession {
+            game_id: GAME_ID,
+            mod_id: MOD_ID,
+            upload_id: UploadId::nil(),
+        };
+
+        assert_eq!(
+            Path(route).to_string(),
+            "/games/1/mods/2/files/multipart?upload_id=00000000-0000-0000-0000-000000000000"
+        );
     }
 
     #[test]
@@ -1076,6 +1199,20 @@ mod tests {
         let route = Route::GetModsStats { game_id: GAME_ID };
 
         assert_eq!(Path(route).to_string(), "/games/1/mods/stats");
+    }
+
+    #[test]
+    fn get_multipart_upload_parts() {
+        let route = Route::GetMultipartUploadParts {
+            game_id: GAME_ID,
+            mod_id: MOD_ID,
+            upload_id: UploadId::nil(),
+        };
+
+        assert_eq!(
+            Path(route).to_string(),
+            "/games/1/mods/2/files/multipart?upload_id=00000000-0000-0000-0000-000000000000",
+        );
     }
 
     #[test]

@@ -1,7 +1,15 @@
 use std::path::Path;
 
+use bytes::Bytes;
+use futures_util::TryStream;
+
 use crate::request::auth::external::Provider;
 use crate::request::auth::{EmailExchange, EmailRequest, ExternalAuth, GetTerms, Logout};
+use crate::request::files::multipart::{
+    AddMultipartUploadFile, AddMultipartUploadPart, CompleteMultipartUploadSession, ContentRange,
+    CreateMultipartUploadSession, DeleteMultipartUploadSession, GetMultipartUploadParts,
+    GetMultipartUploadSessions,
+};
 use crate::request::files::{
     AddFile, DeleteFile, EditFile, GetFile, GetFiles, ManagePlatformStatus,
 };
@@ -28,6 +36,7 @@ use crate::request::user::{
     GetUserRatings, GetUserSubscriptions, MuteUser, UnmuteUser,
 };
 use crate::request::SubmitReport;
+use crate::types::files::multipart::UploadId;
 use crate::types::games::TagType;
 use crate::types::id::{CommentId, FileId, GameId, ModId, ResourceId, UserId};
 use crate::types::mods::MetadataMap;
@@ -450,6 +459,112 @@ impl Client {
         file_id: FileId,
     ) -> ManagePlatformStatus<'_> {
         ManagePlatformStatus::new(self, game_id, mod_id, file_id)
+    }
+}
+
+impl Client {
+    /// Get all upload sessions. [required: token]
+    pub const fn get_multipart_upload_sessions(
+        &self,
+        game_id: GameId,
+        mod_id: ModId,
+    ) -> GetMultipartUploadSessions<'_> {
+        GetMultipartUploadSessions::new(self, game_id, mod_id)
+    }
+
+    /// Create a new multipart upload session. [required: token]
+    pub const fn create_multipart_upload_session<'a>(
+        &'a self,
+        game_id: GameId,
+        mod_id: ModId,
+        filename: &'a str,
+    ) -> CreateMultipartUploadSession<'a> {
+        CreateMultipartUploadSession::new(self, game_id, mod_id, filename)
+    }
+
+    /// Get the upload parts of the session. [required: token]
+    pub const fn get_multipart_upload_parts(
+        &self,
+        game_id: GameId,
+        mod_id: ModId,
+        upload_id: UploadId,
+    ) -> GetMultipartUploadParts<'_> {
+        GetMultipartUploadParts::new(self, game_id, mod_id, upload_id)
+    }
+
+    /// Add a new part to an existing upload session. [required: token]
+    pub const fn add_multipart_upload_part<S>(
+        &self,
+        game_id: GameId,
+        mod_id: ModId,
+        upload_id: UploadId,
+        range: ContentRange,
+        stream: S,
+    ) -> AddMultipartUploadPart<'_, S>
+    where
+        S: TryStream + Send + 'static,
+        S::Ok: Into<Bytes>,
+        S::Error: Into<Box<dyn std::error::Error + Send + Sync>>,
+    {
+        AddMultipartUploadPart::new(self, game_id, mod_id, upload_id, range, stream)
+    }
+
+    /// Complete an active upload session after uploading all parts with
+    /// [`Client::add_multipart_upload_part`]. [required: token]
+    pub const fn complete_multipart_upload_session(
+        &self,
+        game_id: GameId,
+        mod_id: ModId,
+        upload_id: UploadId,
+    ) -> CompleteMultipartUploadSession<'_> {
+        CompleteMultipartUploadSession::new(self, game_id, mod_id, upload_id)
+    }
+
+    /// Terminate an active upload session. [required: token]
+    pub const fn delete_multipart_upload_session(
+        &self,
+        game_id: GameId,
+        mod_id: ModId,
+        upload_id: UploadId,
+    ) -> DeleteMultipartUploadSession<'_> {
+        DeleteMultipartUploadSession::new(self, game_id, mod_id, upload_id)
+    }
+
+    /// Finalize the upload with file details. [required: token]
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// # use modio::types::files::multipart::{UploadId, UploadSession};
+    /// #
+    /// # #[tokio::main]
+    /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// #     let client = modio::Client::builder("key".to_owned()).build()?;
+    /// #     let session: UploadSession = unimplemented!();
+    /// use modio::types::files::File;
+    /// use modio::types::id::Id;
+    ///
+    /// let game_id = Id::new(51);
+    /// let mod_id = Id::new(1041);
+    /// let UploadSession { id: upload_id, .. } = session;
+    ///
+    /// let file: File = client
+    ///     .add_multipart_upload_file(game_id, mod_id, upload_id)
+    ///     .version("1.0")
+    ///     .active(true)
+    ///     .await?
+    ///     .data()
+    ///     .await?;
+    /// #     Ok(())
+    /// # }
+    /// ```
+    pub const fn add_multipart_upload_file(
+        &self,
+        game_id: GameId,
+        mod_id: ModId,
+        upload_id: UploadId,
+    ) -> AddMultipartUploadFile<'_> {
+        AddMultipartUploadFile::new(self, game_id, mod_id, upload_id)
     }
 }
 

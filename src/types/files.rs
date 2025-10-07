@@ -248,3 +248,86 @@ newtype_enum! {
         const TARGETTED = 3;
     }
 }
+
+pub mod multipart {
+    use std::fmt;
+    use std::str::FromStr;
+
+    use serde_derive::{Deserialize, Serialize};
+    use uuid::Uuid;
+
+    use crate::types::Timestamp;
+
+    /// See [Multipart Upload Object](https://docs.mod.io/restapiref/#multipart-upload-object) docs for
+    /// more information.
+    #[derive(Debug, Deserialize)]
+    #[non_exhaustive]
+    pub struct UploadSession {
+        #[serde(rename = "upload_id")]
+        pub id: UploadId,
+        pub status: Status,
+    }
+
+    #[derive(Clone, Copy, Debug, Eq, Ord, PartialEq, PartialOrd, Deserialize, Serialize)]
+    #[serde(transparent)]
+    pub struct UploadId(Uuid);
+
+    impl UploadId {
+        #[cfg(test)]
+        pub(crate) const fn nil() -> Self {
+            Self::new(Uuid::nil())
+        }
+
+        pub const fn new(value: Uuid) -> Self {
+            Self(value)
+        }
+
+        pub const fn get(&self) -> Uuid {
+            self.0
+        }
+    }
+
+    impl fmt::Display for UploadId {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            fmt::Display::fmt(&self.get(), f)
+        }
+    }
+
+    impl From<Uuid> for UploadId {
+        fn from(value: Uuid) -> Self {
+            Self::new(value)
+        }
+    }
+
+    impl FromStr for UploadId {
+        type Err = uuid::Error;
+
+        fn from_str(s: &str) -> Result<Self, Self::Err> {
+            Uuid::from_str(s).map(Self::new)
+        }
+    }
+
+    newtype_enum! {
+        /// See [Multipart Upload Object](https://docs.mod.io/restapiref/#multipart-upload-object) docs
+        /// for more information.
+        pub struct Status: u8 {
+            const INCOMPLETE = 0;
+            const PENDING    = 1;
+            const PROCESSING = 2;
+            const COMPLETE   = 3;
+            const CANCELLED  = 4;
+        }
+    }
+
+    /// See [Multipart Upload Part Object](https://docs.mod.io/restapiref/#multipart-upload-part-object) docs
+    /// for more information.
+    #[derive(Debug, Deserialize)]
+    #[non_exhaustive]
+    pub struct UploadPart {
+        pub upload_id: Uuid,
+        pub part_number: u32,
+        #[serde(rename = "part_size")]
+        pub size: u32,
+        pub date_added: Timestamp,
+    }
+}

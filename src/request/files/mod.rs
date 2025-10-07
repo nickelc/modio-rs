@@ -1,3 +1,5 @@
+pub mod multipart;
+
 mod add_file;
 mod delete_file;
 mod edit_file;

@@ -158,6 +158,8 @@ mod private {
     impl Sealed for mods::tags::GetModTags<'_> {}
 
     impl Sealed for files::GetFiles<'_> {}
+    impl Sealed for files::multipart::GetMultipartUploadParts<'_> {}
+    impl Sealed for files::multipart::GetMultipartUploadSessions<'_> {}
 
     impl Sealed for user::GetMutedUsers<'_> {}
     impl Sealed for user::GetUserFiles<'_> {}

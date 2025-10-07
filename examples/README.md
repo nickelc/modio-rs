@@ -13,3 +13,5 @@ Run examples with `cargo run --example example_name`
 * [`events`](events.rs) - Poll the user events from [`/me/events`](https://docs.mod.io/restapiref/#get-user-events) every 10 seconds.
 
 * [`mymods`](mymods.rs) - List all mods the *authenticated user* added or is team member of. See [`/me/mods`](https://docs.mod.io/restapiref/#get-user-mods).
+
+* [`upload`](upload.rs) - Upload a modfile via the multipart upload API.
