@@ -1,4 +1,5 @@
 //! Filtering and sorting
+use std::borrow::Cow;
 use std::collections::BTreeMap;
 use std::fmt;
 
@@ -320,10 +321,12 @@ pub trait OrderBy: sealed::FilterPriv {
 /// use modio::filter::{custom_filter, Operator};
 ///
 /// let filter = custom_filter("foo", Operator::Equals, "bar");
+///
+/// let filter = custom_filter(String::from("bar"), Operator::Equals, "foo");
 /// ```
 pub fn custom_filter<S, T, V>(name: S, op: Operator, value: V) -> Filter
 where
-    S: Into<String>,
+    S: Into<Cow<'static, str>>,
     T: fmt::Display,
     V: Into<OneOrMany<T>>,
 {
@@ -337,7 +340,7 @@ where
 ///
 /// let filter = custom_filter("foo", Operator::Like, "bar*").order_by(custom_order_by_asc("foo"));
 /// ```
-pub fn custom_order_by_asc<S: Into<String>>(name: S) -> Filter {
+pub fn custom_order_by_asc<S: Into<Cow<'static, str>>>(name: S) -> Filter {
     Filter::new_order_by_asc(name)
 }
 
@@ -348,13 +351,13 @@ pub fn custom_order_by_asc<S: Into<String>>(name: S) -> Filter {
 ///
 /// let filter = custom_filter("foo", Operator::Like, "bar*").order_by(custom_order_by_desc("foo"));
 /// ```
-pub fn custom_order_by_desc<S: Into<String>>(name: S) -> Filter {
+pub fn custom_order_by_desc<S: Into<Cow<'static, str>>>(name: S) -> Filter {
     Filter::new_order_by_desc(name)
 }
 
 #[derive(Clone, Default)]
 pub struct Filter {
-    filters: BTreeMap<(String, Operator), OneOrMany<String>>,
+    filters: BTreeMap<(Cow<'static, str>, Operator), OneOrMany<String>>,
     order_by: Option<Sorting>,
     limit: Option<usize>,
     offset: Option<usize>,
@@ -363,7 +366,7 @@ pub struct Filter {
 impl Filter {
     pub(crate) fn new<S, T, V>(name: S, op: Operator, value: V) -> Filter
     where
-        S: Into<String>,
+        S: Into<Cow<'static, str>>,
         T: fmt::Display,
         V: Into<OneOrMany<T>>,
     {
@@ -377,7 +380,7 @@ impl Filter {
 
     pub(crate) fn new_order_by_asc<S>(name: S) -> Filter
     where
-        S: Into<String>,
+        S: Into<Cow<'static, str>>,
     {
         Filter {
             order_by: Some(Sorting::Asc(name.into())),
@@ -387,7 +390,7 @@ impl Filter {
 
     pub(crate) fn new_order_by_desc<S>(name: S) -> Filter
     where
-        S: Into<String>,
+        S: Into<Cow<'static, str>>,
     {
         Filter {
             order_by: Some(Sorting::Desc(name.into())),
@@ -514,8 +517,8 @@ impl serde::ser::Serialize for Filter {
 
 #[derive(Clone)]
 enum Sorting {
-    Asc(String),
-    Desc(String),
+    Asc(Cow<'static, str>),
+    Desc(Cow<'static, str>),
 }
 
 impl fmt::Display for Sorting {
