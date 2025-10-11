@@ -509,7 +509,7 @@ impl serde::ser::Serialize for Filter {
             map.serialize_entry("_offset", offset)?;
         }
         if let Some(ref order_by) = self.order_by {
-            map.serialize_entry("_sort", &order_by.to_string())?;
+            map.serialize_entry("_sort", order_by)?;
         }
         map.end()
     }
@@ -521,15 +521,14 @@ enum Sorting {
     Desc(Cow<'static, str>),
 }
 
-impl fmt::Display for Sorting {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        use std::fmt::Write;
-
+impl serde::ser::Serialize for Sorting {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         match self {
-            Self::Asc(field) => f.write_str(field),
-            Self::Desc(field) => {
-                f.write_char('-')?;
-                f.write_str(field)
+            Sorting::Asc(asc) => serializer.serialize_str(asc),
+            Sorting::Desc(desc) => {
+                let mut s = String::from('-');
+                s.push_str(desc);
+                serializer.serialize_str(&s)
             }
         }
     }
