@@ -1,3 +1,40 @@
+### v0.14.0 (2025-10-14)
+
+* Rewrite of the whole crate
+    - reqwest is replaced with hyper + tower-http.
+    - The endpoint methods are no longer categorized by sub types and now
+      return typed request builders instead of the result objects.
+
+  The typed request builders provide methods for optional fields and implement
+  the `IntoFuture` trait to build and execute the requests. The result objects
+  are retrieved with an additional call on the returned `Response<T>` object.
+
+    ```rust
+  // Before:
+  let mod_: Mod = modio.mod_(Id::new(123), Id::new(45)).get().await?;
+
+  let opt = AddModsOptions::new(name, logo, summary).visible(false);
+  let mod_: Mod = modio
+      .game(Id::new(123))
+      .mods()
+      .add(opts)
+      .await?;
+
+  // After:
+  let response: Response<Mod> = modio.get_mod(Id::new(123), Id::new(45)).await?;
+  let mod_: Mod = response.data().await?;
+
+  let response: Response<Mod> = modio
+      .add_mod(Id::new(123), name, logo, summary)
+      .visible(false)
+      .await?;
+  let mod_: Mod = response.data().await?;
+  ```
+
+* The `Client::download(action)` method is moved to the `modio::util::Download` extension trait.
+* Add support for multipart file uploads and provide extension trait to help with
+  the process of uploading files in multiple parts.
+
 ### v0.13.3 (2025-09-17)
 
 * Replace code that relies on undocumented behavior of `{BTreeMap,BTreeSet}::append`.
