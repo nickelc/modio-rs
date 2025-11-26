@@ -1,5 +1,7 @@
 //! HTTP client for the mod.io API.
 
+use std::fmt;
+
 use http::header::{Entry, HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
 use http::uri::Uri;
 use serde::ser::Serialize;
@@ -10,14 +12,16 @@ use crate::response::ResponseFuture;
 
 mod builder;
 mod conn;
+mod host;
 mod methods;
 
 pub(crate) mod service;
 
 pub use self::builder::Builder;
+use self::host::Host;
 
-pub const DEFAULT_HOST: &str = "api.mod.io";
-pub const TEST_HOST: &str = "api.test.mod.io";
+pub const DEFAULT_HOST: &str = host::DEFAULT_HOST;
+pub const TEST_HOST: &str = host::TEST_HOST;
 const API_VERSION: u8 = 1;
 
 const HDR_X_MODIO_PLATFORM: &str = "X-Modio-Platform";
@@ -28,7 +32,7 @@ const HDR_FORM_URLENCODED: HeaderValue =
 /// HTTP client for the mod.io API.
 pub struct Client {
     http: service::Svc,
-    host: Box<str>,
+    host: Host,
     api_key: Box<str>,
     token: Option<Box<str>>,
     headers: HeaderMap,
@@ -75,7 +79,8 @@ impl Client {
     fn try_request<T>(&self, req: Request) -> Result<ResponseFuture<T>, Error> {
         let (mut parts, body) = req.into_parts();
 
-        let mut uri = UriBuilder::new(&self.host, &parts.uri);
+        let game_id = parts.extensions.get().copied();
+        let mut uri = UriBuilder::new(self.host.display(game_id), &parts.uri);
 
         let token_required = parts.extensions.get();
         match (token_required, &self.token) {
@@ -119,7 +124,7 @@ struct UriBuilder<'a> {
 }
 
 impl<'a> UriBuilder<'a> {
-    fn new(host: &'a str, path: &'a Uri) -> UriBuilder<'a> {
+    fn new(host: impl fmt::Display, path: &'a Uri) -> UriBuilder<'a> {
         let mut uri = format!("https://{host}/v{API_VERSION}{path}");
 
         let query_start = if let Some(start) = uri.find('?') {
@@ -157,12 +162,14 @@ impl<'a> UriBuilder<'a> {
 
 #[cfg(test)]
 mod tests {
+    use super::host::Host;
     use super::*;
 
     #[test]
     fn basic_uri() {
+        let host = Host::Default.display(None);
         let path = Uri::from_static("/games/1/mods/2");
-        let uri = UriBuilder::new(DEFAULT_HOST, &path);
+        let uri = UriBuilder::new(host, &path);
 
         let uri = uri.build().unwrap();
         assert_eq!("https://api.mod.io/v1/games/1/mods/2", uri);
@@ -170,8 +177,9 @@ mod tests {
 
     #[test]
     fn uri_with_api_key() {
+        let host = Host::Default.display(None);
         let path = Uri::from_static("/games/1/mods/2");
-        let mut uri = UriBuilder::new(DEFAULT_HOST, &path);
+        let mut uri = UriBuilder::new(host, &path);
 
         uri.api_key("FOOBAR");
 
@@ -181,8 +189,9 @@ mod tests {
 
     #[test]
     fn uri_with_filter() {
+        let host = Host::Default.display(None);
         let path = Uri::from_static("/games/1/mods/2");
-        let mut uri = UriBuilder::new(DEFAULT_HOST, &path);
+        let mut uri = UriBuilder::new(host, &path);
 
         uri.filter(&Filter::with_limit(123)).unwrap();
 
@@ -192,8 +201,9 @@ mod tests {
 
     #[test]
     fn uri_with_path_and_query() {
+        let host = Host::Default.display(None);
         let path = Uri::from_static("/games/1/mods/2?foo=bar");
-        let mut uri = UriBuilder::new(DEFAULT_HOST, &path);
+        let mut uri = UriBuilder::new(host, &path);
 
         uri.filter(&Filter::with_limit(123)).unwrap();
 

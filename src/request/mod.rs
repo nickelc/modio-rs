@@ -45,17 +45,22 @@ pub(crate) struct RequestBuilder {
 impl RequestBuilder {
     pub fn from_route(route: &Route) -> Self {
         let Parts {
+            game_id,
             method,
             path,
             token_required,
         } = route.into_parts();
 
-        Self {
-            inner: Builder::new()
-                .uri(path)
-                .method(method)
-                .extension(TokenRequired(token_required)),
+        let mut builder = Builder::new()
+            .uri(path)
+            .method(method)
+            .extension(TokenRequired(token_required));
+
+        if let Some(game_id) = game_id {
+            builder = builder.extension(game_id);
         }
+
+        Self { inner: builder }
     }
 
     pub fn header<K, V>(self, key: K, value: V) -> Self

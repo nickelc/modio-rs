@@ -246,6 +246,7 @@ pub enum Route {
 }
 
 pub struct Parts {
+    pub game_id: Option<GameId>,
     pub method: Method,
     pub path: Path,
     pub token_required: bool,
@@ -414,8 +415,89 @@ impl Route {
         }
     }
 
+    pub const fn game_id(self) -> Option<GameId> {
+        match self {
+            Self::AddFile { game_id, .. }
+            | Self::AddGameMedia { game_id }
+            | Self::AddGameTags { game_id }
+            | Self::AddMod { game_id }
+            | Self::AddModComment { game_id, .. }
+            | Self::AddModDependencies { game_id, .. }
+            | Self::AddModMedia { game_id, .. }
+            | Self::AddModMetadata { game_id, .. }
+            | Self::AddModTags { game_id, .. }
+            | Self::AddMultipartUploadPart { game_id, .. }
+            | Self::CompleteMultipartUploadSession { game_id, .. }
+            | Self::CreateMultipartUploadSession { game_id, .. }
+            | Self::DeleteFile { game_id, .. }
+            | Self::DeleteGameTags { game_id }
+            | Self::DeleteMod { game_id, .. }
+            | Self::DeleteModComment { game_id, .. }
+            | Self::DeleteModDependencies { game_id, .. }
+            | Self::DeleteModMedia { game_id, .. }
+            | Self::DeleteModMetadata { game_id, .. }
+            | Self::DeleteModTags { game_id, .. }
+            | Self::DeleteMultipartUploadSession { game_id, .. }
+            | Self::EditFile { game_id, .. }
+            | Self::EditMod { game_id, .. }
+            | Self::EditModComment { game_id, .. }
+            | Self::GetFile { game_id, .. }
+            | Self::GetFiles { game_id, .. }
+            | Self::GetGame { id: game_id, .. }
+            | Self::GetGameStats { game_id }
+            | Self::GetGameTags { game_id, .. }
+            | Self::GetMod { game_id, .. }
+            | Self::GetModComment { game_id, .. }
+            | Self::GetModComments { game_id, .. }
+            | Self::GetModDependencies { game_id, .. }
+            | Self::GetModEvents { game_id, .. }
+            | Self::GetModMetadata { game_id, .. }
+            | Self::GetModStats { game_id, .. }
+            | Self::GetModTags { game_id, .. }
+            | Self::GetModTeamMembers { game_id, .. }
+            | Self::GetMods { game_id }
+            | Self::GetModsEvents { game_id }
+            | Self::GetModsStats { game_id }
+            | Self::GetMultipartUploadParts { game_id, .. }
+            | Self::GetMultipartUploadSessions { game_id, .. }
+            | Self::ManagePlatformStatus { game_id, .. }
+            | Self::RateMod { game_id, .. }
+            | Self::RenameGameTags { game_id }
+            | Self::ReorderModMedia { game_id, .. }
+            | Self::SubscribeToMod { game_id, .. }
+            | Self::UnsubscribeFromMod { game_id, .. }
+            | Self::UpdateModCommentKarma { game_id, .. } => Some(game_id),
+            Self::ExternalAuthDiscord
+            | Self::ExternalAuthEpic
+            | Self::ExternalAuthGoogle
+            | Self::ExternalAuthMeta
+            | Self::ExternalAuthOpenID
+            | Self::ExternalAuthPSN
+            | Self::ExternalAuthSteam
+            | Self::ExternalAuthSwitch
+            | Self::ExternalAuthXbox
+            | Self::GetGames { .. }
+            | Self::MuteUser { .. }
+            | Self::OAuthEmailRequest
+            | Self::OAuthEmailExchange
+            | Self::OAuthLogout
+            | Self::SubmitReport
+            | Self::Terms
+            | Self::UnmuteUser { .. }
+            | Self::UserAuthenticated
+            | Self::UserEvents
+            | Self::UserFiles
+            | Self::UserGames
+            | Self::UserMods
+            | Self::UserMuted
+            | Self::UserRatings
+            | Self::UserSubscriptions => None,
+        }
+    }
+
     pub fn into_parts(self) -> Parts {
         Parts {
+            game_id: self.game_id(),
             method: self.method(),
             path: Path(self),
             token_required: self.token_required(),
