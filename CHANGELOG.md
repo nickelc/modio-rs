@@ -1,3 +1,8 @@
+### v0.14.1 (2025-11-27)
+
+* Adds new options to use the game specific API host dynamically depending
+  on the endpoint request or fallback to the default or custom host.
+
 ### v0.14.0 (2025-10-14)
 
 * Rewrite of the whole crate
