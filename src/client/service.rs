@@ -28,11 +28,11 @@ type Client = LegacyClient<Connector, body::Body>;
 type Client = Trace<LegacyClient<Connector, body::Body>, HttpMakeClassifier>;
 
 #[cfg(not(feature = "trace"))]
-type InnerBody = Incoming;
+type MaybeTraceBody = Incoming;
 #[cfg(feature = "trace")]
-type InnerBody = ResponseBody<Incoming, NeverClassifyEos<ServerErrorsFailureClass>>;
+type MaybeTraceBody = ResponseBody<Incoming, NeverClassifyEos<ServerErrorsFailureClass>>;
 
-pub type Body = CompressionBody<DecompressionBody<InnerBody>>;
+pub type Body = CompressionBody<DecompressionBody<MaybeTraceBody>>;
 pub type Response = http::Response<Body>;
 
 type StackResponseFuture = follow_redirect::ResponseFuture<
