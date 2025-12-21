@@ -1,3 +1,8 @@
+### v0.14.2 (2025-12-21)
+
+* Increase size of community options for the new undocumented flags.
+  A new community options flag 2^17 is reported for all mods.
+
 ### v0.14.1 (2025-11-27)
 
 * Adds new options to use the game specific API host dynamically depending
