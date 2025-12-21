@@ -60,7 +60,7 @@ newtype_enum! {
 bitflags! {
     /// Community options a mod can enable.
     #[derive(Serialize)]
-    pub struct CommunityOptions: u16 {
+    pub struct CommunityOptions: u32 {
         /// Comments enabled.
         const COMMENTS = 1;
         /// Previews enabled.
